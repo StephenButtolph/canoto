@@ -6,7 +6,6 @@ import (
 	"io"
 	"math/bits"
 	"slices"
-	"unsafe"
 )
 
 const (
@@ -193,44 +192,24 @@ func SizeBytes[T Bytes](v T) int {
 	return SizeInt(int64(len(v))) + len(v)
 }
 
-func ReadString(r *Reader) (string, error) {
+func ReadBytes[T Bytes](r *Reader) (val T, err error) {
 	length, err := ReadInt[int32](r)
 	if err != nil {
-		return "", err
+		return val, err
 	}
 	if length < 0 {
-		return "", errInvalidLength
+		return val, errInvalidLength
 	}
 	if length > int32(len(r.b)) {
-		return "", io.ErrUnexpectedEOF
+		return val, io.ErrUnexpectedEOF
 	}
 
 	bytes := r.b[:length]
 	r.b = r.b[length:]
 	if r.unsafe {
-		return unsafeString(bytes), nil
+		return T(bytes), nil
 	}
-	return string(bytes), nil
-}
-
-func ReadBytes(r *Reader) ([]byte, error) {
-	length, err := ReadInt[int32](r)
-	if err != nil {
-		return nil, err
-	}
-	if length < 0 {
-		return nil, errInvalidLength
-	}
-	if length > int32(len(r.b)) {
-		return nil, io.ErrUnexpectedEOF
-	}
-
-	bytes := r.b[:length]
-	r.b = r.b[length:]
-	if r.unsafe {
-		return bytes, nil
-	}
-	return slices.Clone(bytes), nil
+	return T(slices.Clone(bytes)), nil
 }
 
 func AppendBytes[T Bytes](w *Writer, v T) {
@@ -240,12 +219,4 @@ func AppendBytes[T Bytes](w *Writer, v T) {
 
 func tagToUint64(fieldNumber uint32, wireType WireType) uint64 {
 	return uint64(fieldNumber<<wireTypeLength | uint32(wireType))
-}
-
-// unsafeString converts a []byte to an unsafe string.
-//
-// Invariant: The input []byte must not be modified.
-func unsafeString(b []byte) string {
-	// avoid copying during the conversion
-	return unsafe.String(unsafe.SliceData(b), len(b))
 }

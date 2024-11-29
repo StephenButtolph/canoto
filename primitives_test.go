@@ -996,7 +996,7 @@ func FuzzSizeBytes_bytes(f *testing.F) {
 	})
 }
 
-func TestReadString(t *testing.T) {
+func TestReadBytes_string(t *testing.T) {
 	validTests := []validTest[string]{
 		{"00", ""},
 		{"0774657374696e67", "testing"},
@@ -1006,7 +1006,7 @@ func TestReadString(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{b: test.Bytes(t)}
-			got, err := ReadString(r)
+			got, err := ReadBytes[string](r)
 			require.NoError(err)
 			require.Equal(test.want, got)
 			require.Empty(r.b)
@@ -1022,13 +1022,13 @@ func TestReadString(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{b: test.Bytes(t)}
-			_, err := ReadString(r)
+			_, err := ReadBytes[string](r)
 			require.ErrorIs(t, err, test.want)
 		})
 	}
 }
 
-func TestReadBytes(t *testing.T) {
+func TestReadBytes_bytes(t *testing.T) {
 	validTests := []validTest[[]byte]{
 		{"00", []byte{}},
 		{"0774657374696e67", []byte("testing")},
@@ -1038,7 +1038,7 @@ func TestReadBytes(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{b: test.Bytes(t)}
-			got, err := ReadBytes(r)
+			got, err := ReadBytes[[]byte](r)
 			require.NoError(err)
 			require.Equal(test.want, got)
 			require.Empty(r.b)
@@ -1054,7 +1054,7 @@ func TestReadBytes(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{b: test.Bytes(t)}
-			_, err := ReadBytes(r)
+			_, err := ReadBytes[[]byte](r)
 			require.ErrorIs(t, err, test.want)
 		})
 	}
@@ -1068,7 +1068,7 @@ func FuzzAppendBytes_string(f *testing.F) {
 		AppendBytes(w, v)
 
 		r := &Reader{b: w.b}
-		got, err := ReadString(r)
+		got, err := ReadBytes[string](r)
 		require.NoError(err)
 		require.Equal(v, got)
 		require.Empty(r.b)
@@ -1083,7 +1083,7 @@ func FuzzAppendBytes_bytes(f *testing.F) {
 		AppendBytes(w, v)
 
 		r := &Reader{b: w.b}
-		got, err := ReadBytes(r)
+		got, err := ReadBytes[[]byte](r)
 		require.NoError(err)
 		require.Equal(v, got)
 		require.Empty(r.b)
