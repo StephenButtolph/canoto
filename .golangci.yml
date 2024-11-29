@@ -60,7 +60,6 @@ linters:
     - ineffassign
     - lll
     - misspell
-    - mnd
     - nakedret
     - nilerr
     - noctx

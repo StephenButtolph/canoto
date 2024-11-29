@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/StephenButtolph/canoto/pb";
+
+message Scalars {
+  int32 int32 = 1;
+  int64 int64 = 2;
+  uint32 uint32 = 3;
+  uint64 uint64 = 4;
+  sint32 sint32 = 5;
+  sint64 sint64 = 6;
+  fixed32 fixed32 = 7;
+  fixed64 fixed64 = 8;
+  sfixed32 sfixed32 = 9;
+  sfixed64 sfixed64 = 10;
+  bool bool = 11;
+  string string = 12;
+  bytes bytes = 13;
+}
+
+message LargestFieldNumber {
+  int32 int32 = 536870911;
+}
