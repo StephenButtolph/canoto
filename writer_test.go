@@ -7,7 +7,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
-	"github.com/StephenButtolph/canoto/proto/pb"
+	"github.com/StephenButtolph/canoto/internal/proto/pb"
 )
 
 func TestWriter_ProtoCompatibility(t *testing.T) {
