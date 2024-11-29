@@ -7,6 +7,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
+
+	"github.com/StephenButtolph/canoto/internal/proto/pb"
 )
 
 type validTest[T any] struct {
@@ -31,24 +35,39 @@ func (v invalidTest) Bytes(t *testing.T) []byte {
 	return bytes
 }
 
-func TestReader_Tag(t *testing.T) {
+func FuzzSizeTag(f *testing.F) {
+	f.Fuzz(func(t *testing.T, fieldNumber uint32, wireTypeByte byte) {
+		wireType := WireType(wireTypeByte)
+		if fieldNumber > MaxFieldNumber || !wireType.IsValid() {
+			return
+		}
+
+		w := &Writer{}
+		AppendTag(w, fieldNumber, wireType)
+
+		size := SizeTag(fieldNumber, wireType)
+		require.Len(t, w.b, size)
+	})
+}
+
+func TestReadTag(t *testing.T) {
 	type tag struct {
 		fieldNumber uint32
 		wireType    WireType
 	}
 	validTests := []validTest[tag]{
-		{"00", tag{fieldNumber: 0, wireType: Varint}},
-		{"01", tag{fieldNumber: 0, wireType: I64}},
-		{"02", tag{fieldNumber: 0, wireType: Len}},
-		{"05", tag{fieldNumber: 0, wireType: I32}},
-		{"08", tag{fieldNumber: 1, wireType: Varint}},
+		{"00", tag{fieldNumber: 0, wireType: VarintType}},
+		{"01", tag{fieldNumber: 0, wireType: I64Type}},
+		{"02", tag{fieldNumber: 0, wireType: LenType}},
+		{"05", tag{fieldNumber: 0, wireType: I32Type}},
+		{"08", tag{fieldNumber: 1, wireType: VarintType}},
 	}
 	for _, test := range validTests {
 		t.Run(test.hex, func(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{b: test.Bytes(t)}
-			gotField, gotType, err := r.Tag()
+			gotField, gotType, err := ReadTag(r)
 			require.NoError(err)
 			require.Equal(test.want, tag{fieldNumber: gotField, wireType: gotType})
 			require.Empty(r.b)
@@ -85,13 +104,44 @@ func TestReader_Tag(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{b: test.Bytes(t)}
-			_, _, err := r.Tag()
+			_, _, err := ReadTag(r)
 			require.ErrorIs(t, err, test.want)
 		})
 	}
 }
 
-func TestReader_Int32(t *testing.T) {
+func FuzzAppendTag(f *testing.F) {
+	f.Fuzz(func(t *testing.T, fieldNumber uint32, wireTypeByte byte) {
+		wireType := WireType(wireTypeByte)
+		if fieldNumber > MaxFieldNumber || !wireType.IsValid() {
+			return
+		}
+
+		require := require.New(t)
+
+		w := &Writer{}
+		AppendTag(w, fieldNumber, wireType)
+
+		r := &Reader{b: w.b}
+		gotFieldNumber, gotWireType, err := ReadTag(r)
+		require.NoError(err)
+		require.Equal(fieldNumber, gotFieldNumber)
+		require.Equal(wireType, gotWireType)
+		require.Empty(r.b)
+	})
+}
+
+func FuzzSizeInt_int32(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v int32) {
+		w := &Writer{}
+		AppendInt(w, v)
+
+		size := SizeInt(v)
+		require.Len(t, w.b, size)
+	})
+}
+
+func TestReadInt_int32(t *testing.T) {
 	validTests := []validTest[int32]{
 		{"00", 0},
 		{"01", 1},
@@ -113,7 +163,7 @@ func TestReader_Int32(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{b: test.Bytes(t)}
-			got, err := r.Int32()
+			got, err := ReadInt[int32](r)
 			require.NoError(err)
 			require.Equal(test.want, got)
 			require.Empty(r.b)
@@ -157,13 +207,38 @@ func TestReader_Int32(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{b: test.Bytes(t)}
-			_, err := r.Int32()
+			_, err := ReadInt[int32](r)
 			require.ErrorIs(t, err, test.want)
 		})
 	}
 }
 
-func TestReader_Int64(t *testing.T) {
+func FuzzAppendInt_int32(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v int32) {
+		require := require.New(t)
+
+		w := &Writer{}
+		AppendInt(w, v)
+
+		r := &Reader{b: w.b}
+		got, err := ReadInt[int32](r)
+		require.NoError(err)
+		require.Equal(v, got)
+		require.Empty(r.b)
+	})
+}
+
+func FuzzSizeInt_int64(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v int64) {
+		w := &Writer{}
+		AppendInt(w, v)
+
+		size := SizeInt(v)
+		require.Len(t, w.b, size)
+	})
+}
+
+func TestReadInt_int64(t *testing.T) {
 	validTests := []validTest[int64]{
 		{"00", 0},
 		{"01", 1},
@@ -193,7 +268,7 @@ func TestReader_Int64(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{b: test.Bytes(t)}
-			got, err := r.Int64()
+			got, err := ReadInt[int64](r)
 			require.NoError(err)
 			require.Equal(test.want, got)
 			require.Empty(r.b)
@@ -228,13 +303,38 @@ func TestReader_Int64(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{b: test.Bytes(t)}
-			_, err := r.Int64()
+			_, err := ReadInt[int64](r)
 			require.ErrorIs(t, err, test.want)
 		})
 	}
 }
 
-func TestReader_Uint32(t *testing.T) {
+func FuzzAppendInt_int64(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v int64) {
+		require := require.New(t)
+
+		w := &Writer{}
+		AppendInt(w, v)
+
+		r := &Reader{b: w.b}
+		got, err := ReadInt[int64](r)
+		require.NoError(err)
+		require.Equal(v, got)
+		require.Empty(r.b)
+	})
+}
+
+func FuzzSizeInt_uint32(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v uint32) {
+		w := &Writer{}
+		AppendInt(w, v)
+
+		size := SizeInt(v)
+		require.Len(t, w.b, size)
+	})
+}
+
+func TestReadInt_uint32(t *testing.T) {
 	validTests := []validTest[uint32]{
 		{"00", 0},
 		{"01", 1},
@@ -254,7 +354,7 @@ func TestReader_Uint32(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{b: test.Bytes(t)}
-			got, err := r.Uint32()
+			got, err := ReadInt[uint32](r)
 			require.NoError(err)
 			require.Equal(test.want, got)
 			require.Empty(r.b)
@@ -290,13 +390,38 @@ func TestReader_Uint32(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{b: test.Bytes(t)}
-			_, err := r.Uint32()
+			_, err := ReadInt[uint32](r)
 			require.ErrorIs(t, err, test.want)
 		})
 	}
 }
 
-func TestReader_Uint64(t *testing.T) {
+func FuzzAppendInt_uint32(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v uint32) {
+		require := require.New(t)
+
+		w := &Writer{}
+		AppendInt(w, v)
+
+		r := &Reader{b: w.b}
+		got, err := ReadInt[uint32](r)
+		require.NoError(err)
+		require.Equal(v, got)
+		require.Empty(r.b)
+	})
+}
+
+func FuzzSizeInt_uint64(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v uint64) {
+		w := &Writer{}
+		AppendInt(w, v)
+
+		size := SizeInt(v)
+		require.Len(t, w.b, size)
+	})
+}
+
+func TestReadInt_uint64(t *testing.T) {
 	validTests := []validTest[uint64]{
 		{"00", 0},
 		{"01", 1},
@@ -326,7 +451,7 @@ func TestReader_Uint64(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{b: test.Bytes(t)}
-			got, err := r.Uint64()
+			got, err := ReadInt[uint64](r)
 			require.NoError(err)
 			require.Equal(test.want, got)
 			require.Empty(r.b)
@@ -361,13 +486,38 @@ func TestReader_Uint64(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{b: test.Bytes(t)}
-			_, err := r.Uint64()
+			_, err := ReadInt[uint64](r)
 			require.ErrorIs(t, err, test.want)
 		})
 	}
 }
 
-func TestReader_Sint32(t *testing.T) {
+func FuzzAppendInt_uint64(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v uint64) {
+		require := require.New(t)
+
+		w := &Writer{}
+		AppendInt(w, v)
+
+		r := &Reader{b: w.b}
+		got, err := ReadInt[uint64](r)
+		require.NoError(err)
+		require.Equal(v, got)
+		require.Empty(r.b)
+	})
+}
+
+func FuzzSizeSint_int32(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v int32) {
+		w := &Writer{}
+		AppendSint(w, v)
+
+		size := SizeSint(v)
+		require.Len(t, w.b, size)
+	})
+}
+
+func TestReadSint_int32(t *testing.T) {
 	validTests := []validTest[int32]{
 		{"00", 0},
 		{"01", -1},
@@ -389,7 +539,7 @@ func TestReader_Sint32(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{b: test.Bytes(t)}
-			got, err := r.Sint32()
+			got, err := ReadSint[int32](r)
 			require.NoError(err)
 			require.Equal(test.want, got)
 			require.Empty(r.b)
@@ -425,13 +575,38 @@ func TestReader_Sint32(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{b: test.Bytes(t)}
-			_, err := r.Sint32()
+			_, err := ReadSint[int32](r)
 			require.ErrorIs(t, err, test.want)
 		})
 	}
 }
 
-func TestReader_Sint64(t *testing.T) {
+func FuzzAppendSint_int32(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v int32) {
+		require := require.New(t)
+
+		w := &Writer{}
+		AppendSint(w, v)
+
+		r := &Reader{b: w.b}
+		got, err := ReadSint[int32](r)
+		require.NoError(err)
+		require.Equal(v, got)
+		require.Empty(r.b)
+	})
+}
+
+func FuzzSizeSint_int64(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v int64) {
+		w := &Writer{}
+		AppendSint(w, v)
+
+		size := SizeSint(v)
+		require.Len(t, w.b, size)
+	})
+}
+
+func TestReadSint_int64(t *testing.T) {
 	validTests := []validTest[int64]{
 		{"00", 0},
 		{"01", -1},
@@ -453,7 +628,7 @@ func TestReader_Sint64(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{b: test.Bytes(t)}
-			got, err := r.Sint64()
+			got, err := ReadSint[int64](r)
 			require.NoError(err)
 			require.Equal(test.want, got)
 			require.Empty(r.b)
@@ -488,13 +663,36 @@ func TestReader_Sint64(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{b: test.Bytes(t)}
-			_, err := r.Sint64()
+			_, err := ReadSint[int64](r)
 			require.ErrorIs(t, err, test.want)
 		})
 	}
 }
 
-func TestReader_Fixed32(t *testing.T) {
+func FuzzAppendSint_int64(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v int64) {
+		require := require.New(t)
+
+		w := &Writer{}
+		AppendSint(w, v)
+
+		r := &Reader{b: w.b}
+		got, err := ReadSint[int64](r)
+		require.NoError(err)
+		require.Equal(v, got)
+		require.Empty(r.b)
+	})
+}
+
+func FuzzSizeFint32_uint32(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v uint32) {
+		w := &Writer{}
+		AppendFint32(w, v)
+		require.Len(t, w.b, SizeFint32)
+	})
+}
+
+func TestReadFint32_uint32(t *testing.T) {
 	validTests := []validTest[uint32]{
 		{"00000000", 0},
 		{"01000000", 1},
@@ -506,7 +704,7 @@ func TestReader_Fixed32(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{b: test.Bytes(t)}
-			got, err := r.Fixed32()
+			got, err := ReadFint32[uint32](r)
 			require.NoError(err)
 			require.Equal(test.want, got)
 			require.Empty(r.b)
@@ -522,51 +720,36 @@ func TestReader_Fixed32(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{b: test.Bytes(t)}
-			_, err := r.Fixed32()
+			_, err := ReadFint32[uint32](r)
 			require.ErrorIs(t, err, test.want)
 		})
 	}
 }
 
-func TestReader_Fixed64(t *testing.T) {
-	validTests := []validTest[uint64]{
-		{"0000000000000000", 0},
-		{"0100000000000000", 1},
-		{"ffffffffffffffff", math.MaxUint64},
-		{"8796a5b4c3d2e1f0", 0xf0e1d2c3b4a59687},
-	}
-	for _, test := range validTests {
-		t.Run(test.hex, func(t *testing.T) {
-			require := require.New(t)
+func FuzzAppendFint32_uint32(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v uint32) {
+		require := require.New(t)
 
-			r := &Reader{b: test.Bytes(t)}
-			got, err := r.Fixed64()
-			require.NoError(err)
-			require.Equal(test.want, got)
-			require.Empty(r.b)
-		})
-	}
+		w := &Writer{}
+		AppendFint32(w, v)
 
-	invalidTests := []invalidTest{
-		{"", io.ErrUnexpectedEOF},
-		{"00", io.ErrUnexpectedEOF},
-		{"0000", io.ErrUnexpectedEOF},
-		{"000000", io.ErrUnexpectedEOF},
-		{"00000000", io.ErrUnexpectedEOF},
-		{"0000000000", io.ErrUnexpectedEOF},
-		{"000000000000", io.ErrUnexpectedEOF},
-		{"00000000000000", io.ErrUnexpectedEOF},
-	}
-	for _, test := range invalidTests {
-		t.Run(test.hex, func(t *testing.T) {
-			r := &Reader{b: test.Bytes(t)}
-			_, err := r.Fixed64()
-			require.ErrorIs(t, err, test.want)
-		})
-	}
+		r := &Reader{b: w.b}
+		got, err := ReadFint32[uint32](r)
+		require.NoError(err)
+		require.Equal(v, got)
+		require.Empty(r.b)
+	})
 }
 
-func TestReader_Sfixed32(t *testing.T) {
+func FuzzSizeFint32_int32(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v int32) {
+		w := &Writer{}
+		AppendFint32(w, v)
+		require.Len(t, w.b, SizeFint32)
+	})
+}
+
+func TestReadFint32_int32(t *testing.T) {
 	validTests := []validTest[int32]{
 		{"00000080", math.MinInt32},
 		{"ffffffff", -1},
@@ -579,7 +762,7 @@ func TestReader_Sfixed32(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{b: test.Bytes(t)}
-			got, err := r.Sfixed32()
+			got, err := ReadFint32[int32](r)
 			require.NoError(err)
 			require.Equal(test.want, got)
 			require.Empty(r.b)
@@ -595,26 +778,48 @@ func TestReader_Sfixed32(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{b: test.Bytes(t)}
-			_, err := r.Sfixed32()
+			_, err := ReadFint32[int32](r)
 			require.ErrorIs(t, err, test.want)
 		})
 	}
 }
 
-func TestReader_Sfixed64(t *testing.T) {
-	validTests := []validTest[int64]{
-		{"0000000000000080", math.MinInt64},
-		{"ffffffffffffffff", -1},
+func FuzzAppendFint32_int32(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v int32) {
+		require := require.New(t)
+
+		w := &Writer{}
+		AppendFint32(w, v)
+
+		r := &Reader{b: w.b}
+		got, err := ReadFint32[int32](r)
+		require.NoError(err)
+		require.Equal(v, got)
+		require.Empty(r.b)
+	})
+}
+
+func FuzzSizeFint64_uint64(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v uint64) {
+		w := &Writer{}
+		AppendFint64(w, v)
+		require.Len(t, w.b, SizeFint64)
+	})
+}
+
+func TestReadFint64_uint64(t *testing.T) {
+	validTests := []validTest[uint64]{
 		{"0000000000000000", 0},
 		{"0100000000000000", 1},
-		{"ffffffffffffff7f", math.MaxInt64},
+		{"ffffffffffffffff", math.MaxUint64},
+		{"8796a5b4c3d2e1f0", 0xf0e1d2c3b4a59687},
 	}
 	for _, test := range validTests {
 		t.Run(test.hex, func(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{b: test.Bytes(t)}
-			got, err := r.Sfixed64()
+			got, err := ReadFint64[uint64](r)
 			require.NoError(err)
 			require.Equal(test.want, got)
 			require.Empty(r.b)
@@ -634,13 +839,98 @@ func TestReader_Sfixed64(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{b: test.Bytes(t)}
-			_, err := r.Sfixed64()
+			_, err := ReadFint64[uint64](r)
 			require.ErrorIs(t, err, test.want)
 		})
 	}
 }
 
-func TestReader_Bool(t *testing.T) {
+func FuzzAppendFint64_uint64(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v uint64) {
+		require := require.New(t)
+
+		w := &Writer{}
+		AppendFint64(w, v)
+
+		r := &Reader{b: w.b}
+		got, err := ReadFint64[uint64](r)
+		require.NoError(err)
+		require.Equal(v, got)
+		require.Empty(r.b)
+	})
+}
+
+func FuzzSizeFint64_int64(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v int64) {
+		w := &Writer{}
+		AppendFint64(w, v)
+		require.Len(t, w.b, SizeFint64)
+	})
+}
+
+func TestReadFint64_int64(t *testing.T) {
+	validTests := []validTest[int64]{
+		{"0000000000000080", math.MinInt64},
+		{"ffffffffffffffff", -1},
+		{"0000000000000000", 0},
+		{"0100000000000000", 1},
+		{"ffffffffffffff7f", math.MaxInt64},
+	}
+	for _, test := range validTests {
+		t.Run(test.hex, func(t *testing.T) {
+			require := require.New(t)
+
+			r := &Reader{b: test.Bytes(t)}
+			got, err := ReadFint64[int64](r)
+			require.NoError(err)
+			require.Equal(test.want, got)
+			require.Empty(r.b)
+		})
+	}
+
+	invalidTests := []invalidTest{
+		{"", io.ErrUnexpectedEOF},
+		{"00", io.ErrUnexpectedEOF},
+		{"0000", io.ErrUnexpectedEOF},
+		{"000000", io.ErrUnexpectedEOF},
+		{"00000000", io.ErrUnexpectedEOF},
+		{"0000000000", io.ErrUnexpectedEOF},
+		{"000000000000", io.ErrUnexpectedEOF},
+		{"00000000000000", io.ErrUnexpectedEOF},
+	}
+	for _, test := range invalidTests {
+		t.Run(test.hex, func(t *testing.T) {
+			r := &Reader{b: test.Bytes(t)}
+			_, err := ReadFint64[int64](r)
+			require.ErrorIs(t, err, test.want)
+		})
+	}
+}
+
+func FuzzAppendFint64_int64(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v int64) {
+		require := require.New(t)
+
+		w := &Writer{}
+		AppendFint64(w, v)
+
+		r := &Reader{b: w.b}
+		got, err := ReadFint64[int64](r)
+		require.NoError(err)
+		require.Equal(v, got)
+		require.Empty(r.b)
+	})
+}
+
+func FuzzSizeBool(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v bool) {
+		w := &Writer{}
+		AppendBool(w, v)
+		require.Len(t, w.b, SizeBool)
+	})
+}
+
+func TestReadBool(t *testing.T) {
 	validTests := []validTest[bool]{
 		{"00", false},
 		{"01", true},
@@ -650,7 +940,7 @@ func TestReader_Bool(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{b: test.Bytes(t)}
-			got, err := r.Bool()
+			got, err := ReadBool(r)
 			require.NoError(err)
 			require.Equal(test.want, got)
 			require.Empty(r.b)
@@ -665,13 +955,48 @@ func TestReader_Bool(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{b: test.Bytes(t)}
-			_, err := r.Bool()
+			_, err := ReadBool(r)
 			require.ErrorIs(t, err, test.want)
 		})
 	}
 }
 
-func TestReader_String(t *testing.T) {
+func FuzzAppendBool(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v bool) {
+		require := require.New(t)
+
+		w := &Writer{}
+		AppendBool(w, v)
+
+		r := &Reader{b: w.b}
+		got, err := ReadBool(r)
+		require.NoError(err)
+		require.Equal(v, got)
+		require.Empty(r.b)
+	})
+}
+
+func FuzzSizeBytes_string(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v string) {
+		w := &Writer{}
+		AppendBytes(w, v)
+
+		size := SizeBytes(v)
+		require.Len(t, w.b, size)
+	})
+}
+
+func FuzzSizeBytes_bytes(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v []byte) {
+		w := &Writer{}
+		AppendBytes(w, v)
+
+		size := SizeBytes(v)
+		require.Len(t, w.b, size)
+	})
+}
+
+func TestReadString(t *testing.T) {
 	validTests := []validTest[string]{
 		{"00", ""},
 		{"0774657374696e67", "testing"},
@@ -681,7 +1006,7 @@ func TestReader_String(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{b: test.Bytes(t)}
-			got, err := r.String()
+			got, err := ReadString(r)
 			require.NoError(err)
 			require.Equal(test.want, got)
 			require.Empty(r.b)
@@ -697,13 +1022,13 @@ func TestReader_String(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{b: test.Bytes(t)}
-			_, err := r.String()
+			_, err := ReadString(r)
 			require.ErrorIs(t, err, test.want)
 		})
 	}
 }
 
-func TestReader_Bytes(t *testing.T) {
+func TestReadBytes(t *testing.T) {
 	validTests := []validTest[[]byte]{
 		{"00", []byte{}},
 		{"0774657374696e67", []byte("testing")},
@@ -713,7 +1038,7 @@ func TestReader_Bytes(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{b: test.Bytes(t)}
-			got, err := r.Bytes()
+			got, err := ReadBytes(r)
 			require.NoError(err)
 			require.Equal(test.want, got)
 			require.Empty(r.b)
@@ -729,8 +1054,210 @@ func TestReader_Bytes(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{b: test.Bytes(t)}
-			_, err := r.Bytes()
+			_, err := ReadBytes(r)
 			require.ErrorIs(t, err, test.want)
+		})
+	}
+}
+
+func FuzzAppendBytes_string(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v string) {
+		require := require.New(t)
+
+		w := &Writer{}
+		AppendBytes(w, v)
+
+		r := &Reader{b: w.b}
+		got, err := ReadString(r)
+		require.NoError(err)
+		require.Equal(v, got)
+		require.Empty(r.b)
+	})
+}
+
+func FuzzAppendBytes_bytes(f *testing.F) {
+	f.Fuzz(func(t *testing.T, v []byte) {
+		require := require.New(t)
+
+		w := &Writer{}
+		AppendBytes(w, v)
+
+		r := &Reader{b: w.b}
+		got, err := ReadBytes(r)
+		require.NoError(err)
+		require.Equal(v, got)
+		require.Empty(r.b)
+	})
+}
+
+func TestAppend_ProtoCompatibility(t *testing.T) {
+	tests := []struct {
+		name  string
+		proto protoreflect.ProtoMessage
+		f     func(*Writer)
+	}{
+		{
+			name: "int32",
+			proto: &pb.Scalars{
+				Int32: 128,
+			},
+			f: func(w *Writer) {
+				AppendTag(w, 1, VarintType)
+				AppendInt[int32](w, 128)
+			},
+		},
+		{
+			name: "int64",
+			proto: &pb.Scalars{
+				Int64: 259,
+			},
+			f: func(w *Writer) {
+				AppendTag(w, 2, VarintType)
+				AppendInt[int64](w, 259)
+			},
+		},
+		{
+			name: "uint32",
+			proto: &pb.Scalars{
+				Uint32: 1234,
+			},
+			f: func(w *Writer) {
+				AppendTag(w, 3, VarintType)
+				AppendInt[uint32](w, 1234)
+			},
+		},
+		{
+			name: "uint64",
+			proto: &pb.Scalars{
+				Uint64: 2938567,
+			},
+			f: func(w *Writer) {
+				AppendTag(w, 4, VarintType)
+				AppendInt[uint64](w, 2938567)
+			},
+		},
+		{
+			name: "sint32",
+			proto: &pb.Scalars{
+				Sint32: -2136745,
+			},
+			f: func(w *Writer) {
+				AppendTag(w, 5, VarintType)
+				AppendSint[int32](w, -2136745)
+			},
+		},
+		{
+			name: "sint64",
+			proto: &pb.Scalars{
+				Sint64: -9287364,
+			},
+			f: func(w *Writer) {
+				AppendTag(w, 6, VarintType)
+				AppendSint[int64](w, -9287364)
+			},
+		},
+		{
+			name: "fixed32",
+			proto: &pb.Scalars{
+				Fixed32: 876254,
+			},
+			f: func(w *Writer) {
+				AppendTag(w, 7, I32Type)
+				AppendFint32[uint32](w, 876254)
+			},
+		},
+		{
+			name: "fixed64",
+			proto: &pb.Scalars{
+				Fixed64: 328137645632,
+			},
+			f: func(w *Writer) {
+				AppendTag(w, 8, I64Type)
+				AppendFint64[uint64](w, 328137645632)
+			},
+		},
+		{
+			name: "sfixed32",
+			proto: &pb.Scalars{
+				Sfixed32: -123463246,
+			},
+			f: func(w *Writer) {
+				AppendTag(w, 9, I32Type)
+				AppendFint32[int32](w, -123463246)
+			},
+		},
+		{
+			name: "sfixed64",
+			proto: &pb.Scalars{
+				Sfixed64: -8762135423,
+			},
+			f: func(w *Writer) {
+				AppendTag(w, 10, I64Type)
+				AppendFint64[int64](w, -8762135423)
+			},
+		},
+		{
+			name: "bool",
+			proto: &pb.Scalars{
+				Bool: true,
+			},
+			f: func(w *Writer) {
+				AppendTag(w, 11, VarintType)
+				AppendBool(w, true)
+			},
+		},
+		{
+			name: "string",
+			proto: &pb.Scalars{
+				String_: "hi mom!",
+			},
+			f: func(w *Writer) {
+				AppendTag(w, 12, LenType)
+				AppendBytes(w, "hi mom!")
+			},
+		},
+		{
+			name: "bytes",
+			proto: &pb.Scalars{
+				Bytes: []byte("hi dad!"),
+			},
+			f: func(w *Writer) {
+				AppendTag(w, 13, LenType)
+				AppendBytes(w, []byte("hi dad!"))
+			},
+		},
+		{
+			name: "largest field number",
+			proto: &pb.LargestFieldNumber{
+				Int32: 1,
+			},
+			f: func(w *Writer) {
+				AppendTag(w, MaxFieldNumber, VarintType)
+				AppendInt[int32](w, 1)
+			},
+		},
+		{
+			name: "repeated int32",
+			proto: &pb.RepeatedScalars{
+				Int32: []int32{1, 2, 500},
+			},
+			f: func(w *Writer) {
+				AppendTag(w, 1, LenType)
+				AppendInt[int32](w, int32(SizeInt[int32](1)+SizeInt[int32](2)+SizeInt[int32](500)))
+				AppendInt[int32](w, 1)
+				AppendInt[int32](w, 2)
+				AppendInt[int32](w, 500)
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			pbBytes, err := proto.Marshal(test.proto)
+			require.NoError(t, err)
+
+			w := &Writer{}
+			test.f(w)
+			require.Equal(t, pbBytes, w.b)
 		})
 	}
 }
