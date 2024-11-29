@@ -3,12 +3,12 @@ package canoto
 import "errors"
 
 const (
-	VarintType WireType = iota
-	I64Type
-	LenType
+	Varint WireType = iota
+	I64
+	Len
 	_ // SGROUP is deprecated and not supported
 	_ // EGROUP is deprecated and not supported
-	I32Type
+	I32
 
 	MaxFieldNumber = 1<<29 - 1
 
@@ -22,7 +22,7 @@ type WireType byte
 
 func (w WireType) IsValid() bool {
 	switch w {
-	case VarintType, I64Type, LenType, I32Type:
+	case Varint, I64, Len, I32:
 		return true
 	default:
 		return false

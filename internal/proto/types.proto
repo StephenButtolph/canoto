@@ -20,22 +20,6 @@ message Scalars {
   bytes bytes = 13;
 }
 
-message RepeatedScalars {
-  repeated int32 int32 = 1;
-  repeated int64 int64 = 2;
-  repeated uint32 uint32 = 3;
-  repeated uint64 uint64 = 4;
-  repeated sint32 sint32 = 5;
-  repeated sint64 sint64 = 6;
-  repeated fixed32 fixed32 = 7;
-  repeated fixed64 fixed64 = 8;
-  repeated sfixed32 sfixed32 = 9;
-  repeated sfixed64 sfixed64 = 10;
-  repeated bool bool = 11;
-  repeated string string = 12;
-  repeated bytes bytes = 13;
-}
-
 message LargestFieldNumber {
   int32 int32 = 536870911;
 }

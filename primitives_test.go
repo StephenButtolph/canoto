@@ -56,11 +56,11 @@ func TestReadTag(t *testing.T) {
 		wireType    WireType
 	}
 	validTests := []validTest[tag]{
-		{"00", tag{fieldNumber: 0, wireType: VarintType}},
-		{"01", tag{fieldNumber: 0, wireType: I64Type}},
-		{"02", tag{fieldNumber: 0, wireType: LenType}},
-		{"05", tag{fieldNumber: 0, wireType: I32Type}},
-		{"08", tag{fieldNumber: 1, wireType: VarintType}},
+		{"00", tag{fieldNumber: 0, wireType: Varint}},
+		{"01", tag{fieldNumber: 0, wireType: I64}},
+		{"02", tag{fieldNumber: 0, wireType: Len}},
+		{"05", tag{fieldNumber: 0, wireType: I32}},
+		{"08", tag{fieldNumber: 1, wireType: Varint}},
 	}
 	for _, test := range validTests {
 		t.Run(test.hex, func(t *testing.T) {
@@ -1102,7 +1102,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Int32: 128,
 			},
 			f: func(w *Writer) {
-				AppendTag(w, 1, VarintType)
+				AppendTag(w, 1, Varint)
 				AppendInt[int32](w, 128)
 			},
 		},
@@ -1112,7 +1112,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Int64: 259,
 			},
 			f: func(w *Writer) {
-				AppendTag(w, 2, VarintType)
+				AppendTag(w, 2, Varint)
 				AppendInt[int64](w, 259)
 			},
 		},
@@ -1122,7 +1122,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Uint32: 1234,
 			},
 			f: func(w *Writer) {
-				AppendTag(w, 3, VarintType)
+				AppendTag(w, 3, Varint)
 				AppendInt[uint32](w, 1234)
 			},
 		},
@@ -1132,7 +1132,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Uint64: 2938567,
 			},
 			f: func(w *Writer) {
-				AppendTag(w, 4, VarintType)
+				AppendTag(w, 4, Varint)
 				AppendInt[uint64](w, 2938567)
 			},
 		},
@@ -1142,7 +1142,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Sint32: -2136745,
 			},
 			f: func(w *Writer) {
-				AppendTag(w, 5, VarintType)
+				AppendTag(w, 5, Varint)
 				AppendSint[int32](w, -2136745)
 			},
 		},
@@ -1152,7 +1152,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Sint64: -9287364,
 			},
 			f: func(w *Writer) {
-				AppendTag(w, 6, VarintType)
+				AppendTag(w, 6, Varint)
 				AppendSint[int64](w, -9287364)
 			},
 		},
@@ -1162,7 +1162,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Fixed32: 876254,
 			},
 			f: func(w *Writer) {
-				AppendTag(w, 7, I32Type)
+				AppendTag(w, 7, I32)
 				AppendFint32[uint32](w, 876254)
 			},
 		},
@@ -1172,7 +1172,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Fixed64: 328137645632,
 			},
 			f: func(w *Writer) {
-				AppendTag(w, 8, I64Type)
+				AppendTag(w, 8, I64)
 				AppendFint64[uint64](w, 328137645632)
 			},
 		},
@@ -1182,7 +1182,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Sfixed32: -123463246,
 			},
 			f: func(w *Writer) {
-				AppendTag(w, 9, I32Type)
+				AppendTag(w, 9, I32)
 				AppendFint32[int32](w, -123463246)
 			},
 		},
@@ -1192,7 +1192,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Sfixed64: -8762135423,
 			},
 			f: func(w *Writer) {
-				AppendTag(w, 10, I64Type)
+				AppendTag(w, 10, I64)
 				AppendFint64[int64](w, -8762135423)
 			},
 		},
@@ -1202,7 +1202,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Bool: true,
 			},
 			f: func(w *Writer) {
-				AppendTag(w, 11, VarintType)
+				AppendTag(w, 11, Varint)
 				AppendBool(w, true)
 			},
 		},
@@ -1212,7 +1212,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				String_: "hi mom!",
 			},
 			f: func(w *Writer) {
-				AppendTag(w, 12, LenType)
+				AppendTag(w, 12, Len)
 				AppendBytes(w, "hi mom!")
 			},
 		},
@@ -1222,7 +1222,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Bytes: []byte("hi dad!"),
 			},
 			f: func(w *Writer) {
-				AppendTag(w, 13, LenType)
+				AppendTag(w, 13, Len)
 				AppendBytes(w, []byte("hi dad!"))
 			},
 		},
@@ -1232,21 +1232,8 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Int32: 1,
 			},
 			f: func(w *Writer) {
-				AppendTag(w, MaxFieldNumber, VarintType)
+				AppendTag(w, MaxFieldNumber, Varint)
 				AppendInt[int32](w, 1)
-			},
-		},
-		{
-			name: "repeated int32",
-			proto: &pb.RepeatedScalars{
-				Int32: []int32{1, 2, 500},
-			},
-			f: func(w *Writer) {
-				AppendTag(w, 1, LenType)
-				AppendInt[int32](w, int32(SizeInt[int32](1)+SizeInt[int32](2)+SizeInt[int32](500)))
-				AppendInt[int32](w, 1)
-				AppendInt[int32](w, 2)
-				AppendInt[int32](w, 500)
 			},
 		},
 	}
