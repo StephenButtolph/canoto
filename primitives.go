@@ -52,8 +52,8 @@ func HasNext(r *Reader) bool {
 	return len(r.B) > 0
 }
 
-func Append(w *Writer, b []byte) {
-	w.B = append(w.B, b...)
+func Append[T Bytes](w *Writer, v T) {
+	w.B = append(w.B, v...)
 }
 
 func Tag(fieldNumber uint32, wireType WireType) []byte {
