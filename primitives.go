@@ -6,6 +6,8 @@ import (
 	"io"
 	"math/bits"
 	"slices"
+	"unicode/utf8"
+	"unsafe"
 )
 
 const (
@@ -18,10 +20,15 @@ const (
 )
 
 var (
+	ErrInvalidFieldOrder = errors.New("invalid field order")
+	ErrUnknownField      = errors.New("unknown field")
+
 	errOverflow      = errors.New("overflow")
 	errPaddedZeroes  = errors.New("varint has padded zeroes")
 	errInvalidBool   = errors.New("decoded bool is neither true nor false")
+	errZeroValue     = errors.New("zero value")
 	errInvalidLength = errors.New("decoded length is invalid")
+	errStringNotUTF8 = errors.New("decoded string is not UTF-8")
 )
 
 type (
@@ -33,16 +40,26 @@ type (
 	Bytes interface{ ~string | ~[]byte }
 
 	Reader struct {
-		b      []byte
-		unsafe bool
+		B      []byte
+		Unsafe bool
 	}
 	Writer struct {
-		b []byte
+		B []byte
 	}
 )
 
-func SizeTag(fieldNumber uint32, wireType WireType) int {
-	return SizeInt(tagToUint64(fieldNumber, wireType))
+func HasNext(r *Reader) bool {
+	return len(r.B) > 0
+}
+
+func Append(w *Writer, b []byte) {
+	w.B = append(w.B, b...)
+}
+
+func Tag(fieldNumber uint32, wireType WireType) []byte {
+	w := Writer{}
+	AppendInt(&w, uint64(fieldNumber<<wireTypeLength|uint32(wireType)))
+	return w.B
 }
 
 func ReadTag(r *Reader) (uint32, WireType, error) {
@@ -53,25 +70,18 @@ func ReadTag(r *Reader) (uint32, WireType, error) {
 
 	wireType := WireType(val & wireTypeMask)
 	if !wireType.IsValid() {
-		return 0, 0, errInvalidWireType
+		return 0, 0, ErrInvalidWireType
 	}
 
 	return val >> wireTypeLength, wireType, err
 }
 
-func AppendTag(w *Writer, fieldNumber uint32, wireType WireType) {
-	AppendInt(w, tagToUint64(fieldNumber, wireType))
-}
-
 func SizeInt[T Int](v T) int {
-	if v == 0 {
-		return 1
-	}
 	return (bits.Len64(uint64(v)) + 6) / 7
 }
 
 func ReadInt[T Int](r *Reader) (T, error) {
-	val, bytesRead := binary.Uvarint(r.b)
+	val, bytesRead := binary.Uvarint(r.B)
 	switch {
 	case bytesRead == 0:
 		return 0, io.ErrUnexpectedEOF
@@ -82,23 +92,19 @@ func ReadInt[T Int](r *Reader) (T, error) {
 	// The last byte of the varint includes the most significant bits.
 	// If the last byte is 0, then the number should have been encoded more
 	// efficiently by removing this zero.
-	case bytesRead > 1 && r.b[bytesRead-1] == 0x00:
+	case r.B[bytesRead-1] == 0x00:
 		return 0, errPaddedZeroes
 	default:
-		r.b = r.b[bytesRead:]
+		r.B = r.B[bytesRead:]
 		return T(val), nil
 	}
 }
 
 func AppendInt[T Int](w *Writer, v T) {
-	w.b = binary.AppendUvarint(w.b, uint64(v))
+	w.B = binary.AppendUvarint(w.B, uint64(v))
 }
 
 func SizeSint[T Sint](v T) int {
-	if v == 0 {
-		return 1
-	}
-
 	var uv uint64
 	if v > 0 {
 		uv = uint64(v) << 1
@@ -128,95 +134,125 @@ func ReadSint[T Sint](r *Reader) (T, error) {
 
 func AppendSint[T Sint](w *Writer, v T) {
 	if v >= 0 {
-		w.b = binary.AppendUvarint(w.b, uint64(v)<<1)
+		w.B = binary.AppendUvarint(w.B, uint64(v)<<1)
 	} else {
-		w.b = binary.AppendUvarint(w.b, ^uint64(v)<<1|1)
+		w.B = binary.AppendUvarint(w.B, ^uint64(v)<<1|1)
 	}
 }
 
 func ReadFint32[T Int32](r *Reader) (T, error) {
-	if len(r.b) < SizeFint32 {
+	if len(r.B) < SizeFint32 {
 		return 0, io.ErrUnexpectedEOF
 	}
 
-	val := binary.LittleEndian.Uint32(r.b)
-	r.b = r.b[SizeFint32:]
+	val := binary.LittleEndian.Uint32(r.B)
+	if val == 0 {
+		return 0, errZeroValue
+	}
+
+	r.B = r.B[SizeFint32:]
 	return T(val), nil
 }
 
 func AppendFint32[T Int32](w *Writer, v T) {
 	var bytes [SizeFint32]byte
 	binary.LittleEndian.PutUint32(bytes[:], uint32(v))
-	w.b = append(w.b, bytes[:]...)
+	w.B = append(w.B, bytes[:]...)
 }
 
 func ReadFint64[T Int64](r *Reader) (T, error) {
-	if len(r.b) < SizeFint64 {
+	if len(r.B) < SizeFint64 {
 		return 0, io.ErrUnexpectedEOF
 	}
 
-	val := binary.LittleEndian.Uint64(r.b)
-	r.b = r.b[SizeFint64:]
+	val := binary.LittleEndian.Uint64(r.B)
+	if val == 0 {
+		return 0, errZeroValue
+	}
+
+	r.B = r.B[SizeFint64:]
 	return T(val), nil
 }
 
 func AppendFint64[T Int64](w *Writer, v T) {
 	var bytes [SizeFint64]byte
 	binary.LittleEndian.PutUint64(bytes[:], uint64(v))
-	w.b = append(w.b, bytes[:]...)
+	w.B = append(w.B, bytes[:]...)
 }
 
-func ReadBool(r *Reader) (bool, error) {
-	if len(r.b) < SizeBool {
-		return false, io.ErrUnexpectedEOF
+func ReadTrue(r *Reader) error {
+	switch {
+	case len(r.B) < SizeBool:
+		return io.ErrUnexpectedEOF
+	case r.B[0] != trueByte:
+		return errInvalidBool
+	default:
+		r.B = r.B[SizeBool:]
+		return nil
 	}
-
-	boolByte := r.b[0]
-	if boolByte > trueByte {
-		return false, errInvalidBool
-	}
-
-	r.b = r.b[SizeBool:]
-	return boolByte == trueByte, nil
 }
 
-func AppendBool(w *Writer, v bool) {
-	if v {
-		w.b = append(w.b, trueByte)
-	} else {
-		w.b = append(w.b, falseByte)
-	}
+func AppendTrue(w *Writer) {
+	w.B = append(w.B, trueByte)
 }
 
 func SizeBytes[T Bytes](v T) int {
 	return SizeInt(int64(len(v))) + len(v)
 }
 
-func ReadBytes[T Bytes](r *Reader) (val T, err error) {
+func ReadString(r *Reader) (string, error) {
 	length, err := ReadInt[int32](r)
 	if err != nil {
-		return val, err
+		return "", err
 	}
 	if length < 0 {
-		return val, errInvalidLength
+		return "", errInvalidLength
 	}
-	if length > int32(len(r.b)) {
-		return val, io.ErrUnexpectedEOF
+	if length > int32(len(r.B)) {
+		return "", io.ErrUnexpectedEOF
 	}
 
-	bytes := r.b[:length]
-	r.b = r.b[length:]
-	if r.unsafe {
-		return T(bytes), nil
+	bytes := r.B[:length]
+	if !utf8.Valid(bytes) {
+		return "", errStringNotUTF8
 	}
-	return T(slices.Clone(bytes)), nil
+
+	r.B = r.B[length:]
+	if r.Unsafe {
+		return unsafeString(bytes), nil
+	}
+	return string(bytes), nil
+}
+
+func ReadBytes(r *Reader) ([]byte, error) {
+	length, err := ReadInt[int32](r)
+	if err != nil {
+		return nil, err
+	}
+	if length < 0 {
+		return nil, errInvalidLength
+	}
+	if length > int32(len(r.B)) {
+		return nil, io.ErrUnexpectedEOF
+	}
+
+	bytes := r.B[:length]
+	r.B = r.B[length:]
+	if r.Unsafe {
+		return bytes, nil
+	}
+	return slices.Clone(bytes), nil
 }
 
 func AppendBytes[T Bytes](w *Writer, v T) {
 	AppendInt(w, int64(len(v)))
-	w.b = append(w.b, v...)
+	w.B = append(w.B, v...)
 }
 
-func tagToUint64(fieldNumber uint32, wireType WireType) uint64 {
-	return uint64(fieldNumber<<wireTypeLength | uint32(wireType))
+// unsafeString converts a []byte to an unsafe string.
+//
+// Invariant: The input []byte must not be modified.
+func unsafeString(b []byte) string {
+	// avoid copying during the conversion
+	return unsafe.String(unsafe.SliceData(b), len(b))
 }

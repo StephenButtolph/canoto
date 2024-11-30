@@ -16,7 +16,7 @@ const (
 	wireTypeMask   = 0x07
 )
 
-var errInvalidWireType = errors.New("invalid wire type")
+var ErrInvalidWireType = errors.New("invalid wire type")
 
 type WireType byte
 
