@@ -18,6 +18,7 @@ message Scalars {
   bool bool = 11;
   string string = 12;
   bytes bytes = 13;
+  LargestFieldNumber largest_field_number = 14;
 }
 
 message LargestFieldNumber {

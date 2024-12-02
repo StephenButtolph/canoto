@@ -34,20 +34,28 @@ func FuzzScalars_UnmarshalCanoto(f *testing.F) {
 
 		require := require.New(t)
 
+		var largestFieldNumber *pb.LargestFieldNumber
+		if i32 != 0 {
+			largestFieldNumber = &pb.LargestFieldNumber{
+				Int32: i32,
+			}
+		}
+
 		pbScalars := pb.Scalars{
-			Int32:    i32,
-			Int64:    i64,
-			Uint32:   u32,
-			Uint64:   u64,
-			Sint32:   s32,
-			Sint64:   s64,
-			Fixed32:  f32,
-			Fixed64:  f64,
-			Sfixed32: sf32,
-			Sfixed64: sf64,
-			Bool:     b,
-			String_:  s,
-			Bytes:    bs,
+			Int32:              i32,
+			Int64:              i64,
+			Uint32:             u32,
+			Uint64:             u64,
+			Sint32:             s32,
+			Sint64:             s64,
+			Fixed32:            f32,
+			Fixed64:            f64,
+			Sfixed32:           sf32,
+			Sfixed64:           sf64,
+			Bool:               b,
+			String_:            s,
+			Bytes:              bs,
+			LargestFieldNumber: largestFieldNumber,
 		}
 		pbScalarsBytes, err := proto.Marshal(&pbScalars)
 		if err != nil {
@@ -75,6 +83,9 @@ func FuzzScalars_UnmarshalCanoto(f *testing.F) {
 				Bool:     b,
 				String:   s,
 				Bytes:    bs,
+				LargestFieldNumber: LargestFieldNumber{
+					Int32: i32,
+				},
 			},
 			canotoScalars,
 		)
@@ -118,6 +129,9 @@ func FuzzScalars_MarshalCanoto(f *testing.F) {
 			Bool:     b,
 			String:   s,
 			Bytes:    bs,
+			LargestFieldNumber: LargestFieldNumber{
+				Int32: i32,
+			},
 		}
 		if !cbScalars.ValidCanoto() {
 			return
@@ -133,36 +147,52 @@ func FuzzScalars_MarshalCanoto(f *testing.F) {
 		var pbScalars pb.Scalars
 		require.NoError(proto.Unmarshal(w.B, &pbScalars))
 
+		var expectedLargestFieldNumber *pb.LargestFieldNumber
+		if i32 != 0 {
+			expectedLargestFieldNumber = &pb.LargestFieldNumber{
+				Int32: i32,
+			}
+		}
+
+		var actualLargestFieldNumber *pb.LargestFieldNumber
+		if pbScalars.LargestFieldNumber != nil {
+			actualLargestFieldNumber = &pb.LargestFieldNumber{
+				Int32: pbScalars.LargestFieldNumber.Int32,
+			}
+		}
+
 		require.Equal(
 			pb.Scalars{
-				Int32:    i32,
-				Int64:    i64,
-				Uint32:   u32,
-				Uint64:   u64,
-				Sint32:   s32,
-				Sint64:   s64,
-				Fixed32:  f32,
-				Fixed64:  f64,
-				Sfixed32: sf32,
-				Sfixed64: sf64,
-				Bool:     b,
-				String_:  s,
-				Bytes:    bs,
+				Int32:              i32,
+				Int64:              i64,
+				Uint32:             u32,
+				Uint64:             u64,
+				Sint32:             s32,
+				Sint64:             s64,
+				Fixed32:            f32,
+				Fixed64:            f64,
+				Sfixed32:           sf32,
+				Sfixed64:           sf64,
+				Bool:               b,
+				String_:            s,
+				Bytes:              bs,
+				LargestFieldNumber: expectedLargestFieldNumber,
 			},
 			pb.Scalars{
-				Int32:    pbScalars.Int32,
-				Int64:    pbScalars.Int64,
-				Uint32:   pbScalars.Uint32,
-				Uint64:   pbScalars.Uint64,
-				Sint32:   pbScalars.Sint32,
-				Sint64:   pbScalars.Sint64,
-				Fixed32:  pbScalars.Fixed32,
-				Fixed64:  pbScalars.Fixed64,
-				Sfixed32: pbScalars.Sfixed32,
-				Sfixed64: pbScalars.Sfixed64,
-				Bool:     pbScalars.Bool,
-				String_:  pbScalars.String_,
-				Bytes:    pbScalars.Bytes,
+				Int32:              pbScalars.Int32,
+				Int64:              pbScalars.Int64,
+				Uint32:             pbScalars.Uint32,
+				Uint64:             pbScalars.Uint64,
+				Sint32:             pbScalars.Sint32,
+				Sint64:             pbScalars.Sint64,
+				Fixed32:            pbScalars.Fixed32,
+				Fixed64:            pbScalars.Fixed64,
+				Sfixed32:           pbScalars.Sfixed32,
+				Sfixed64:           pbScalars.Sfixed64,
+				Bool:               pbScalars.Bool,
+				String_:            pbScalars.String_,
+				Bytes:              pbScalars.Bytes,
+				LargestFieldNumber: actualLargestFieldNumber,
 			},
 		)
 	})
@@ -193,10 +223,6 @@ func FuzzScalars_Canonical(f *testing.F) {
 }
 
 func BenchmarkScalars_MarshalCanoto(b *testing.B) {
-	var (
-		s     = "asdkcjhbsakjdhcbasdc"
-		bytes = []byte("kjsadhbcaskjdvhb")
-	)
 	for range b.N {
 		cbScalars := Scalars{
 			Int32:    216457,
@@ -210,13 +236,15 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 			Sfixed32: -21348976,
 			Sfixed64: 98756432,
 			Bool:     true,
-			String:   s,
-			Bytes:    bytes,
+			String:   "asdkcjhbsakjdhcbasdc",
+			Bytes:    []byte("kjsadhbcaskjdvhb"),
+			LargestFieldNumber: LargestFieldNumber{
+				Int32: 216457,
+			},
 		}
 
-		size := cbScalars.SizeCanoto()
 		w := canoto.Writer{
-			B: make([]byte, 0, size),
+			B: make([]byte, 0, cbScalars.SizeCanoto()),
 		}
 		cbScalars.MarshalCanoto(&w)
 	}
@@ -237,8 +265,13 @@ func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
 		Bool:     true,
 		String:   "asdkcjhbsakjdhcbasdc",
 		Bytes:    []byte("kjsadhbcaskjdvhb"),
+		LargestFieldNumber: LargestFieldNumber{
+			Int32: 216457,
+		},
 	}
-	w := canoto.Writer{}
+	w := canoto.Writer{
+		B: make([]byte, 0, cbScalars.SizeCanoto()),
+	}
 	cbScalars.MarshalCanoto(&w)
 
 	for _, unsafe := range []bool{false, true} {
@@ -258,10 +291,6 @@ func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
 }
 
 func BenchmarkScalars_MarshalProto(b *testing.B) {
-	var (
-		s     = "asdkcjhbsakjdhcbasdc"
-		bytes = []byte("kjsadhbcaskjdvhb")
-	)
 	for range b.N {
 		pbScalars := pb.Scalars{
 			Int32:    216457,
@@ -275,8 +304,11 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 			Sfixed32: -21348976,
 			Sfixed64: 98756432,
 			Bool:     true,
-			String_:  s,
-			Bytes:    bytes,
+			String_:  "asdkcjhbsakjdhcbasdc",
+			Bytes:    []byte("kjsadhbcaskjdvhb"),
+			LargestFieldNumber: &pb.LargestFieldNumber{
+				Int32: 216457,
+			},
 		}
 		_, _ = proto.Marshal(&pbScalars)
 	}
@@ -297,6 +329,9 @@ func BenchmarkScalars_UnmarshalProto(b *testing.B) {
 		Bool:     true,
 		String_:  "asdkcjhbsakjdhcbasdc",
 		Bytes:    []byte("kjsadhbcaskjdvhb"),
+		LargestFieldNumber: &pb.LargestFieldNumber{
+			Int32: 216457,
+		},
 	}
 	scalarsBytes, err := proto.Marshal(&pbScalars)
 	require.NoError(b, err)
