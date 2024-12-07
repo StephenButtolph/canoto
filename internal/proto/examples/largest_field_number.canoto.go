@@ -20,7 +20,6 @@ const (
 type canotoData_LargestFieldNumber struct {
 }
 
-
 func (c *LargestFieldNumber) UnmarshalCanoto(r *canoto.Reader) error {
 	var minField uint32
 	for canoto.HasNext(r) {
@@ -34,10 +33,10 @@ func (c *LargestFieldNumber) UnmarshalCanoto(r *canoto.Reader) error {
 
 		switch field {
 		case 536870911:
-		if wireType != canoto.Varint {
-			return canoto.ErrInvalidWireType
-		}
-		c.Int32, err = canoto.ReadInt[int32](r)
+			if wireType != canoto.Varint {
+				return canoto.ErrInvalidWireType
+			}
+			c.Int32, err = canoto.ReadInt[int32](r)
 		default:
 			return canoto.ErrUnknownField
 		}

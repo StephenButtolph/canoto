@@ -31,7 +31,6 @@ const (
 type canotoData_%s struct {
 %s}
 
-
 func (c *%s) UnmarshalCanoto(r *canoto.Reader) error {
 	var minField uint32
 	for canoto.HasNext(r) {
@@ -70,38 +69,38 @@ func (c *%s) MarshalCanoto(w *canoto.Writer) {
 `
 
 	unmarshalCaseSimpleTemplate = `		case %d:
-		if wireType != canoto.%s {
-			return canoto.ErrInvalidWireType
-		}
-		c.%s, err = canoto.Read%s(r)
+			if wireType != canoto.%s {
+				return canoto.ErrInvalidWireType
+			}
+			c.%s, err = canoto.Read%s(r)
 `
 
 	unmarshalCaseBoolTemplate = `		case %d:
-		if wireType != canoto.Varint {
-			return canoto.ErrInvalidWireType
-		}
-		c.%s = true
-		err = canoto.ReadTrue(r)
+			if wireType != canoto.Varint {
+				return canoto.ErrInvalidWireType
+			}
+			c.%s = true
+			err = canoto.ReadTrue(r)
 `
 
 	unmarshalCaseCustomTemplate = `		case %d:
-		if wireType != canoto.Len {
-			return canoto.ErrInvalidWireType
-		}
+			if wireType != canoto.Len {
+				return canoto.ErrInvalidWireType
+			}
 
-		originalUnsafe := r.Unsafe
-		r.Unsafe = true
-		var msgBytes []byte
-		msgBytes, err = canoto.ReadBytes(r)
-		r.Unsafe = originalUnsafe
-		if err != nil {
-			return err
-		}
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			msgBytes, err = canoto.ReadBytes(r)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
 
-		remainingBytes := r.B
-		r.B = msgBytes
-		err = c.%s.UnmarshalCanoto(r)
-		r.B = remainingBytes
+			remainingBytes := r.B
+			r.B = msgBytes
+			err = c.%s.UnmarshalCanoto(r)
+			r.B = remainingBytes
 `
 
 	sizeIfIntTemplate = `	if c.%s != 0 {

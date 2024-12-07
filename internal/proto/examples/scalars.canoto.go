@@ -47,7 +47,6 @@ type canotoData_Scalars struct {
 	LargestFieldNumberSize int
 }
 
-
 func (c *Scalars) UnmarshalCanoto(r *canoto.Reader) error {
 	var minField uint32
 	for canoto.HasNext(r) {
@@ -61,89 +60,89 @@ func (c *Scalars) UnmarshalCanoto(r *canoto.Reader) error {
 
 		switch field {
 		case 1:
-		if wireType != canoto.Varint {
-			return canoto.ErrInvalidWireType
-		}
-		c.Int32, err = canoto.ReadInt[int32](r)
+			if wireType != canoto.Varint {
+				return canoto.ErrInvalidWireType
+			}
+			c.Int32, err = canoto.ReadInt[int32](r)
 		case 2:
-		if wireType != canoto.Varint {
-			return canoto.ErrInvalidWireType
-		}
-		c.Int64, err = canoto.ReadInt[int64](r)
+			if wireType != canoto.Varint {
+				return canoto.ErrInvalidWireType
+			}
+			c.Int64, err = canoto.ReadInt[int64](r)
 		case 3:
-		if wireType != canoto.Varint {
-			return canoto.ErrInvalidWireType
-		}
-		c.Uint32, err = canoto.ReadInt[uint32](r)
+			if wireType != canoto.Varint {
+				return canoto.ErrInvalidWireType
+			}
+			c.Uint32, err = canoto.ReadInt[uint32](r)
 		case 4:
-		if wireType != canoto.Varint {
-			return canoto.ErrInvalidWireType
-		}
-		c.Uint64, err = canoto.ReadInt[uint64](r)
+			if wireType != canoto.Varint {
+				return canoto.ErrInvalidWireType
+			}
+			c.Uint64, err = canoto.ReadInt[uint64](r)
 		case 5:
-		if wireType != canoto.Varint {
-			return canoto.ErrInvalidWireType
-		}
-		c.Sint32, err = canoto.ReadSint[int32](r)
+			if wireType != canoto.Varint {
+				return canoto.ErrInvalidWireType
+			}
+			c.Sint32, err = canoto.ReadSint[int32](r)
 		case 6:
-		if wireType != canoto.Varint {
-			return canoto.ErrInvalidWireType
-		}
-		c.Sint64, err = canoto.ReadSint[int64](r)
+			if wireType != canoto.Varint {
+				return canoto.ErrInvalidWireType
+			}
+			c.Sint64, err = canoto.ReadSint[int64](r)
 		case 7:
-		if wireType != canoto.I32 {
-			return canoto.ErrInvalidWireType
-		}
-		c.Fixed32, err = canoto.ReadFint32[uint32](r)
+			if wireType != canoto.I32 {
+				return canoto.ErrInvalidWireType
+			}
+			c.Fixed32, err = canoto.ReadFint32[uint32](r)
 		case 8:
-		if wireType != canoto.I64 {
-			return canoto.ErrInvalidWireType
-		}
-		c.Fixed64, err = canoto.ReadFint64[uint64](r)
+			if wireType != canoto.I64 {
+				return canoto.ErrInvalidWireType
+			}
+			c.Fixed64, err = canoto.ReadFint64[uint64](r)
 		case 9:
-		if wireType != canoto.I32 {
-			return canoto.ErrInvalidWireType
-		}
-		c.Sfixed32, err = canoto.ReadFint32[int32](r)
+			if wireType != canoto.I32 {
+				return canoto.ErrInvalidWireType
+			}
+			c.Sfixed32, err = canoto.ReadFint32[int32](r)
 		case 10:
-		if wireType != canoto.I64 {
-			return canoto.ErrInvalidWireType
-		}
-		c.Sfixed64, err = canoto.ReadFint64[int64](r)
+			if wireType != canoto.I64 {
+				return canoto.ErrInvalidWireType
+			}
+			c.Sfixed64, err = canoto.ReadFint64[int64](r)
 		case 11:
-		if wireType != canoto.Varint {
-			return canoto.ErrInvalidWireType
-		}
-		c.Bool = true
-		err = canoto.ReadTrue(r)
+			if wireType != canoto.Varint {
+				return canoto.ErrInvalidWireType
+			}
+			c.Bool = true
+			err = canoto.ReadTrue(r)
 		case 12:
-		if wireType != canoto.Len {
-			return canoto.ErrInvalidWireType
-		}
-		c.String, err = canoto.ReadString(r)
+			if wireType != canoto.Len {
+				return canoto.ErrInvalidWireType
+			}
+			c.String, err = canoto.ReadString(r)
 		case 13:
-		if wireType != canoto.Len {
-			return canoto.ErrInvalidWireType
-		}
-		c.Bytes, err = canoto.ReadBytes(r)
+			if wireType != canoto.Len {
+				return canoto.ErrInvalidWireType
+			}
+			c.Bytes, err = canoto.ReadBytes(r)
 		case 14:
-		if wireType != canoto.Len {
-			return canoto.ErrInvalidWireType
-		}
+			if wireType != canoto.Len {
+				return canoto.ErrInvalidWireType
+			}
 
-		originalUnsafe := r.Unsafe
-		r.Unsafe = true
-		var msgBytes []byte
-		msgBytes, err = canoto.ReadBytes(r)
-		r.Unsafe = originalUnsafe
-		if err != nil {
-			return err
-		}
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			msgBytes, err = canoto.ReadBytes(r)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
 
-		remainingBytes := r.B
-		r.B = msgBytes
-		err = c.LargestFieldNumber.UnmarshalCanoto(r)
-		r.B = remainingBytes
+			remainingBytes := r.B
+			r.B = msgBytes
+			err = c.LargestFieldNumber.UnmarshalCanoto(r)
+			r.B = remainingBytes
 		default:
 			return canoto.ErrUnknownField
 		}
