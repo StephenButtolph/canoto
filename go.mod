@@ -3,6 +3,7 @@ module github.com/StephenButtolph/canoto
 go 1.22.9
 
 require (
+	github.com/fatih/structtag v1.2.0
 	github.com/stretchr/testify v1.10.0
 	google.golang.org/protobuf v1.35.2
 )
