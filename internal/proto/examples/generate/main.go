@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	scalarsFile            = "/Users/stephen/go/src/github.com/StephenButtolph/canoto/internal/proto/examples/scalars.go"
-	largestFieldNumberFile = "/Users/stephen/go/src/github.com/StephenButtolph/canoto/internal/proto/examples/largest_field_number.go"
+	scalarsFile            = "./internal/proto/examples/scalars.go"
+	largestFieldNumberFile = "./internal/proto/examples/largest_field_number.go"
 )
 
 var files = []string{
