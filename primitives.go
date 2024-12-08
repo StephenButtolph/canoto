@@ -15,8 +15,9 @@ const (
 	SizeFint64 = 8
 	SizeBool   = 1
 
-	falseByte = 0
-	trueByte  = 1
+	falseByte        = 0
+	trueByte         = 1
+	continuationMask = 0x80
 )
 
 var (
@@ -81,6 +82,16 @@ func SizeInt[T Int](v T) int {
 		return 1
 	}
 	return (bits.Len64(uint64(v)) + 6) / 7
+}
+
+func CountInts(bytes []byte) int {
+	var count int
+	for _, b := range bytes {
+		if b < continuationMask {
+			count++
+		}
+	}
+	return count
 }
 
 func ReadInt[T Int](r *Reader) (T, error) {

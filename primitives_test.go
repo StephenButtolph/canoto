@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/stretchr/testify/require"
+	"github.com/thepudds/fzgen/fuzzer"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
@@ -104,6 +105,24 @@ func FuzzSizeInt_int32(f *testing.F) {
 
 		size := SizeInt(v)
 		require.Len(t, w.B, size)
+	})
+}
+
+func FuzzCountInts_int32(f *testing.F) {
+	f.Fuzz(func(t *testing.T, data []byte) {
+		require := require.New(t)
+
+		var nums []int32
+		fz := fuzzer.NewFuzzer(data)
+		fz.Fill(&nums)
+
+		w := &Writer{}
+		for _, num := range nums {
+			AppendInt(w, num)
+		}
+
+		count := CountInts(w.B)
+		require.Len(nums, count)
 	})
 }
 
@@ -204,6 +223,24 @@ func FuzzSizeInt_int64(f *testing.F) {
 	})
 }
 
+func FuzzCountInts_int64(f *testing.F) {
+	f.Fuzz(func(t *testing.T, data []byte) {
+		require := require.New(t)
+
+		var nums []int64
+		fz := fuzzer.NewFuzzer(data)
+		fz.Fill(&nums)
+
+		w := &Writer{}
+		for _, num := range nums {
+			AppendInt(w, num)
+		}
+
+		count := CountInts(w.B)
+		require.Len(nums, count)
+	})
+}
+
 func TestReadInt_int64(t *testing.T) {
 	validTests := []validTest[int64]{
 		{"00", 0},
@@ -300,6 +337,24 @@ func FuzzSizeInt_uint32(f *testing.F) {
 	})
 }
 
+func FuzzCountInts_uint32(f *testing.F) {
+	f.Fuzz(func(t *testing.T, data []byte) {
+		require := require.New(t)
+
+		var nums []uint32
+		fz := fuzzer.NewFuzzer(data)
+		fz.Fill(&nums)
+
+		w := &Writer{}
+		for _, num := range nums {
+			AppendInt(w, num)
+		}
+
+		count := CountInts(w.B)
+		require.Len(nums, count)
+	})
+}
+
 func TestReadInt_uint32(t *testing.T) {
 	validTests := []validTest[uint32]{
 		{"00", 0},
@@ -384,6 +439,24 @@ func FuzzSizeInt_uint64(f *testing.F) {
 
 		size := SizeInt(v)
 		require.Len(t, w.B, size)
+	})
+}
+
+func FuzzCountInts_uint64(f *testing.F) {
+	f.Fuzz(func(t *testing.T, data []byte) {
+		require := require.New(t)
+
+		var nums []uint64
+		fz := fuzzer.NewFuzzer(data)
+		fz.Fill(&nums)
+
+		w := &Writer{}
+		for _, num := range nums {
+			AppendInt(w, num)
+		}
+
+		count := CountInts(w.B)
+		require.Len(nums, count)
 	})
 }
 
