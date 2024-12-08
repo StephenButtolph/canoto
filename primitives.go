@@ -59,7 +59,7 @@ func Append[T Bytes](w *Writer, v T) {
 
 func Tag(fieldNumber uint32, wireType WireType) []byte {
 	w := Writer{}
-	AppendInt(&w, uint64(fieldNumber<<wireTypeLength|uint32(wireType)))
+	AppendInt(&w, fieldNumber<<wireTypeLength|uint32(wireType))
 	return w.B
 }
 
@@ -172,9 +172,7 @@ func ReadFint32[T Int32](r *Reader) (T, error) {
 }
 
 func AppendFint32[T Int32](w *Writer, v T) {
-	var bytes [SizeFint32]byte
-	binary.LittleEndian.PutUint32(bytes[:], uint32(v))
-	w.B = append(w.B, bytes[:]...)
+	w.B = binary.LittleEndian.AppendUint32(w.B, uint32(v))
 }
 
 func ReadFint64[T Int64](r *Reader) (T, error) {
@@ -188,9 +186,7 @@ func ReadFint64[T Int64](r *Reader) (T, error) {
 }
 
 func AppendFint64[T Int64](w *Writer, v T) {
-	var bytes [SizeFint64]byte
-	binary.LittleEndian.PutUint64(bytes[:], uint64(v))
-	w.B = append(w.B, bytes[:]...)
+	w.B = binary.LittleEndian.AppendUint64(w.B, uint64(v))
 }
 
 func ReadBool(r *Reader) (bool, error) {
