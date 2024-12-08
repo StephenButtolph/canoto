@@ -37,11 +37,14 @@ func (c *LargestFieldNumber) UnmarshalCanoto(r *canoto.Reader) error {
 				return canoto.ErrInvalidWireType
 			}
 			c.Int32, err = canoto.ReadInt[int32](r)
+			if err != nil {
+				return err
+			}
+			if c.Int32 == 0 {
+				return canoto.ErrZeroValue
+			}
 		default:
 			return canoto.ErrUnknownField
-		}
-		if err != nil {
-			return err
 		}
 
 		minField = field + 1

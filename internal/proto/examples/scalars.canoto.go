@@ -64,67 +64,144 @@ func (c *Scalars) UnmarshalCanoto(r *canoto.Reader) error {
 				return canoto.ErrInvalidWireType
 			}
 			c.Int32, err = canoto.ReadInt[int32](r)
+			if err != nil {
+				return err
+			}
+			if c.Int32 == 0 {
+				return canoto.ErrZeroValue
+			}
 		case 2:
 			if wireType != canoto.Varint {
 				return canoto.ErrInvalidWireType
 			}
 			c.Int64, err = canoto.ReadInt[int64](r)
+			if err != nil {
+				return err
+			}
+			if c.Int64 == 0 {
+				return canoto.ErrZeroValue
+			}
 		case 3:
 			if wireType != canoto.Varint {
 				return canoto.ErrInvalidWireType
 			}
 			c.Uint32, err = canoto.ReadInt[uint32](r)
+			if err != nil {
+				return err
+			}
+			if c.Uint32 == 0 {
+				return canoto.ErrZeroValue
+			}
 		case 4:
 			if wireType != canoto.Varint {
 				return canoto.ErrInvalidWireType
 			}
 			c.Uint64, err = canoto.ReadInt[uint64](r)
+			if err != nil {
+				return err
+			}
+			if c.Uint64 == 0 {
+				return canoto.ErrZeroValue
+			}
 		case 5:
 			if wireType != canoto.Varint {
 				return canoto.ErrInvalidWireType
 			}
 			c.Sint32, err = canoto.ReadSint[int32](r)
+			if err != nil {
+				return err
+			}
+			if c.Sint32 == 0 {
+				return canoto.ErrZeroValue
+			}
 		case 6:
 			if wireType != canoto.Varint {
 				return canoto.ErrInvalidWireType
 			}
 			c.Sint64, err = canoto.ReadSint[int64](r)
+			if err != nil {
+				return err
+			}
+			if c.Sint64 == 0 {
+				return canoto.ErrZeroValue
+			}
 		case 7:
 			if wireType != canoto.I32 {
 				return canoto.ErrInvalidWireType
 			}
 			c.Fixed32, err = canoto.ReadFint32[uint32](r)
+			if err != nil {
+				return err
+			}
+			if c.Fixed32 == 0 {
+				return canoto.ErrZeroValue
+			}
 		case 8:
 			if wireType != canoto.I64 {
 				return canoto.ErrInvalidWireType
 			}
 			c.Fixed64, err = canoto.ReadFint64[uint64](r)
+			if err != nil {
+				return err
+			}
+			if c.Fixed64 == 0 {
+				return canoto.ErrZeroValue
+			}
 		case 9:
 			if wireType != canoto.I32 {
 				return canoto.ErrInvalidWireType
 			}
 			c.Sfixed32, err = canoto.ReadFint32[int32](r)
+			if err != nil {
+				return err
+			}
+			if c.Sfixed32 == 0 {
+				return canoto.ErrZeroValue
+			}
 		case 10:
 			if wireType != canoto.I64 {
 				return canoto.ErrInvalidWireType
 			}
 			c.Sfixed64, err = canoto.ReadFint64[int64](r)
+			if err != nil {
+				return err
+			}
+			if c.Sfixed64 == 0 {
+				return canoto.ErrZeroValue
+			}
 		case 11:
 			if wireType != canoto.Varint {
 				return canoto.ErrInvalidWireType
 			}
-			c.Bool = true
-			err = canoto.ReadTrue(r)
+			c.Bool, err = canoto.ReadBool(r)
+			if err != nil {
+				return err
+			}
+			if !c.Bool {
+				return canoto.ErrZeroValue
+			}
 		case 12:
 			if wireType != canoto.Len {
 				return canoto.ErrInvalidWireType
 			}
 			c.String, err = canoto.ReadString(r)
+			if err != nil {
+				return err
+			}
+			if len(c.String) == 0 {
+				return canoto.ErrZeroValue
+			}
 		case 13:
 			if wireType != canoto.Len {
 				return canoto.ErrInvalidWireType
 			}
 			c.Bytes, err = canoto.ReadBytes(r)
+			if err != nil {
+				return err
+			}
+			if len(c.Bytes) == 0 {
+				return canoto.ErrZeroValue
+			}
 		case 14:
 			if wireType != canoto.Len {
 				return canoto.ErrInvalidWireType
@@ -138,6 +215,9 @@ func (c *Scalars) UnmarshalCanoto(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
+			if len(msgBytes) == 0 {
+				return canoto.ErrZeroValue
+			}
 
 			remainingBytes := r.B
 			r.B = msgBytes
@@ -145,9 +225,6 @@ func (c *Scalars) UnmarshalCanoto(r *canoto.Reader) error {
 			r.B = remainingBytes
 		default:
 			return canoto.ErrUnknownField
-		}
-		if err != nil {
-			return err
 		}
 
 		minField = field + 1
@@ -250,7 +327,7 @@ func (c *Scalars) MarshalCanoto(w *canoto.Writer) {
 	}
 	if c.Bool {
 		canoto.Append(w, canoto__Scalars__Bool__tag)
-		canoto.AppendTrue(w)
+		canoto.AppendBool(w, true)
 	}
 	if len(c.String) != 0 {
 		canoto.Append(w, canoto__Scalars__String__tag)

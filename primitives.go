@@ -21,12 +21,12 @@ const (
 
 var (
 	ErrInvalidFieldOrder = errors.New("invalid field order")
+	ErrZeroValue         = errors.New("zero value")
 	ErrUnknownField      = errors.New("unknown field")
 
 	errOverflow      = errors.New("overflow")
 	errPaddedZeroes  = errors.New("varint has padded zeroes")
 	errInvalidBool   = errors.New("decoded bool is neither true nor false")
-	errZeroValue     = errors.New("zero value")
 	errInvalidLength = errors.New("decoded length is invalid")
 	errStringNotUTF8 = errors.New("decoded string is not UTF-8")
 )
@@ -77,6 +77,9 @@ func ReadTag(r *Reader) (uint32, WireType, error) {
 }
 
 func SizeInt[T Int](v T) int {
+	if v == 0 {
+		return 1
+	}
 	return (bits.Len64(uint64(v)) + 6) / 7
 }
 
@@ -92,7 +95,7 @@ func ReadInt[T Int](r *Reader) (T, error) {
 	// The last byte of the varint includes the most significant bits.
 	// If the last byte is 0, then the number should have been encoded more
 	// efficiently by removing this zero.
-	case r.B[bytesRead-1] == 0x00:
+	case bytesRead > 1 && r.B[bytesRead-1] == 0x00:
 		return 0, errPaddedZeroes
 	default:
 		r.B = r.B[bytesRead:]
@@ -105,6 +108,10 @@ func AppendInt[T Int](w *Writer, v T) {
 }
 
 func SizeSint[T Sint](v T) int {
+	if v == 0 {
+		return 1
+	}
+
 	var uv uint64
 	if v > 0 {
 		uv = uint64(v) << 1
@@ -121,11 +128,14 @@ func ReadSint[T Sint](r *Reader) (T, error) {
 	}
 
 	uVal := largeVal >> 1
-	if uint64(T(uVal)) != uVal {
+	val := T(uVal)
+	// If T is an int32, it's possible that some bits were truncated during the
+	// cast. In this case, casting back to uint64 would result in a different
+	// value.
+	if uint64(val) != uVal {
 		return 0, errOverflow
 	}
 
-	val := T(uVal)
 	if largeVal&1 != 0 {
 		val = ^val
 	}
@@ -146,10 +156,6 @@ func ReadFint32[T Int32](r *Reader) (T, error) {
 	}
 
 	val := binary.LittleEndian.Uint32(r.B)
-	if val == 0 {
-		return 0, errZeroValue
-	}
-
 	r.B = r.B[SizeFint32:]
 	return T(val), nil
 }
@@ -166,10 +172,6 @@ func ReadFint64[T Int64](r *Reader) (T, error) {
 	}
 
 	val := binary.LittleEndian.Uint64(r.B)
-	if val == 0 {
-		return 0, errZeroValue
-	}
-
 	r.B = r.B[SizeFint64:]
 	return T(val), nil
 }
@@ -180,20 +182,25 @@ func AppendFint64[T Int64](w *Writer, v T) {
 	w.B = append(w.B, bytes[:]...)
 }
 
-func ReadTrue(r *Reader) error {
+func ReadBool(r *Reader) (bool, error) {
 	switch {
 	case len(r.B) < SizeBool:
-		return io.ErrUnexpectedEOF
-	case r.B[0] != trueByte:
-		return errInvalidBool
+		return false, io.ErrUnexpectedEOF
+	case r.B[0] > trueByte:
+		return false, errInvalidBool
 	default:
+		isTrue := r.B[0] == trueByte
 		r.B = r.B[SizeBool:]
-		return nil
+		return isTrue, nil
 	}
 }
 
-func AppendTrue(w *Writer) {
-	w.B = append(w.B, trueByte)
+func AppendBool(w *Writer, b bool) {
+	if b {
+		w.B = append(w.B, trueByte)
+	} else {
+		w.B = append(w.B, falseByte)
+	}
 }
 
 func SizeBytes[T Bytes](v T) int {

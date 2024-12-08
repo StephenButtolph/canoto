@@ -46,9 +46,6 @@ func (c *%s) UnmarshalCanoto(r *canoto.Reader) error {
 %s		default:
 			return canoto.ErrUnknownField
 		}
-		if err != nil {
-			return err
-		}
 
 		minField = field + 1
 	}
@@ -73,14 +70,38 @@ func (c *%s) MarshalCanoto(w *canoto.Writer) {
 				return canoto.ErrInvalidWireType
 			}
 			c.%s, err = canoto.Read%s(r)
+			if err != nil {
+				return err
+			}
+			if c.%s == 0 {
+				return canoto.ErrZeroValue
+			}
 `
 
 	unmarshalCaseBoolTemplate = `		case %d:
 			if wireType != canoto.Varint {
 				return canoto.ErrInvalidWireType
 			}
-			c.%s = true
-			err = canoto.ReadTrue(r)
+			c.%s, err = canoto.ReadBool(r)
+			if err != nil {
+				return err
+			}
+			if !c.%s {
+				return canoto.ErrZeroValue
+			}
+`
+
+	unmarshalCaseBytesTemplate = `		case %d:
+			if wireType != canoto.%s {
+				return canoto.ErrInvalidWireType
+			}
+			c.%s, err = canoto.Read%s(r)
+			if err != nil {
+				return err
+			}
+			if len(c.%s) == 0 {
+				return canoto.ErrZeroValue
+			}
 `
 
 	unmarshalCaseCustomTemplate = `		case %d:
@@ -95,6 +116,9 @@ func (c *%s) MarshalCanoto(w *canoto.Writer) {
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
+			}
+			if len(msgBytes) == 0 {
+				return canoto.ErrZeroValue
 			}
 
 			remainingBytes := r.B
@@ -160,7 +184,7 @@ func (c *%s) MarshalCanoto(w *canoto.Writer) {
 
 	marshalIfBoolTemplate = `	if c.%s {
 		canoto.Append(w, canoto__%s__%s__tag)
-		canoto.AppendTrue(w)
+		canoto.AppendBool(w, true)
 	}
 `
 
@@ -330,6 +354,7 @@ func makeUnmarshalCases(m message) (string, error) {
 				"Varint",
 				f.name,
 				fmt.Sprintf("Int[%s]", f.goType),
+				f.name,
 			)
 		case "sint":
 			_, _ = fmt.Fprintf(
@@ -339,6 +364,7 @@ func makeUnmarshalCases(m message) (string, error) {
 				"Varint",
 				f.name,
 				fmt.Sprintf("Sint[%s]", f.goType),
+				f.name,
 			)
 		case "fint":
 			switch f.goType {
@@ -350,6 +376,7 @@ func makeUnmarshalCases(m message) (string, error) {
 					"I32",
 					f.name,
 					fmt.Sprintf("Fint32[%s]", f.goType),
+					f.name,
 				)
 			case "int64", "uint64":
 				_, _ = fmt.Fprintf(
@@ -359,6 +386,7 @@ func makeUnmarshalCases(m message) (string, error) {
 					"I64",
 					f.name,
 					fmt.Sprintf("Fint64[%s]", f.goType),
+					f.name,
 				)
 			default:
 				return "", fmt.Errorf("%w: %q should have fixed size", errUnexpectedType, f.goType)
@@ -369,26 +397,29 @@ func makeUnmarshalCases(m message) (string, error) {
 				unmarshalCaseBoolTemplate,
 				f.fieldNumber,
 				f.name,
+				f.name,
 			)
 		case "bytes":
 			switch f.goType {
 			case "string":
 				_, _ = fmt.Fprintf(
 					&unmarshalCases,
-					unmarshalCaseSimpleTemplate,
+					unmarshalCaseBytesTemplate,
 					f.fieldNumber,
 					"Len",
 					f.name,
 					"String",
+					f.name,
 				)
 			case "[]byte":
 				_, _ = fmt.Fprintf(
 					&unmarshalCases,
-					unmarshalCaseSimpleTemplate,
+					unmarshalCaseBytesTemplate,
 					f.fieldNumber,
 					"Len",
 					f.name,
 					"Bytes",
+					f.name,
 				)
 			default:
 				_, _ = fmt.Fprintf(
