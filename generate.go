@@ -15,10 +15,7 @@ const (
 	canotoExtension = ".canoto.go"
 )
 
-var (
-	errNonGoExtension = errors.New("file must be a go file")
-	errUnexpectedType = errors.New("unexpected type")
-)
+var errNonGoExtension = errors.New("file must be a go file")
 
 type message struct {
 	name              string
@@ -29,13 +26,33 @@ type message struct {
 type field struct {
 	name              string
 	canonicalizedName string
-	goType            string
-	canotoType        string
+	goType            goType
+	canotoType        canotoType
 	fieldNumber       uint32
 }
 
 func (f field) Compare(other field) int {
 	return cmp.Compare(f.fieldNumber, other.fieldNumber)
+}
+
+func (f field) WireType() (WireType, error) {
+	switch f.canotoType {
+	case canotoInt, canotoSint, canotoBool:
+		return Varint, nil
+	case canotoFint:
+		switch f.goType {
+		case goInt32, goUint32:
+			return I32, nil
+		case goInt64, goUint64:
+			return I64, nil
+		default:
+			return 0, fmt.Errorf("%w: %q with canotoType %q", errUnexpectedGoType, f.goType, f.canotoType)
+		}
+	case canotoBytes:
+		return Len, nil
+	default:
+		return 0, fmt.Errorf("%w: %q", errUnexpectedCanotoType, f.canotoType)
+	}
 }
 
 func Generate(inputFilePath string) error {

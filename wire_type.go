@@ -28,3 +28,18 @@ func (w WireType) IsValid() bool {
 		return false
 	}
 }
+
+func (w WireType) String() string {
+	switch w {
+	case Varint:
+		return "Varint"
+	case I64:
+		return "I64"
+	case Len:
+		return "Len"
+	case I32:
+		return "I32"
+	default:
+		return "Invalid"
+	}
+}

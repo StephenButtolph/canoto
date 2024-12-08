@@ -110,7 +110,7 @@ func parseField(fs *token.FileSet, af *ast.Field) (field, bool, error) {
 	}
 	switch t := af.Type.(type) {
 	case *ast.Ident:
-		f.goType = t.Name
+		f.goType = goType(t.Name)
 	case *ast.ArrayType:
 		// TODO: Support fixed length arrays
 		if t.Len != nil {
@@ -123,14 +123,14 @@ func parseField(fs *token.FileSet, af *ast.Field) (field, bool, error) {
 		ident, ok := t.Elt.(*ast.Ident)
 		if !ok {
 			return field{}, false, fmt.Errorf("%w %T at %s",
-				errUnexpectedType,
+				errUnexpectedGoType,
 				t.Elt,
 				fs.Position(t.Elt.Pos()),
 			)
 		}
 
 		if ident.Name == "byte" {
-			f.goType = "[]byte"
+			f.goType = goBytes
 		} else {
 			return field{}, false, fmt.Errorf("%w at %s",
 				errRepeatedFieldsUnsupported,
@@ -139,7 +139,7 @@ func parseField(fs *token.FileSet, af *ast.Field) (field, bool, error) {
 		}
 	default:
 		return field{}, false, fmt.Errorf("%w %T at %s",
-			errUnexpectedType,
+			errUnexpectedGoType,
 			t,
 			fs.Position(af.Pos()),
 		)
@@ -155,7 +155,7 @@ func canonicalizeName(name string) string {
 
 // parseFieldTag parses the tag of the provided field and returns the canoto
 // description, if one exists.
-func parseFieldTag(fs *token.FileSet, field *ast.Field) (string, uint32, bool, error) {
+func parseFieldTag(fs *token.FileSet, field *ast.Field) (canotoType, uint32, bool, error) {
 	if field.Tag == nil {
 		return "", 0, false, nil
 	}
@@ -171,6 +171,15 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (string, uint32, bool, e
 		return "", 0, false, nil //nolint: nilerr // errors imply the tag was not found
 	}
 
+	fieldType := canotoType(tag.Name)
+	if !fieldType.IsValid() {
+		return "", 0, false, fmt.Errorf("%w %s at %s",
+			errUnexpectedCanotoType,
+			tag.Name,
+			fs.Position(field.Pos()),
+		)
+	}
+
 	if len(tag.Options) != 1 {
 		return "", 0, false, fmt.Errorf("%w %s at %s",
 			errMalformedTag,
@@ -183,8 +192,7 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (string, uint32, bool, e
 	if err != nil {
 		return "", 0, false, err
 	}
-
-	return tag.Name, uint32(fieldNumber), true, nil
+	return fieldType, uint32(fieldNumber), true, nil
 }
 
 // isUniquelySorted returns true if the provided slice is sorted in ascending

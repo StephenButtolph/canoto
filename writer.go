@@ -2,7 +2,6 @@ package canoto
 
 import (
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -205,8 +204,6 @@ func (c *%s) MarshalCanoto(w *canoto.Writer) {
 `
 )
 
-var errUnexpectedCanotoType = errors.New("unexpected canoto type")
-
 func write(w io.Writer, packageName string, messages []message) error {
 	_, err := fmt.Fprintf(
 		w,
@@ -266,30 +263,9 @@ func makeTagConstants(m message) (string, error) {
 			f.canonicalizedName,
 		)
 
-		var (
-			wireType       WireType
-			wireTypeString string
-		)
-		switch f.canotoType {
-		case "int", "sint", "bool":
-			wireType = Varint
-			wireTypeString = "Varint"
-		case "fint":
-			switch f.goType {
-			case "int32", "uint32":
-				wireType = I32
-				wireTypeString = "I32"
-			case "int64", "uint64":
-				wireType = I64
-				wireTypeString = "I64"
-			default:
-				return "", fmt.Errorf("%w: %q with canotoType %q", errUnexpectedType, f.goType, f.canotoType)
-			}
-		case "bytes":
-			wireType = Len
-			wireTypeString = "Len"
-		default:
-			return "", fmt.Errorf("%w: %q", errUnexpectedCanotoType, f.canotoType)
+		wireType, err := f.WireType()
+		if err != nil {
+			return "", err
 		}
 
 		tagBytes := Tag(f.fieldNumber, wireType)
@@ -301,7 +277,7 @@ func makeTagConstants(m message) (string, error) {
 			&tagConstants,
 			"\" // canoto.Tag(%d, canoto.%s)\n",
 			f.fieldNumber,
-			wireTypeString,
+			wireType,
 		)
 	}
 	return tagConstants.String(), nil
@@ -325,8 +301,7 @@ func makeTagSizeConstants(m message) string {
 func makeSizeCache(m message) string {
 	var sizeCache strings.Builder
 	for _, f := range m.fields {
-		switch f.goType {
-		case "int32", "int64", "uint32", "uint64", "bool", "string", "[]byte":
+		if f.goType.IsPrimitive() {
 			continue
 		}
 
@@ -386,7 +361,7 @@ func makeUnmarshalCases(m message) (string, error) {
 					f.name,
 				)
 			default:
-				return "", fmt.Errorf("%w: %q should have fixed size", errUnexpectedType, f.goType)
+				return "", fmt.Errorf("%w: %q should have fixed size", errUnexpectedGoType, f.goType)
 			}
 		case "bool":
 			_, _ = fmt.Fprintf(
@@ -436,14 +411,18 @@ func makeUnmarshalCases(m message) (string, error) {
 func makeValidConditions(m message) string {
 	var validConditions strings.Builder
 	for _, f := range m.fields {
-		if f.canotoType != "bytes" || f.goType == "[]byte" {
+		if f.canotoType != canotoBytes || f.goType == goBytes {
 			continue
 		}
 
+		// If there are multiple conditions, we need to merge them with an "&&"
+		// separator
 		if validConditions.Len() > 0 {
 			_, _ = fmt.Fprint(&validConditions, " && ")
 		}
-		if f.goType == "string" {
+
+		// goType is either string or a custom type
+		if f.goType == goString {
 			_, _ = fmt.Fprintf(
 				&validConditions,
 				"utf8.ValidString(c.%s)",
@@ -457,6 +436,9 @@ func makeValidConditions(m message) string {
 			)
 		}
 	}
+
+	// If there are no conditions, we still need to implement the method, so we
+	// just report that this message is valid.
 	if validConditions.Len() == 0 {
 		return "true"
 	}
@@ -506,7 +488,7 @@ func makeSizeIfs(m message) (string, error) {
 					"Fint64",
 				)
 			default:
-				return "", fmt.Errorf("%w: %q should have fixed size", errUnexpectedType, f.goType)
+				return "", fmt.Errorf("%w: %q should have fixed size", errUnexpectedGoType, f.goType)
 			}
 		case "bool":
 			_, _ = fmt.Fprintf(
@@ -590,7 +572,7 @@ func makeMarshalIfs(m message) (string, error) {
 					f.name,
 				)
 			default:
-				return "", fmt.Errorf("%w: %q should have fixed size", errUnexpectedType, f.goType)
+				return "", fmt.Errorf("%w: %q should have fixed size", errUnexpectedGoType, f.goType)
 			}
 		case "bool":
 			_, _ = fmt.Fprintf(
