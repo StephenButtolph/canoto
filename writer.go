@@ -125,6 +125,9 @@ func (c *%s) MarshalCanoto(w *canoto.Writer) {
 			r.B = msgBytes
 			err = c.%s.UnmarshalCanoto(r)
 			r.B = remainingBytes
+			if err != nil {
+				return err
+			}
 `
 
 	sizeIfIntTemplate = `	if c.%s != 0 {
@@ -255,14 +258,12 @@ func writeStruct(w io.Writer, m message) error {
 
 func makeTagConstants(m message) (string, error) {
 	var tagConstants strings.Builder
-	canonicalizedMessageName := strings.ReplaceAll(m.name, "_", "_1")
 	for _, f := range m.fields {
-		canonicalizedFieldName := strings.ReplaceAll(f.name, "_", "_1")
 		_, _ = fmt.Fprintf(
 			&tagConstants,
 			`	canoto__%s__%s__tag = "`,
-			canonicalizedMessageName,
-			canonicalizedFieldName,
+			m.canonicalizedName,
+			f.canonicalizedName,
 		)
 
 		var (
@@ -307,19 +308,15 @@ func makeTagConstants(m message) (string, error) {
 }
 
 func makeTagSizeConstants(m message) string {
-	var (
-		tagSizeConstants         strings.Builder
-		canonicalizedMessageName = strings.ReplaceAll(m.name, "_", "_1")
-	)
+	var tagSizeConstants strings.Builder
 	for _, f := range m.fields {
-		canonicalizedFieldName := strings.ReplaceAll(f.name, "_", "_1")
 		_, _ = fmt.Fprintf(
 			&tagSizeConstants,
 			"\tcanoto__%s__%s__tag__size = len(canoto__%s__%s__tag)\n",
-			canonicalizedMessageName,
-			canonicalizedFieldName,
-			canonicalizedMessageName,
-			canonicalizedFieldName,
+			m.canonicalizedName,
+			f.canonicalizedName,
+			m.canonicalizedName,
+			f.canonicalizedName,
 		)
 	}
 	return tagSizeConstants.String()
@@ -467,20 +464,16 @@ func makeValidConditions(m message) string {
 }
 
 func makeSizeIfs(m message) (string, error) {
-	var (
-		sizeIfs                  strings.Builder
-		canonicalizedMessageName = strings.ReplaceAll(m.name, "_", "_1")
-	)
+	var sizeIfs strings.Builder
 	for _, f := range m.fields {
-		canonicalizedFieldName := strings.ReplaceAll(f.name, "_", "_1")
 		switch f.canotoType {
 		case "int":
 			_, _ = fmt.Fprintf(
 				&sizeIfs,
 				sizeIfIntTemplate,
 				f.name,
-				canonicalizedMessageName,
-				canonicalizedFieldName,
+				m.canonicalizedName,
+				f.canonicalizedName,
 				f.name,
 			)
 		case "sint":
@@ -488,8 +481,8 @@ func makeSizeIfs(m message) (string, error) {
 				&sizeIfs,
 				sizeIfSintTemplate,
 				f.name,
-				canonicalizedMessageName,
-				canonicalizedFieldName,
+				m.canonicalizedName,
+				f.canonicalizedName,
 				f.name,
 			)
 		case "fint":
@@ -499,8 +492,8 @@ func makeSizeIfs(m message) (string, error) {
 					&sizeIfs,
 					sizeIfFixedSizeTemplate,
 					f.name,
-					canonicalizedMessageName,
-					canonicalizedFieldName,
+					m.canonicalizedName,
+					f.canonicalizedName,
 					"Fint32",
 				)
 			case "int64", "uint64":
@@ -508,8 +501,8 @@ func makeSizeIfs(m message) (string, error) {
 					&sizeIfs,
 					sizeIfFixedSizeTemplate,
 					f.name,
-					canonicalizedMessageName,
-					canonicalizedFieldName,
+					m.canonicalizedName,
+					f.canonicalizedName,
 					"Fint64",
 				)
 			default:
@@ -520,8 +513,8 @@ func makeSizeIfs(m message) (string, error) {
 				&sizeIfs,
 				sizeIfBoolTemplate,
 				f.name,
-				canonicalizedMessageName,
-				canonicalizedFieldName,
+				m.canonicalizedName,
+				f.canonicalizedName,
 			)
 		case "bytes":
 			switch f.goType {
@@ -530,8 +523,8 @@ func makeSizeIfs(m message) (string, error) {
 					&sizeIfs,
 					sizeIfBytesTemplate,
 					f.name,
-					canonicalizedMessageName,
-					canonicalizedFieldName,
+					m.canonicalizedName,
+					f.canonicalizedName,
 					f.name,
 				)
 			default:
@@ -541,8 +534,8 @@ func makeSizeIfs(m message) (string, error) {
 					f.name,
 					f.name,
 					f.name,
-					canonicalizedMessageName,
-					canonicalizedFieldName,
+					m.canonicalizedName,
+					f.canonicalizedName,
 					f.name,
 					f.name,
 				)
@@ -555,20 +548,16 @@ func makeSizeIfs(m message) (string, error) {
 }
 
 func makeMarshalIfs(m message) (string, error) {
-	var (
-		marshalIfs               strings.Builder
-		canonicalizedMessageName = strings.ReplaceAll(m.name, "_", "_1")
-	)
+	var marshalIfs strings.Builder
 	for _, f := range m.fields {
-		canonicalizedFieldName := strings.ReplaceAll(f.name, "_", "_1")
 		switch f.canotoType {
 		case "int":
 			_, _ = fmt.Fprintf(
 				&marshalIfs,
 				marshalIfIntTemplate,
 				f.name,
-				canonicalizedMessageName,
-				canonicalizedFieldName,
+				m.canonicalizedName,
+				f.canonicalizedName,
 				f.name,
 			)
 		case "sint":
@@ -576,8 +565,8 @@ func makeMarshalIfs(m message) (string, error) {
 				&marshalIfs,
 				marshalIfSintTemplate,
 				f.name,
-				canonicalizedMessageName,
-				canonicalizedFieldName,
+				m.canonicalizedName,
+				f.canonicalizedName,
 				f.name,
 			)
 		case "fint":
@@ -587,8 +576,8 @@ func makeMarshalIfs(m message) (string, error) {
 					&marshalIfs,
 					marshalIfFint32Template,
 					f.name,
-					canonicalizedMessageName,
-					canonicalizedFieldName,
+					m.canonicalizedName,
+					f.canonicalizedName,
 					f.name,
 				)
 			case "int64", "uint64":
@@ -596,8 +585,8 @@ func makeMarshalIfs(m message) (string, error) {
 					&marshalIfs,
 					marshalIfFint64Template,
 					f.name,
-					canonicalizedMessageName,
-					canonicalizedFieldName,
+					m.canonicalizedName,
+					f.canonicalizedName,
 					f.name,
 				)
 			default:
@@ -608,8 +597,8 @@ func makeMarshalIfs(m message) (string, error) {
 				&marshalIfs,
 				marshalIfBoolTemplate,
 				f.name,
-				canonicalizedMessageName,
-				canonicalizedFieldName,
+				m.canonicalizedName,
+				f.canonicalizedName,
 			)
 		case "bytes":
 			switch f.goType {
@@ -618,8 +607,8 @@ func makeMarshalIfs(m message) (string, error) {
 					&marshalIfs,
 					marshalIfBytesTemplate,
 					f.name,
-					canonicalizedMessageName,
-					canonicalizedFieldName,
+					m.canonicalizedName,
+					f.canonicalizedName,
 					f.name,
 				)
 			default:
@@ -627,8 +616,8 @@ func makeMarshalIfs(m message) (string, error) {
 					&marshalIfs,
 					marshalIfCustomTemplate,
 					f.name,
-					canonicalizedMessageName,
-					canonicalizedFieldName,
+					m.canonicalizedName,
+					f.canonicalizedName,
 					f.name,
 					f.name,
 				)

@@ -223,6 +223,9 @@ func (c *Scalars) UnmarshalCanoto(r *canoto.Reader) error {
 			r.B = msgBytes
 			err = c.LargestFieldNumber.UnmarshalCanoto(r)
 			r.B = remainingBytes
+			if err != nil {
+				return err
+			}
 		default:
 			return canoto.ErrUnknownField
 		}

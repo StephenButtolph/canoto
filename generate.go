@@ -21,15 +21,17 @@ var (
 )
 
 type message struct {
-	name   string
-	fields []field
+	name              string
+	canonicalizedName string
+	fields            []field
 }
 
 type field struct {
-	name        string
-	goType      string
-	canotoType  string
-	fieldNumber uint32
+	name              string
+	canonicalizedName string
+	goType            string
+	canotoType        string
+	fieldNumber       uint32
 }
 
 func (f field) Compare(other field) int {

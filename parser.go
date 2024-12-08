@@ -48,8 +48,10 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 			return false
 		}
 
+		name := ts.Name.Name
 		message := message{
-			name: ts.Name.Name,
+			name:              name,
+			canonicalizedName: canonicalizeName(name),
 		}
 		for _, sf := range st.Fields.List {
 			var (
@@ -99,10 +101,12 @@ func parseField(fs *token.FileSet, af *ast.Field) (field, bool, error) {
 		)
 	}
 
+	name := af.Names[0].Name
 	f := field{
-		name:        af.Names[0].Name,
-		canotoType:  canotoType,
-		fieldNumber: fieldNumber,
+		name:              name,
+		canonicalizedName: canonicalizeName(name),
+		canotoType:        canotoType,
+		fieldNumber:       fieldNumber,
 	}
 	switch t := af.Type.(type) {
 	case *ast.Ident:
@@ -143,6 +147,14 @@ func parseField(fs *token.FileSet, af *ast.Field) (field, bool, error) {
 	return f, true, nil
 }
 
+// canonicalizeName replaces "_" with "_1" to avoid collisions with "__" which
+// is used as a reserved separator.
+func canonicalizeName(name string) string {
+	return strings.ReplaceAll(name, "_", "_1")
+}
+
+// parseFieldTag parses the tag of the provided field and returns the canoto
+// description, if one exists.
 func parseFieldTag(fs *token.FileSet, field *ast.Field) (string, uint32, bool, error) {
 	if field.Tag == nil {
 		return "", 0, false, nil
@@ -156,7 +168,7 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (string, uint32, bool, e
 
 	tag, err := tags.Get(canotoTag)
 	if err != nil {
-		return "", 0, false, nil //nolint: nilerr // errors imply the tag was not round
+		return "", 0, false, nil //nolint: nilerr // errors imply the tag was not found
 	}
 
 	if len(tag.Options) != 1 {
@@ -175,6 +187,8 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (string, uint32, bool, e
 	return tag.Name, uint32(fieldNumber), true, nil
 }
 
+// isUniquelySorted returns true if the provided slice is sorted in ascending
+// order and contains no duplicates.
 func isUniquelySorted[S ~[]E, E any](x S, cmp func(a E, b E) int) bool {
 	for i := 1; i < len(x); i++ {
 		if cmp(x[i-1], x[i]) >= 0 {
