@@ -47,7 +47,15 @@ type canotoData_Scalars struct {
 	LargestFieldNumberSize int
 }
 
-func (c *Scalars) UnmarshalCanoto(r *canoto.Reader) error {
+
+func (c *Scalars) UnmarshalCanoto(bytes []byte) error {
+	r := canoto.Reader{
+		B: bytes,
+	}
+	return c.UnmarshalCanotoFrom(&r)
+}
+
+func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 	var minField uint32
 	for canoto.HasNext(r) {
 		field, wireType, err := canoto.ReadTag(r)
@@ -221,7 +229,7 @@ func (c *Scalars) UnmarshalCanoto(r *canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			err = c.LargestFieldNumber.UnmarshalCanoto(r)
+			err = c.LargestFieldNumber.UnmarshalCanotoFrom(r)
 			r.B = remainingBytes
 			if err != nil {
 				return err
@@ -287,7 +295,15 @@ func (c *Scalars) SizeCanoto() int {
 	return size
 }
 
-func (c *Scalars) MarshalCanoto(w *canoto.Writer) {
+func (c *Scalars) MarshalCanoto() []byte {
+	w := canoto.Writer{
+		B: make([]byte, 0, c.SizeCanoto()),
+	}
+	c.MarshalCanotoInto(&w)
+	return w.B
+}
+
+func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 	if c.Int32 != 0 {
 		canoto.Append(w, canoto__Scalars__Int32__tag)
 		canoto.AppendInt(w, c.Int32)
@@ -343,6 +359,6 @@ func (c *Scalars) MarshalCanoto(w *canoto.Writer) {
 	if c.canotoData.LargestFieldNumberSize != 0 {
 		canoto.Append(w, canoto__Scalars__LargestFieldNumber__tag)
 		canoto.AppendInt(w, int64(c.canotoData.LargestFieldNumberSize))
-		c.LargestFieldNumber.MarshalCanoto(w)
+		c.LargestFieldNumber.MarshalCanotoInto(w)
 	}
 }

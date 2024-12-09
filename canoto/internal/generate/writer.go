@@ -33,7 +33,15 @@ ${tagSizeConstants})
 type canotoData_${structName} struct {
 ${sizeCache}}
 
-func (c *${structName}) UnmarshalCanoto(r *canoto.Reader) error {
+
+func (c *${structName}) UnmarshalCanoto(bytes []byte) error {
+	r := canoto.Reader{
+		B: bytes,
+	}
+	return c.UnmarshalCanotoFrom(&r)
+}
+
+func (c *${structName}) UnmarshalCanotoFrom(r *canoto.Reader) error {
 	var minField uint32
 	for canoto.HasNext(r) {
 		field, wireType, err := canoto.ReadTag(r)
@@ -63,7 +71,15 @@ func (c *${structName}) SizeCanoto() int {
 ${sizeIfs}	return size
 }
 
-func (c *${structName}) MarshalCanoto(w *canoto.Writer) {
+func (c *${structName}) MarshalCanoto() []byte {
+	w := canoto.Writer{
+		B: make([]byte, 0, c.SizeCanoto()),
+	}
+	c.MarshalCanotoInto(&w)
+	return w.B
+}
+
+func (c *${structName}) MarshalCanotoInto(w *canoto.Writer) {
 ${marshalIfs}}
 `
 
@@ -125,7 +141,7 @@ ${marshalIfs}}
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			err = c.${fieldName}.UnmarshalCanoto(r)
+			err = c.${fieldName}.UnmarshalCanotoFrom(r)
 			r.B = remainingBytes
 			if err != nil {
 				return err
@@ -196,7 +212,7 @@ ${marshalIfs}}
 	marshalIfCustomTemplate = `	if c.canotoData.${fieldName}Size != 0 {
 		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		canoto.AppendInt(w, int64(c.canotoData.${fieldName}Size))
-		c.${fieldName}.MarshalCanoto(w)
+		c.${fieldName}.MarshalCanotoInto(w)
 	}
 `
 )

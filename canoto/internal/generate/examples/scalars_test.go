@@ -62,11 +62,8 @@ func FuzzScalars_UnmarshalCanoto(f *testing.F) {
 			return
 		}
 
-		var (
-			canotoScalars Scalars
-			reader        = canoto.Reader{B: pbScalarsBytes}
-		)
-		require.NoError(canotoScalars.UnmarshalCanoto(&reader))
+		var canotoScalars Scalars
+		require.NoError(canotoScalars.UnmarshalCanoto(pbScalarsBytes))
 
 		require.Equal(
 			Scalars{
@@ -141,7 +138,7 @@ func FuzzScalars_MarshalCanoto(f *testing.F) {
 		w := canoto.Writer{
 			B: make([]byte, 0, size),
 		}
-		cbScalars.MarshalCanoto(&w)
+		cbScalars.MarshalCanotoInto(&w)
 		require.Len(w.B, size)
 
 		var pbScalars pb.Scalars
@@ -202,11 +199,8 @@ func FuzzScalars_Canonical(f *testing.F) {
 	f.Fuzz(func(t *testing.T, b []byte) {
 		require := require.New(t)
 
-		var (
-			scalars Scalars
-			reader  = canoto.Reader{B: b}
-		)
-		err := scalars.UnmarshalCanoto(&reader)
+		var scalars Scalars
+		err := scalars.UnmarshalCanoto(b)
 		if err != nil {
 			return
 		}
@@ -217,7 +211,7 @@ func FuzzScalars_Canonical(f *testing.F) {
 		w := canoto.Writer{
 			B: make([]byte, 0, size),
 		}
-		scalars.MarshalCanoto(&w)
+		scalars.MarshalCanotoInto(&w)
 		require.Equal(b, w.B)
 	})
 }
@@ -243,10 +237,7 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 			},
 		}
 
-		w := canoto.Writer{
-			B: make([]byte, 0, cbScalars.SizeCanoto()),
-		}
-		cbScalars.MarshalCanoto(&w)
+		cbScalars.MarshalCanoto()
 	}
 }
 
@@ -269,10 +260,7 @@ func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
 			Int32: 216457,
 		},
 	}
-	w := canoto.Writer{
-		B: make([]byte, 0, cbScalars.SizeCanoto()),
-	}
-	cbScalars.MarshalCanoto(&w)
+	bytes := cbScalars.MarshalCanoto()
 
 	for _, unsafe := range []bool{false, true} {
 		b.Run("unsafe="+strconv.FormatBool(unsafe), func(b *testing.B) {
@@ -280,11 +268,11 @@ func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
 				var (
 					scalars Scalars
 					reader  = canoto.Reader{
-						B:      w.B,
+						B:      bytes,
 						Unsafe: unsafe,
 					}
 				)
-				_ = scalars.UnmarshalCanoto(&reader)
+				_ = scalars.UnmarshalCanotoFrom(&reader)
 			}
 		})
 	}

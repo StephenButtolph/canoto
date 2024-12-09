@@ -20,7 +20,15 @@ const (
 type canotoData_LargestFieldNumber struct {
 }
 
-func (c *LargestFieldNumber) UnmarshalCanoto(r *canoto.Reader) error {
+
+func (c *LargestFieldNumber) UnmarshalCanoto(bytes []byte) error {
+	r := canoto.Reader{
+		B: bytes,
+	}
+	return c.UnmarshalCanotoFrom(&r)
+}
+
+func (c *LargestFieldNumber) UnmarshalCanotoFrom(r *canoto.Reader) error {
 	var minField uint32
 	for canoto.HasNext(r) {
 		field, wireType, err := canoto.ReadTag(r)
@@ -64,7 +72,15 @@ func (c *LargestFieldNumber) SizeCanoto() int {
 	return size
 }
 
-func (c *LargestFieldNumber) MarshalCanoto(w *canoto.Writer) {
+func (c *LargestFieldNumber) MarshalCanoto() []byte {
+	w := canoto.Writer{
+		B: make([]byte, 0, c.SizeCanoto()),
+	}
+	c.MarshalCanotoInto(&w)
+	return w.B
+}
+
+func (c *LargestFieldNumber) MarshalCanotoInto(w *canoto.Writer) {
 	if c.Int32 != 0 {
 		canoto.Append(w, canoto__LargestFieldNumber__Int32__tag)
 		canoto.AppendInt(w, c.Int32)
