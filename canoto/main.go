@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/StephenButtolph/canoto/generate"
+	"github.com/StephenButtolph/canoto/canoto/generate"
 )
 
 var errWrongArgCount = errors.New("expected 1 argument")
