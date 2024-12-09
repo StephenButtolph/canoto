@@ -8,7 +8,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/StephenButtolph/canoto"
-	"github.com/StephenButtolph/canoto/canoto/generate/proto/pb"
+	"github.com/StephenButtolph/canoto/canoto/internal/generate/proto/pb"
 )
 
 func FuzzScalars_UnmarshalCanoto(f *testing.F) {

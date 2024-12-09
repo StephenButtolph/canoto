@@ -1,3 +1,5 @@
+// Canoto is a code generator that generates Go code for reading and writing the
+// canoto format.
 package main
 
 import (
@@ -6,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/StephenButtolph/canoto/canoto/generate"
+	"github.com/StephenButtolph/canoto/canoto/internal/generate"
 )
 
 func init() {
