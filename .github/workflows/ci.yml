@@ -50,7 +50,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-go-for-project
       - shell: bash
-        run: go install .
+        run: go install ./canoto
       - shell: bash
         run: go generate ./...
       - shell: bash
