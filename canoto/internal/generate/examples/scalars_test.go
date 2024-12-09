@@ -230,8 +230,8 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 			Sfixed32: -21348976,
 			Sfixed64: 98756432,
 			Bool:     true,
-			String:   "asdkcjhbsakjdhcbasdc",
-			Bytes:    []byte("kjsadhbcaskjdvhb"),
+			String:   "hi my name is Bob",
+			Bytes:    []byte("hi my name is Bob too"),
 			LargestFieldNumber: LargestFieldNumber{
 				Int32: 216457,
 			},
@@ -254,8 +254,8 @@ func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
 		Sfixed32: -21348976,
 		Sfixed64: 98756432,
 		Bool:     true,
-		String:   "asdkcjhbsakjdhcbasdc",
-		Bytes:    []byte("kjsadhbcaskjdvhb"),
+		String:   "hi my name is Bob",
+		Bytes:    []byte("hi my name is Bob too"),
 		LargestFieldNumber: LargestFieldNumber{
 			Int32: 216457,
 		},
@@ -292,8 +292,8 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 			Sfixed32: -21348976,
 			Sfixed64: 98756432,
 			Bool:     true,
-			String_:  "asdkcjhbsakjdhcbasdc",
-			Bytes:    []byte("kjsadhbcaskjdvhb"),
+			String_:  "hi my name is Bob",
+			Bytes:    []byte("hi my name is Bob too"),
 			LargestFieldNumber: &pb.LargestFieldNumber{
 				Int32: 216457,
 			},
@@ -315,8 +315,8 @@ func BenchmarkScalars_UnmarshalProto(b *testing.B) {
 		Sfixed32: -21348976,
 		Sfixed64: 98756432,
 		Bool:     true,
-		String_:  "asdkcjhbsakjdhcbasdc",
-		Bytes:    []byte("kjsadhbcaskjdvhb"),
+		String_:  "hi my name is Bob",
+		Bytes:    []byte("hi my name is Bob too"),
 		LargestFieldNumber: &pb.LargestFieldNumber{
 			Int32: 216457,
 		},
