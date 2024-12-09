@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -310,11 +309,6 @@ func makeSizeCache(m message) string {
 func makeUnmarshalCases(m message) (string, error) {
 	var unmarshalCases strings.Builder
 	for _, f := range m.fields {
-		args, err := makeTemplateArgs(m.name, f)
-		if err != nil {
-			return "", err
-		}
-
 		var template string
 		switch f.canotoType {
 		case canotoInt, canotoSint, canotoFint:
@@ -331,8 +325,7 @@ func makeUnmarshalCases(m message) (string, error) {
 		default:
 			return "", fmt.Errorf("%w: %q", errUnexpectedCanotoType, f.canotoType)
 		}
-
-		if err := writeTemplate(&unmarshalCases, template, args); err != nil {
+		if err := writeTemplate(&unmarshalCases, template, f.templateArgs); err != nil {
 			return "", err
 		}
 	}
@@ -379,11 +372,6 @@ func makeValidConditions(m message) string {
 func makeSizeIfs(m message) (string, error) {
 	var sizeIfs strings.Builder
 	for _, f := range m.fields {
-		args, err := makeTemplateArgs(m.name, f)
-		if err != nil {
-			return "", err
-		}
-
 		var template string
 		switch f.canotoType {
 		case canotoInt:
@@ -404,7 +392,7 @@ func makeSizeIfs(m message) (string, error) {
 		default:
 			return "", fmt.Errorf("%w: %q", errUnexpectedCanotoType, f.canotoType)
 		}
-		if err := writeTemplate(&sizeIfs, template, args); err != nil {
+		if err := writeTemplate(&sizeIfs, template, f.templateArgs); err != nil {
 			return "", err
 		}
 	}
@@ -414,11 +402,6 @@ func makeSizeIfs(m message) (string, error) {
 func makeMarshalIfs(m message) (string, error) {
 	var marshalIfs strings.Builder
 	for _, f := range m.fields {
-		args, err := makeTemplateArgs(m.name, f)
-		if err != nil {
-			return "", err
-		}
-
 		var template string
 		switch f.canotoType {
 		case canotoInt:
@@ -439,55 +422,11 @@ func makeMarshalIfs(m message) (string, error) {
 		default:
 			return "", fmt.Errorf("%w: %q", errUnexpectedCanotoType, f.canotoType)
 		}
-		if err := writeTemplate(&marshalIfs, template, args); err != nil {
+		if err := writeTemplate(&marshalIfs, template, f.templateArgs); err != nil {
 			return "", err
 		}
 	}
 	return marshalIfs.String(), nil
-}
-
-func makeTemplateArgs(structName string, field field) (map[string]string, error) {
-	wireType, err := field.WireType()
-	if err != nil {
-		return nil, err
-	}
-
-	args := map[string]string{
-		"escapedStructName": structName,
-		"fieldNumber":       strconv.FormatUint(uint64(field.fieldNumber), 10),
-		"wireType":          wireType.String(),
-		"fieldName":         field.name,
-		"escapedFieldName":  field.canonicalizedName,
-	}
-	switch field.canotoType {
-	case canotoInt:
-		args["readFunction"] = fmt.Sprintf("Int[%s]", field.goType)
-	case canotoSint:
-		args["readFunction"] = fmt.Sprintf("Sint[%s]", field.goType)
-	case canotoFint:
-		switch field.goType {
-		case goInt32, goUint32:
-			args["readFunction"] = fmt.Sprintf("Fint32[%s]", field.goType)
-			args["bitSize"] = "32"
-		case goInt64, goUint64:
-			args["readFunction"] = fmt.Sprintf("Fint64[%s]", field.goType)
-			args["bitSize"] = "64"
-		default:
-			return nil, fmt.Errorf("%w: %q should have fixed size", errUnexpectedGoType, field.goType)
-		}
-	case canotoBool:
-	case canotoBytes:
-		switch field.goType {
-		case goString:
-			args["readFunction"] = "String"
-		case goBytes:
-			args["readFunction"] = "Bytes"
-		default:
-		}
-	default:
-		return nil, fmt.Errorf("%w: %q", errUnexpectedCanotoType, field.canotoType)
-	}
-	return args, nil
 }
 
 func writeTemplate(w io.Writer, template string, args map[string]string) error {

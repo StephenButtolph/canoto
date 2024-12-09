@@ -58,7 +58,7 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 				field  field
 				hasTag bool
 			)
-			field, hasTag, err = parseField(fs, sf)
+			field, hasTag, err = parseField(fs, message.canonicalizedName, sf)
 			if err != nil {
 				return false
 			}
@@ -86,7 +86,7 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 	return packageName, messages, err
 }
 
-func parseField(fs *token.FileSet, af *ast.Field) (field, bool, error) {
+func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field) (field, bool, error) {
 	canotoType, fieldNumber, hasTag, err := parseFieldTag(fs, af)
 	if err != nil || !hasTag {
 		return field{}, false, err
@@ -144,7 +144,9 @@ func parseField(fs *token.FileSet, af *ast.Field) (field, bool, error) {
 			fs.Position(af.Pos()),
 		)
 	}
-	return f, true, nil
+
+	f.templateArgs, err = makeTemplateArgs(canonicalizedStructName, f)
+	return f, true, err
 }
 
 // canonicalizeName replaces "_" with "_1" to avoid collisions with "__" which
@@ -204,4 +206,48 @@ func isUniquelySorted[S ~[]E, E any](x S, cmp func(a E, b E) int) bool {
 		}
 	}
 	return true
+}
+
+func makeTemplateArgs(structName string, field field) (map[string]string, error) {
+	wireType, err := field.WireType()
+	if err != nil {
+		return nil, err
+	}
+
+	args := map[string]string{
+		"escapedStructName": structName,
+		"fieldNumber":       strconv.FormatUint(uint64(field.fieldNumber), 10),
+		"wireType":          wireType.String(),
+		"fieldName":         field.name,
+		"escapedFieldName":  field.canonicalizedName,
+	}
+	switch field.canotoType {
+	case canotoInt:
+		args["readFunction"] = fmt.Sprintf("Int[%s]", field.goType)
+	case canotoSint:
+		args["readFunction"] = fmt.Sprintf("Sint[%s]", field.goType)
+	case canotoFint:
+		switch field.goType {
+		case goInt32, goUint32:
+			args["readFunction"] = fmt.Sprintf("Fint32[%s]", field.goType)
+			args["bitSize"] = "32"
+		case goInt64, goUint64:
+			args["readFunction"] = fmt.Sprintf("Fint64[%s]", field.goType)
+			args["bitSize"] = "64"
+		default:
+			return nil, fmt.Errorf("%w: %q should have fixed size", errUnexpectedGoType, field.goType)
+		}
+	case canotoBool:
+	case canotoBytes:
+		switch field.goType {
+		case goString:
+			args["readFunction"] = "String"
+		case goBytes:
+			args["readFunction"] = "Bytes"
+		default:
+		}
+	default:
+		return nil, fmt.Errorf("%w: %q", errUnexpectedCanotoType, field.canotoType)
+	}
+	return args, nil
 }

@@ -29,6 +29,7 @@ type field struct {
 	goType            goType
 	canotoType        canotoType
 	fieldNumber       uint32
+	templateArgs      map[string]string
 }
 
 func (f field) Compare(other field) int {
