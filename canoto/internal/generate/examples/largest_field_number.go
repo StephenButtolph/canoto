@@ -1,3 +1,5 @@
+//go:generate canoto $GOFILE
+
 package examples
 
 type LargestFieldNumber struct {
