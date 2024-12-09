@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
@@ -10,8 +9,6 @@ import (
 	"github.com/StephenButtolph/canoto/canoto/generate"
 )
 
-var errWrongArgCount = errors.New("expected 1 argument")
-
 func init() {
 	cobra.EnablePrefixMatching = true
 }
@@ -19,12 +16,14 @@ func init() {
 func main() {
 	cmd := &cobra.Command{
 		Use:   "canoto",
-		Short: "Generates a canoto file",
+		Short: "Generates the canoto file for all provided files",
 		RunE: func(_ *cobra.Command, args []string) error {
-			if len(args) != 1 {
-				return fmt.Errorf("%w, got %d", errWrongArgCount, len(args))
+			for _, arg := range args {
+				if err := generate.File(arg); err != nil {
+					return fmt.Errorf("failed to generate %q: %w", arg, err)
+				}
 			}
-			return generate.File(args[0])
+			return nil
 		},
 	}
 
