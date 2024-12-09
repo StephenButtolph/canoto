@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  run:
+  benchmark:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,30 +39,15 @@ jobs:
           go test -bench=. -benchmem -count=1  ./... > old.txt
           git reset --hard $HEAD
 
-      - name: Compare benchmarks
-        run: |
-          OUTPUT=$(benchstat old.txt new.txt)
-          echo "diff<<EOF" >> $GITHUB_OUTPUT && echo "$OUTPUT" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
-          echo "result<<EOF" >> $GITHUB_OUTPUT && echo "$OUTPUT" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
-
       - name: Comment benchmark result
         continue-on-error: true
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          header: bench
+          header: benchmark
           message: |
             ### Benchmark Result
             <details><summary>Benchmark diff with base branch</summary>
 
-            ```
-            ${{ steps.run.outputs.diff }}
-            ```
-            </details>
-
-            <details><summary>Benchmark result</summary>
-
-            ```
-            ${{ steps.run.outputs.result }}
-            ```
+            $(benchstat old.txt new.txt)
             </details>
