@@ -25,11 +25,11 @@ var (
 	ErrZeroValue         = errors.New("zero value")
 	ErrUnknownField      = errors.New("unknown field")
 
-	errOverflow      = errors.New("overflow")
-	errPaddedZeroes  = errors.New("varint has padded zeroes")
-	errInvalidBool   = errors.New("decoded bool is neither true nor false")
-	errInvalidLength = errors.New("decoded length is invalid")
-	errStringNotUTF8 = errors.New("decoded string is not UTF-8")
+	ErrOverflow      = errors.New("overflow")
+	ErrPaddedZeroes  = errors.New("varint has padded zeroes")
+	ErrInvalidBool   = errors.New("decoded bool is neither true nor false")
+	ErrInvalidLength = errors.New("decoded length is invalid")
+	ErrStringNotUTF8 = errors.New("decoded string is not UTF-8")
 )
 
 type (
@@ -100,14 +100,14 @@ func ReadInt[T Int](r *Reader) (T, error) {
 	case bytesRead == 0:
 		return 0, io.ErrUnexpectedEOF
 	case bytesRead < 0 || uint64(T(val)) != val:
-		return 0, errOverflow
+		return 0, ErrOverflow
 	// To ensure decoding is canonical, we check for padded zeroes in the
 	// varint.
 	// The last byte of the varint includes the most significant bits.
 	// If the last byte is 0, then the number should have been encoded more
 	// efficiently by removing this zero.
 	case bytesRead > 1 && r.B[bytesRead-1] == 0x00:
-		return 0, errPaddedZeroes
+		return 0, ErrPaddedZeroes
 	default:
 		r.B = r.B[bytesRead:]
 		return T(val), nil
@@ -144,7 +144,7 @@ func ReadSint[T Sint](r *Reader) (T, error) {
 	// cast. In this case, casting back to uint64 would result in a different
 	// value.
 	if uint64(val) != uVal {
-		return 0, errOverflow
+		return 0, ErrOverflow
 	}
 
 	if largeVal&1 != 0 {
@@ -194,7 +194,7 @@ func ReadBool(r *Reader) (bool, error) {
 	case len(r.B) < SizeBool:
 		return false, io.ErrUnexpectedEOF
 	case r.B[0] > trueByte:
-		return false, errInvalidBool
+		return false, ErrInvalidBool
 	default:
 		isTrue := r.B[0] == trueByte
 		r.B = r.B[SizeBool:]
@@ -220,7 +220,7 @@ func ReadString(r *Reader) (string, error) {
 		return "", err
 	}
 	if length < 0 {
-		return "", errInvalidLength
+		return "", ErrInvalidLength
 	}
 	if length > int32(len(r.B)) {
 		return "", io.ErrUnexpectedEOF
@@ -228,7 +228,7 @@ func ReadString(r *Reader) (string, error) {
 
 	bytes := r.B[:length]
 	if !utf8.Valid(bytes) {
-		return "", errStringNotUTF8
+		return "", ErrStringNotUTF8
 	}
 
 	r.B = r.B[length:]
@@ -244,7 +244,7 @@ func ReadBytes(r *Reader) ([]byte, error) {
 		return nil, err
 	}
 	if length < 0 {
-		return nil, errInvalidLength
+		return nil, ErrInvalidLength
 	}
 	if length > int32(len(r.B)) {
 		return nil, io.ErrUnexpectedEOF

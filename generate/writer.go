@@ -1,4 +1,4 @@
-package canoto
+package generate
 
 import (
 	"encoding/hex"
@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 	"strings"
+
+	"github.com/StephenButtolph/canoto"
 )
 
 const (
@@ -260,7 +262,7 @@ func makeTagConstants(m message) (string, error) {
 			return "", err
 		}
 
-		tagBytes := Tag(f.fieldNumber, wireType)
+		tagBytes := canoto.Tag(f.fieldNumber, wireType)
 		tagHex := hex.EncodeToString(tagBytes)
 		for i := 0; i < len(tagHex); i += 2 {
 			_, _ = fmt.Fprintf(&tagConstants, "\\x%s", tagHex[i:i+2])

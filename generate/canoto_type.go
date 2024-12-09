@@ -1,4 +1,4 @@
-package canoto
+package generate
 
 import (
 	"errors"

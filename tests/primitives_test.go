@@ -1,4 +1,4 @@
-package canoto
+package tests
 
 import (
 	"encoding/hex"
@@ -10,10 +10,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/thepudds/fzgen/fuzzer"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/reflect/protoreflect"
 
-	"github.com/StephenButtolph/canoto/internal/proto/pb"
+	. "github.com/StephenButtolph/canoto"
 )
 
 type validTest[T any] struct {
@@ -76,18 +74,18 @@ func TestReadTag(t *testing.T) {
 		{"8080808080808080", io.ErrUnexpectedEOF},
 		{"808080808080808080", io.ErrUnexpectedEOF},
 		{"80808080808080808080", io.ErrUnexpectedEOF},
-		{"8080808080808080808080", errOverflow},
-		{"ffffffffffffffffff02", errOverflow},
-		{"8180808080808080808000", errOverflow},
-		{"8100", errPaddedZeroes},
-		{"818000", errPaddedZeroes},
-		{"81808000", errPaddedZeroes},
-		{"8180808000", errPaddedZeroes},
-		{"818080808000", errPaddedZeroes},
-		{"81808080808000", errPaddedZeroes},
-		{"8180808080808000", errPaddedZeroes},
-		{"818080808080808000", errPaddedZeroes},
-		{"81808080808080808000", errPaddedZeroes},
+		{"8080808080808080808080", ErrOverflow},
+		{"ffffffffffffffffff02", ErrOverflow},
+		{"8180808080808080808000", ErrOverflow},
+		{"8100", ErrPaddedZeroes},
+		{"818000", ErrPaddedZeroes},
+		{"81808000", ErrPaddedZeroes},
+		{"8180808000", ErrPaddedZeroes},
+		{"818080808000", ErrPaddedZeroes},
+		{"81808080808000", ErrPaddedZeroes},
+		{"8180808080808000", ErrPaddedZeroes},
+		{"818080808080808000", ErrPaddedZeroes},
+		{"81808080808080808000", ErrPaddedZeroes},
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
@@ -167,27 +165,27 @@ func TestReadInt_int32(t *testing.T) {
 		{"8080808080808080", io.ErrUnexpectedEOF},
 		{"808080808080808080", io.ErrUnexpectedEOF},
 		{"80808080808080808080", io.ErrUnexpectedEOF},
-		{"ffffffff7f", errOverflow},
-		{"808080808001", errOverflow},
-		{"ffffffffff7f", errOverflow},
-		{"80808080808001", errOverflow},
-		{"ffffffffffff7f", errOverflow},
-		{"8080808080808001", errOverflow},
-		{"ffffffffffffff7f", errOverflow},
-		{"808080808080808001", errOverflow},
-		{"ffffffffffffffff7f", errOverflow},
-		{"8080808080808080808080", errOverflow},
-		{"ffffffffffffffffff02", errOverflow},
-		{"8180808080808080808000", errOverflow},
-		{"8100", errPaddedZeroes},
-		{"818000", errPaddedZeroes},
-		{"81808000", errPaddedZeroes},
-		{"8180808000", errPaddedZeroes},
-		{"818080808000", errPaddedZeroes},
-		{"81808080808000", errPaddedZeroes},
-		{"8180808080808000", errPaddedZeroes},
-		{"818080808080808000", errPaddedZeroes},
-		{"81808080808080808000", errPaddedZeroes},
+		{"ffffffff7f", ErrOverflow},
+		{"808080808001", ErrOverflow},
+		{"ffffffffff7f", ErrOverflow},
+		{"80808080808001", ErrOverflow},
+		{"ffffffffffff7f", ErrOverflow},
+		{"8080808080808001", ErrOverflow},
+		{"ffffffffffffff7f", ErrOverflow},
+		{"808080808080808001", ErrOverflow},
+		{"ffffffffffffffff7f", ErrOverflow},
+		{"8080808080808080808080", ErrOverflow},
+		{"ffffffffffffffffff02", ErrOverflow},
+		{"8180808080808080808000", ErrOverflow},
+		{"8100", ErrPaddedZeroes},
+		{"818000", ErrPaddedZeroes},
+		{"81808000", ErrPaddedZeroes},
+		{"8180808000", ErrPaddedZeroes},
+		{"818080808000", ErrPaddedZeroes},
+		{"81808080808000", ErrPaddedZeroes},
+		{"8180808080808000", ErrPaddedZeroes},
+		{"818080808080808000", ErrPaddedZeroes},
+		{"81808080808080808000", ErrPaddedZeroes},
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
@@ -290,18 +288,18 @@ func TestReadInt_int64(t *testing.T) {
 		{"8080808080808080", io.ErrUnexpectedEOF},
 		{"808080808080808080", io.ErrUnexpectedEOF},
 		{"80808080808080808080", io.ErrUnexpectedEOF},
-		{"8080808080808080808080", errOverflow},
-		{"ffffffffffffffffff02", errOverflow},
-		{"8180808080808080808000", errOverflow},
-		{"8100", errPaddedZeroes},
-		{"818000", errPaddedZeroes},
-		{"81808000", errPaddedZeroes},
-		{"8180808000", errPaddedZeroes},
-		{"818080808000", errPaddedZeroes},
-		{"81808080808000", errPaddedZeroes},
-		{"8180808080808000", errPaddedZeroes},
-		{"818080808080808000", errPaddedZeroes},
-		{"81808080808080808000", errPaddedZeroes},
+		{"8080808080808080808080", ErrOverflow},
+		{"ffffffffffffffffff02", ErrOverflow},
+		{"8180808080808080808000", ErrOverflow},
+		{"8100", ErrPaddedZeroes},
+		{"818000", ErrPaddedZeroes},
+		{"81808000", ErrPaddedZeroes},
+		{"8180808000", ErrPaddedZeroes},
+		{"818080808000", ErrPaddedZeroes},
+		{"81808080808000", ErrPaddedZeroes},
+		{"8180808080808000", ErrPaddedZeroes},
+		{"818080808080808000", ErrPaddedZeroes},
+		{"81808080808080808000", ErrPaddedZeroes},
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
@@ -394,19 +392,19 @@ func TestReadInt_uint32(t *testing.T) {
 		{"8080808080808080", io.ErrUnexpectedEOF},
 		{"808080808080808080", io.ErrUnexpectedEOF},
 		{"80808080808080808080", io.ErrUnexpectedEOF},
-		{"8080808080808080808080", errOverflow},
-		{"8080808080808080808080", errOverflow},
-		{"ffffffff10", errOverflow},
-		{"8180808080808080808000", errOverflow},
-		{"8100", errPaddedZeroes},
-		{"818000", errPaddedZeroes},
-		{"81808000", errPaddedZeroes},
-		{"8180808000", errPaddedZeroes},
-		{"818080808000", errPaddedZeroes},
-		{"81808080808000", errPaddedZeroes},
-		{"8180808080808000", errPaddedZeroes},
-		{"818080808080808000", errPaddedZeroes},
-		{"81808080808080808000", errPaddedZeroes},
+		{"8080808080808080808080", ErrOverflow},
+		{"8080808080808080808080", ErrOverflow},
+		{"ffffffff10", ErrOverflow},
+		{"8180808080808080808000", ErrOverflow},
+		{"8100", ErrPaddedZeroes},
+		{"818000", ErrPaddedZeroes},
+		{"81808000", ErrPaddedZeroes},
+		{"8180808000", ErrPaddedZeroes},
+		{"818080808000", ErrPaddedZeroes},
+		{"81808080808000", ErrPaddedZeroes},
+		{"8180808080808000", ErrPaddedZeroes},
+		{"818080808080808000", ErrPaddedZeroes},
+		{"81808080808080808000", ErrPaddedZeroes},
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
@@ -509,18 +507,18 @@ func TestReadInt_uint64(t *testing.T) {
 		{"8080808080808080", io.ErrUnexpectedEOF},
 		{"808080808080808080", io.ErrUnexpectedEOF},
 		{"80808080808080808080", io.ErrUnexpectedEOF},
-		{"8080808080808080808080", errOverflow},
-		{"ffffffffffffffffff02", errOverflow},
-		{"8180808080808080808000", errOverflow},
-		{"8100", errPaddedZeroes},
-		{"818000", errPaddedZeroes},
-		{"81808000", errPaddedZeroes},
-		{"8180808000", errPaddedZeroes},
-		{"818080808000", errPaddedZeroes},
-		{"81808080808000", errPaddedZeroes},
-		{"8180808080808000", errPaddedZeroes},
-		{"818080808080808000", errPaddedZeroes},
-		{"81808080808080808000", errPaddedZeroes},
+		{"8080808080808080808080", ErrOverflow},
+		{"ffffffffffffffffff02", ErrOverflow},
+		{"8180808080808080808000", ErrOverflow},
+		{"8100", ErrPaddedZeroes},
+		{"818000", ErrPaddedZeroes},
+		{"81808000", ErrPaddedZeroes},
+		{"8180808000", ErrPaddedZeroes},
+		{"818080808000", ErrPaddedZeroes},
+		{"81808080808000", ErrPaddedZeroes},
+		{"8180808080808000", ErrPaddedZeroes},
+		{"818080808080808000", ErrPaddedZeroes},
+		{"81808080808080808000", ErrPaddedZeroes},
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
@@ -597,19 +595,19 @@ func TestReadSint_int32(t *testing.T) {
 		{"8080808080808080", io.ErrUnexpectedEOF},
 		{"808080808080808080", io.ErrUnexpectedEOF},
 		{"80808080808080808080", io.ErrUnexpectedEOF},
-		{"ffffffff10", errOverflow},
-		{"8080808080808080808080", errOverflow},
-		{"ffffffffffffffffff02", errOverflow},
-		{"8180808080808080808000", errOverflow},
-		{"8100", errPaddedZeroes},
-		{"818000", errPaddedZeroes},
-		{"81808000", errPaddedZeroes},
-		{"8180808000", errPaddedZeroes},
-		{"818080808000", errPaddedZeroes},
-		{"81808080808000", errPaddedZeroes},
-		{"8180808080808000", errPaddedZeroes},
-		{"818080808080808000", errPaddedZeroes},
-		{"81808080808080808000", errPaddedZeroes},
+		{"ffffffff10", ErrOverflow},
+		{"8080808080808080808080", ErrOverflow},
+		{"ffffffffffffffffff02", ErrOverflow},
+		{"8180808080808080808000", ErrOverflow},
+		{"8100", ErrPaddedZeroes},
+		{"818000", ErrPaddedZeroes},
+		{"81808000", ErrPaddedZeroes},
+		{"8180808000", ErrPaddedZeroes},
+		{"818080808000", ErrPaddedZeroes},
+		{"81808080808000", ErrPaddedZeroes},
+		{"8180808080808000", ErrPaddedZeroes},
+		{"818080808080808000", ErrPaddedZeroes},
+		{"81808080808080808000", ErrPaddedZeroes},
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
@@ -686,18 +684,18 @@ func TestReadSint_int64(t *testing.T) {
 		{"8080808080808080", io.ErrUnexpectedEOF},
 		{"808080808080808080", io.ErrUnexpectedEOF},
 		{"80808080808080808080", io.ErrUnexpectedEOF},
-		{"8080808080808080808080", errOverflow},
-		{"ffffffffffffffffff02", errOverflow},
-		{"8180808080808080808000", errOverflow},
-		{"8100", errPaddedZeroes},
-		{"818000", errPaddedZeroes},
-		{"81808000", errPaddedZeroes},
-		{"8180808000", errPaddedZeroes},
-		{"818080808000", errPaddedZeroes},
-		{"81808080808000", errPaddedZeroes},
-		{"8180808080808000", errPaddedZeroes},
-		{"818080808080808000", errPaddedZeroes},
-		{"81808080808080808000", errPaddedZeroes},
+		{"8080808080808080808080", ErrOverflow},
+		{"ffffffffffffffffff02", ErrOverflow},
+		{"8180808080808080808000", ErrOverflow},
+		{"8100", ErrPaddedZeroes},
+		{"818000", ErrPaddedZeroes},
+		{"81808000", ErrPaddedZeroes},
+		{"8180808000", ErrPaddedZeroes},
+		{"818080808000", ErrPaddedZeroes},
+		{"81808080808000", ErrPaddedZeroes},
+		{"8180808080808000", ErrPaddedZeroes},
+		{"818080808080808000", ErrPaddedZeroes},
+		{"81808080808080808000", ErrPaddedZeroes},
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
@@ -990,8 +988,8 @@ func TestReadBool(t *testing.T) {
 
 	invalidTests := []invalidTest{
 		{"", io.ErrUnexpectedEOF},
-		{"02", errInvalidBool},
-		{"ff", errInvalidBool},
+		{"02", ErrInvalidBool},
+		{"ff", ErrInvalidBool},
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
@@ -1058,10 +1056,10 @@ func TestReadString(t *testing.T) {
 
 	invalidTests := []invalidTest{
 		{"", io.ErrUnexpectedEOF},
-		{"870074657374696e67", errPaddedZeroes},
-		{"ffffffffffffffffff01", errInvalidLength},
+		{"870074657374696e67", ErrPaddedZeroes},
+		{"ffffffffffffffffff01", ErrInvalidLength},
 		{"01", io.ErrUnexpectedEOF},
-		{"01C2", errStringNotUTF8},
+		{"01C2", ErrStringNotUTF8},
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
@@ -1091,8 +1089,8 @@ func TestReadBytes(t *testing.T) {
 
 	invalidTests := []invalidTest{
 		{"", io.ErrUnexpectedEOF},
-		{"870074657374696e67", errPaddedZeroes},
-		{"ffffffffffffffffff01", errInvalidLength},
+		{"870074657374696e67", ErrPaddedZeroes},
+		{"ffffffffffffffffff01", ErrInvalidLength},
 		{"01", io.ErrUnexpectedEOF},
 	}
 	for _, test := range invalidTests {
@@ -1136,163 +1134,4 @@ func FuzzAppendBytes_bytes(f *testing.F) {
 		require.Equal(v, got)
 		require.Empty(r.B)
 	})
-}
-
-func TestAppend_ProtoCompatibility(t *testing.T) {
-	tests := []struct {
-		name  string
-		proto protoreflect.ProtoMessage
-		f     func(*Writer)
-	}{
-		{
-			name: "int32",
-			proto: &pb.Scalars{
-				Int32: 128,
-			},
-			f: func(w *Writer) {
-				Append(w, Tag(1, Varint))
-				AppendInt[int32](w, 128)
-			},
-		},
-		{
-			name: "int64",
-			proto: &pb.Scalars{
-				Int64: 259,
-			},
-			f: func(w *Writer) {
-				Append(w, Tag(2, Varint))
-				AppendInt[int64](w, 259)
-			},
-		},
-		{
-			name: "uint32",
-			proto: &pb.Scalars{
-				Uint32: 1234,
-			},
-			f: func(w *Writer) {
-				Append(w, Tag(3, Varint))
-				AppendInt[uint32](w, 1234)
-			},
-		},
-		{
-			name: "uint64",
-			proto: &pb.Scalars{
-				Uint64: 2938567,
-			},
-			f: func(w *Writer) {
-				Append(w, Tag(4, Varint))
-				AppendInt[uint64](w, 2938567)
-			},
-		},
-		{
-			name: "sint32",
-			proto: &pb.Scalars{
-				Sint32: -2136745,
-			},
-			f: func(w *Writer) {
-				Append(w, Tag(5, Varint))
-				AppendSint[int32](w, -2136745)
-			},
-		},
-		{
-			name: "sint64",
-			proto: &pb.Scalars{
-				Sint64: -9287364,
-			},
-			f: func(w *Writer) {
-				Append(w, Tag(6, Varint))
-				AppendSint[int64](w, -9287364)
-			},
-		},
-		{
-			name: "fixed32",
-			proto: &pb.Scalars{
-				Fixed32: 876254,
-			},
-			f: func(w *Writer) {
-				Append(w, Tag(7, I32))
-				AppendFint32[uint32](w, 876254)
-			},
-		},
-		{
-			name: "fixed64",
-			proto: &pb.Scalars{
-				Fixed64: 328137645632,
-			},
-			f: func(w *Writer) {
-				Append(w, Tag(8, I64))
-				AppendFint64[uint64](w, 328137645632)
-			},
-		},
-		{
-			name: "sfixed32",
-			proto: &pb.Scalars{
-				Sfixed32: -123463246,
-			},
-			f: func(w *Writer) {
-				Append(w, Tag(9, I32))
-				AppendFint32[int32](w, -123463246)
-			},
-		},
-		{
-			name: "sfixed64",
-			proto: &pb.Scalars{
-				Sfixed64: -8762135423,
-			},
-			f: func(w *Writer) {
-				Append(w, Tag(10, I64))
-				AppendFint64[int64](w, -8762135423)
-			},
-		},
-		{
-			name: "bool",
-			proto: &pb.Scalars{
-				Bool: true,
-			},
-			f: func(w *Writer) {
-				Append(w, Tag(11, Varint))
-				AppendBool(w, true)
-			},
-		},
-		{
-			name: "string",
-			proto: &pb.Scalars{
-				String_: "hi mom!",
-			},
-			f: func(w *Writer) {
-				Append(w, Tag(12, Len))
-				AppendBytes(w, "hi mom!")
-			},
-		},
-		{
-			name: "bytes",
-			proto: &pb.Scalars{
-				Bytes: []byte("hi dad!"),
-			},
-			f: func(w *Writer) {
-				Append(w, Tag(13, Len))
-				AppendBytes(w, []byte("hi dad!"))
-			},
-		},
-		{
-			name: "largest field number",
-			proto: &pb.LargestFieldNumber{
-				Int32: 1,
-			},
-			f: func(w *Writer) {
-				Append(w, Tag(MaxFieldNumber, Varint))
-				AppendInt[int32](w, 1)
-			},
-		},
-	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			pbBytes, err := proto.Marshal(test.proto)
-			require.NoError(t, err)
-
-			w := &Writer{}
-			test.f(w)
-			require.Equal(t, pbBytes, w.B)
-		})
-	}
 }
