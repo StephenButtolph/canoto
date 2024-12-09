@@ -56,13 +56,13 @@ jobs:
             <details><summary>Benchmark diff with base branch</summary>
 
             ```
-            ${{ steps.bench.outputs.diff }}
+            ${{ steps.run.outputs.diff }}
             ```
             </details>
 
             <details><summary>Benchmark result</summary>
 
             ```
-            ${{ steps.bench.outputs.result }}
+            ${{ steps.run.outputs.result }}
             ```
             </details>
