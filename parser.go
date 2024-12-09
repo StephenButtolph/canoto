@@ -244,7 +244,6 @@ func makeTemplateArgs(structName string, field field) (map[string]string, error)
 			args["readFunction"] = "String"
 		case goBytes:
 			args["readFunction"] = "Bytes"
-		default:
 		}
 	default:
 		return nil, fmt.Errorf("%w: %q", errUnexpectedCanotoType, field.canotoType)
