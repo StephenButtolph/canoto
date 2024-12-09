@@ -2,8 +2,6 @@ module github.com/StephenButtolph/canoto/generate
 
 go 1.22.9
 
-replace github.com/StephenButtolph/canoto => ./..
-
 require (
 	github.com/StephenButtolph/canoto v0.0.0-20241209012112-9ba099fee1b3
 	github.com/fatih/structtag v1.2.0
