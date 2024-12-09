@@ -1,5 +1,7 @@
 github.com/StephenButtolph/canoto v0.0.0-20241209012112-9ba099fee1b3 h1:j/ZOGsEoqLiDuxn/Nvh+WKucoYoxAgrs2PbJwO590R8=
 github.com/StephenButtolph/canoto v0.0.0-20241209012112-9ba099fee1b3/go.mod h1:pa6nEyLM9ygPy3+x4f+pGVLc58pHS0GZrP5Upyy/Z0s=
+github.com/StephenButtolph/canoto v0.0.0-20241209154012-3f102a91fb10 h1:8SwYykxxe6VYZpXTe7H7zUQYg9FwVYxUY9sVMLXkqE8=
+github.com/StephenButtolph/canoto v0.0.0-20241209154012-3f102a91fb10/go.mod h1:X7kio6Gzkjb2OEgq84Z8AtzDowPesSOsIre1bn6dzb0=
 github.com/cpuguy83/go-md2man/v2 v2.0.4/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

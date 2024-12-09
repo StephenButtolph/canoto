@@ -3,7 +3,7 @@ module github.com/StephenButtolph/canoto/generate
 go 1.22.9
 
 require (
-	github.com/StephenButtolph/canoto v0.0.0-20241209012112-9ba099fee1b3
+	github.com/StephenButtolph/canoto v0.0.0-20241209154012-3f102a91fb10
 	github.com/fatih/structtag v1.2.0
 	github.com/stretchr/testify v1.10.0
 	google.golang.org/protobuf v1.35.2
