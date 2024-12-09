@@ -1,4 +1,4 @@
-package tests
+package canoto_test
 
 import (
 	"encoding/hex"
