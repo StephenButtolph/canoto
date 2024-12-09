@@ -41,15 +41,21 @@ jobs:
           go test -bench=. -benchmem -count=1  ./... > old.txt
           git reset --hard $HEAD
 
+      - name: Compare benchmarks
+        run: |
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          {
+            echo "RESULT<<$EOF"
+            benchstat old.txt new.txt
+            echo "$EOF"
+          } >> "$GITHUB_ENV"
+
       - name: Comment benchmark result
         continue-on-error: true
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          header: benchmark
           message: |
-            ### Benchmark Result
-            <details><summary>Benchmark diff with base branch</summary>
-
-            $(benchstat old.txt new.txt)
-            </details>
+            ```
+            ${{ env.RESULT }}
+            ```
