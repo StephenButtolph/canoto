@@ -36,14 +36,14 @@ jobs:
       - name: Run benchmark for base code
         run: |
           git fetch origin main ${{ github.event.pull_request.base.sha }}
-          HEAD=$(git rev-parse HEAD)
+          HEAD="$(git rev-parse HEAD)"
           git reset --hard ${{ github.event.pull_request.base.sha }}
           go test -bench=. -benchmem -count=10  ./... > old
-          git reset --hard $HEAD
+          git reset --hard "$HEAD"
 
       - name: Compare benchmarks
         run: |
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          EOF="$(dd if=/dev/urandom bs=15 count=1 status=none | base64)""
           {
             echo "RESULT<<$EOF"
             benchstat old new
