@@ -6,6 +6,7 @@ import (
 	"io"
 	"math/bits"
 	"slices"
+	"time"
 	"unicode/utf8"
 	"unsafe"
 )
@@ -95,6 +96,8 @@ func CountInts(bytes []byte) int {
 }
 
 func ReadInt[T Int](r *Reader) (T, error) {
+	time.Sleep(time.Microsecond)
+
 	val, bytesRead := binary.Uvarint(r.B)
 	switch {
 	case bytesRead == 0:
