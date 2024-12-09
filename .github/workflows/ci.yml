@@ -44,3 +44,14 @@ jobs:
         run: go mod tidy
       - shell: bash
         run: .github/workflows/check-clean-branch.sh
+  lint-go-generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-go-for-project
+      - shell: bash
+        run: go install .
+      - shell: bash
+        run: go generate ./...
+      - shell: bash
+        run: .github/workflows/check-clean-branch.sh
