@@ -24,6 +24,10 @@ jobs:
           ref: ${{ (github.event.inputs.new != '') && github.event.inputs.new || github.event.ref }}
       - uses: ./.github/actions/setup-go-for-project
 
+
+      - name: Install benchstat
+        run: go install golang.org/x/perf/cmd/benchstat@latest
+
       - name: Run benchmarks
         run: go test -bench=. -benchmem -count=1  ./... > new.txt
 
@@ -35,16 +39,10 @@ jobs:
           go test -bench=. -benchmem -count=1  ./... > old.txt
           git reset --hard $HEAD
 
-      - name: Benchmark stats
+      - name: Compare benchmarks
         run: |
-          cat new.txt
-          cat old.txt
-          export REF_NAME=new
-          OUTPUT=$(make bench-stat-diff)
-          echo "${OUTPUT}"
+          OUTPUT=$(benchstat old.txt new.txt)
           echo "diff<<EOF" >> $GITHUB_OUTPUT && echo "$OUTPUT" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
-          OUTPUT=$(make bench-stat)
-          echo "${OUTPUT}"
           echo "result<<EOF" >> $GITHUB_OUTPUT && echo "$OUTPUT" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Comment benchmark result
