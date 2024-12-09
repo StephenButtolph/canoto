@@ -3,7 +3,7 @@ module github.com/StephenButtolph/canoto/canoto
 go 1.22.9
 
 require (
-	github.com/StephenButtolph/canoto v0.0.0-20241209154358-43cdc6ce459d
+	github.com/StephenButtolph/canoto v0.0.0-20241209154925-ba83f3cd6d28
 	github.com/StephenButtolph/canoto/generate v0.0.0-20241209154358-43cdc6ce459d
 	github.com/fatih/structtag v1.2.0
 	github.com/spf13/cobra v1.8.1

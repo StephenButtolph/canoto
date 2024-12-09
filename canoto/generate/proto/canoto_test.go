@@ -8,7 +8,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/StephenButtolph/canoto"
-	"github.com/StephenButtolph/canoto/canoto/proto/pb"
+	"github.com/StephenButtolph/canoto/canoto/generate/proto/pb"
 )
 
 func TestAppend_ProtoCompatibility(t *testing.T) {
