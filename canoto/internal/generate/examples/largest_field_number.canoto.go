@@ -18,6 +18,7 @@ const (
 )
 
 type canotoData_LargestFieldNumber struct {
+	size int
 }
 
 
@@ -64,17 +65,21 @@ func (c *LargestFieldNumber) ValidCanoto() bool {
 	return true
 }
 
-func (c *LargestFieldNumber) SizeCanoto() int {
-	var size int
+func (c *LargestFieldNumber) CalculateCanotoSize() int {
+	c.canotoData.size = 0
 	if c.Int32 != 0 {
-		size += canoto__LargestFieldNumber__Int32__tag__size + canoto.SizeInt(c.Int32)
+		c.canotoData.size += canoto__LargestFieldNumber__Int32__tag__size + canoto.SizeInt(c.Int32)
 	}
-	return size
+	return c.canotoData.size
+}
+
+func (c *LargestFieldNumber) CachedCanotoSize() int {
+	return c.canotoData.size
 }
 
 func (c *LargestFieldNumber) MarshalCanoto() []byte {
 	w := canoto.Writer{
-		B: make([]byte, 0, c.SizeCanoto()),
+		B: make([]byte, 0, c.CalculateCanotoSize()),
 	}
 	c.MarshalCanotoInto(&w)
 	return w.B

@@ -31,6 +31,7 @@ ${tagConstants}
 ${tagSizeConstants})
 
 type canotoData_${structName} struct {
+	size int
 ${sizeCache}}
 
 
@@ -66,14 +67,18 @@ func (c *${structName}) ValidCanoto() bool {
 	return ${validityConditions}
 }
 
-func (c *${structName}) SizeCanoto() int {
-	var size int
-${sizeIfs}	return size
+func (c *${structName}) CalculateCanotoSize() int {
+	c.canotoData.size = 0
+${sizeIfs}	return c.canotoData.size
+}
+
+func (c *${structName}) CachedCanotoSize() int {
+	return c.canotoData.size
 }
 
 func (c *${structName}) MarshalCanoto() []byte {
 	w := canoto.Writer{
-		B: make([]byte, 0, c.SizeCanoto()),
+		B: make([]byte, 0, c.CalculateCanotoSize()),
 	}
 	c.MarshalCanotoInto(&w)
 	return w.B
@@ -149,33 +154,32 @@ ${marshalIfs}}
 `
 
 	sizeIfIntTemplate = `	if c.${fieldName} != 0 {
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeInt(c.${fieldName})
+		c.canotoData.size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeInt(c.${fieldName})
 	}
 `
 
 	sizeIfSintTemplate = `	if c.${fieldName} != 0 {
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeSint(c.${fieldName})
+		c.canotoData.size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeSint(c.${fieldName})
 	}
 `
 
 	sizeIfFixedSizeTemplate = `	if c.${fieldName} != 0 {
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeFint${bitSize}
+		c.canotoData.size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeFint${bitSize}
 	}
 `
 
 	sizeIfBoolTemplate = `	if c.${fieldName} {
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeBool
+		c.canotoData.size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeBool
 	}
 `
 
 	sizeIfBytesTemplate = `	if len(c.${fieldName}) != 0 {
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeBytes(c.${fieldName})
+		c.canotoData.size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeBytes(c.${fieldName})
 	}
 `
 
-	sizeIfCustomTemplate = `	c.canotoData.${fieldName}Size = c.${fieldName}.SizeCanoto()
-	if c.canotoData.${fieldName}Size != 0 {
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeInt(int64(c.canotoData.${fieldName}Size)) + c.canotoData.${fieldName}Size
+	sizeIfCustomTemplate = `	if fieldSize := c.${fieldName}.CalculateCanotoSize(); fieldSize != 0 {
+		c.canotoData.size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 `
 
@@ -209,9 +213,9 @@ ${marshalIfs}}
 	}
 `
 
-	marshalIfCustomTemplate = `	if c.canotoData.${fieldName}Size != 0 {
+	marshalIfCustomTemplate = `	if fieldSize := c.${fieldName}.CachedCanotoSize(); fieldSize != 0 {
 		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		canoto.AppendInt(w, int64(c.canotoData.${fieldName}Size))
+		canoto.AppendInt(w, int64(fieldSize))
 		c.${fieldName}.MarshalCanotoInto(w)
 	}
 `
@@ -311,7 +315,8 @@ func makeTagSizeConstants(m message) string {
 func makeSizeCache(m message) string {
 	var sizeCache strings.Builder
 	for _, f := range m.fields {
-		if f.goType.IsPrimitive() {
+		// TODO: Cache packed repeated field sizes here
+		if true {
 			continue
 		}
 
