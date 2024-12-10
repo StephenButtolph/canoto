@@ -46,6 +46,9 @@ func canonicalizeCanotoScalars(s Scalars) Scalars {
 	if len(s.RepeatedSfixed64) == 0 {
 		s.RepeatedSfixed64 = nil
 	}
+	if len(s.RepeatedBool) == 0 {
+		s.RepeatedBool = nil
+	}
 	s.canotoData = canotoData_Scalars{}
 	return s
 }
@@ -82,6 +85,7 @@ func canonicalizeProtoScalars(s *pb.Scalars) pb.Scalars {
 		RepeatedFixed64:    s.RepeatedFixed64,
 		RepeatedSfixed32:   s.RepeatedSfixed32,
 		RepeatedSfixed64:   s.RepeatedSfixed64,
+		RepeatedBool:       s.RepeatedBool,
 	}
 }
 
@@ -117,6 +121,7 @@ func canotoScalarsToProto(s Scalars) pb.Scalars {
 		RepeatedFixed64:    s.RepeatedFixed64,
 		RepeatedSfixed32:   s.RepeatedSfixed32,
 		RepeatedSfixed64:   s.RepeatedSfixed64,
+		RepeatedBool:       s.RepeatedBool,
 	}
 }
 
@@ -191,7 +196,41 @@ func FuzzScalars_Canonical(f *testing.F) {
 }
 
 func BenchmarkScalars_MarshalCanoto(b *testing.B) {
-	for range b.N {
+	b.Run("full stack", func(b *testing.B) {
+		for range b.N {
+			cbScalars := Scalars{
+				Int32:    216457,
+				Int64:    -2138746,
+				Uint32:   32485976,
+				Uint64:   287634,
+				Sint32:   -12786345,
+				Sint64:   98761243,
+				Fixed32:  98765234,
+				Fixed64:  1234576,
+				Sfixed32: -21348976,
+				Sfixed64: 98756432,
+				Bool:     true,
+				String:   "hi my name is Bob",
+				Bytes:    []byte("hi my name is Bob too"),
+				LargestFieldNumber: LargestFieldNumber{
+					Int32: 216457,
+				},
+				RepeatedInt32:    []int32{1, 2, 3},
+				RepeatedInt64:    []int64{1, 2, 3},
+				RepeatedUint32:   []uint32{1, 2, 3},
+				RepeatedUint64:   []uint64{1, 2, 3},
+				RepeatedSint32:   []int32{1, 2, 3},
+				RepeatedSint64:   []int64{1, 2, 3},
+				RepeatedFixed32:  []uint32{1, 2, 3},
+				RepeatedFixed64:  []uint64{1, 2, 3},
+				RepeatedSfixed32: []int32{1, 2, 3},
+				RepeatedSfixed64: []int64{1, 2, 3},
+				RepeatedBool:     []bool{true, false, true},
+			}
+			cbScalars.MarshalCanoto()
+		}
+	})
+	b.Run("full heap", func(b *testing.B) {
 		cbScalars := Scalars{
 			Int32:    216457,
 			Int64:    -2138746,
@@ -219,61 +258,182 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 			RepeatedFixed64:  []uint64{1, 2, 3},
 			RepeatedSfixed32: []int32{1, 2, 3},
 			RepeatedSfixed64: []int64{1, 2, 3},
+			RepeatedBool:     []bool{true, false, true},
 		}
-
-		cbScalars.MarshalCanoto()
-	}
+		for range b.N {
+			cbScalars.MarshalCanoto()
+		}
+	})
+	b.Run("primitives stack", func(b *testing.B) {
+		for range b.N {
+			cbScalars := Scalars{
+				Int32:    216457,
+				Int64:    -2138746,
+				Uint32:   32485976,
+				Uint64:   287634,
+				Sint32:   -12786345,
+				Sint64:   98761243,
+				Fixed32:  98765234,
+				Fixed64:  1234576,
+				Sfixed32: -21348976,
+				Sfixed64: 98756432,
+				Bool:     true,
+				String:   "hi my name is Bob",
+				Bytes:    []byte("hi my name is Bob too"),
+				LargestFieldNumber: LargestFieldNumber{
+					Int32: 216457,
+				},
+			}
+			cbScalars.MarshalCanoto()
+		}
+	})
+	b.Run("primitives heap", func(b *testing.B) {
+		cbScalars := Scalars{
+			Int32:    216457,
+			Int64:    -2138746,
+			Uint32:   32485976,
+			Uint64:   287634,
+			Sint32:   -12786345,
+			Sint64:   98761243,
+			Fixed32:  98765234,
+			Fixed64:  1234576,
+			Sfixed32: -21348976,
+			Sfixed64: 98756432,
+			Bool:     true,
+			String:   "hi my name is Bob",
+			Bytes:    []byte("hi my name is Bob too"),
+			LargestFieldNumber: LargestFieldNumber{
+				Int32: 216457,
+			},
+		}
+		for range b.N {
+			cbScalars.MarshalCanoto()
+		}
+	})
 }
 
 func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
-	cbScalars := Scalars{
-		Int32:    216457,
-		Int64:    -2138746,
-		Uint32:   32485976,
-		Uint64:   287634,
-		Sint32:   -12786345,
-		Sint64:   98761243,
-		Fixed32:  98765234,
-		Fixed64:  1234576,
-		Sfixed32: -21348976,
-		Sfixed64: 98756432,
-		Bool:     true,
-		String:   "hi my name is Bob",
-		Bytes:    []byte("hi my name is Bob too"),
-		LargestFieldNumber: LargestFieldNumber{
-			Int32: 216457,
-		},
-		RepeatedInt32:    []int32{1, 2, 3},
-		RepeatedInt64:    []int64{1, 2, 3},
-		RepeatedUint32:   []uint32{1, 2, 3},
-		RepeatedUint64:   []uint64{1, 2, 3},
-		RepeatedSint32:   []int32{1, 2, 3},
-		RepeatedSint64:   []int64{1, 2, 3},
-		RepeatedFixed32:  []uint32{1, 2, 3},
-		RepeatedFixed64:  []uint64{1, 2, 3},
-		RepeatedSfixed32: []int32{1, 2, 3},
-		RepeatedSfixed64: []int64{1, 2, 3},
-	}
-	bytes := cbScalars.MarshalCanoto()
+	b.Run("full", func(b *testing.B) {
+		cbScalars := Scalars{
+			Int32:    216457,
+			Int64:    -2138746,
+			Uint32:   32485976,
+			Uint64:   287634,
+			Sint32:   -12786345,
+			Sint64:   98761243,
+			Fixed32:  98765234,
+			Fixed64:  1234576,
+			Sfixed32: -21348976,
+			Sfixed64: 98756432,
+			Bool:     true,
+			String:   "hi my name is Bob",
+			Bytes:    []byte("hi my name is Bob too"),
+			LargestFieldNumber: LargestFieldNumber{
+				Int32: 216457,
+			},
+			RepeatedInt32:    []int32{1, 2, 3},
+			RepeatedInt64:    []int64{1, 2, 3},
+			RepeatedUint32:   []uint32{1, 2, 3},
+			RepeatedUint64:   []uint64{1, 2, 3},
+			RepeatedSint32:   []int32{1, 2, 3},
+			RepeatedSint64:   []int64{1, 2, 3},
+			RepeatedFixed32:  []uint32{1, 2, 3},
+			RepeatedFixed64:  []uint64{1, 2, 3},
+			RepeatedSfixed32: []int32{1, 2, 3},
+			RepeatedSfixed64: []int64{1, 2, 3},
+			RepeatedBool:     []bool{true, false, true},
+		}
+		bytes := cbScalars.MarshalCanoto()
 
-	for _, unsafe := range []bool{false, true} {
-		b.Run("unsafe="+strconv.FormatBool(unsafe), func(b *testing.B) {
-			for range b.N {
-				var (
-					scalars Scalars
-					reader  = canoto.Reader{
-						B:      bytes,
-						Unsafe: unsafe,
-					}
-				)
-				_ = scalars.UnmarshalCanotoFrom(&reader)
-			}
-		})
-	}
+		for _, unsafe := range []bool{false, true} {
+			b.Run("unsafe="+strconv.FormatBool(unsafe), func(b *testing.B) {
+				for range b.N {
+					var (
+						scalars Scalars
+						reader  = canoto.Reader{
+							B:      bytes,
+							Unsafe: unsafe,
+						}
+					)
+					_ = scalars.UnmarshalCanotoFrom(&reader)
+				}
+			})
+		}
+	})
+	b.Run("primitives", func(b *testing.B) {
+		cbScalars := Scalars{
+			Int32:    216457,
+			Int64:    -2138746,
+			Uint32:   32485976,
+			Uint64:   287634,
+			Sint32:   -12786345,
+			Sint64:   98761243,
+			Fixed32:  98765234,
+			Fixed64:  1234576,
+			Sfixed32: -21348976,
+			Sfixed64: 98756432,
+			Bool:     true,
+			String:   "hi my name is Bob",
+			Bytes:    []byte("hi my name is Bob too"),
+			LargestFieldNumber: LargestFieldNumber{
+				Int32: 216457,
+			},
+		}
+		bytes := cbScalars.MarshalCanoto()
+
+		for _, unsafe := range []bool{false, true} {
+			b.Run("unsafe="+strconv.FormatBool(unsafe), func(b *testing.B) {
+				for range b.N {
+					var (
+						scalars Scalars
+						reader  = canoto.Reader{
+							B:      bytes,
+							Unsafe: unsafe,
+						}
+					)
+					_ = scalars.UnmarshalCanotoFrom(&reader)
+				}
+			})
+		}
+	})
 }
 
 func BenchmarkScalars_MarshalProto(b *testing.B) {
-	for range b.N {
+	b.Run("full stack", func(b *testing.B) {
+		for range b.N {
+			pbScalars := pb.Scalars{
+				Int32:    216457,
+				Int64:    -2138746,
+				Uint32:   32485976,
+				Uint64:   287634,
+				Sint32:   -12786345,
+				Sint64:   98761243,
+				Fixed32:  98765234,
+				Fixed64:  1234576,
+				Sfixed32: -21348976,
+				Sfixed64: 98756432,
+				Bool:     true,
+				String_:  "hi my name is Bob",
+				Bytes:    []byte("hi my name is Bob too"),
+				LargestFieldNumber: &pb.LargestFieldNumber{
+					Int32: 216457,
+				},
+				RepeatedInt32:    []int32{1, 2, 3},
+				RepeatedInt64:    []int64{1, 2, 3},
+				RepeatedUint32:   []uint32{1, 2, 3},
+				RepeatedUint64:   []uint64{1, 2, 3},
+				RepeatedSint32:   []int32{1, 2, 3},
+				RepeatedSint64:   []int64{1, 2, 3},
+				RepeatedFixed32:  []uint32{1, 2, 3},
+				RepeatedFixed64:  []uint64{1, 2, 3},
+				RepeatedSfixed32: []int32{1, 2, 3},
+				RepeatedSfixed64: []int64{1, 2, 3},
+				RepeatedBool:     []bool{true, false, true},
+			}
+			_, _ = proto.Marshal(&pbScalars)
+		}
+	})
+	b.Run("full heap", func(b *testing.B) {
 		pbScalars := pb.Scalars{
 			Int32:    216457,
 			Int64:    -2138746,
@@ -301,51 +461,136 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 			RepeatedFixed64:  []uint64{1, 2, 3},
 			RepeatedSfixed32: []int32{1, 2, 3},
 			RepeatedSfixed64: []int64{1, 2, 3},
+			RepeatedBool:     []bool{true, false, true},
 		}
-		_, _ = proto.Marshal(&pbScalars)
-	}
+		for range b.N {
+			_, _ = proto.Marshal(&pbScalars)
+		}
+	})
+	b.Run("primitives stack", func(b *testing.B) {
+		for range b.N {
+			pbScalars := pb.Scalars{
+				Int32:    216457,
+				Int64:    -2138746,
+				Uint32:   32485976,
+				Uint64:   287634,
+				Sint32:   -12786345,
+				Sint64:   98761243,
+				Fixed32:  98765234,
+				Fixed64:  1234576,
+				Sfixed32: -21348976,
+				Sfixed64: 98756432,
+				Bool:     true,
+				String_:  "hi my name is Bob",
+				Bytes:    []byte("hi my name is Bob too"),
+				LargestFieldNumber: &pb.LargestFieldNumber{
+					Int32: 216457,
+				},
+			}
+			_, _ = proto.Marshal(&pbScalars)
+		}
+	})
+	b.Run("primitives heap", func(b *testing.B) {
+		pbScalars := pb.Scalars{
+			Int32:    216457,
+			Int64:    -2138746,
+			Uint32:   32485976,
+			Uint64:   287634,
+			Sint32:   -12786345,
+			Sint64:   98761243,
+			Fixed32:  98765234,
+			Fixed64:  1234576,
+			Sfixed32: -21348976,
+			Sfixed64: 98756432,
+			Bool:     true,
+			String_:  "hi my name is Bob",
+			Bytes:    []byte("hi my name is Bob too"),
+			LargestFieldNumber: &pb.LargestFieldNumber{
+				Int32: 216457,
+			},
+		}
+		for range b.N {
+			_, _ = proto.Marshal(&pbScalars)
+		}
+	})
 }
 
 func BenchmarkScalars_UnmarshalProto(b *testing.B) {
-	pbScalars := pb.Scalars{
-		Int32:    216457,
-		Int64:    -2138746,
-		Uint32:   32485976,
-		Uint64:   287634,
-		Sint32:   -12786345,
-		Sint64:   98761243,
-		Fixed32:  98765234,
-		Fixed64:  1234576,
-		Sfixed32: -21348976,
-		Sfixed64: 98756432,
-		Bool:     true,
-		String_:  "hi my name is Bob",
-		Bytes:    []byte("hi my name is Bob too"),
-		LargestFieldNumber: &pb.LargestFieldNumber{
-			Int32: 216457,
-		},
-		RepeatedInt32:    []int32{1, 2, 3},
-		RepeatedInt64:    []int64{1, 2, 3},
-		RepeatedUint32:   []uint32{1, 2, 3},
-		RepeatedUint64:   []uint64{1, 2, 3},
-		RepeatedSint32:   []int32{1, 2, 3},
-		RepeatedSint64:   []int64{1, 2, 3},
-		RepeatedFixed32:  []uint32{1, 2, 3},
-		RepeatedFixed64:  []uint64{1, 2, 3},
-		RepeatedSfixed32: []int32{1, 2, 3},
-		RepeatedSfixed64: []int64{1, 2, 3},
-	}
-	scalarsBytes, err := proto.Marshal(&pbScalars)
-	require.NoError(b, err)
+	b.Run("full", func(b *testing.B) {
+		pbScalars := pb.Scalars{
+			Int32:    216457,
+			Int64:    -2138746,
+			Uint32:   32485976,
+			Uint64:   287634,
+			Sint32:   -12786345,
+			Sint64:   98761243,
+			Fixed32:  98765234,
+			Fixed64:  1234576,
+			Sfixed32: -21348976,
+			Sfixed64: 98756432,
+			Bool:     true,
+			String_:  "hi my name is Bob",
+			Bytes:    []byte("hi my name is Bob too"),
+			LargestFieldNumber: &pb.LargestFieldNumber{
+				Int32: 216457,
+			},
+			RepeatedInt32:    []int32{1, 2, 3},
+			RepeatedInt64:    []int64{1, 2, 3},
+			RepeatedUint32:   []uint32{1, 2, 3},
+			RepeatedUint64:   []uint64{1, 2, 3},
+			RepeatedSint32:   []int32{1, 2, 3},
+			RepeatedSint64:   []int64{1, 2, 3},
+			RepeatedFixed32:  []uint32{1, 2, 3},
+			RepeatedFixed64:  []uint64{1, 2, 3},
+			RepeatedSfixed32: []int32{1, 2, 3},
+			RepeatedSfixed64: []int64{1, 2, 3},
+			RepeatedBool:     []bool{true, false, true},
+		}
+		scalarsBytes, err := proto.Marshal(&pbScalars)
+		require.NoError(b, err)
 
-	b.ResetTimer()
-	for range b.N {
-		var (
-			scalars pb.Scalars
-			reader  = proto.UnmarshalOptions{
-				Merge: true,
-			}
-		)
-		_ = reader.Unmarshal(scalarsBytes, &scalars)
-	}
+		b.ResetTimer()
+		for range b.N {
+			var (
+				scalars pb.Scalars
+				reader  = proto.UnmarshalOptions{
+					Merge: true,
+				}
+			)
+			_ = reader.Unmarshal(scalarsBytes, &scalars)
+		}
+	})
+	b.Run("primitives", func(b *testing.B) {
+		pbScalars := pb.Scalars{
+			Int32:    216457,
+			Int64:    -2138746,
+			Uint32:   32485976,
+			Uint64:   287634,
+			Sint32:   -12786345,
+			Sint64:   98761243,
+			Fixed32:  98765234,
+			Fixed64:  1234576,
+			Sfixed32: -21348976,
+			Sfixed64: 98756432,
+			Bool:     true,
+			String_:  "hi my name is Bob",
+			Bytes:    []byte("hi my name is Bob too"),
+			LargestFieldNumber: &pb.LargestFieldNumber{
+				Int32: 216457,
+			},
+		}
+		scalarsBytes, err := proto.Marshal(&pbScalars)
+		require.NoError(b, err)
+
+		b.ResetTimer()
+		for range b.N {
+			var (
+				scalars pb.Scalars
+				reader  = proto.UnmarshalOptions{
+					Merge: true,
+				}
+			)
+			_ = reader.Unmarshal(scalarsBytes, &scalars)
+		}
+	})
 }

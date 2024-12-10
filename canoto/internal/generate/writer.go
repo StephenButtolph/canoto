@@ -132,7 +132,7 @@ ${marshalIfs}}
 			r.B = remainingBytes
 `
 
-	unmarshalCaseRepeatedFintTemplate = `		case ${fieldNumber}:
+	unmarshalCaseRepeatedFixedSizeTemplate = `		case ${fieldNumber}:
 			if wireType != canoto.Len {
 				return canoto.ErrInvalidWireType
 			}
@@ -152,7 +152,7 @@ ${marshalIfs}}
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			c.${fieldName} = make([]${goType}, 0, numMsgBytes / canoto.SizeFint${bitSize})
+			c.${fieldName} = make([]${goType}, 0, numMsgBytes / canoto.Size${sizeConstant})
 			for canoto.HasNext(r) {
 				v, err := canoto.Read${readFunction}(r)
 				if err != nil {
@@ -231,12 +231,12 @@ ${marshalIfs}}
 `
 
 	sizeIfFixedSizeTemplate = `	if c.${fieldName} != 0 {
-		c.canotoData.size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeFint${bitSize}
+		c.canotoData.size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.Size${sizeConstant}
 	}
 `
 
 	sizeIfRepeatedFixedSizeTemplate = `	if num := len(c.${fieldName}); num != 0 {
-		fieldSize := num * canoto.SizeFint${bitSize}
+		fieldSize := num * canoto.Size${sizeConstant}
 		c.canotoData.size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 `
@@ -273,15 +273,15 @@ ${marshalIfs}}
 
 	marshalIfFintTemplate = `	if c.${fieldName} != 0 {
 		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		canoto.AppendFint${bitSize}(w, c.${fieldName})
+		canoto.Append${sizeConstant}(w, c.${fieldName})
 	}
 `
 
-	marshalIfRepeatedFintTemplate = `	if num := len(c.${fieldName}); num != 0 {
+	marshalIfRepeatedFixedSizeTemplate = `	if num := len(c.${fieldName}); num != 0 {
 		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		canoto.AppendInt(w, int64(num * canoto.SizeFint${bitSize}))
+		canoto.AppendInt(w, int64(num * canoto.Size${sizeConstant}))
 		for _, v := range c.${fieldName} {
-			canoto.AppendFint${bitSize}(w, v)
+			canoto.Append${sizeConstant}(w, v)
 		}
 	}
 `
@@ -421,17 +421,8 @@ func makeUnmarshalCases(m message) (string, error) {
 			switch f.canotoType {
 			case canotoInt, canotoSint:
 				template = unmarshalCaseRepeatedSimpleTemplate
-			case canotoFint:
-				template = unmarshalCaseRepeatedFintTemplate
-			// case canotoBool:
-			// 	template = unmarshalCaseBoolTemplate
-			// case canotoBytes:
-			// 	switch f.goType {
-			// 	case goString, goBytes:
-			// 		template = unmarshalCaseBytesTemplate
-			// 	default:
-			// 		template = unmarshalCaseCustomTemplate
-			// 	}
+			case canotoFint, canotoBool:
+				template = unmarshalCaseRepeatedFixedSizeTemplate
 			default:
 				return "", fmt.Errorf("%w: %q", errUnexpectedCanotoType, f.canotoType)
 			}
@@ -504,17 +495,8 @@ func makeSizeIfs(m message) (string, error) {
 			switch f.canotoType {
 			case canotoInt, canotoSint:
 				template = sizeIfRepeatedSimpleTemplate
-			case canotoFint:
+			case canotoFint, canotoBool:
 				template = sizeIfRepeatedFixedSizeTemplate
-			// case canotoBool:
-			// 	template = unmarshalCaseBoolTemplate
-			// case canotoBytes:
-			// 	switch f.goType {
-			// 	case goString, goBytes:
-			// 		template = unmarshalCaseBytesTemplate
-			// 	default:
-			// 		template = unmarshalCaseCustomTemplate
-			// 	}
 			default:
 				return "", fmt.Errorf("%w: %q", errUnexpectedCanotoType, f.canotoType)
 			}
@@ -552,17 +534,8 @@ func makeMarshalIfs(m message) (string, error) {
 			switch f.canotoType {
 			case canotoInt, canotoSint:
 				template = marshalIfRepeatedIntTemplate
-			case canotoFint:
-				template = marshalIfRepeatedFintTemplate
-			// case canotoBool:
-			// 	template = unmarshalCaseBoolTemplate
-			// case canotoBytes:
-			// 	switch f.goType {
-			// 	case goString, goBytes:
-			// 		template = unmarshalCaseBytesTemplate
-			// 	default:
-			// 		template = unmarshalCaseCustomTemplate
-			// 	}
+			case canotoFint, canotoBool:
+				template = marshalIfRepeatedFixedSizeTemplate
 			default:
 				return "", fmt.Errorf("%w: %q", errUnexpectedCanotoType, f.canotoType)
 			}

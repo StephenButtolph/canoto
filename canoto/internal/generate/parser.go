@@ -260,14 +260,16 @@ func makeTemplateArgs(structName string, field field) (map[string]string, error)
 		switch field.goType {
 		case goInt32, goUint32:
 			args["readFunction"] = fmt.Sprintf("Fint32[%s]", field.goType)
-			args["bitSize"] = "32"
+			args["sizeConstant"] = "Fint32"
 		case goInt64, goUint64:
 			args["readFunction"] = fmt.Sprintf("Fint64[%s]", field.goType)
-			args["bitSize"] = "64"
+			args["sizeConstant"] = "Fint64"
 		default:
 			return nil, fmt.Errorf("%w: %q should have fixed size", errUnexpectedGoType, field.goType)
 		}
 	case canotoBool:
+		args["readFunction"] = "Bool"
+		args["sizeConstant"] = "Bool"
 	case canotoBytes:
 		switch field.goType {
 		case goString:
