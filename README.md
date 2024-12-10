@@ -5,7 +5,7 @@ Canoto is a serialization format designed to be:
 2. Compact
 3. Canonical
 4. Backwards compatible
-5. Compatible with [Protocol Buffers](https://protobuf.dev/).
+5. Read compatible with [Protocol Buffers](https://protobuf.dev/).
 
 ## Install
 
@@ -85,9 +85,9 @@ In order to ensure that the hash of the serialized data does not change, it is i
 
 For canonical serialization formats, the hash of the serialized data is guaranteed never to change, and every correct implementation of the format will produce the same hash.
 
-## Why be compatible with Proto?
+## Why be read compatible with Proto?
 
-By being compatible with Proto allows users of the Canoto format to inherit some of the cross language support that Proto has already made.
+By being read compatible with Proto, users of the Canoto format to inherit some of the cross language support that Proto has already made.
 
 If an application only needs to read Canoto messages, but not write them, it can simply treat the Canoto message as a Proto message.
 
