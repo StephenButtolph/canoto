@@ -19,6 +19,9 @@ message Scalars {
   string string = 12;
   bytes bytes = 13;
   LargestFieldNumber largest_field_number = 14;
+
+  repeated int32 repeated_int32 = 15;
+  repeated string repeated_string = 26;
 }
 
 message LargestFieldNumber {

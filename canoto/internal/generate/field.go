@@ -10,6 +10,7 @@ import (
 type field struct {
 	name              string
 	canonicalizedName string
+	repeated          bool
 	goType            goType
 	canotoType        canotoType
 	fieldNumber       uint32
@@ -21,6 +22,9 @@ func (f field) Compare(other field) int {
 }
 
 func (f field) WireType() (canoto.WireType, error) {
+	if f.repeated {
+		return canoto.Len, nil
+	}
 	switch f.canotoType {
 	case canotoInt, canotoSint, canotoBool:
 		return canoto.Varint, nil

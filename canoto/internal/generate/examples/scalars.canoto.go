@@ -26,6 +26,7 @@ const (
 	canoto__Scalars__String__tag = "\x62" // canoto.Tag(12, canoto.Len)
 	canoto__Scalars__Bytes__tag = "\x6a" // canoto.Tag(13, canoto.Len)
 	canoto__Scalars__LargestFieldNumber__tag = "\x72" // canoto.Tag(14, canoto.Len)
+	canoto__Scalars__RepeatedInt32__tag = "\x7a" // canoto.Tag(15, canoto.Len)
 
 	canoto__Scalars__Int32__tag__size = len(canoto__Scalars__Int32__tag)
 	canoto__Scalars__Int64__tag__size = len(canoto__Scalars__Int64__tag)
@@ -41,10 +42,12 @@ const (
 	canoto__Scalars__String__tag__size = len(canoto__Scalars__String__tag)
 	canoto__Scalars__Bytes__tag__size = len(canoto__Scalars__Bytes__tag)
 	canoto__Scalars__LargestFieldNumber__tag__size = len(canoto__Scalars__LargestFieldNumber__tag)
+	canoto__Scalars__RepeatedInt32__tag__size = len(canoto__Scalars__RepeatedInt32__tag)
 )
 
 type canotoData_Scalars struct {
 	size int
+	RepeatedInt32Size int
 }
 
 
@@ -234,6 +237,35 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
+		case 15:
+			if wireType != canoto.Len {
+				return canoto.ErrInvalidWireType
+			}
+
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			msgBytes, err = canoto.ReadBytes(r)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return canoto.ErrZeroValue
+			}
+
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.RepeatedInt32 = make([]int32, 0, canoto.CountInts(msgBytes))
+			for canoto.HasNext(r) { 
+				v, err := canoto.ReadInt[int32](r)
+				if err != nil {
+					r.B = remainingBytes
+					return err
+				}
+				c.RepeatedInt32 = append(c.RepeatedInt32, v)
+			}
+			r.B = remainingBytes
 		default:
 			return canoto.ErrUnknownField
 		}
@@ -290,6 +322,13 @@ func (c *Scalars) CalculateCanotoSize() int {
 	}
 	if fieldSize := c.LargestFieldNumber.CalculateCanotoSize(); fieldSize != 0 {
 		c.canotoData.size += canoto__Scalars__LargestFieldNumber__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
+	}
+	if len(c.RepeatedInt32) != 0 {
+		c.canotoData.RepeatedInt32Size = 0
+		for _, v := range c.RepeatedInt32 {
+			c.canotoData.RepeatedInt32Size += canoto.SizeInt(v)
+		}
+		c.canotoData.size += canoto__Scalars__RepeatedInt32__tag__size + canoto.SizeInt(int64(c.canotoData.RepeatedInt32Size)) + c.canotoData.RepeatedInt32Size
 	}
 	return c.canotoData.size
 }
@@ -363,5 +402,12 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		canoto.Append(w, canoto__Scalars__LargestFieldNumber__tag)
 		canoto.AppendInt(w, int64(fieldSize))
 		c.LargestFieldNumber.MarshalCanotoInto(w)
+	}
+	if len(c.RepeatedInt32) != 0 {
+		canoto.Append(w, canoto__Scalars__RepeatedInt32__tag)
+		canoto.AppendInt(w, int64(c.canotoData.RepeatedInt32Size))
+		for _, v := range c.RepeatedInt32 {
+			canoto.AppendInt(w, v)
+		}
 	}
 }

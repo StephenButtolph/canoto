@@ -17,6 +17,7 @@ type Scalars struct {
 	String             string             `canoto:"bytes,12"`
 	Bytes              []byte             `canoto:"bytes,13"`
 	LargestFieldNumber LargestFieldNumber `canoto:"bytes,14"`
+	RepeatedInt32      []int32            `canoto:"int,15"`
 
 	canotoData canotoData_Scalars
 }

@@ -18,7 +18,6 @@ var (
 	errUnexpectedNumberOfIdentifiers       = errors.New("unexpected number of identifiers")
 	errMalformedTag                        = errors.New("expected type,fieldNumber got")
 	errFixedLengthArraysUnsupported        = errors.New("fixed length arrays are not supported")
-	errRepeatedFieldsUnsupported           = errors.New("repeated fields are not supported")
 	errStructContainsDuplicateFieldNumbers = errors.New("struct contains duplicate field numbers")
 )
 
@@ -83,6 +82,8 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 		messages = append(messages, message)
 		return false
 	})
+
+	fmt.Println(messages)
 	return packageName, messages, err
 }
 
@@ -108,45 +109,71 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 		canotoType:        canotoType,
 		fieldNumber:       fieldNumber,
 	}
-	switch t := af.Type.(type) {
+
+	goT, innerExpr, err := unwrapType(fs, af.Type)
+	if err != nil {
+		return field{}, false, err
+	}
+	if innerExpr == nil {
+		f.goType = goType(goT)
+		f.templateArgs, err = makeTemplateArgs(canonicalizedStructName, f)
+		return f, true, err
+	}
+
+	goT, innerExpr, err = unwrapType(fs, innerExpr)
+	if err != nil {
+		return field{}, false, err
+	}
+	if innerExpr == nil {
+		if goT == "byte" {
+			f.goType = goBytes
+		} else {
+			f.repeated = true
+			f.goType = goType(goT)
+		}
+		f.templateArgs, err = makeTemplateArgs(canonicalizedStructName, f)
+		return f, true, err
+	}
+
+	goT, innerExpr, err = unwrapType(fs, innerExpr)
+	if err != nil {
+		return field{}, false, err
+	}
+	if innerExpr != nil || goT != "byte" {
+		return field{}, false, fmt.Errorf("%w %T at %s",
+			errUnexpectedGoType,
+			innerExpr,
+			fs.Position(innerExpr.Pos()),
+		)
+	}
+
+	f.repeated = true
+	f.goType = goBytes
+	f.templateArgs, err = makeTemplateArgs(canonicalizedStructName, f)
+	return f, true, err
+}
+
+func unwrapType(fs *token.FileSet, expr ast.Expr) (string, ast.Expr, error) {
+	switch t := expr.(type) {
 	case *ast.Ident:
-		f.goType = goType(t.Name)
+		return t.Name, nil, nil
 	case *ast.ArrayType:
 		// TODO: Support fixed length arrays
 		if t.Len != nil {
-			return field{}, false, fmt.Errorf("%w at %s",
+			return "", nil, fmt.Errorf("%w at %s",
 				errFixedLengthArraysUnsupported,
 				fs.Position(t.Len.Pos()),
 			)
 		}
 
-		ident, ok := t.Elt.(*ast.Ident)
-		if !ok {
-			return field{}, false, fmt.Errorf("%w %T at %s",
-				errUnexpectedGoType,
-				t.Elt,
-				fs.Position(t.Elt.Pos()),
-			)
-		}
-
-		if ident.Name == "byte" {
-			f.goType = goBytes
-		} else {
-			return field{}, false, fmt.Errorf("%w at %s",
-				errRepeatedFieldsUnsupported,
-				fs.Position(t.Elt.Pos()),
-			)
-		}
+		return "", t.Elt, nil
 	default:
-		return field{}, false, fmt.Errorf("%w %T at %s",
+		return "", nil, fmt.Errorf("%w %T at %s",
 			errUnexpectedGoType,
 			t,
-			fs.Position(af.Pos()),
+			fs.Position(expr.Pos()),
 		)
 	}
-
-	f.templateArgs, err = makeTemplateArgs(canonicalizedStructName, f)
-	return f, true, err
 }
 
 // canonicalizeName replaces "_" with "_1" to avoid collisions with "__" which

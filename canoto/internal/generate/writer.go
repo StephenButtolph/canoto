@@ -315,8 +315,7 @@ func makeTagSizeConstants(m message) string {
 func makeSizeCache(m message) string {
 	var sizeCache strings.Builder
 	for _, f := range m.fields {
-		// TODO: Cache packed repeated field sizes here
-		if true {
+		if !f.repeated || !f.canotoType.IsVarint() {
 			continue
 		}
 
@@ -333,20 +332,38 @@ func makeUnmarshalCases(m message) (string, error) {
 	var unmarshalCases strings.Builder
 	for _, f := range m.fields {
 		var template string
-		switch f.canotoType {
-		case canotoInt, canotoSint, canotoFint:
-			template = unmarshalCaseSimpleTemplate
-		case canotoBool:
-			template = unmarshalCaseBoolTemplate
-		case canotoBytes:
-			switch f.goType {
-			case goString, goBytes:
-				template = unmarshalCaseBytesTemplate
+		if f.repeated {
+			switch f.canotoType {
+			case canotoInt, canotoSint, canotoFint:
+				template = unmarshalCaseSimpleTemplate
+			case canotoBool:
+				template = unmarshalCaseBoolTemplate
+			case canotoBytes:
+				switch f.goType {
+				case goString, goBytes:
+					template = unmarshalCaseBytesTemplate
+				default:
+					template = unmarshalCaseCustomTemplate
+				}
 			default:
-				template = unmarshalCaseCustomTemplate
+				return "", fmt.Errorf("%w: %q", errUnexpectedCanotoType, f.canotoType)
 			}
-		default:
-			return "", fmt.Errorf("%w: %q", errUnexpectedCanotoType, f.canotoType)
+		} else {
+			switch f.canotoType {
+			case canotoInt, canotoSint, canotoFint:
+				template = unmarshalCaseSimpleTemplate
+			case canotoBool:
+				template = unmarshalCaseBoolTemplate
+			case canotoBytes:
+				switch f.goType {
+				case goString, goBytes:
+					template = unmarshalCaseBytesTemplate
+				default:
+					template = unmarshalCaseCustomTemplate
+				}
+			default:
+				return "", fmt.Errorf("%w: %q", errUnexpectedCanotoType, f.canotoType)
+			}
 		}
 		if err := writeTemplate(&unmarshalCases, template, f.templateArgs); err != nil {
 			return "", err
