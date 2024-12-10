@@ -34,6 +34,18 @@ func canonicalizeCanotoScalars(s Scalars) Scalars {
 	if len(s.RepeatedSint64) == 0 {
 		s.RepeatedSint64 = nil
 	}
+	if len(s.RepeatedFixed32) == 0 {
+		s.RepeatedFixed32 = nil
+	}
+	if len(s.RepeatedFixed64) == 0 {
+		s.RepeatedFixed64 = nil
+	}
+	if len(s.RepeatedSfixed32) == 0 {
+		s.RepeatedSfixed32 = nil
+	}
+	if len(s.RepeatedSfixed64) == 0 {
+		s.RepeatedSfixed64 = nil
+	}
 	s.canotoData = canotoData_Scalars{}
 	return s
 }
@@ -66,6 +78,10 @@ func canonicalizeProtoScalars(s *pb.Scalars) pb.Scalars {
 		RepeatedUint64:     s.RepeatedUint64,
 		RepeatedSint32:     s.RepeatedSint32,
 		RepeatedSint64:     s.RepeatedSint64,
+		RepeatedFixed32:    s.RepeatedFixed32,
+		RepeatedFixed64:    s.RepeatedFixed64,
+		RepeatedSfixed32:   s.RepeatedSfixed32,
+		RepeatedSfixed64:   s.RepeatedSfixed64,
 	}
 }
 
@@ -97,6 +113,10 @@ func canotoScalarsToProto(s Scalars) pb.Scalars {
 		RepeatedUint64:     s.RepeatedUint64,
 		RepeatedSint32:     s.RepeatedSint32,
 		RepeatedSint64:     s.RepeatedSint64,
+		RepeatedFixed32:    s.RepeatedFixed32,
+		RepeatedFixed64:    s.RepeatedFixed64,
+		RepeatedSfixed32:   s.RepeatedSfixed32,
+		RepeatedSfixed64:   s.RepeatedSfixed64,
 	}
 }
 
@@ -189,12 +209,16 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 			LargestFieldNumber: LargestFieldNumber{
 				Int32: 216457,
 			},
-			RepeatedInt32:  []int32{1, 2, 3},
-			RepeatedInt64:  []int64{1, 2, 3},
-			RepeatedUint32: []uint32{1, 2, 3},
-			RepeatedUint64: []uint64{1, 2, 3},
-			RepeatedSint32: []int32{1, 2, 3},
-			RepeatedSint64: []int64{1, 2, 3},
+			RepeatedInt32:    []int32{1, 2, 3},
+			RepeatedInt64:    []int64{1, 2, 3},
+			RepeatedUint32:   []uint32{1, 2, 3},
+			RepeatedUint64:   []uint64{1, 2, 3},
+			RepeatedSint32:   []int32{1, 2, 3},
+			RepeatedSint64:   []int64{1, 2, 3},
+			RepeatedFixed32:  []uint32{1, 2, 3},
+			RepeatedFixed64:  []uint64{1, 2, 3},
+			RepeatedSfixed32: []int32{1, 2, 3},
+			RepeatedSfixed64: []int64{1, 2, 3},
 		}
 
 		cbScalars.MarshalCanoto()
@@ -219,12 +243,16 @@ func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
 		LargestFieldNumber: LargestFieldNumber{
 			Int32: 216457,
 		},
-		RepeatedInt32:  []int32{1, 2, 3},
-		RepeatedInt64:  []int64{1, 2, 3},
-		RepeatedUint32: []uint32{1, 2, 3},
-		RepeatedUint64: []uint64{1, 2, 3},
-		RepeatedSint32: []int32{1, 2, 3},
-		RepeatedSint64: []int64{1, 2, 3},
+		RepeatedInt32:    []int32{1, 2, 3},
+		RepeatedInt64:    []int64{1, 2, 3},
+		RepeatedUint32:   []uint32{1, 2, 3},
+		RepeatedUint64:   []uint64{1, 2, 3},
+		RepeatedSint32:   []int32{1, 2, 3},
+		RepeatedSint64:   []int64{1, 2, 3},
+		RepeatedFixed32:  []uint32{1, 2, 3},
+		RepeatedFixed64:  []uint64{1, 2, 3},
+		RepeatedSfixed32: []int32{1, 2, 3},
+		RepeatedSfixed64: []int64{1, 2, 3},
 	}
 	bytes := cbScalars.MarshalCanoto()
 
@@ -263,12 +291,16 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 			LargestFieldNumber: &pb.LargestFieldNumber{
 				Int32: 216457,
 			},
-			RepeatedInt32:  []int32{1, 2, 3},
-			RepeatedInt64:  []int64{1, 2, 3},
-			RepeatedUint32: []uint32{1, 2, 3},
-			RepeatedUint64: []uint64{1, 2, 3},
-			RepeatedSint32: []int32{1, 2, 3},
-			RepeatedSint64: []int64{1, 2, 3},
+			RepeatedInt32:    []int32{1, 2, 3},
+			RepeatedInt64:    []int64{1, 2, 3},
+			RepeatedUint32:   []uint32{1, 2, 3},
+			RepeatedUint64:   []uint64{1, 2, 3},
+			RepeatedSint32:   []int32{1, 2, 3},
+			RepeatedSint64:   []int64{1, 2, 3},
+			RepeatedFixed32:  []uint32{1, 2, 3},
+			RepeatedFixed64:  []uint64{1, 2, 3},
+			RepeatedSfixed32: []int32{1, 2, 3},
+			RepeatedSfixed64: []int64{1, 2, 3},
 		}
 		_, _ = proto.Marshal(&pbScalars)
 	}
@@ -292,12 +324,16 @@ func BenchmarkScalars_UnmarshalProto(b *testing.B) {
 		LargestFieldNumber: &pb.LargestFieldNumber{
 			Int32: 216457,
 		},
-		RepeatedInt32:  []int32{1, 2, 3},
-		RepeatedInt64:  []int64{1, 2, 3},
-		RepeatedUint32: []uint32{1, 2, 3},
-		RepeatedUint64: []uint64{1, 2, 3},
-		RepeatedSint32: []int32{1, 2, 3},
-		RepeatedSint64: []int64{1, 2, 3},
+		RepeatedInt32:    []int32{1, 2, 3},
+		RepeatedInt64:    []int64{1, 2, 3},
+		RepeatedUint32:   []uint32{1, 2, 3},
+		RepeatedUint64:   []uint64{1, 2, 3},
+		RepeatedSint32:   []int32{1, 2, 3},
+		RepeatedSint64:   []int64{1, 2, 3},
+		RepeatedFixed32:  []uint32{1, 2, 3},
+		RepeatedFixed64:  []uint64{1, 2, 3},
+		RepeatedSfixed32: []int32{1, 2, 3},
+		RepeatedSfixed64: []int64{1, 2, 3},
 	}
 	scalarsBytes, err := proto.Marshal(&pbScalars)
 	require.NoError(b, err)

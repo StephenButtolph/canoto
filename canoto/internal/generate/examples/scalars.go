@@ -23,6 +23,10 @@ type Scalars struct {
 	RepeatedUint64     []uint64           `canoto:"int,18"`
 	RepeatedSint32     []int32            `canoto:"sint,19"`
 	RepeatedSint64     []int64            `canoto:"sint,20"`
+	RepeatedFixed32    []uint32           `canoto:"fint,21"`
+	RepeatedFixed64    []uint64           `canoto:"fint,22"`
+	RepeatedSfixed32   []int32            `canoto:"fint,23"`
+	RepeatedSfixed64   []int64            `canoto:"fint,24"`
 
 	canotoData canotoData_Scalars
 }

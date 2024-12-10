@@ -25,6 +25,10 @@ message Scalars {
   repeated uint64 repeated_uint64 = 18;
   repeated sint32 repeated_sint32 = 19;
   repeated sint64 repeated_sint64 = 20;
+  repeated fixed32 repeated_fixed32 = 21;
+  repeated fixed64 repeated_fixed64 = 22;
+  repeated sfixed32 repeated_sfixed32 = 23;
+  repeated sfixed64 repeated_sfixed64 = 24;
 }
 
 message LargestFieldNumber {
