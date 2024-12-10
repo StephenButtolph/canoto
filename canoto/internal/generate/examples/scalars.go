@@ -18,5 +18,5 @@ type Scalars struct {
 	Bytes              []byte             `canoto:"bytes,13"`
 	LargestFieldNumber LargestFieldNumber `canoto:"bytes,14"`
 
-	canotoData canotoData_Scalars
+	canotoSize int
 }

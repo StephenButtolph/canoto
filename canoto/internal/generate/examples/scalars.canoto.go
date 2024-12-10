@@ -43,11 +43,6 @@ const (
 	canoto__Scalars__LargestFieldNumber__tag__size = len(canoto__Scalars__LargestFieldNumber__tag)
 )
 
-type canotoData_Scalars struct {
-	LargestFieldNumberSize int
-}
-
-
 func (c *Scalars) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -247,57 +242,60 @@ func (c *Scalars) ValidCanoto() bool {
 	return utf8.ValidString(c.String) && c.LargestFieldNumber.ValidCanoto()
 }
 
-func (c *Scalars) SizeCanoto() int {
-	var size int
+func (c *Scalars) CalculateCanotoSize() int {
+	c.canotoSize = 0
 	if c.Int32 != 0 {
-		size += canoto__Scalars__Int32__tag__size + canoto.SizeInt(c.Int32)
+		c.canotoSize += canoto__Scalars__Int32__tag__size + canoto.SizeInt(c.Int32)
 	}
 	if c.Int64 != 0 {
-		size += canoto__Scalars__Int64__tag__size + canoto.SizeInt(c.Int64)
+		c.canotoSize += canoto__Scalars__Int64__tag__size + canoto.SizeInt(c.Int64)
 	}
 	if c.Uint32 != 0 {
-		size += canoto__Scalars__Uint32__tag__size + canoto.SizeInt(c.Uint32)
+		c.canotoSize += canoto__Scalars__Uint32__tag__size + canoto.SizeInt(c.Uint32)
 	}
 	if c.Uint64 != 0 {
-		size += canoto__Scalars__Uint64__tag__size + canoto.SizeInt(c.Uint64)
+		c.canotoSize += canoto__Scalars__Uint64__tag__size + canoto.SizeInt(c.Uint64)
 	}
 	if c.Sint32 != 0 {
-		size += canoto__Scalars__Sint32__tag__size + canoto.SizeSint(c.Sint32)
+		c.canotoSize += canoto__Scalars__Sint32__tag__size + canoto.SizeSint(c.Sint32)
 	}
 	if c.Sint64 != 0 {
-		size += canoto__Scalars__Sint64__tag__size + canoto.SizeSint(c.Sint64)
+		c.canotoSize += canoto__Scalars__Sint64__tag__size + canoto.SizeSint(c.Sint64)
 	}
 	if c.Fixed32 != 0 {
-		size += canoto__Scalars__Fixed32__tag__size + canoto.SizeFint32
+		c.canotoSize += canoto__Scalars__Fixed32__tag__size + canoto.SizeFint32
 	}
 	if c.Fixed64 != 0 {
-		size += canoto__Scalars__Fixed64__tag__size + canoto.SizeFint64
+		c.canotoSize += canoto__Scalars__Fixed64__tag__size + canoto.SizeFint64
 	}
 	if c.Sfixed32 != 0 {
-		size += canoto__Scalars__Sfixed32__tag__size + canoto.SizeFint32
+		c.canotoSize += canoto__Scalars__Sfixed32__tag__size + canoto.SizeFint32
 	}
 	if c.Sfixed64 != 0 {
-		size += canoto__Scalars__Sfixed64__tag__size + canoto.SizeFint64
+		c.canotoSize += canoto__Scalars__Sfixed64__tag__size + canoto.SizeFint64
 	}
 	if c.Bool {
-		size += canoto__Scalars__Bool__tag__size + canoto.SizeBool
+		c.canotoSize += canoto__Scalars__Bool__tag__size + canoto.SizeBool
 	}
 	if len(c.String) != 0 {
-		size += canoto__Scalars__String__tag__size + canoto.SizeBytes(c.String)
+		c.canotoSize += canoto__Scalars__String__tag__size + canoto.SizeBytes(c.String)
 	}
 	if len(c.Bytes) != 0 {
-		size += canoto__Scalars__Bytes__tag__size + canoto.SizeBytes(c.Bytes)
+		c.canotoSize += canoto__Scalars__Bytes__tag__size + canoto.SizeBytes(c.Bytes)
 	}
-	c.canotoData.LargestFieldNumberSize = c.LargestFieldNumber.SizeCanoto()
-	if c.canotoData.LargestFieldNumberSize != 0 {
-		size += canoto__Scalars__LargestFieldNumber__tag__size + canoto.SizeInt(int64(c.canotoData.LargestFieldNumberSize)) + c.canotoData.LargestFieldNumberSize
+	if fieldSize := c.LargestFieldNumber.CalculateCanotoSize(); fieldSize != 0 {
+		c.canotoSize += canoto__Scalars__LargestFieldNumber__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
-	return size
+	return c.canotoSize
+}
+
+func (c *Scalars) CachedCanotoSize() int {
+	return c.canotoSize
 }
 
 func (c *Scalars) MarshalCanoto() []byte {
 	w := canoto.Writer{
-		B: make([]byte, 0, c.SizeCanoto()),
+		B: make([]byte, 0, c.CalculateCanotoSize()),
 	}
 	c.MarshalCanotoInto(&w)
 	return w.B
@@ -356,9 +354,9 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		canoto.Append(w, canoto__Scalars__Bytes__tag)
 		canoto.AppendBytes(w, c.Bytes)
 	}
-	if c.canotoData.LargestFieldNumberSize != 0 {
+	if fieldSize := c.LargestFieldNumber.CachedCanotoSize(); fieldSize != 0 {
 		canoto.Append(w, canoto__Scalars__LargestFieldNumber__tag)
-		canoto.AppendInt(w, int64(c.canotoData.LargestFieldNumberSize))
+		canoto.AppendInt(w, int64(fieldSize))
 		c.LargestFieldNumber.MarshalCanotoInto(w)
 	}
 }

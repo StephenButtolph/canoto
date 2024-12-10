@@ -134,7 +134,7 @@ func FuzzScalars_MarshalCanoto(f *testing.F) {
 			return
 		}
 
-		size := cbScalars.SizeCanoto()
+		size := cbScalars.CalculateCanotoSize()
 		w := canoto.Writer{
 			B: make([]byte, 0, size),
 		}
@@ -205,7 +205,7 @@ func FuzzScalars_Canonical(f *testing.F) {
 			return
 		}
 
-		size := scalars.SizeCanoto()
+		size := scalars.CalculateCanotoSize()
 		require.Len(b, size)
 
 		w := canoto.Writer{
