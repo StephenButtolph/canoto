@@ -18,6 +18,11 @@ type Scalars struct {
 	Bytes              []byte             `canoto:"bytes,13"`
 	LargestFieldNumber LargestFieldNumber `canoto:"bytes,14"`
 	RepeatedInt32      []int32            `canoto:"int,15"`
+	RepeatedInt64      []int64            `canoto:"int,16"`
+	RepeatedUint32     []uint32           `canoto:"int,17"`
+	RepeatedUint64     []uint64           `canoto:"int,18"`
+	RepeatedSint32     []int32            `canoto:"sint,19"`
+	RepeatedSint64     []int64            `canoto:"sint,20"`
 
 	canotoData canotoData_Scalars
 }

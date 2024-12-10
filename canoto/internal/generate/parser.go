@@ -247,12 +247,15 @@ func makeTemplateArgs(structName string, field field) (map[string]string, error)
 		"wireType":          wireType.String(),
 		"fieldName":         field.name,
 		"escapedFieldName":  field.canonicalizedName,
+		"goType":            string(field.goType),
 	}
 	switch field.canotoType {
 	case canotoInt:
 		args["readFunction"] = fmt.Sprintf("Int[%s]", field.goType)
+		args["sizeFunction"] = "Int"
 	case canotoSint:
 		args["readFunction"] = fmt.Sprintf("Sint[%s]", field.goType)
+		args["sizeFunction"] = "Sint"
 	case canotoFint:
 		switch field.goType {
 		case goInt32, goUint32:
