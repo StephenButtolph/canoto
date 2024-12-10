@@ -82,8 +82,6 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 		messages = append(messages, message)
 		return false
 	})
-
-	fmt.Println(messages)
 	return packageName, messages, err
 }
 
