@@ -256,7 +256,7 @@ func makeUnmarshal(m message) (string, error) {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			c.${fieldName} = make([]${goType}, 0, numMsgBytes / canoto.Size${sizeConstant})
+			c.${fieldName} = make([]${goType}, 0, numMsgBytes/canoto.Size${sizeConstant})
 			for canoto.HasNext(r) {
 				v, err := canoto.Read${readFunction}(r)
 				if err != nil {
@@ -306,7 +306,7 @@ func makeUnmarshal(m message) (string, error) {
 				return err
 			}
 
-			c.${fieldName} = make([]${goType}, 1, 1 + count)
+			c.${fieldName} = make([]${goType}, 1, 1+count)
 			c.${fieldName}[0] = v
 			for range count {
 				r.B = r.B[canoto__${escapedStructName}__${escapedFieldName}__tag__size:]
@@ -360,7 +360,7 @@ func makeUnmarshal(m message) (string, error) {
 				return err
 			}
 
-			c.${fieldName} = make([]${goType}, 1 + count)
+			c.${fieldName} = make([]${goType}, 1+count)
 			r.B = msgBytes
 			err = c.${fieldName}[0].UnmarshalCanotoFrom(r)
 			r.B = remainingBytes
@@ -506,7 +506,7 @@ func makeSize(m message) (string, error) {
 	}
 `
 		repeatedFixedSizeTemplate = `	if num := len(c.${fieldName}); num != 0 {
-		fieldSize := num * canoto.Size${sizeConstant}
+		fieldSize := num*canoto.Size${sizeConstant}
 		c.canotoData.size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 `
@@ -601,7 +601,7 @@ func makeMarshal(m message) (string, error) {
 `
 		repeatedFixedSizeTemplate = `	if num := len(c.${fieldName}); num != 0 {
 		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		canoto.AppendInt(w, int64(num * canoto.Size${sizeConstant}))
+		canoto.AppendInt(w, int64(num*canoto.Size${sizeConstant}))
 		for _, v := range c.${fieldName} {
 			canoto.Append${sizeConstant}(w, v)
 		}
