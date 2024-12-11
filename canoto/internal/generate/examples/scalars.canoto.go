@@ -789,23 +789,23 @@ func (c *Scalars) CalculateCanotoSize() int {
 		c.canotoData.size += canoto__Scalars__RepeatedSint64__tag__size + canoto.SizeInt(int64(c.canotoData.RepeatedSint64Size)) + c.canotoData.RepeatedSint64Size
 	}
 	if num := len(c.RepeatedFixed32); num != 0 {
-		fieldSize := num*canoto.SizeFint32
+		fieldSize := num * canoto.SizeFint32
 		c.canotoData.size += canoto__Scalars__RepeatedFixed32__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 	if num := len(c.RepeatedFixed64); num != 0 {
-		fieldSize := num*canoto.SizeFint64
+		fieldSize := num * canoto.SizeFint64
 		c.canotoData.size += canoto__Scalars__RepeatedFixed64__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 	if num := len(c.RepeatedSfixed32); num != 0 {
-		fieldSize := num*canoto.SizeFint32
+		fieldSize := num * canoto.SizeFint32
 		c.canotoData.size += canoto__Scalars__RepeatedSfixed32__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 	if num := len(c.RepeatedSfixed64); num != 0 {
-		fieldSize := num*canoto.SizeFint64
+		fieldSize := num * canoto.SizeFint64
 		c.canotoData.size += canoto__Scalars__RepeatedSfixed64__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 	if num := len(c.RepeatedBool); num != 0 {
-		fieldSize := num*canoto.SizeBool
+		fieldSize := num * canoto.SizeBool
 		c.canotoData.size += canoto__Scalars__RepeatedBool__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 	for _, v := range c.RepeatedString {

@@ -506,7 +506,7 @@ func makeSize(m message) (string, error) {
 	}
 `
 		repeatedFixedSizeTemplate = `	if num := len(c.${fieldName}); num != 0 {
-		fieldSize := num*canoto.Size${sizeConstant}
+		fieldSize := num * canoto.Size${sizeConstant}
 		c.canotoData.size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 `
