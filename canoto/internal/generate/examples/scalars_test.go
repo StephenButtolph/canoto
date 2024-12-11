@@ -12,43 +12,27 @@ import (
 	"github.com/StephenButtolph/canoto/canoto/internal/generate/proto/pb"
 )
 
+func canonicalizeSlice[T any](s []T) []T {
+	if len(s) == 0 {
+		return nil
+	}
+	return s
+}
+
 func canonicalizeCanotoScalars(s Scalars) Scalars {
-	if len(s.Bytes) == 0 {
-		s.Bytes = nil
-	}
-	if len(s.RepeatedInt32) == 0 {
-		s.RepeatedInt32 = nil
-	}
-	if len(s.RepeatedInt64) == 0 {
-		s.RepeatedInt64 = nil
-	}
-	if len(s.RepeatedUint32) == 0 {
-		s.RepeatedUint32 = nil
-	}
-	if len(s.RepeatedUint64) == 0 {
-		s.RepeatedUint64 = nil
-	}
-	if len(s.RepeatedSint32) == 0 {
-		s.RepeatedSint32 = nil
-	}
-	if len(s.RepeatedSint64) == 0 {
-		s.RepeatedSint64 = nil
-	}
-	if len(s.RepeatedFixed32) == 0 {
-		s.RepeatedFixed32 = nil
-	}
-	if len(s.RepeatedFixed64) == 0 {
-		s.RepeatedFixed64 = nil
-	}
-	if len(s.RepeatedSfixed32) == 0 {
-		s.RepeatedSfixed32 = nil
-	}
-	if len(s.RepeatedSfixed64) == 0 {
-		s.RepeatedSfixed64 = nil
-	}
-	if len(s.RepeatedBool) == 0 {
-		s.RepeatedBool = nil
-	}
+	s.Bytes = canonicalizeSlice(s.Bytes)
+	s.RepeatedInt32 = canonicalizeSlice(s.RepeatedInt32)
+	s.RepeatedInt64 = canonicalizeSlice(s.RepeatedInt64)
+	s.RepeatedUint32 = canonicalizeSlice(s.RepeatedUint32)
+	s.RepeatedUint64 = canonicalizeSlice(s.RepeatedUint64)
+	s.RepeatedSint32 = canonicalizeSlice(s.RepeatedSint32)
+	s.RepeatedSint64 = canonicalizeSlice(s.RepeatedSint64)
+	s.RepeatedFixed32 = canonicalizeSlice(s.RepeatedFixed32)
+	s.RepeatedFixed64 = canonicalizeSlice(s.RepeatedFixed64)
+	s.RepeatedSfixed32 = canonicalizeSlice(s.RepeatedSfixed32)
+	s.RepeatedSfixed64 = canonicalizeSlice(s.RepeatedSfixed64)
+	s.RepeatedBool = canonicalizeSlice(s.RepeatedBool)
+	s.RepeatedString = canonicalizeSlice(s.RepeatedString)
 	s.canotoData = canotoData_Scalars{}
 	return s
 }
@@ -86,6 +70,7 @@ func canonicalizeProtoScalars(s *pb.Scalars) pb.Scalars {
 		RepeatedSfixed32:   s.RepeatedSfixed32,
 		RepeatedSfixed64:   s.RepeatedSfixed64,
 		RepeatedBool:       s.RepeatedBool,
+		RepeatedString:     s.RepeatedString,
 	}
 }
 
@@ -122,6 +107,7 @@ func canotoScalarsToProto(s Scalars) pb.Scalars {
 		RepeatedSfixed32:   s.RepeatedSfixed32,
 		RepeatedSfixed64:   s.RepeatedSfixed64,
 		RepeatedBool:       s.RepeatedBool,
+		RepeatedString:     s.RepeatedString,
 	}
 }
 
@@ -226,6 +212,7 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 				RepeatedSfixed32: []int32{1, 2, 3},
 				RepeatedSfixed64: []int64{1, 2, 3},
 				RepeatedBool:     []bool{true, false, true},
+				RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
 			}
 			cbScalars.MarshalCanoto()
 		}
@@ -259,6 +246,7 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 			RepeatedSfixed32: []int32{1, 2, 3},
 			RepeatedSfixed64: []int64{1, 2, 3},
 			RepeatedBool:     []bool{true, false, true},
+			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
 		}
 		for range b.N {
 			cbScalars.MarshalCanoto()
@@ -342,6 +330,7 @@ func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
 			RepeatedSfixed32: []int32{1, 2, 3},
 			RepeatedSfixed64: []int64{1, 2, 3},
 			RepeatedBool:     []bool{true, false, true},
+			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
 		}
 		bytes := cbScalars.MarshalCanoto()
 
@@ -429,6 +418,7 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 				RepeatedSfixed32: []int32{1, 2, 3},
 				RepeatedSfixed64: []int64{1, 2, 3},
 				RepeatedBool:     []bool{true, false, true},
+				RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
 			}
 			_, _ = proto.Marshal(&pbScalars)
 		}
@@ -462,6 +452,7 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 			RepeatedSfixed32: []int32{1, 2, 3},
 			RepeatedSfixed64: []int64{1, 2, 3},
 			RepeatedBool:     []bool{true, false, true},
+			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
 		}
 		for range b.N {
 			_, _ = proto.Marshal(&pbScalars)
@@ -545,6 +536,7 @@ func BenchmarkScalars_UnmarshalProto(b *testing.B) {
 			RepeatedSfixed32: []int32{1, 2, 3},
 			RepeatedSfixed64: []int64{1, 2, 3},
 			RepeatedBool:     []bool{true, false, true},
+			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
 		}
 		scalarsBytes, err := proto.Marshal(&pbScalars)
 		require.NoError(b, err)

@@ -1027,6 +1027,32 @@ func FuzzSizeBytes_string(f *testing.F) {
 	})
 }
 
+func FuzzCountBytes(f *testing.F) {
+	f.Fuzz(func(t *testing.T, data []byte) {
+		require := require.New(t)
+
+		var (
+			tag   string
+			bytes [][]byte
+		)
+		fz := fuzzer.NewFuzzer(data)
+		fz.Fill(&bytes)
+		if len(tag) == 0 {
+			return
+		}
+
+		w := &Writer{}
+		for _, v := range bytes {
+			Append(w, tag)
+			AppendBytes(w, v)
+		}
+
+		count, err := CountBytes(w.B, tag)
+		require.NoError(err)
+		require.Len(bytes, count)
+	})
+}
+
 func FuzzSizeBytes_bytes(f *testing.F) {
 	f.Fuzz(func(t *testing.T, v []byte) {
 		w := &Writer{}

@@ -214,6 +214,30 @@ func SizeBytes[T Bytes](v T) int {
 	return SizeInt(int64(len(v))) + len(v)
 }
 
+func CountBytes(bytes []byte, tag string) (int, error) {
+	var (
+		tagLen = len(tag)
+		r      = Reader{B: bytes}
+		count  = 0
+	)
+	for len(r.B) >= len(tag) && string(r.B[:tagLen]) == tag {
+		r.B = r.B[tagLen:]
+		length, err := ReadInt[int32](&r)
+		if err != nil {
+			return 0, err
+		}
+		if length < 0 {
+			return 0, ErrInvalidLength
+		}
+		if length > int32(len(r.B)) {
+			return 0, io.ErrUnexpectedEOF
+		}
+		r.B = r.B[length:]
+		count++
+	}
+	return count, nil
+}
+
 func ReadString(r *Reader) (string, error) {
 	length, err := ReadInt[int32](r)
 	if err != nil {
