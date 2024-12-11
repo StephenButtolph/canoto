@@ -21,7 +21,6 @@ type canotoData_LargestFieldNumber struct {
 	size int
 }
 
-
 func (c *LargestFieldNumber) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,

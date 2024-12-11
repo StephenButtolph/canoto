@@ -81,7 +81,6 @@ type canotoData_Scalars struct {
 	RepeatedSint64Size int
 }
 
-
 func (c *Scalars) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
