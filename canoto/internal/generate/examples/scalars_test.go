@@ -33,6 +33,7 @@ func canonicalizeCanotoScalars(s Scalars) Scalars {
 	s.RepeatedSfixed64 = canonicalizeSlice(s.RepeatedSfixed64)
 	s.RepeatedBool = canonicalizeSlice(s.RepeatedBool)
 	s.RepeatedString = canonicalizeSlice(s.RepeatedString)
+	s.RepeatedBytes = canonicalizeSlice(s.RepeatedBytes)
 	s.canotoData = canotoData_Scalars{}
 	return s
 }
@@ -71,6 +72,7 @@ func canonicalizeProtoScalars(s *pb.Scalars) pb.Scalars {
 		RepeatedSfixed64:   s.RepeatedSfixed64,
 		RepeatedBool:       s.RepeatedBool,
 		RepeatedString:     s.RepeatedString,
+		RepeatedBytes:      s.RepeatedBytes,
 	}
 }
 
@@ -108,6 +110,7 @@ func canotoScalarsToProto(s Scalars) pb.Scalars {
 		RepeatedSfixed64:   s.RepeatedSfixed64,
 		RepeatedBool:       s.RepeatedBool,
 		RepeatedString:     s.RepeatedString,
+		RepeatedBytes:      s.RepeatedBytes,
 	}
 }
 
@@ -213,6 +216,7 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 				RepeatedSfixed64: []int64{1, 2, 3},
 				RepeatedBool:     []bool{true, false, true},
 				RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
+				RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
 			}
 			cbScalars.MarshalCanoto()
 		}
@@ -247,6 +251,7 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 			RepeatedSfixed64: []int64{1, 2, 3},
 			RepeatedBool:     []bool{true, false, true},
 			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
+			RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
 		}
 		for range b.N {
 			cbScalars.MarshalCanoto()
@@ -331,6 +336,7 @@ func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
 			RepeatedSfixed64: []int64{1, 2, 3},
 			RepeatedBool:     []bool{true, false, true},
 			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
+			RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
 		}
 		bytes := cbScalars.MarshalCanoto()
 
@@ -419,6 +425,7 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 				RepeatedSfixed64: []int64{1, 2, 3},
 				RepeatedBool:     []bool{true, false, true},
 				RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
+				RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
 			}
 			_, _ = proto.Marshal(&pbScalars)
 		}
@@ -453,6 +460,7 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 			RepeatedSfixed64: []int64{1, 2, 3},
 			RepeatedBool:     []bool{true, false, true},
 			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
+			RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
 		}
 		for range b.N {
 			_, _ = proto.Marshal(&pbScalars)
@@ -537,6 +545,7 @@ func BenchmarkScalars_UnmarshalProto(b *testing.B) {
 			RepeatedSfixed64: []int64{1, 2, 3},
 			RepeatedBool:     []bool{true, false, true},
 			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
+			RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
 		}
 		scalarsBytes, err := proto.Marshal(&pbScalars)
 		require.NoError(b, err)

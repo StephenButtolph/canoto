@@ -29,6 +29,7 @@ type Scalars struct {
 	RepeatedSfixed64   []int64            `canoto:"fint,24"`
 	RepeatedBool       []bool             `canoto:"bool,25"`
 	RepeatedString     []string           `canoto:"bytes,26"`
+	RepeatedBytes      [][]byte           `canoto:"bytes,27"`
 
 	canotoData canotoData_Scalars
 }

@@ -499,22 +499,26 @@ func makeValidIfs(m message) string {
 		stringTemplates = map[bool]string{
 			!repeated: `	if !utf8.ValidString(c.${fieldName}) {
 		return false
-	}`,
+	}
+`,
 			repeated: `	for _, v := range c.${fieldName} {
 		if !utf8.ValidString(v) {
 			return false
 		}
-	}`,
+	}
+`,
 		}
 		customTemplates = map[bool]string{
 			!repeated: `	if !c.${fieldName}.ValidCanoto() {
 		return false
-	}`,
+	}
+`,
 			repeated: `	for i := range c.${fieldName} {
 		if !c.${fieldName}[i].ValidCanoto() {
 			return false
 		}
-	}`,
+	}
+`,
 		}
 		validIfs strings.Builder
 	)

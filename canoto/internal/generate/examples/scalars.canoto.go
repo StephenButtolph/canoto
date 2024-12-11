@@ -38,6 +38,7 @@ const (
 	canoto__Scalars__RepeatedSfixed64__tag = "\xc2\x01" // canoto.Tag(24, canoto.Len)
 	canoto__Scalars__RepeatedBool__tag = "\xca\x01" // canoto.Tag(25, canoto.Len)
 	canoto__Scalars__RepeatedString__tag = "\xd2\x01" // canoto.Tag(26, canoto.Len)
+	canoto__Scalars__RepeatedBytes__tag = "\xda\x01" // canoto.Tag(27, canoto.Len)
 
 	canoto__Scalars__Int32__tag__size = len(canoto__Scalars__Int32__tag)
 	canoto__Scalars__Int64__tag__size = len(canoto__Scalars__Int64__tag)
@@ -65,6 +66,7 @@ const (
 	canoto__Scalars__RepeatedSfixed64__tag__size = len(canoto__Scalars__RepeatedSfixed64__tag)
 	canoto__Scalars__RepeatedBool__tag__size = len(canoto__Scalars__RepeatedBool__tag)
 	canoto__Scalars__RepeatedString__tag__size = len(canoto__Scalars__RepeatedString__tag)
+	canoto__Scalars__RepeatedBytes__tag__size = len(canoto__Scalars__RepeatedBytes__tag)
 )
 
 type canotoData_Scalars struct {
@@ -613,6 +615,31 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				}
 				c.RepeatedString = append(c.RepeatedString, v)
 			}
+		case 27:
+			if wireType != canoto.Len {
+				return canoto.ErrInvalidWireType
+			}
+
+			v, err := canoto.ReadBytes(r)
+			if err != nil {
+				return err
+			}
+
+			count, err := canoto.CountBytes(r.B, canoto__Scalars__RepeatedBytes__tag)
+			if err != nil {
+				return err
+			}
+
+			c.RepeatedBytes = make([][]byte, 1, 1 + count)
+			c.RepeatedBytes[0] = v
+			for range count {
+				r.B = r.B[canoto__Scalars__RepeatedBytes__tag__size:]
+				v, err := canoto.ReadBytes(r)
+				if err != nil {
+					return err
+				}
+				c.RepeatedBytes = append(c.RepeatedBytes, v)
+			}
 		default:
 			return canoto.ErrUnknownField
 		}
@@ -745,6 +772,9 @@ func (c *Scalars) CalculateCanotoSize() int {
 	}
 	for _, v := range c.RepeatedString {
 		c.canotoData.size += canoto__Scalars__RepeatedString__tag__size + canoto.SizeBytes(v)
+	}
+	for _, v := range c.RepeatedBytes {
+		c.canotoData.size += canoto__Scalars__RepeatedBytes__tag__size + canoto.SizeBytes(v)
 	}
 	return c.canotoData.size
 }
@@ -898,6 +928,10 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 	}
 	for _, v := range c.RepeatedString {
 		canoto.Append(w, canoto__Scalars__RepeatedString__tag)
+		canoto.AppendBytes(w, v)
+	}
+	for _, v := range c.RepeatedBytes {
+		canoto.Append(w, canoto__Scalars__RepeatedBytes__tag)
 		canoto.AppendBytes(w, v)
 	}
 }

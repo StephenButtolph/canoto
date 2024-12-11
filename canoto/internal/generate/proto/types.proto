@@ -31,6 +31,7 @@ message Scalars {
   repeated sfixed64 repeated_sfixed64 = 24;
   repeated bool repeated_bool = 25;
   repeated string repeated_string = 26;
+  repeated bytes repeated_bytes = 27;
 }
 
 message LargestFieldNumber {
