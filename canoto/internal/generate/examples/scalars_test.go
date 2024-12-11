@@ -34,6 +34,7 @@ func canonicalizeCanotoScalars(s Scalars) Scalars {
 	s.RepeatedBool = canonicalizeSlice(s.RepeatedBool)
 	s.RepeatedString = canonicalizeSlice(s.RepeatedString)
 	s.RepeatedBytes = canonicalizeSlice(s.RepeatedBytes)
+	s.RepeatedLargestFieldNumber = canonicalizeSlice(s.RepeatedLargestFieldNumber)
 	s.canotoData = canotoData_Scalars{}
 	return s
 }
@@ -45,34 +46,45 @@ func canonicalizeProtoScalars(s *pb.Scalars) pb.Scalars {
 			Int32: s.LargestFieldNumber.Int32,
 		}
 	}
+	repeatedLargestFieldNumbers := make([]*pb.LargestFieldNumber, len(s.RepeatedLargestFieldNumber))
+	for i, v := range s.RepeatedLargestFieldNumber {
+		var largestFieldNumber *pb.LargestFieldNumber
+		if v != nil {
+			largestFieldNumber = &pb.LargestFieldNumber{
+				Int32: v.Int32,
+			}
+		}
+		repeatedLargestFieldNumbers[i] = largestFieldNumber
+	}
 	return pb.Scalars{
-		Int32:              s.Int32,
-		Int64:              s.Int64,
-		Uint32:             s.Uint32,
-		Uint64:             s.Uint64,
-		Sint32:             s.Sint32,
-		Sint64:             s.Sint64,
-		Fixed32:            s.Fixed32,
-		Fixed64:            s.Fixed64,
-		Sfixed32:           s.Sfixed32,
-		Sfixed64:           s.Sfixed64,
-		Bool:               s.Bool,
-		String_:            s.String_,
-		Bytes:              s.Bytes,
-		LargestFieldNumber: largestFieldNumber,
-		RepeatedInt32:      s.RepeatedInt32,
-		RepeatedInt64:      s.RepeatedInt64,
-		RepeatedUint32:     s.RepeatedUint32,
-		RepeatedUint64:     s.RepeatedUint64,
-		RepeatedSint32:     s.RepeatedSint32,
-		RepeatedSint64:     s.RepeatedSint64,
-		RepeatedFixed32:    s.RepeatedFixed32,
-		RepeatedFixed64:    s.RepeatedFixed64,
-		RepeatedSfixed32:   s.RepeatedSfixed32,
-		RepeatedSfixed64:   s.RepeatedSfixed64,
-		RepeatedBool:       s.RepeatedBool,
-		RepeatedString:     s.RepeatedString,
-		RepeatedBytes:      s.RepeatedBytes,
+		Int32:                      s.Int32,
+		Int64:                      s.Int64,
+		Uint32:                     s.Uint32,
+		Uint64:                     s.Uint64,
+		Sint32:                     s.Sint32,
+		Sint64:                     s.Sint64,
+		Fixed32:                    s.Fixed32,
+		Fixed64:                    s.Fixed64,
+		Sfixed32:                   s.Sfixed32,
+		Sfixed64:                   s.Sfixed64,
+		Bool:                       s.Bool,
+		String_:                    s.String_,
+		Bytes:                      s.Bytes,
+		LargestFieldNumber:         largestFieldNumber,
+		RepeatedInt32:              s.RepeatedInt32,
+		RepeatedInt64:              s.RepeatedInt64,
+		RepeatedUint32:             s.RepeatedUint32,
+		RepeatedUint64:             s.RepeatedUint64,
+		RepeatedSint32:             s.RepeatedSint32,
+		RepeatedSint64:             s.RepeatedSint64,
+		RepeatedFixed32:            s.RepeatedFixed32,
+		RepeatedFixed64:            s.RepeatedFixed64,
+		RepeatedSfixed32:           s.RepeatedSfixed32,
+		RepeatedSfixed64:           s.RepeatedSfixed64,
+		RepeatedBool:               s.RepeatedBool,
+		RepeatedString:             s.RepeatedString,
+		RepeatedBytes:              s.RepeatedBytes,
+		RepeatedLargestFieldNumber: canonicalizeSlice(repeatedLargestFieldNumbers),
 	}
 }
 
@@ -83,34 +95,41 @@ func canotoScalarsToProto(s Scalars) pb.Scalars {
 			Int32: s.LargestFieldNumber.Int32,
 		}
 	}
+	repeatedLargestFieldNumbers := make([]*pb.LargestFieldNumber, len(s.RepeatedLargestFieldNumber))
+	for i, v := range s.RepeatedLargestFieldNumber {
+		repeatedLargestFieldNumbers[i] = &pb.LargestFieldNumber{
+			Int32: v.Int32,
+		}
+	}
 	return pb.Scalars{
-		Int32:              s.Int32,
-		Int64:              s.Int64,
-		Uint32:             s.Uint32,
-		Uint64:             s.Uint64,
-		Sint32:             s.Sint32,
-		Sint64:             s.Sint64,
-		Fixed32:            s.Fixed32,
-		Fixed64:            s.Fixed64,
-		Sfixed32:           s.Sfixed32,
-		Sfixed64:           s.Sfixed64,
-		Bool:               s.Bool,
-		String_:            s.String,
-		Bytes:              s.Bytes,
-		LargestFieldNumber: largestFieldNumber,
-		RepeatedInt32:      s.RepeatedInt32,
-		RepeatedInt64:      s.RepeatedInt64,
-		RepeatedUint32:     s.RepeatedUint32,
-		RepeatedUint64:     s.RepeatedUint64,
-		RepeatedSint32:     s.RepeatedSint32,
-		RepeatedSint64:     s.RepeatedSint64,
-		RepeatedFixed32:    s.RepeatedFixed32,
-		RepeatedFixed64:    s.RepeatedFixed64,
-		RepeatedSfixed32:   s.RepeatedSfixed32,
-		RepeatedSfixed64:   s.RepeatedSfixed64,
-		RepeatedBool:       s.RepeatedBool,
-		RepeatedString:     s.RepeatedString,
-		RepeatedBytes:      s.RepeatedBytes,
+		Int32:                      s.Int32,
+		Int64:                      s.Int64,
+		Uint32:                     s.Uint32,
+		Uint64:                     s.Uint64,
+		Sint32:                     s.Sint32,
+		Sint64:                     s.Sint64,
+		Fixed32:                    s.Fixed32,
+		Fixed64:                    s.Fixed64,
+		Sfixed32:                   s.Sfixed32,
+		Sfixed64:                   s.Sfixed64,
+		Bool:                       s.Bool,
+		String_:                    s.String,
+		Bytes:                      s.Bytes,
+		LargestFieldNumber:         largestFieldNumber,
+		RepeatedInt32:              s.RepeatedInt32,
+		RepeatedInt64:              s.RepeatedInt64,
+		RepeatedUint32:             s.RepeatedUint32,
+		RepeatedUint64:             s.RepeatedUint64,
+		RepeatedSint32:             s.RepeatedSint32,
+		RepeatedSint64:             s.RepeatedSint64,
+		RepeatedFixed32:            s.RepeatedFixed32,
+		RepeatedFixed64:            s.RepeatedFixed64,
+		RepeatedSfixed32:           s.RepeatedSfixed32,
+		RepeatedSfixed64:           s.RepeatedSfixed64,
+		RepeatedBool:               s.RepeatedBool,
+		RepeatedString:             s.RepeatedString,
+		RepeatedBytes:              s.RepeatedBytes,
+		RepeatedLargestFieldNumber: canonicalizeSlice(repeatedLargestFieldNumbers),
 	}
 }
 
@@ -217,6 +236,10 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 				RepeatedBool:     []bool{true, false, true},
 				RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
 				RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
+				RepeatedLargestFieldNumber: []LargestFieldNumber{
+					{Int32: 123455},
+					{Int32: 876523},
+				},
 			}
 			cbScalars.MarshalCanoto()
 		}
@@ -252,6 +275,10 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 			RepeatedBool:     []bool{true, false, true},
 			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
 			RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
+			RepeatedLargestFieldNumber: []LargestFieldNumber{
+				{Int32: 123455},
+				{Int32: 876523},
+			},
 		}
 		for range b.N {
 			cbScalars.MarshalCanoto()
@@ -337,6 +364,10 @@ func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
 			RepeatedBool:     []bool{true, false, true},
 			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
 			RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
+			RepeatedLargestFieldNumber: []LargestFieldNumber{
+				{Int32: 123455},
+				{Int32: 876523},
+			},
 		}
 		bytes := cbScalars.MarshalCanoto()
 
@@ -426,6 +457,10 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 				RepeatedBool:     []bool{true, false, true},
 				RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
 				RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
+				RepeatedLargestFieldNumber: []*pb.LargestFieldNumber{
+					{Int32: 123455},
+					{Int32: 876523},
+				},
 			}
 			_, _ = proto.Marshal(&pbScalars)
 		}
@@ -461,6 +496,10 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 			RepeatedBool:     []bool{true, false, true},
 			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
 			RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
+			RepeatedLargestFieldNumber: []*pb.LargestFieldNumber{
+				{Int32: 123455},
+				{Int32: 876523},
+			},
 		}
 		for range b.N {
 			_, _ = proto.Marshal(&pbScalars)
@@ -546,6 +585,10 @@ func BenchmarkScalars_UnmarshalProto(b *testing.B) {
 			RepeatedBool:     []bool{true, false, true},
 			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
 			RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
+			RepeatedLargestFieldNumber: []*pb.LargestFieldNumber{
+				{Int32: 123455},
+				{Int32: 876523},
+			},
 		}
 		scalarsBytes, err := proto.Marshal(&pbScalars)
 		require.NoError(b, err)

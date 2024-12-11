@@ -108,8 +108,7 @@ ${marshalIfs}}
 
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
-			var msgBytes []byte
-			msgBytes, err = canoto.ReadBytes(r)
+			msgBytes, err := canoto.ReadBytes(r)
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
@@ -139,8 +138,7 @@ ${marshalIfs}}
 
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
-			var msgBytes []byte
-			msgBytes, err = canoto.ReadBytes(r)
+			msgBytes, err := canoto.ReadBytes(r)
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
@@ -224,8 +222,7 @@ ${marshalIfs}}
 
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
-			var msgBytes []byte
-			msgBytes, err = canoto.ReadBytes(r)
+			msgBytes, err := canoto.ReadBytes(r)
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
@@ -240,6 +237,52 @@ ${marshalIfs}}
 			r.B = remainingBytes
 			if err != nil {
 				return err
+			}
+`
+
+	unmarshalCaseRepeatedCustomTemplate = `		case ${fieldNumber}:
+			if wireType != canoto.Len {
+				return canoto.ErrInvalidWireType
+			}
+
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			msgBytes, err := canoto.ReadBytes(r)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+
+			remainingBytes := r.B
+			count, err := canoto.CountBytes(remainingBytes, canoto__${escapedStructName}__${escapedFieldName}__tag)
+			if err != nil {
+				return err
+			}
+
+			c.${fieldName} = make([]${goType}, 1 + count)
+			r.B = msgBytes
+			err = c.${fieldName}[0].UnmarshalCanotoFrom(r)
+			r.B = remainingBytes
+			if err != nil {
+				return err
+			}
+
+			for i := range count {
+				r.B = r.B[canoto__${escapedStructName}__${escapedFieldName}__tag__size:]
+				r.Unsafe = true
+				msgBytes, err := canoto.ReadBytes(r)
+				r.Unsafe = originalUnsafe
+				if err != nil {
+					return err
+				}
+
+				remainingBytes := r.B
+				r.B = msgBytes
+				err = c.${fieldName}[1+i].UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
 			}
 `
 
@@ -284,6 +327,12 @@ ${marshalIfs}}
 `
 
 	sizeIfCustomTemplate = `	if fieldSize := c.${fieldName}.CalculateCanotoSize(); fieldSize != 0 {
+		c.canotoData.size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
+	}
+`
+
+	sizeIfRepeatedCustomTemplate = `	for i := range c.${fieldName} {
+		fieldSize := c.${fieldName}[i].CalculateCanotoSize()
 		c.canotoData.size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 `
@@ -340,6 +389,13 @@ ${marshalIfs}}
 		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		canoto.AppendInt(w, int64(fieldSize))
 		c.${fieldName}.MarshalCanotoInto(w)
+	}
+`
+
+	marshalIfRepeatedCustomTemplate = `	for i := range c.${fieldName} {
+		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		canoto.AppendInt(w, int64(c.${fieldName}[i].CachedCanotoSize()))
+		c.${fieldName}[i].MarshalCanotoInto(w)
 	}
 `
 )
@@ -466,7 +522,7 @@ func makeUnmarshalCases(m message) (string, error) {
 				case goString, goBytes:
 					template = unmarshalCaseRepeatedBytesTemplate
 				default:
-					// TODO: Handle custom types
+					template = unmarshalCaseRepeatedCustomTemplate
 				}
 			default:
 				return "", fmt.Errorf("%w: %q", errUnexpectedCanotoType, f.canotoType)
@@ -556,7 +612,7 @@ func makeSizeIfs(m message) (string, error) {
 				case goString, goBytes:
 					template = sizeIfRepeatedBytesTemplate
 				default:
-					// TODO: Handle custom types
+					template = sizeIfRepeatedCustomTemplate
 				}
 			default:
 				return "", fmt.Errorf("%w: %q", errUnexpectedCanotoType, f.canotoType)
@@ -600,7 +656,7 @@ func makeMarshalIfs(m message) (string, error) {
 				case goString, goBytes:
 					template = marshalIfRepeatedBytesTemplate
 				default:
-					// TODO: Handle custom types
+					template = marshalIfRepeatedCustomTemplate
 				}
 			default:
 				return "", fmt.Errorf("%w: %q", errUnexpectedCanotoType, f.canotoType)
