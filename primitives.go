@@ -291,6 +291,11 @@ func AppendBytes[T Bytes](w *Writer, v T) {
 	w.B = append(w.B, v...)
 }
 
+func IsZero[T comparable](v T) bool {
+	var zero T
+	return v == zero
+}
+
 // unsafeString converts a []byte to an unsafe string.
 //
 // Invariant: The input []byte must not be modified.

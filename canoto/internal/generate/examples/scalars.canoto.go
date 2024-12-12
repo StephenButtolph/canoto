@@ -138,7 +138,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Int8 == 0 {
+			if canoto.IsZero(c.Int8) {
 				return canoto.ErrZeroValue
 			}
 		case 2:
@@ -149,7 +149,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Int16 == 0 {
+			if canoto.IsZero(c.Int16) {
 				return canoto.ErrZeroValue
 			}
 		case 3:
@@ -160,7 +160,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Int32 == 0 {
+			if canoto.IsZero(c.Int32) {
 				return canoto.ErrZeroValue
 			}
 		case 4:
@@ -171,7 +171,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Int64 == 0 {
+			if canoto.IsZero(c.Int64) {
 				return canoto.ErrZeroValue
 			}
 		case 5:
@@ -182,7 +182,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Uint8 == 0 {
+			if canoto.IsZero(c.Uint8) {
 				return canoto.ErrZeroValue
 			}
 		case 6:
@@ -193,7 +193,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Uint16 == 0 {
+			if canoto.IsZero(c.Uint16) {
 				return canoto.ErrZeroValue
 			}
 		case 7:
@@ -204,7 +204,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Uint32 == 0 {
+			if canoto.IsZero(c.Uint32) {
 				return canoto.ErrZeroValue
 			}
 		case 8:
@@ -215,7 +215,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Uint64 == 0 {
+			if canoto.IsZero(c.Uint64) {
 				return canoto.ErrZeroValue
 			}
 		case 9:
@@ -226,7 +226,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Sint8 == 0 {
+			if canoto.IsZero(c.Sint8) {
 				return canoto.ErrZeroValue
 			}
 		case 10:
@@ -237,7 +237,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Sint16 == 0 {
+			if canoto.IsZero(c.Sint16) {
 				return canoto.ErrZeroValue
 			}
 		case 11:
@@ -248,7 +248,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Sint32 == 0 {
+			if canoto.IsZero(c.Sint32) {
 				return canoto.ErrZeroValue
 			}
 		case 12:
@@ -259,7 +259,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Sint64 == 0 {
+			if canoto.IsZero(c.Sint64) {
 				return canoto.ErrZeroValue
 			}
 		case 13:
@@ -270,7 +270,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Fixed32 == 0 {
+			if canoto.IsZero(c.Fixed32) {
 				return canoto.ErrZeroValue
 			}
 		case 14:
@@ -281,7 +281,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Fixed64 == 0 {
+			if canoto.IsZero(c.Fixed64) {
 				return canoto.ErrZeroValue
 			}
 		case 15:
@@ -292,7 +292,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Sfixed32 == 0 {
+			if canoto.IsZero(c.Sfixed32) {
 				return canoto.ErrZeroValue
 			}
 		case 16:
@@ -303,7 +303,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Sfixed64 == 0 {
+			if canoto.IsZero(c.Sfixed64) {
 				return canoto.ErrZeroValue
 			}
 		case 17:
@@ -314,7 +314,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if !c.Bool {
+			if canoto.IsZero(c.Bool) {
 				return canoto.ErrZeroValue
 			}
 		case 18:
@@ -968,55 +968,55 @@ func (c *Scalars) ValidCanoto() bool {
 
 func (c *Scalars) CalculateCanotoSize() int {
 	c.canotoData.size = 0
-	if c.Int8 != 0 {
+	if !canoto.IsZero(c.Int8) {
 		c.canotoData.size += canoto__Scalars__Int8__tag__size + canoto.SizeInt(c.Int8)
 	}
-	if c.Int16 != 0 {
+	if !canoto.IsZero(c.Int16) {
 		c.canotoData.size += canoto__Scalars__Int16__tag__size + canoto.SizeInt(c.Int16)
 	}
-	if c.Int32 != 0 {
+	if !canoto.IsZero(c.Int32) {
 		c.canotoData.size += canoto__Scalars__Int32__tag__size + canoto.SizeInt(c.Int32)
 	}
-	if c.Int64 != 0 {
+	if !canoto.IsZero(c.Int64) {
 		c.canotoData.size += canoto__Scalars__Int64__tag__size + canoto.SizeInt(c.Int64)
 	}
-	if c.Uint8 != 0 {
+	if !canoto.IsZero(c.Uint8) {
 		c.canotoData.size += canoto__Scalars__Uint8__tag__size + canoto.SizeInt(c.Uint8)
 	}
-	if c.Uint16 != 0 {
+	if !canoto.IsZero(c.Uint16) {
 		c.canotoData.size += canoto__Scalars__Uint16__tag__size + canoto.SizeInt(c.Uint16)
 	}
-	if c.Uint32 != 0 {
+	if !canoto.IsZero(c.Uint32) {
 		c.canotoData.size += canoto__Scalars__Uint32__tag__size + canoto.SizeInt(c.Uint32)
 	}
-	if c.Uint64 != 0 {
+	if !canoto.IsZero(c.Uint64) {
 		c.canotoData.size += canoto__Scalars__Uint64__tag__size + canoto.SizeInt(c.Uint64)
 	}
-	if c.Sint8 != 0 {
+	if !canoto.IsZero(c.Sint8) {
 		c.canotoData.size += canoto__Scalars__Sint8__tag__size + canoto.SizeSint(c.Sint8)
 	}
-	if c.Sint16 != 0 {
+	if !canoto.IsZero(c.Sint16) {
 		c.canotoData.size += canoto__Scalars__Sint16__tag__size + canoto.SizeSint(c.Sint16)
 	}
-	if c.Sint32 != 0 {
+	if !canoto.IsZero(c.Sint32) {
 		c.canotoData.size += canoto__Scalars__Sint32__tag__size + canoto.SizeSint(c.Sint32)
 	}
-	if c.Sint64 != 0 {
+	if !canoto.IsZero(c.Sint64) {
 		c.canotoData.size += canoto__Scalars__Sint64__tag__size + canoto.SizeSint(c.Sint64)
 	}
-	if c.Fixed32 != 0 {
+	if !canoto.IsZero(c.Fixed32) {
 		c.canotoData.size += canoto__Scalars__Fixed32__tag__size + canoto.SizeFint32
 	}
-	if c.Fixed64 != 0 {
+	if !canoto.IsZero(c.Fixed64) {
 		c.canotoData.size += canoto__Scalars__Fixed64__tag__size + canoto.SizeFint64
 	}
-	if c.Sfixed32 != 0 {
+	if !canoto.IsZero(c.Sfixed32) {
 		c.canotoData.size += canoto__Scalars__Sfixed32__tag__size + canoto.SizeFint32
 	}
-	if c.Sfixed64 != 0 {
+	if !canoto.IsZero(c.Sfixed64) {
 		c.canotoData.size += canoto__Scalars__Sfixed64__tag__size + canoto.SizeFint64
 	}
-	if c.Bool {
+	if !canoto.IsZero(c.Bool) {
 		c.canotoData.size += canoto__Scalars__Bool__tag__size + canoto.SizeBool
 	}
 	if len(c.String) != 0 {

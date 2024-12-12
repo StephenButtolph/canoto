@@ -48,7 +48,7 @@ func (c *LargestFieldNumber) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
-			if c.Int32 == 0 {
+			if canoto.IsZero(c.Int32) {
 				return canoto.ErrZeroValue
 			}
 		default:
@@ -66,7 +66,7 @@ func (c *LargestFieldNumber) ValidCanoto() bool {
 
 func (c *LargestFieldNumber) CalculateCanotoSize() int {
 	c.canotoData.size = 0
-	if c.Int32 != 0 {
+	if !canoto.IsZero(c.Int32) {
 		c.canotoData.size += canoto__LargestFieldNumber__Int32__tag__size + canoto.SizeInt(c.Int32)
 	}
 	return c.canotoData.size
