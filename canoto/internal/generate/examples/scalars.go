@@ -43,6 +43,24 @@ type Scalars struct {
 	RepeatedString             []string             `canoto:"bytes,38"`
 	RepeatedBytes              [][]byte             `canoto:"bytes,39"`
 	RepeatedLargestFieldNumber []LargestFieldNumber `canoto:"bytes,40"`
+	FixedRepeatedInt8          [3]int8              `canoto:"int,41"`
+	FixedRepeatedInt16         [3]int16             `canoto:"int,42"`
+	FixedRepeatedInt32         [3]int32             `canoto:"int,43"`
+	FixedRepeatedInt64         [3]int64             `canoto:"int,44"`
+	FixedRepeatedUint8         [3]uint8             `canoto:"int,45"`
+	FixedRepeatedUint16        [3]uint16            `canoto:"int,46"`
+	FixedRepeatedUint32        [3]uint32            `canoto:"int,47"`
+	FixedRepeatedUint64        [3]uint64            `canoto:"int,48"`
+	FixedRepeatedSint8         [3]int8              `canoto:"sint,49"`
+	FixedRepeatedSint16        [3]int16             `canoto:"sint,50"`
+	FixedRepeatedSint32        [3]int32             `canoto:"sint,51"`
+	FixedRepeatedSint64        [3]int64             `canoto:"sint,52"`
+	FixedRepeatedFixed32       [3]uint32            `canoto:"fint,53"`
+	FixedRepeatedFixed64       [3]uint64            `canoto:"fint,54"`
+	FixedRepeatedSfixed32      [3]int32             `canoto:"fint,55"`
+	FixedRepeatedSfixed64      [3]int64             `canoto:"fint,56"`
+	FixedRepeatedBool          [3]bool              `canoto:"bool,57"`
+	FixedRepeatedString        [3]string            `canoto:"bytes,58"`
 
 	canotoData canotoData_Scalars
 }

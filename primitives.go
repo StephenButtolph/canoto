@@ -220,12 +220,11 @@ func SizeBytes[T Bytes](v T) int {
 
 func CountBytes(bytes []byte, tag string) (int, error) {
 	var (
-		tagLen = len(tag)
-		r      = Reader{B: bytes}
-		count  = 0
+		r     = Reader{B: bytes}
+		count = 0
 	)
-	for len(r.B) >= len(tag) && string(r.B[:tagLen]) == tag {
-		r.B = r.B[tagLen:]
+	for HasPrefix(r.B, tag) {
+		r.B = r.B[len(tag):]
 		length, err := ReadInt[int32](&r)
 		if err != nil {
 			return 0, err
@@ -240,6 +239,10 @@ func CountBytes(bytes []byte, tag string) (int, error) {
 		count++
 	}
 	return count, nil
+}
+
+func HasPrefix(bytes []byte, prefix string) bool {
+	return len(bytes) >= len(prefix) && string(bytes[:len(prefix)]) == prefix
 }
 
 func ReadString(r *Reader) (string, error) {

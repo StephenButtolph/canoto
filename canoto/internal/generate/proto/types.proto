@@ -46,6 +46,25 @@ message Scalars {
   repeated string repeated_string = 38;
   repeated bytes repeated_bytes = 39;
   repeated LargestFieldNumber repeated_largest_field_number = 40;
+
+  repeated int32 fixed_repeated_int8 = 41;
+  repeated int32 fixed_repeated_int16 = 42;
+  repeated int32 fixed_repeated_int32 = 43;
+  repeated int64 fixed_repeated_int64 = 44;
+  repeated uint32 fixed_repeated_uint8 = 45;
+  repeated uint32 fixed_repeated_uint16 = 46;
+  repeated uint32 fixed_repeated_uint32 = 47;
+  repeated uint64 fixed_repeated_uint64 = 48;
+  repeated sint32 fixed_repeated_sint8 = 49;
+  repeated sint32 fixed_repeated_sint16 = 50;
+  repeated sint32 fixed_repeated_sint32 = 51;
+  repeated sint64 fixed_repeated_sint64 = 52;
+  repeated fixed32 fixed_repeated_fixed32 = 53;
+  repeated fixed64 fixed_repeated_fixed64 = 54;
+  repeated sfixed32 fixed_repeated_sfixed32 = 55;
+  repeated sfixed64 fixed_repeated_sfixed64 = 56;
+  repeated bool fixed_repeated_bool = 57;
+  repeated string fixed_repeated_string = 58;
 }
 
 message LargestFieldNumber {

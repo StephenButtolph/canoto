@@ -3,13 +3,17 @@
 package examples
 
 import (
+	"io"
 	"unicode/utf8"
 
 	"github.com/StephenButtolph/canoto"
 )
 
-// Ensure that "unicode/utf8" is imported without error
-var _ = utf8.ValidString
+// Ensure that unused imports do not error
+var (
+	_ = io.ErrUnexpectedEOF
+	_ = utf8.ValidString
+)
 
 const (
 	canoto__LargestFieldNumber__Int32__tag = "\xf8\xff\xff\xff\x0f" // canoto.Tag(536870911, canoto.Varint)
