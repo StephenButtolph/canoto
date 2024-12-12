@@ -57,7 +57,7 @@ func canonicalizeCanotoScalars(s Scalars) Scalars {
 	return s
 }
 
-func canonicalizeProtoScalars(s *pb.Scalars) pb.Scalars {
+func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 	var largestFieldNumber *pb.LargestFieldNumber
 	if s.LargestFieldNumber != nil {
 		largestFieldNumber = &pb.LargestFieldNumber{
@@ -74,7 +74,7 @@ func canonicalizeProtoScalars(s *pb.Scalars) pb.Scalars {
 		}
 		repeatedLargestFieldNumbers[i] = largestFieldNumber
 	}
-	return pb.Scalars{
+	return &pb.Scalars{
 		Int8:               s.Int8,
 		Int16:              s.Int16,
 		Int32:              s.Int32,
@@ -138,7 +138,7 @@ func canonicalizeProtoScalars(s *pb.Scalars) pb.Scalars {
 	}
 }
 
-func canotoScalarsToProto(s Scalars) pb.Scalars {
+func canotoScalarsToProto(s Scalars) *pb.Scalars {
 	var largestFieldNumber *pb.LargestFieldNumber
 	if s.LargestFieldNumber.Int32 != 0 {
 		largestFieldNumber = &pb.LargestFieldNumber{
@@ -151,7 +151,8 @@ func canotoScalarsToProto(s Scalars) pb.Scalars {
 			Int32: v.Int32,
 		}
 	}
-	return pb.Scalars{
+
+	pbs := pb.Scalars{
 		Int8:               int32(s.Int8),
 		Int16:              int32(s.Int16),
 		Int32:              s.Int32,
@@ -193,26 +194,62 @@ func canotoScalarsToProto(s Scalars) pb.Scalars {
 		RepeatedString:             s.RepeatedString,
 		RepeatedBytes:              s.RepeatedBytes,
 		RepeatedLargestFieldNumber: canonicalizeSlice(repeatedLargestFieldNumbers),
-
-		FixedRepeatedInt8:     castSlice[int8, int32](s.FixedRepeatedInt8[:]),
-		FixedRepeatedInt16:    castSlice[int16, int32](s.FixedRepeatedInt16[:]),
-		FixedRepeatedInt32:    slices.Clone(s.FixedRepeatedInt32[:]),
-		FixedRepeatedInt64:    slices.Clone(s.FixedRepeatedInt64[:]),
-		FixedRepeatedUint8:    castSlice[uint8, uint32](s.FixedRepeatedUint8[:]),
-		FixedRepeatedUint16:   castSlice[uint16, uint32](s.FixedRepeatedUint16[:]),
-		FixedRepeatedUint32:   slices.Clone(s.FixedRepeatedUint32[:]),
-		FixedRepeatedUint64:   slices.Clone(s.FixedRepeatedUint64[:]),
-		FixedRepeatedSint8:    castSlice[int8, int32](s.FixedRepeatedSint8[:]),
-		FixedRepeatedSint16:   castSlice[int16, int32](s.FixedRepeatedSint16[:]),
-		FixedRepeatedSint32:   slices.Clone(s.FixedRepeatedSint32[:]),
-		FixedRepeatedSint64:   slices.Clone(s.FixedRepeatedSint64[:]),
-		FixedRepeatedFixed32:  slices.Clone(s.FixedRepeatedFixed32[:]),
-		FixedRepeatedFixed64:  slices.Clone(s.FixedRepeatedFixed64[:]),
-		FixedRepeatedSfixed32: slices.Clone(s.FixedRepeatedSfixed32[:]),
-		FixedRepeatedSfixed64: slices.Clone(s.FixedRepeatedSfixed64[:]),
-		FixedRepeatedBool:     slices.Clone(s.FixedRepeatedBool[:]),
-		FixedRepeatedString:   slices.Clone(s.FixedRepeatedString[:]),
 	}
+	if !canoto.IsZero(s.FixedRepeatedInt8) {
+		pbs.FixedRepeatedInt8 = castSlice[int8, int32](s.FixedRepeatedInt8[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedInt16) {
+		pbs.FixedRepeatedInt16 = castSlice[int16, int32](s.FixedRepeatedInt16[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedInt32) {
+		pbs.FixedRepeatedInt32 = slices.Clone(s.FixedRepeatedInt32[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedInt64) {
+		pbs.FixedRepeatedInt64 = slices.Clone(s.FixedRepeatedInt64[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedUint8) {
+		pbs.FixedRepeatedUint8 = castSlice[uint8, uint32](s.FixedRepeatedUint8[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedUint16) {
+		pbs.FixedRepeatedUint16 = castSlice[uint16, uint32](s.FixedRepeatedUint16[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedUint32) {
+		pbs.FixedRepeatedUint32 = slices.Clone(s.FixedRepeatedUint32[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedUint64) {
+		pbs.FixedRepeatedUint64 = slices.Clone(s.FixedRepeatedUint64[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedSint8) {
+		pbs.FixedRepeatedSint8 = castSlice[int8, int32](s.FixedRepeatedSint8[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedSint16) {
+		pbs.FixedRepeatedSint16 = castSlice[int16, int32](s.FixedRepeatedSint16[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedSint32) {
+		pbs.FixedRepeatedSint32 = slices.Clone(s.FixedRepeatedSint32[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedSint64) {
+		pbs.FixedRepeatedSint64 = slices.Clone(s.FixedRepeatedSint64[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedFixed32) {
+		pbs.FixedRepeatedFixed32 = slices.Clone(s.FixedRepeatedFixed32[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedFixed64) {
+		pbs.FixedRepeatedFixed64 = slices.Clone(s.FixedRepeatedFixed64[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedSfixed32) {
+		pbs.FixedRepeatedSfixed32 = slices.Clone(s.FixedRepeatedSfixed32[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedSfixed64) {
+		pbs.FixedRepeatedSfixed64 = slices.Clone(s.FixedRepeatedSfixed64[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedBool) {
+		pbs.FixedRepeatedBool = slices.Clone(s.FixedRepeatedBool[:])
+	}
+	if !canoto.IsZero(s.FixedRepeatedString) {
+		pbs.FixedRepeatedString = slices.Clone(s.FixedRepeatedString[:])
+	}
+	return &pbs
 }
 
 func FuzzScalars_UnmarshalCanoto(f *testing.F) {
@@ -225,7 +262,7 @@ func FuzzScalars_UnmarshalCanoto(f *testing.F) {
 		canotoScalars = canonicalizeCanotoScalars(canotoScalars)
 
 		pbScalars := canotoScalarsToProto(canotoScalars)
-		pbScalarsBytes, err := proto.Marshal(&pbScalars)
+		pbScalarsBytes, err := proto.Marshal(pbScalars)
 		if err != nil {
 			return
 		}
