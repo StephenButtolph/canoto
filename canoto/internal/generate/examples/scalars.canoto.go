@@ -74,6 +74,7 @@ const (
 	canoto__Scalars__FixedRepeatedSfixed64__tag = "\xc2\x03" // canoto.Tag(56, canoto.Len)
 	canoto__Scalars__FixedRepeatedBool__tag = "\xca\x03" // canoto.Tag(57, canoto.Len)
 	canoto__Scalars__FixedRepeatedString__tag = "\xd2\x03" // canoto.Tag(58, canoto.Len)
+	canoto__Scalars__FixedBytes__tag = "\xda\x03" // canoto.Tag(59, canoto.Len)
 
 	canoto__Scalars__Int8__tag__size = len(canoto__Scalars__Int8__tag)
 	canoto__Scalars__Int16__tag__size = len(canoto__Scalars__Int16__tag)
@@ -133,6 +134,7 @@ const (
 	canoto__Scalars__FixedRepeatedSfixed64__tag__size = len(canoto__Scalars__FixedRepeatedSfixed64__tag)
 	canoto__Scalars__FixedRepeatedBool__tag__size = len(canoto__Scalars__FixedRepeatedBool__tag)
 	canoto__Scalars__FixedRepeatedString__tag__size = len(canoto__Scalars__FixedRepeatedString__tag)
+	canoto__Scalars__FixedBytes__tag__size = len(canoto__Scalars__FixedBytes__tag)
 )
 
 type canotoData_Scalars struct {
@@ -1538,12 +1540,35 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				}
 				c.FixedRepeatedString[i+1] = v
 			}
-			if canoto.HasNext(r) {
-				return io.ErrUnexpectedEOF
-			}
 			if canoto.IsZero(c.FixedRepeatedString) {
 				return canoto.ErrZeroValue
 			}
+		case 59:
+			if wireType != canoto.Len {
+				return canoto.ErrInvalidWireType
+			}
+
+			length, err := canoto.ReadInt[int32](r)
+			if err != nil {
+				return err
+			}
+
+			const (
+				expectedLength      = len(c.FixedBytes)
+				expectedLengthInt32 = int32(expectedLength)
+			)
+			if length != expectedLengthInt32 {
+				return canoto.ErrInvalidLength
+			}
+			if expectedLength > len(r.B) {
+				return io.ErrUnexpectedEOF
+			}
+
+			copy(c.FixedBytes[:], r.B)
+			if canoto.IsZero(c.FixedBytes) {
+				return canoto.ErrZeroValue
+			}
+			r.B = r.B[expectedLength:]
 		default:
 			return canoto.ErrUnknownField
 		}
@@ -1862,6 +1887,9 @@ func (c *Scalars) CalculateCanotoSize() int {
 		for _, v := range c.FixedRepeatedString {
 			c.canotoData.size += canoto__Scalars__FixedRepeatedString__tag__size + canoto.SizeBytes(v)
 		}
+	}
+	if !canoto.IsZero(c.FixedBytes) {
+		c.canotoData.size += canoto__Scalars__FixedBytes__tag__size + canoto.SizeBytes(c.FixedBytes[:])
 	}
 	return c.canotoData.size
 }
@@ -2221,5 +2249,9 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 			canoto.Append(w, canoto__Scalars__FixedRepeatedString__tag)
 			canoto.AppendBytes(w, v)
 		}
+	}
+	if !canoto.IsZero(c.FixedBytes) {
+		canoto.Append(w, canoto__Scalars__FixedBytes__tag)
+		canoto.AppendBytes(w, c.FixedBytes[:])
 	}
 }
