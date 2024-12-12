@@ -18,13 +18,33 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 		f     func(*canoto.Writer)
 	}{
 		{
-			name: "int32",
+			name: "int8",
 			proto: &pb.Scalars{
-				Int32: 128,
+				Int8: 52,
 			},
 			f: func(w *canoto.Writer) {
 				canoto.Append(w, canoto.Tag(1, canoto.Varint))
-				canoto.AppendInt[int32](w, 128)
+				canoto.AppendInt[int8](w, 52)
+			},
+		},
+		{
+			name: "int16",
+			proto: &pb.Scalars{
+				Int16: 1234,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(2, canoto.Varint))
+				canoto.AppendInt[int16](w, 1234)
+			},
+		},
+		{
+			name: "int32",
+			proto: &pb.Scalars{
+				Int32: 121234,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(3, canoto.Varint))
+				canoto.AppendInt[int32](w, 121234)
 			},
 		},
 		{
@@ -33,8 +53,28 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Int64: 259,
 			},
 			f: func(w *canoto.Writer) {
-				canoto.Append(w, canoto.Tag(2, canoto.Varint))
+				canoto.Append(w, canoto.Tag(4, canoto.Varint))
 				canoto.AppendInt[int64](w, 259)
+			},
+		},
+		{
+			name: "uint8",
+			proto: &pb.Scalars{
+				Uint8: 9,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(5, canoto.Varint))
+				canoto.AppendInt[uint8](w, 9)
+			},
+		},
+		{
+			name: "uint16",
+			proto: &pb.Scalars{
+				Uint16: 1234,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(6, canoto.Varint))
+				canoto.AppendInt[uint16](w, 1234)
 			},
 		},
 		{
@@ -43,7 +83,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Uint32: 1234,
 			},
 			f: func(w *canoto.Writer) {
-				canoto.Append(w, canoto.Tag(3, canoto.Varint))
+				canoto.Append(w, canoto.Tag(7, canoto.Varint))
 				canoto.AppendInt[uint32](w, 1234)
 			},
 		},
@@ -53,8 +93,28 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Uint64: 2938567,
 			},
 			f: func(w *canoto.Writer) {
-				canoto.Append(w, canoto.Tag(4, canoto.Varint))
+				canoto.Append(w, canoto.Tag(8, canoto.Varint))
 				canoto.AppendInt[uint64](w, 2938567)
+			},
+		},
+		{
+			name: "sint8",
+			proto: &pb.Scalars{
+				Sint8: -52,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(9, canoto.Varint))
+				canoto.AppendSint[int8](w, -52)
+			},
+		},
+		{
+			name: "sint16",
+			proto: &pb.Scalars{
+				Sint16: -1234,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(10, canoto.Varint))
+				canoto.AppendSint[int16](w, -1234)
 			},
 		},
 		{
@@ -63,7 +123,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Sint32: -2136745,
 			},
 			f: func(w *canoto.Writer) {
-				canoto.Append(w, canoto.Tag(5, canoto.Varint))
+				canoto.Append(w, canoto.Tag(11, canoto.Varint))
 				canoto.AppendSint[int32](w, -2136745)
 			},
 		},
@@ -73,7 +133,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Sint64: -9287364,
 			},
 			f: func(w *canoto.Writer) {
-				canoto.Append(w, canoto.Tag(6, canoto.Varint))
+				canoto.Append(w, canoto.Tag(12, canoto.Varint))
 				canoto.AppendSint[int64](w, -9287364)
 			},
 		},
@@ -83,7 +143,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Fixed32: 876254,
 			},
 			f: func(w *canoto.Writer) {
-				canoto.Append(w, canoto.Tag(7, canoto.I32))
+				canoto.Append(w, canoto.Tag(13, canoto.I32))
 				canoto.AppendFint32[uint32](w, 876254)
 			},
 		},
@@ -93,7 +153,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Fixed64: 328137645632,
 			},
 			f: func(w *canoto.Writer) {
-				canoto.Append(w, canoto.Tag(8, canoto.I64))
+				canoto.Append(w, canoto.Tag(14, canoto.I64))
 				canoto.AppendFint64[uint64](w, 328137645632)
 			},
 		},
@@ -103,7 +163,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Sfixed32: -123463246,
 			},
 			f: func(w *canoto.Writer) {
-				canoto.Append(w, canoto.Tag(9, canoto.I32))
+				canoto.Append(w, canoto.Tag(15, canoto.I32))
 				canoto.AppendFint32[int32](w, -123463246)
 			},
 		},
@@ -113,7 +173,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Sfixed64: -8762135423,
 			},
 			f: func(w *canoto.Writer) {
-				canoto.Append(w, canoto.Tag(10, canoto.I64))
+				canoto.Append(w, canoto.Tag(16, canoto.I64))
 				canoto.AppendFint64[int64](w, -8762135423)
 			},
 		},
@@ -123,7 +183,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Bool: true,
 			},
 			f: func(w *canoto.Writer) {
-				canoto.Append(w, canoto.Tag(11, canoto.Varint))
+				canoto.Append(w, canoto.Tag(17, canoto.Varint))
 				canoto.AppendBool(w, true)
 			},
 		},
@@ -133,7 +193,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				String_: "hi mom!",
 			},
 			f: func(w *canoto.Writer) {
-				canoto.Append(w, canoto.Tag(12, canoto.Len))
+				canoto.Append(w, canoto.Tag(18, canoto.Len))
 				canoto.AppendBytes(w, "hi mom!")
 			},
 		},
@@ -143,7 +203,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 				Bytes: []byte("hi dad!"),
 			},
 			f: func(w *canoto.Writer) {
-				canoto.Append(w, canoto.Tag(13, canoto.Len))
+				canoto.Append(w, canoto.Tag(19, canoto.Len))
 				canoto.AppendBytes(w, []byte("hi dad!"))
 			},
 		},
