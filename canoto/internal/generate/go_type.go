@@ -6,9 +6,13 @@ import (
 )
 
 const (
+	goInt8   goType = "int8"
+	goUint8  goType = "uint8"
+	goInt16  goType = "int16"
+	goUint16 goType = "uint16"
 	goInt32  goType = "int32"
-	goInt64  goType = "int64"
 	goUint32 goType = "uint32"
+	goInt64  goType = "int64"
 	goUint64 goType = "uint64"
 	goBool   goType = "bool"
 	goString goType = "string"
@@ -17,9 +21,13 @@ const (
 
 var (
 	primitiveGoTypes = []goType{
+		goInt8,
+		goUint8,
+		goInt16,
+		goUint16,
 		goInt32,
-		goInt64,
 		goUint32,
+		goInt64,
 		goUint64,
 		goBool,
 		goString,

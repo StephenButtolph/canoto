@@ -33,8 +33,12 @@ var (
 )
 
 type (
-	Sint  interface{ ~int32 | ~int64 }
-	Uint  interface{ ~uint32 | ~uint64 }
+	Sint interface {
+		~int8 | ~int16 | ~int32 | ~int64
+	}
+	Uint interface {
+		~uint8 | ~uint16 | ~uint32 | ~uint64
+	}
 	Int   interface{ Sint | Uint }
 	Int32 interface{ ~int32 | uint32 }
 	Int64 interface{ ~int64 | uint64 }
