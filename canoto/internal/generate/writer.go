@@ -553,9 +553,9 @@ func makeSize(m message) (string, error) {
 
 func makeMarshal(m message) (string, error) {
 	const (
-		intTemplate = `	if c.${fieldName} != 0 {
+		intTemplate = `	if !canoto.IsZero(c.${fieldName}) {
 		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		canoto.Append${sizeFunction}(w, c.${fieldName})
+		canoto.Append${sizeFunction}${sizeConstant}(w, c.${fieldName})
 	}
 `
 		repeatedIntTemplate = `	if len(c.${fieldName}) != 0 {
@@ -566,11 +566,6 @@ func makeMarshal(m message) (string, error) {
 		}
 	}
 `
-		fintTemplate = `	if c.${fieldName} != 0 {
-		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		canoto.Append${sizeConstant}(w, c.${fieldName})
-	}
-`
 		repeatedFixedSizeTemplate = `	if num := len(c.${fieldName}); num != 0 {
 		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		canoto.AppendInt(w, int64(num*canoto.Size${sizeConstant}))
@@ -579,7 +574,7 @@ func makeMarshal(m message) (string, error) {
 		}
 	}
 `
-		boolTemplate = `	if c.${fieldName} {
+		boolTemplate = `	if !canoto.IsZero(c.${fieldName}) {
 		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		canoto.AppendBool(w, true)
 	}
@@ -613,7 +608,7 @@ func makeMarshal(m message) (string, error) {
 			repeated:  repeatedIntTemplate,
 		}
 		fintTemplates = map[bool]string{
-			!repeated: fintTemplate,
+			!repeated: intTemplate,
 			repeated:  repeatedFixedSizeTemplate,
 		}
 		boolTemplates = map[bool]string{

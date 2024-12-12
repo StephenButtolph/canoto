@@ -85,7 +85,7 @@ func (c *LargestFieldNumber) MarshalCanoto() []byte {
 }
 
 func (c *LargestFieldNumber) MarshalCanotoInto(w *canoto.Writer) {
-	if c.Int32 != 0 {
+	if !canoto.IsZero(c.Int32) {
 		canoto.Append(w, canoto__LargestFieldNumber__Int32__tag)
 		canoto.AppendInt(w, c.Int32)
 	}

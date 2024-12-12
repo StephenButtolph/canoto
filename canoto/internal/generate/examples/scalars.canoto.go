@@ -1158,71 +1158,71 @@ func (c *Scalars) MarshalCanoto() []byte {
 }
 
 func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
-	if c.Int8 != 0 {
+	if !canoto.IsZero(c.Int8) {
 		canoto.Append(w, canoto__Scalars__Int8__tag)
 		canoto.AppendInt(w, c.Int8)
 	}
-	if c.Int16 != 0 {
+	if !canoto.IsZero(c.Int16) {
 		canoto.Append(w, canoto__Scalars__Int16__tag)
 		canoto.AppendInt(w, c.Int16)
 	}
-	if c.Int32 != 0 {
+	if !canoto.IsZero(c.Int32) {
 		canoto.Append(w, canoto__Scalars__Int32__tag)
 		canoto.AppendInt(w, c.Int32)
 	}
-	if c.Int64 != 0 {
+	if !canoto.IsZero(c.Int64) {
 		canoto.Append(w, canoto__Scalars__Int64__tag)
 		canoto.AppendInt(w, c.Int64)
 	}
-	if c.Uint8 != 0 {
+	if !canoto.IsZero(c.Uint8) {
 		canoto.Append(w, canoto__Scalars__Uint8__tag)
 		canoto.AppendInt(w, c.Uint8)
 	}
-	if c.Uint16 != 0 {
+	if !canoto.IsZero(c.Uint16) {
 		canoto.Append(w, canoto__Scalars__Uint16__tag)
 		canoto.AppendInt(w, c.Uint16)
 	}
-	if c.Uint32 != 0 {
+	if !canoto.IsZero(c.Uint32) {
 		canoto.Append(w, canoto__Scalars__Uint32__tag)
 		canoto.AppendInt(w, c.Uint32)
 	}
-	if c.Uint64 != 0 {
+	if !canoto.IsZero(c.Uint64) {
 		canoto.Append(w, canoto__Scalars__Uint64__tag)
 		canoto.AppendInt(w, c.Uint64)
 	}
-	if c.Sint8 != 0 {
+	if !canoto.IsZero(c.Sint8) {
 		canoto.Append(w, canoto__Scalars__Sint8__tag)
 		canoto.AppendSint(w, c.Sint8)
 	}
-	if c.Sint16 != 0 {
+	if !canoto.IsZero(c.Sint16) {
 		canoto.Append(w, canoto__Scalars__Sint16__tag)
 		canoto.AppendSint(w, c.Sint16)
 	}
-	if c.Sint32 != 0 {
+	if !canoto.IsZero(c.Sint32) {
 		canoto.Append(w, canoto__Scalars__Sint32__tag)
 		canoto.AppendSint(w, c.Sint32)
 	}
-	if c.Sint64 != 0 {
+	if !canoto.IsZero(c.Sint64) {
 		canoto.Append(w, canoto__Scalars__Sint64__tag)
 		canoto.AppendSint(w, c.Sint64)
 	}
-	if c.Fixed32 != 0 {
+	if !canoto.IsZero(c.Fixed32) {
 		canoto.Append(w, canoto__Scalars__Fixed32__tag)
 		canoto.AppendFint32(w, c.Fixed32)
 	}
-	if c.Fixed64 != 0 {
+	if !canoto.IsZero(c.Fixed64) {
 		canoto.Append(w, canoto__Scalars__Fixed64__tag)
 		canoto.AppendFint64(w, c.Fixed64)
 	}
-	if c.Sfixed32 != 0 {
+	if !canoto.IsZero(c.Sfixed32) {
 		canoto.Append(w, canoto__Scalars__Sfixed32__tag)
 		canoto.AppendFint32(w, c.Sfixed32)
 	}
-	if c.Sfixed64 != 0 {
+	if !canoto.IsZero(c.Sfixed64) {
 		canoto.Append(w, canoto__Scalars__Sfixed64__tag)
 		canoto.AppendFint64(w, c.Sfixed64)
 	}
-	if c.Bool {
+	if !canoto.IsZero(c.Bool) {
 		canoto.Append(w, canoto__Scalars__Bool__tag)
 		canoto.AppendBool(w, true)
 	}
