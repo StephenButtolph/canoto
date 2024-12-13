@@ -183,7 +183,7 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 	}
 	repeatedLargestFieldNumbers := make([]*pb.LargestFieldNumber, len(s.RepeatedLargestFieldNumber))
 	for i := range s.RepeatedLargestFieldNumber {
-		v := &s.FixedRepeatedLargestFieldNumber[i]
+		v := &s.RepeatedLargestFieldNumber[i]
 
 		repeatedLargestFieldNumbers[i] = &pb.LargestFieldNumber{
 			Int32: v.Int32,
