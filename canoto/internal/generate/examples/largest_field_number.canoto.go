@@ -4,6 +4,7 @@ package examples
 
 import (
 	"io"
+	"sync/atomic"
 	"unicode/utf8"
 
 	"github.com/StephenButtolph/canoto"
@@ -22,7 +23,7 @@ const (
 )
 
 type canotoData_LargestFieldNumber struct {
-	size int
+	size atomic.Int64
 }
 
 func (c *LargestFieldNumber) UnmarshalCanoto(bytes []byte) error {
@@ -69,15 +70,16 @@ func (c *LargestFieldNumber) ValidCanoto() bool {
 }
 
 func (c *LargestFieldNumber) CalculateCanotoSize() int {
-	c.canotoData.size = 0
+	var size int
 	if !canoto.IsZero(c.Int32) {
-		c.canotoData.size += canoto__LargestFieldNumber__Int32__tag__size + canoto.SizeInt(c.Int32)
+		size += canoto__LargestFieldNumber__Int32__tag__size + canoto.SizeInt(c.Int32)
 	}
-	return c.canotoData.size
+	c.canotoData.size.Store(int64(size))
+	return size
 }
 
 func (c *LargestFieldNumber) CachedCanotoSize() int {
-	return c.canotoData.size
+	return int(c.canotoData.size.Load())
 }
 
 func (c *LargestFieldNumber) MarshalCanoto() []byte {

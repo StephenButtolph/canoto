@@ -42,7 +42,7 @@ func arrayToSlice[T any](s [][32]T) [][]T {
 	return newS
 }
 
-func canonicalizeCanotoScalars(s Scalars) Scalars {
+func canonicalizeCanotoScalars(s *Scalars) *Scalars {
 	s.Bytes = canonicalizeSlice(s.Bytes)
 	s.RepeatedInt8 = canonicalizeSlice(s.RepeatedInt8)
 	s.RepeatedInt16 = canonicalizeSlice(s.RepeatedInt16)
@@ -174,7 +174,7 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 	}
 }
 
-func canotoScalarsToProto(s Scalars) *pb.Scalars {
+func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 	var largestFieldNumber *pb.LargestFieldNumber
 	if s.LargestFieldNumber.Int32 != 0 {
 		largestFieldNumber = &pb.LargestFieldNumber{
@@ -182,7 +182,9 @@ func canotoScalarsToProto(s Scalars) *pb.Scalars {
 		}
 	}
 	repeatedLargestFieldNumbers := make([]*pb.LargestFieldNumber, len(s.RepeatedLargestFieldNumber))
-	for i, v := range s.RepeatedLargestFieldNumber {
+	for i := range s.RepeatedLargestFieldNumber {
+		v := &s.FixedRepeatedLargestFieldNumber[i]
+
 		repeatedLargestFieldNumbers[i] = &pb.LargestFieldNumber{
 			Int32: v.Int32,
 		}
@@ -191,7 +193,9 @@ func canotoScalarsToProto(s Scalars) *pb.Scalars {
 		fixedLargestFieldNumbers = make([]*pb.LargestFieldNumber, len(s.FixedRepeatedLargestFieldNumber))
 		isZero                   = true
 	)
-	for i, v := range s.FixedRepeatedLargestFieldNumber {
+	for i := range s.FixedRepeatedLargestFieldNumber {
+		v := &s.FixedRepeatedLargestFieldNumber[i]
+
 		fixedLargestFieldNumbers[i] = &pb.LargestFieldNumber{
 			Int32: v.Int32,
 		}
@@ -330,7 +334,7 @@ func FuzzScalars_UnmarshalCanoto(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data []byte) {
 		require := require.New(t)
 
-		var canotoScalars Scalars
+		canotoScalars := &Scalars{}
 		fz := fuzzer.NewFuzzer(data)
 		fz.Fill(&canotoScalars)
 		canotoScalars = canonicalizeCanotoScalars(canotoScalars)
@@ -341,7 +345,7 @@ func FuzzScalars_UnmarshalCanoto(f *testing.F) {
 			return
 		}
 
-		var canotoScalarsFromProto Scalars
+		canotoScalarsFromProto := &Scalars{}
 		require.NoError(canotoScalarsFromProto.UnmarshalCanoto(pbScalarsBytes))
 		require.Equal(
 			canotoScalars,
@@ -354,7 +358,7 @@ func FuzzScalars_MarshalCanoto(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data []byte) {
 		require := require.New(t)
 
-		var canotoScalars Scalars
+		canotoScalars := &Scalars{}
 		fz := fuzzer.NewFuzzer(data)
 		fz.Fill(&canotoScalars)
 		canotoScalars = canonicalizeCanotoScalars(canotoScalars)
