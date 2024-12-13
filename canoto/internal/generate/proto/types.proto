@@ -70,6 +70,8 @@ message Scalars {
   repeated bytes fixed_repeated_bytes = 61;
   repeated bytes fixed_repeated_fixed_bytes = 62;
   repeated LargestFieldNumber fixed_repeated_largest_field_number = 63;
+
+  repeated uint64 const_repeated_uint64 = 64;
 }
 
 message LargestFieldNumber {

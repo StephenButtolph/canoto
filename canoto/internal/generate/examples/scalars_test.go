@@ -169,6 +169,8 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 		FixedRepeatedBytes:              canonicalizeSlice(fixedRepeatedBytes),
 		FixedRepeatedFixedBytes:         s.FixedRepeatedFixedBytes,
 		FixedRepeatedLargestFieldNumber: canonicalizeSlice(fixedRepeatedLargestFieldNumber),
+
+		ConstRepeatedUint64: s.ConstRepeatedUint64,
 	}
 }
 
@@ -317,6 +319,9 @@ func canotoScalarsToProto(s Scalars) *pb.Scalars {
 		for _, v := range s.FixedRepeatedFixedBytes {
 			pbs.FixedRepeatedFixedBytes = append(pbs.FixedRepeatedFixedBytes, slices.Clone(v[:]))
 		}
+	}
+	if !canoto.IsZero(s.ConstRepeatedUint64) {
+		pbs.ConstRepeatedUint64 = slices.Clone(s.ConstRepeatedUint64[:])
 	}
 	return &pbs
 }
@@ -471,6 +476,8 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 					{Int32: 876523},
 					{Int32: -576214},
 				},
+
+				ConstRepeatedUint64: [constRepeatedUint64Len]uint64{1, 2, 3},
 			}
 			cbScalars.MarshalCanoto()
 		}
@@ -551,6 +558,8 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 				{Int32: 876523},
 				{Int32: -576214},
 			},
+
+			ConstRepeatedUint64: [constRepeatedUint64Len]uint64{1, 2, 3},
 		}
 		for range b.N {
 			cbScalars.MarshalCanoto()
@@ -693,6 +702,8 @@ func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
 				{Int32: 876523},
 				{Int32: -576214},
 			},
+
+			ConstRepeatedUint64: [constRepeatedUint64Len]uint64{1, 2, 3},
 		}
 		bytes := cbScalars.MarshalCanoto()
 
@@ -841,6 +852,8 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 					{Int32: 876523},
 					{Int32: -576214},
 				},
+
+				ConstRepeatedUint64: []uint64{1, 2, 3},
 			}
 			_, _ = proto.Marshal(&pbScalars)
 		}
@@ -929,6 +942,8 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 				{Int32: 876523},
 				{Int32: -576214},
 			},
+
+			ConstRepeatedUint64: []uint64{1, 2, 3},
 		}
 		for range b.N {
 			_, _ = proto.Marshal(&pbScalars)
@@ -1079,6 +1094,8 @@ func BenchmarkScalars_UnmarshalProto(b *testing.B) {
 				{Int32: 876523},
 				{Int32: -576214},
 			},
+
+			ConstRepeatedUint64: []uint64{1, 2, 3},
 		}
 		scalarsBytes, err := proto.Marshal(&pbScalars)
 		require.NoError(b, err)
