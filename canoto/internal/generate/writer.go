@@ -988,7 +988,7 @@ func makeMarshal(m message) (string, error) {
 `
 		fixedRepeatedFixedBytesTemplate = `	if !canoto.IsZero(c.${fieldName}) {
 		for i := range c.${fieldName} {
-			canoto.Append(w, canoto__Scalars__FixedRepeatedFixedBytes__tag)
+			canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 			canoto.AppendBytes(w, c.${fieldName}[i][:])
 		}
 	}
