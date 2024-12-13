@@ -25,68 +25,69 @@ type Scalars struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Int8                       int32                 `protobuf:"varint,1,opt,name=int8,proto3" json:"int8,omitempty"`
-	Int16                      int32                 `protobuf:"varint,2,opt,name=int16,proto3" json:"int16,omitempty"`
-	Int32                      int32                 `protobuf:"varint,3,opt,name=int32,proto3" json:"int32,omitempty"`
-	Int64                      int64                 `protobuf:"varint,4,opt,name=int64,proto3" json:"int64,omitempty"`
-	Uint8                      uint32                `protobuf:"varint,5,opt,name=uint8,proto3" json:"uint8,omitempty"`
-	Uint16                     uint32                `protobuf:"varint,6,opt,name=uint16,proto3" json:"uint16,omitempty"`
-	Uint32                     uint32                `protobuf:"varint,7,opt,name=uint32,proto3" json:"uint32,omitempty"`
-	Uint64                     uint64                `protobuf:"varint,8,opt,name=uint64,proto3" json:"uint64,omitempty"`
-	Sint8                      int32                 `protobuf:"zigzag32,9,opt,name=sint8,proto3" json:"sint8,omitempty"`
-	Sint16                     int32                 `protobuf:"zigzag32,10,opt,name=sint16,proto3" json:"sint16,omitempty"`
-	Sint32                     int32                 `protobuf:"zigzag32,11,opt,name=sint32,proto3" json:"sint32,omitempty"`
-	Sint64                     int64                 `protobuf:"zigzag64,12,opt,name=sint64,proto3" json:"sint64,omitempty"`
-	Fixed32                    uint32                `protobuf:"fixed32,13,opt,name=fixed32,proto3" json:"fixed32,omitempty"`
-	Fixed64                    uint64                `protobuf:"fixed64,14,opt,name=fixed64,proto3" json:"fixed64,omitempty"`
-	Sfixed32                   int32                 `protobuf:"fixed32,15,opt,name=sfixed32,proto3" json:"sfixed32,omitempty"`
-	Sfixed64                   int64                 `protobuf:"fixed64,16,opt,name=sfixed64,proto3" json:"sfixed64,omitempty"`
-	Bool                       bool                  `protobuf:"varint,17,opt,name=bool,proto3" json:"bool,omitempty"`
-	String_                    string                `protobuf:"bytes,18,opt,name=string,proto3" json:"string,omitempty"`
-	Bytes                      []byte                `protobuf:"bytes,19,opt,name=bytes,proto3" json:"bytes,omitempty"`
-	LargestFieldNumber         *LargestFieldNumber   `protobuf:"bytes,20,opt,name=largest_field_number,json=largestFieldNumber,proto3" json:"largest_field_number,omitempty"`
-	RepeatedInt8               []int32               `protobuf:"varint,21,rep,packed,name=repeated_int8,json=repeatedInt8,proto3" json:"repeated_int8,omitempty"`
-	RepeatedInt16              []int32               `protobuf:"varint,22,rep,packed,name=repeated_int16,json=repeatedInt16,proto3" json:"repeated_int16,omitempty"`
-	RepeatedInt32              []int32               `protobuf:"varint,23,rep,packed,name=repeated_int32,json=repeatedInt32,proto3" json:"repeated_int32,omitempty"`
-	RepeatedInt64              []int64               `protobuf:"varint,24,rep,packed,name=repeated_int64,json=repeatedInt64,proto3" json:"repeated_int64,omitempty"`
-	RepeatedUint8              []uint32              `protobuf:"varint,25,rep,packed,name=repeated_uint8,json=repeatedUint8,proto3" json:"repeated_uint8,omitempty"`
-	RepeatedUint16             []uint32              `protobuf:"varint,26,rep,packed,name=repeated_uint16,json=repeatedUint16,proto3" json:"repeated_uint16,omitempty"`
-	RepeatedUint32             []uint32              `protobuf:"varint,27,rep,packed,name=repeated_uint32,json=repeatedUint32,proto3" json:"repeated_uint32,omitempty"`
-	RepeatedUint64             []uint64              `protobuf:"varint,28,rep,packed,name=repeated_uint64,json=repeatedUint64,proto3" json:"repeated_uint64,omitempty"`
-	RepeatedSint8              []int32               `protobuf:"zigzag32,29,rep,packed,name=repeated_sint8,json=repeatedSint8,proto3" json:"repeated_sint8,omitempty"`
-	RepeatedSint16             []int32               `protobuf:"zigzag32,30,rep,packed,name=repeated_sint16,json=repeatedSint16,proto3" json:"repeated_sint16,omitempty"`
-	RepeatedSint32             []int32               `protobuf:"zigzag32,31,rep,packed,name=repeated_sint32,json=repeatedSint32,proto3" json:"repeated_sint32,omitempty"`
-	RepeatedSint64             []int64               `protobuf:"zigzag64,32,rep,packed,name=repeated_sint64,json=repeatedSint64,proto3" json:"repeated_sint64,omitempty"`
-	RepeatedFixed32            []uint32              `protobuf:"fixed32,33,rep,packed,name=repeated_fixed32,json=repeatedFixed32,proto3" json:"repeated_fixed32,omitempty"`
-	RepeatedFixed64            []uint64              `protobuf:"fixed64,34,rep,packed,name=repeated_fixed64,json=repeatedFixed64,proto3" json:"repeated_fixed64,omitempty"`
-	RepeatedSfixed32           []int32               `protobuf:"fixed32,35,rep,packed,name=repeated_sfixed32,json=repeatedSfixed32,proto3" json:"repeated_sfixed32,omitempty"`
-	RepeatedSfixed64           []int64               `protobuf:"fixed64,36,rep,packed,name=repeated_sfixed64,json=repeatedSfixed64,proto3" json:"repeated_sfixed64,omitempty"`
-	RepeatedBool               []bool                `protobuf:"varint,37,rep,packed,name=repeated_bool,json=repeatedBool,proto3" json:"repeated_bool,omitempty"`
-	RepeatedString             []string              `protobuf:"bytes,38,rep,name=repeated_string,json=repeatedString,proto3" json:"repeated_string,omitempty"`
-	RepeatedBytes              [][]byte              `protobuf:"bytes,39,rep,name=repeated_bytes,json=repeatedBytes,proto3" json:"repeated_bytes,omitempty"`
-	RepeatedLargestFieldNumber []*LargestFieldNumber `protobuf:"bytes,40,rep,name=repeated_largest_field_number,json=repeatedLargestFieldNumber,proto3" json:"repeated_largest_field_number,omitempty"`
-	FixedRepeatedInt8          []int32               `protobuf:"varint,41,rep,packed,name=fixed_repeated_int8,json=fixedRepeatedInt8,proto3" json:"fixed_repeated_int8,omitempty"`
-	FixedRepeatedInt16         []int32               `protobuf:"varint,42,rep,packed,name=fixed_repeated_int16,json=fixedRepeatedInt16,proto3" json:"fixed_repeated_int16,omitempty"`
-	FixedRepeatedInt32         []int32               `protobuf:"varint,43,rep,packed,name=fixed_repeated_int32,json=fixedRepeatedInt32,proto3" json:"fixed_repeated_int32,omitempty"`
-	FixedRepeatedInt64         []int64               `protobuf:"varint,44,rep,packed,name=fixed_repeated_int64,json=fixedRepeatedInt64,proto3" json:"fixed_repeated_int64,omitempty"`
-	FixedRepeatedUint8         []uint32              `protobuf:"varint,45,rep,packed,name=fixed_repeated_uint8,json=fixedRepeatedUint8,proto3" json:"fixed_repeated_uint8,omitempty"`
-	FixedRepeatedUint16        []uint32              `protobuf:"varint,46,rep,packed,name=fixed_repeated_uint16,json=fixedRepeatedUint16,proto3" json:"fixed_repeated_uint16,omitempty"`
-	FixedRepeatedUint32        []uint32              `protobuf:"varint,47,rep,packed,name=fixed_repeated_uint32,json=fixedRepeatedUint32,proto3" json:"fixed_repeated_uint32,omitempty"`
-	FixedRepeatedUint64        []uint64              `protobuf:"varint,48,rep,packed,name=fixed_repeated_uint64,json=fixedRepeatedUint64,proto3" json:"fixed_repeated_uint64,omitempty"`
-	FixedRepeatedSint8         []int32               `protobuf:"zigzag32,49,rep,packed,name=fixed_repeated_sint8,json=fixedRepeatedSint8,proto3" json:"fixed_repeated_sint8,omitempty"`
-	FixedRepeatedSint16        []int32               `protobuf:"zigzag32,50,rep,packed,name=fixed_repeated_sint16,json=fixedRepeatedSint16,proto3" json:"fixed_repeated_sint16,omitempty"`
-	FixedRepeatedSint32        []int32               `protobuf:"zigzag32,51,rep,packed,name=fixed_repeated_sint32,json=fixedRepeatedSint32,proto3" json:"fixed_repeated_sint32,omitempty"`
-	FixedRepeatedSint64        []int64               `protobuf:"zigzag64,52,rep,packed,name=fixed_repeated_sint64,json=fixedRepeatedSint64,proto3" json:"fixed_repeated_sint64,omitempty"`
-	FixedRepeatedFixed32       []uint32              `protobuf:"fixed32,53,rep,packed,name=fixed_repeated_fixed32,json=fixedRepeatedFixed32,proto3" json:"fixed_repeated_fixed32,omitempty"`
-	FixedRepeatedFixed64       []uint64              `protobuf:"fixed64,54,rep,packed,name=fixed_repeated_fixed64,json=fixedRepeatedFixed64,proto3" json:"fixed_repeated_fixed64,omitempty"`
-	FixedRepeatedSfixed32      []int32               `protobuf:"fixed32,55,rep,packed,name=fixed_repeated_sfixed32,json=fixedRepeatedSfixed32,proto3" json:"fixed_repeated_sfixed32,omitempty"`
-	FixedRepeatedSfixed64      []int64               `protobuf:"fixed64,56,rep,packed,name=fixed_repeated_sfixed64,json=fixedRepeatedSfixed64,proto3" json:"fixed_repeated_sfixed64,omitempty"`
-	FixedRepeatedBool          []bool                `protobuf:"varint,57,rep,packed,name=fixed_repeated_bool,json=fixedRepeatedBool,proto3" json:"fixed_repeated_bool,omitempty"`
-	FixedRepeatedString        []string              `protobuf:"bytes,58,rep,name=fixed_repeated_string,json=fixedRepeatedString,proto3" json:"fixed_repeated_string,omitempty"`
-	FixedBytes                 []byte                `protobuf:"bytes,59,opt,name=fixed_bytes,json=fixedBytes,proto3" json:"fixed_bytes,omitempty"`
-	RepeatedFixedBytes         [][]byte              `protobuf:"bytes,60,rep,name=repeated_fixed_bytes,json=repeatedFixedBytes,proto3" json:"repeated_fixed_bytes,omitempty"`
-	FixedRepeatedBytes         [][]byte              `protobuf:"bytes,61,rep,name=fixed_repeated_bytes,json=fixedRepeatedBytes,proto3" json:"fixed_repeated_bytes,omitempty"`
-	FixedRepeatedFixedBytes    [][]byte              `protobuf:"bytes,62,rep,name=fixed_repeated_fixed_bytes,json=fixedRepeatedFixedBytes,proto3" json:"fixed_repeated_fixed_bytes,omitempty"`
+	Int8                            int32                 `protobuf:"varint,1,opt,name=int8,proto3" json:"int8,omitempty"`
+	Int16                           int32                 `protobuf:"varint,2,opt,name=int16,proto3" json:"int16,omitempty"`
+	Int32                           int32                 `protobuf:"varint,3,opt,name=int32,proto3" json:"int32,omitempty"`
+	Int64                           int64                 `protobuf:"varint,4,opt,name=int64,proto3" json:"int64,omitempty"`
+	Uint8                           uint32                `protobuf:"varint,5,opt,name=uint8,proto3" json:"uint8,omitempty"`
+	Uint16                          uint32                `protobuf:"varint,6,opt,name=uint16,proto3" json:"uint16,omitempty"`
+	Uint32                          uint32                `protobuf:"varint,7,opt,name=uint32,proto3" json:"uint32,omitempty"`
+	Uint64                          uint64                `protobuf:"varint,8,opt,name=uint64,proto3" json:"uint64,omitempty"`
+	Sint8                           int32                 `protobuf:"zigzag32,9,opt,name=sint8,proto3" json:"sint8,omitempty"`
+	Sint16                          int32                 `protobuf:"zigzag32,10,opt,name=sint16,proto3" json:"sint16,omitempty"`
+	Sint32                          int32                 `protobuf:"zigzag32,11,opt,name=sint32,proto3" json:"sint32,omitempty"`
+	Sint64                          int64                 `protobuf:"zigzag64,12,opt,name=sint64,proto3" json:"sint64,omitempty"`
+	Fixed32                         uint32                `protobuf:"fixed32,13,opt,name=fixed32,proto3" json:"fixed32,omitempty"`
+	Fixed64                         uint64                `protobuf:"fixed64,14,opt,name=fixed64,proto3" json:"fixed64,omitempty"`
+	Sfixed32                        int32                 `protobuf:"fixed32,15,opt,name=sfixed32,proto3" json:"sfixed32,omitempty"`
+	Sfixed64                        int64                 `protobuf:"fixed64,16,opt,name=sfixed64,proto3" json:"sfixed64,omitempty"`
+	Bool                            bool                  `protobuf:"varint,17,opt,name=bool,proto3" json:"bool,omitempty"`
+	String_                         string                `protobuf:"bytes,18,opt,name=string,proto3" json:"string,omitempty"`
+	Bytes                           []byte                `protobuf:"bytes,19,opt,name=bytes,proto3" json:"bytes,omitempty"`
+	LargestFieldNumber              *LargestFieldNumber   `protobuf:"bytes,20,opt,name=largest_field_number,json=largestFieldNumber,proto3" json:"largest_field_number,omitempty"`
+	RepeatedInt8                    []int32               `protobuf:"varint,21,rep,packed,name=repeated_int8,json=repeatedInt8,proto3" json:"repeated_int8,omitempty"`
+	RepeatedInt16                   []int32               `protobuf:"varint,22,rep,packed,name=repeated_int16,json=repeatedInt16,proto3" json:"repeated_int16,omitempty"`
+	RepeatedInt32                   []int32               `protobuf:"varint,23,rep,packed,name=repeated_int32,json=repeatedInt32,proto3" json:"repeated_int32,omitempty"`
+	RepeatedInt64                   []int64               `protobuf:"varint,24,rep,packed,name=repeated_int64,json=repeatedInt64,proto3" json:"repeated_int64,omitempty"`
+	RepeatedUint8                   []uint32              `protobuf:"varint,25,rep,packed,name=repeated_uint8,json=repeatedUint8,proto3" json:"repeated_uint8,omitempty"`
+	RepeatedUint16                  []uint32              `protobuf:"varint,26,rep,packed,name=repeated_uint16,json=repeatedUint16,proto3" json:"repeated_uint16,omitempty"`
+	RepeatedUint32                  []uint32              `protobuf:"varint,27,rep,packed,name=repeated_uint32,json=repeatedUint32,proto3" json:"repeated_uint32,omitempty"`
+	RepeatedUint64                  []uint64              `protobuf:"varint,28,rep,packed,name=repeated_uint64,json=repeatedUint64,proto3" json:"repeated_uint64,omitempty"`
+	RepeatedSint8                   []int32               `protobuf:"zigzag32,29,rep,packed,name=repeated_sint8,json=repeatedSint8,proto3" json:"repeated_sint8,omitempty"`
+	RepeatedSint16                  []int32               `protobuf:"zigzag32,30,rep,packed,name=repeated_sint16,json=repeatedSint16,proto3" json:"repeated_sint16,omitempty"`
+	RepeatedSint32                  []int32               `protobuf:"zigzag32,31,rep,packed,name=repeated_sint32,json=repeatedSint32,proto3" json:"repeated_sint32,omitempty"`
+	RepeatedSint64                  []int64               `protobuf:"zigzag64,32,rep,packed,name=repeated_sint64,json=repeatedSint64,proto3" json:"repeated_sint64,omitempty"`
+	RepeatedFixed32                 []uint32              `protobuf:"fixed32,33,rep,packed,name=repeated_fixed32,json=repeatedFixed32,proto3" json:"repeated_fixed32,omitempty"`
+	RepeatedFixed64                 []uint64              `protobuf:"fixed64,34,rep,packed,name=repeated_fixed64,json=repeatedFixed64,proto3" json:"repeated_fixed64,omitempty"`
+	RepeatedSfixed32                []int32               `protobuf:"fixed32,35,rep,packed,name=repeated_sfixed32,json=repeatedSfixed32,proto3" json:"repeated_sfixed32,omitempty"`
+	RepeatedSfixed64                []int64               `protobuf:"fixed64,36,rep,packed,name=repeated_sfixed64,json=repeatedSfixed64,proto3" json:"repeated_sfixed64,omitempty"`
+	RepeatedBool                    []bool                `protobuf:"varint,37,rep,packed,name=repeated_bool,json=repeatedBool,proto3" json:"repeated_bool,omitempty"`
+	RepeatedString                  []string              `protobuf:"bytes,38,rep,name=repeated_string,json=repeatedString,proto3" json:"repeated_string,omitempty"`
+	RepeatedBytes                   [][]byte              `protobuf:"bytes,39,rep,name=repeated_bytes,json=repeatedBytes,proto3" json:"repeated_bytes,omitempty"`
+	RepeatedLargestFieldNumber      []*LargestFieldNumber `protobuf:"bytes,40,rep,name=repeated_largest_field_number,json=repeatedLargestFieldNumber,proto3" json:"repeated_largest_field_number,omitempty"`
+	FixedRepeatedInt8               []int32               `protobuf:"varint,41,rep,packed,name=fixed_repeated_int8,json=fixedRepeatedInt8,proto3" json:"fixed_repeated_int8,omitempty"`
+	FixedRepeatedInt16              []int32               `protobuf:"varint,42,rep,packed,name=fixed_repeated_int16,json=fixedRepeatedInt16,proto3" json:"fixed_repeated_int16,omitempty"`
+	FixedRepeatedInt32              []int32               `protobuf:"varint,43,rep,packed,name=fixed_repeated_int32,json=fixedRepeatedInt32,proto3" json:"fixed_repeated_int32,omitempty"`
+	FixedRepeatedInt64              []int64               `protobuf:"varint,44,rep,packed,name=fixed_repeated_int64,json=fixedRepeatedInt64,proto3" json:"fixed_repeated_int64,omitempty"`
+	FixedRepeatedUint8              []uint32              `protobuf:"varint,45,rep,packed,name=fixed_repeated_uint8,json=fixedRepeatedUint8,proto3" json:"fixed_repeated_uint8,omitempty"`
+	FixedRepeatedUint16             []uint32              `protobuf:"varint,46,rep,packed,name=fixed_repeated_uint16,json=fixedRepeatedUint16,proto3" json:"fixed_repeated_uint16,omitempty"`
+	FixedRepeatedUint32             []uint32              `protobuf:"varint,47,rep,packed,name=fixed_repeated_uint32,json=fixedRepeatedUint32,proto3" json:"fixed_repeated_uint32,omitempty"`
+	FixedRepeatedUint64             []uint64              `protobuf:"varint,48,rep,packed,name=fixed_repeated_uint64,json=fixedRepeatedUint64,proto3" json:"fixed_repeated_uint64,omitempty"`
+	FixedRepeatedSint8              []int32               `protobuf:"zigzag32,49,rep,packed,name=fixed_repeated_sint8,json=fixedRepeatedSint8,proto3" json:"fixed_repeated_sint8,omitempty"`
+	FixedRepeatedSint16             []int32               `protobuf:"zigzag32,50,rep,packed,name=fixed_repeated_sint16,json=fixedRepeatedSint16,proto3" json:"fixed_repeated_sint16,omitempty"`
+	FixedRepeatedSint32             []int32               `protobuf:"zigzag32,51,rep,packed,name=fixed_repeated_sint32,json=fixedRepeatedSint32,proto3" json:"fixed_repeated_sint32,omitempty"`
+	FixedRepeatedSint64             []int64               `protobuf:"zigzag64,52,rep,packed,name=fixed_repeated_sint64,json=fixedRepeatedSint64,proto3" json:"fixed_repeated_sint64,omitempty"`
+	FixedRepeatedFixed32            []uint32              `protobuf:"fixed32,53,rep,packed,name=fixed_repeated_fixed32,json=fixedRepeatedFixed32,proto3" json:"fixed_repeated_fixed32,omitempty"`
+	FixedRepeatedFixed64            []uint64              `protobuf:"fixed64,54,rep,packed,name=fixed_repeated_fixed64,json=fixedRepeatedFixed64,proto3" json:"fixed_repeated_fixed64,omitempty"`
+	FixedRepeatedSfixed32           []int32               `protobuf:"fixed32,55,rep,packed,name=fixed_repeated_sfixed32,json=fixedRepeatedSfixed32,proto3" json:"fixed_repeated_sfixed32,omitempty"`
+	FixedRepeatedSfixed64           []int64               `protobuf:"fixed64,56,rep,packed,name=fixed_repeated_sfixed64,json=fixedRepeatedSfixed64,proto3" json:"fixed_repeated_sfixed64,omitempty"`
+	FixedRepeatedBool               []bool                `protobuf:"varint,57,rep,packed,name=fixed_repeated_bool,json=fixedRepeatedBool,proto3" json:"fixed_repeated_bool,omitempty"`
+	FixedRepeatedString             []string              `protobuf:"bytes,58,rep,name=fixed_repeated_string,json=fixedRepeatedString,proto3" json:"fixed_repeated_string,omitempty"`
+	FixedBytes                      []byte                `protobuf:"bytes,59,opt,name=fixed_bytes,json=fixedBytes,proto3" json:"fixed_bytes,omitempty"`
+	RepeatedFixedBytes              [][]byte              `protobuf:"bytes,60,rep,name=repeated_fixed_bytes,json=repeatedFixedBytes,proto3" json:"repeated_fixed_bytes,omitempty"`
+	FixedRepeatedBytes              [][]byte              `protobuf:"bytes,61,rep,name=fixed_repeated_bytes,json=fixedRepeatedBytes,proto3" json:"fixed_repeated_bytes,omitempty"`
+	FixedRepeatedFixedBytes         [][]byte              `protobuf:"bytes,62,rep,name=fixed_repeated_fixed_bytes,json=fixedRepeatedFixedBytes,proto3" json:"fixed_repeated_fixed_bytes,omitempty"`
+	FixedRepeatedLargestFieldNumber []*LargestFieldNumber `protobuf:"bytes,63,rep,name=fixed_repeated_largest_field_number,json=fixedRepeatedLargestFieldNumber,proto3" json:"fixed_repeated_largest_field_number,omitempty"`
 }
 
 func (x *Scalars) Reset() {
@@ -555,6 +556,13 @@ func (x *Scalars) GetFixedRepeatedFixedBytes() [][]byte {
 	return nil
 }
 
+func (x *Scalars) GetFixedRepeatedLargestFieldNumber() []*LargestFieldNumber {
+	if x != nil {
+		return x.FixedRepeatedLargestFieldNumber
+	}
+	return nil
+}
+
 type LargestFieldNumber struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -606,7 +614,7 @@ var File_types_proto protoreflect.FileDescriptor
 
 var file_types_proto_rawDesc = []byte{
 	0x0a, 0x0b, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x02, 0x70,
-	0x62, 0x22, 0xd5, 0x13, 0x0a, 0x07, 0x53, 0x63, 0x61, 0x6c, 0x61, 0x72, 0x73, 0x12, 0x12, 0x0a,
+	0x62, 0x22, 0xbb, 0x14, 0x0a, 0x07, 0x53, 0x63, 0x61, 0x6c, 0x61, 0x72, 0x73, 0x12, 0x12, 0x0a,
 	0x04, 0x69, 0x6e, 0x74, 0x38, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x69, 0x6e, 0x74,
 	0x38, 0x12, 0x14, 0x0a, 0x05, 0x69, 0x6e, 0x74, 0x31, 0x36, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05,
 	0x52, 0x05, 0x69, 0x6e, 0x74, 0x31, 0x36, 0x12, 0x14, 0x0a, 0x05, 0x69, 0x6e, 0x74, 0x33, 0x32,
@@ -763,15 +771,21 @@ var file_types_proto_rawDesc = []byte{
 	0x66, 0x69, 0x78, 0x65, 0x64, 0x5f, 0x72, 0x65, 0x70, 0x65, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x66,
 	0x69, 0x78, 0x65, 0x64, 0x5f, 0x62, 0x79, 0x74, 0x65, 0x73, 0x18, 0x3e, 0x20, 0x03, 0x28, 0x0c,
 	0x52, 0x17, 0x66, 0x69, 0x78, 0x65, 0x64, 0x52, 0x65, 0x70, 0x65, 0x61, 0x74, 0x65, 0x64, 0x46,
-	0x69, 0x78, 0x65, 0x64, 0x42, 0x79, 0x74, 0x65, 0x73, 0x22, 0x2e, 0x0a, 0x12, 0x4c, 0x61, 0x72,
-	0x67, 0x65, 0x73, 0x74, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x4e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x12,
-	0x18, 0x0a, 0x05, 0x69, 0x6e, 0x74, 0x33, 0x32, 0x18, 0xff, 0xff, 0xff, 0xff, 0x01, 0x20, 0x01,
-	0x28, 0x05, 0x52, 0x05, 0x69, 0x6e, 0x74, 0x33, 0x32, 0x42, 0x45, 0x5a, 0x43, 0x67, 0x69, 0x74,
-	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x53, 0x74, 0x65, 0x70, 0x68, 0x65, 0x6e, 0x42,
-	0x75, 0x74, 0x74, 0x6f, 0x6c, 0x70, 0x68, 0x2f, 0x63, 0x61, 0x6e, 0x6f, 0x74, 0x6f, 0x2f, 0x63,
-	0x61, 0x6e, 0x6f, 0x74, 0x6f, 0x2f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x67,
-	0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x70, 0x62,
-	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x69, 0x78, 0x65, 0x64, 0x42, 0x79, 0x74, 0x65, 0x73, 0x12, 0x64, 0x0a, 0x23, 0x66, 0x69, 0x78,
+	0x65, 0x64, 0x5f, 0x72, 0x65, 0x70, 0x65, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x6c, 0x61, 0x72, 0x67,
+	0x65, 0x73, 0x74, 0x5f, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x5f, 0x6e, 0x75, 0x6d, 0x62, 0x65, 0x72,
+	0x18, 0x3f, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x70, 0x62, 0x2e, 0x4c, 0x61, 0x72, 0x67,
+	0x65, 0x73, 0x74, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x4e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x52, 0x1f,
+	0x66, 0x69, 0x78, 0x65, 0x64, 0x52, 0x65, 0x70, 0x65, 0x61, 0x74, 0x65, 0x64, 0x4c, 0x61, 0x72,
+	0x67, 0x65, 0x73, 0x74, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x4e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x22,
+	0x2e, 0x0a, 0x12, 0x4c, 0x61, 0x72, 0x67, 0x65, 0x73, 0x74, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x4e,
+	0x75, 0x6d, 0x62, 0x65, 0x72, 0x12, 0x18, 0x0a, 0x05, 0x69, 0x6e, 0x74, 0x33, 0x32, 0x18, 0xff,
+	0xff, 0xff, 0xff, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x69, 0x6e, 0x74, 0x33, 0x32, 0x42,
+	0x45, 0x5a, 0x43, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x53, 0x74,
+	0x65, 0x70, 0x68, 0x65, 0x6e, 0x42, 0x75, 0x74, 0x74, 0x6f, 0x6c, 0x70, 0x68, 0x2f, 0x63, 0x61,
+	0x6e, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x61, 0x6e, 0x6f, 0x74, 0x6f, 0x2f, 0x69, 0x6e, 0x74, 0x65,
+	0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x67, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x65, 0x2f, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -794,11 +808,12 @@ var file_types_proto_goTypes = []interface{}{
 var file_types_proto_depIdxs = []int32{
 	1, // 0: pb.Scalars.largest_field_number:type_name -> pb.LargestFieldNumber
 	1, // 1: pb.Scalars.repeated_largest_field_number:type_name -> pb.LargestFieldNumber
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	1, // 2: pb.Scalars.fixed_repeated_largest_field_number:type_name -> pb.LargestFieldNumber
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_types_proto_init() }

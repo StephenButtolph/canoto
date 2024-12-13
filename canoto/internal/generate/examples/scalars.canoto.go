@@ -78,6 +78,7 @@ const (
 	canoto__Scalars__RepeatedFixedBytes__tag = "\xe2\x03" // canoto.Tag(60, canoto.Len)
 	canoto__Scalars__FixedRepeatedBytes__tag = "\xea\x03" // canoto.Tag(61, canoto.Len)
 	canoto__Scalars__FixedRepeatedFixedBytes__tag = "\xf2\x03" // canoto.Tag(62, canoto.Len)
+	canoto__Scalars__FixedRepeatedLargestFieldNumber__tag = "\xfa\x03" // canoto.Tag(63, canoto.Len)
 
 	canoto__Scalars__Int8__tag__size = len(canoto__Scalars__Int8__tag)
 	canoto__Scalars__Int16__tag__size = len(canoto__Scalars__Int16__tag)
@@ -141,6 +142,7 @@ const (
 	canoto__Scalars__RepeatedFixedBytes__tag__size = len(canoto__Scalars__RepeatedFixedBytes__tag)
 	canoto__Scalars__FixedRepeatedBytes__tag__size = len(canoto__Scalars__FixedRepeatedBytes__tag)
 	canoto__Scalars__FixedRepeatedFixedBytes__tag__size = len(canoto__Scalars__FixedRepeatedFixedBytes__tag)
+	canoto__Scalars__FixedRepeatedLargestFieldNumber__tag__size = len(canoto__Scalars__FixedRepeatedLargestFieldNumber__tag)
 )
 
 type canotoData_Scalars struct {
@@ -1696,6 +1698,52 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if canoto.IsZero(c.FixedRepeatedFixedBytes) {
 				return canoto.ErrZeroValue
 			}
+		case 63:
+			if wireType != canoto.Len {
+				return canoto.ErrInvalidWireType
+			}
+
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			msgBytes, err := canoto.ReadBytes(r)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+
+			remainingBytes := r.B
+			r.B = msgBytes
+			err = c.FixedRepeatedLargestFieldNumber[0].UnmarshalCanotoFrom(r)
+			r.B = remainingBytes
+			if err != nil {
+				return err
+			}
+
+			isZero := len(msgBytes) == 0
+			for i := range len(c.FixedRepeatedLargestFieldNumber)-1 {
+				if !canoto.HasPrefix(r.B, canoto__Scalars__FixedRepeatedLargestFieldNumber__tag) {
+					return canoto.ErrUnknownField
+				}
+				r.B = r.B[canoto__Scalars__FixedRepeatedLargestFieldNumber__tag__size:]
+				r.Unsafe = true
+				msgBytes, err := canoto.ReadBytes(r)
+				r.Unsafe = originalUnsafe
+				if err != nil {
+					return err
+				}
+
+				remainingBytes := r.B
+				r.B = msgBytes
+				err = c.FixedRepeatedLargestFieldNumber[1+i].UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
+				isZero = isZero && len(msgBytes) == 0
+			}
+			if isZero {
+				return canoto.ErrZeroValue
+			}
 		default:
 			return canoto.ErrUnknownField
 		}
@@ -1724,6 +1772,11 @@ func (c *Scalars) ValidCanoto() bool {
 	}
 	for _, v := range c.FixedRepeatedString {
 		if !utf8.ValidString(v) {
+			return false
+		}
+	}
+	for i := range c.FixedRepeatedLargestFieldNumber {
+		if !c.FixedRepeatedLargestFieldNumber[i].ValidCanoto() {
 			return false
 		}
 	}
@@ -2039,6 +2092,20 @@ func (c *Scalars) CalculateCanotoSize() int {
 	if !canoto.IsZero(c.FixedRepeatedFixedBytes) {
 		for i := range c.FixedRepeatedFixedBytes {
 			c.canotoData.size += canoto__Scalars__FixedRepeatedFixedBytes__tag__size + canoto.SizeBytes(c.FixedRepeatedFixedBytes[i][:])
+		}
+	}
+	{
+		var (
+			fieldSizeSum int
+			totalSize    int
+		)
+		for i := range c.FixedRepeatedLargestFieldNumber {
+			fieldSize := c.FixedRepeatedLargestFieldNumber[i].CalculateCanotoSize()
+			fieldSizeSum += fieldSize
+			totalSize += canoto__Scalars__FixedRepeatedLargestFieldNumber__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		}
+		if fieldSizeSum != 0 {
+			c.canotoData.size += totalSize
 		}
 	}
 	return c.canotoData.size
@@ -2427,6 +2494,22 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		for i := range c.FixedRepeatedFixedBytes {
 			canoto.Append(w, canoto__Scalars__FixedRepeatedFixedBytes__tag)
 			canoto.AppendBytes(w, c.FixedRepeatedFixedBytes[i][:])
+		}
+	}
+	{
+		isZero := true
+		for i := range c.FixedRepeatedLargestFieldNumber {
+			if c.FixedRepeatedLargestFieldNumber[i].CachedCanotoSize() != 0 {
+				isZero = false
+				break
+			}
+		}
+		if !isZero {
+			for i := range c.FixedRepeatedLargestFieldNumber {
+				canoto.Append(w, canoto__Scalars__FixedRepeatedLargestFieldNumber__tag)
+				canoto.AppendInt(w, int64(c.FixedRepeatedLargestFieldNumber[i].CachedCanotoSize()))
+				c.FixedRepeatedLargestFieldNumber[i].MarshalCanotoInto(w)
+			}
 		}
 	}
 }
