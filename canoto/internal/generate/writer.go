@@ -415,7 +415,7 @@ func makeUnmarshal(m message) (string, error) {
 				r.B = r.B[expectedLength:]
 			}
 `
-		fixedRepeatedStringTemplate = `		case ${fieldNumber}:
+		fixedRepeatedBytesTemplate = `		case ${fieldNumber}:
 			if wireType != canoto.Len {
 				return canoto.ErrInvalidWireType
 			}
@@ -426,6 +426,7 @@ func makeUnmarshal(m message) (string, error) {
 			}
 
 			c.${fieldName}[0] = v
+			isZero := len(v) == 0
 			for i := range len(c.${fieldName})-1 {
 				if !canoto.HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
 					return canoto.ErrUnknownField
@@ -436,8 +437,9 @@ func makeUnmarshal(m message) (string, error) {
 					return err
 				}
 				c.${fieldName}[1+i] = v
+				isZero = isZero && len(v) == 0
 			}
-			if canoto.IsZero(c.${fieldName}) {
+			if isZero {
 				return canoto.ErrZeroValue
 			}
 `
@@ -549,16 +551,19 @@ func makeUnmarshal(m message) (string, error) {
 			switch f.goType {
 			case goString:
 				if f.fixedLength[0] != "" {
-					template = fixedRepeatedStringTemplate
+					template = fixedRepeatedBytesTemplate
 				} else {
 					template = bytesTemplates[f.repeated]
 				}
 			case goBytes:
-				if f.fixedLength[0] != "" && !f.repeated {
+				switch {
+				case f.fixedLength[0] != "" && !f.repeated:
 					template = fixedBytesTemplate
-				} else if f.fixedLength[0] == "" && f.fixedLength[1] != "" {
+				case f.fixedLength[0] == "" && f.fixedLength[1] != "":
 					template = repeatedFixedBytesTemplate
-				} else {
+				case f.fixedLength[0] != "" && f.fixedLength[1] == "":
+					template = fixedRepeatedBytesTemplate
+				default:
 					template = bytesTemplates[f.repeated]
 				}
 			default:
@@ -674,6 +679,21 @@ func makeSize(m message) (string, error) {
 		c.canotoData.size += num * fieldSize
 	}
 `
+		fixedRepeatedBytesTemplate = `	{
+		isZero := true
+		for _, v := range c.${fieldName} {
+			if len(v) != 0 {
+				isZero = false
+				break
+			}
+		}
+		if !isZero {
+			for _, v := range c.FixedRepeatedBytes {
+				c.canotoData.size += canoto__Scalars__FixedRepeatedBytes__tag__size + canoto.SizeBytes(v)
+			}
+		}
+	}
+`
 		repeatedBytesTemplate = `	for _, v := range c.${fieldName} {
 		c.canotoData.size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeBytes(v)
 	}
@@ -737,11 +757,14 @@ func makeSize(m message) (string, error) {
 					template = bytesTemplates[f.repeated]
 				}
 			case goBytes:
-				if f.fixedLength[0] != "" && !f.repeated {
+				switch {
+				case f.fixedLength[0] != "" && !f.repeated:
 					template = fixedBytesTemplate
-				} else if f.fixedLength[0] == "" && f.fixedLength[1] != "" {
+				case f.fixedLength[0] == "" && f.fixedLength[1] != "":
 					template = repeatedFixedBytesTemplate
-				} else {
+				case f.fixedLength[0] != "" && f.fixedLength[1] == "":
+					template = fixedRepeatedBytesTemplate
+				default:
 					template = bytesTemplates[f.repeated]
 				}
 			default:
@@ -820,6 +843,22 @@ func makeMarshal(m message) (string, error) {
 		canoto.AppendBytes(w, v)
 	}
 `
+		fixedRepeatedBytesTemplate = `	{
+		isZero := true
+		for _, v := range c.${fieldName} {
+			if len(v) != 0 {
+				isZero = false
+				break
+			}
+		}
+		if !isZero {
+			for _, v := range c.FixedRepeatedBytes {
+				canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+				canoto.AppendBytes(w, v)
+			}
+		}
+	}
+`
 		fixedRepeatedStringTemplate = `	if !canoto.IsZero(c.${fieldName}) {
 		for _, v := range c.${fieldName} {
 			canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
@@ -893,11 +932,14 @@ func makeMarshal(m message) (string, error) {
 					template = bytesTemplates[f.repeated]
 				}
 			case goBytes:
-				if f.fixedLength[0] != "" && !f.repeated {
+				switch {
+				case f.fixedLength[0] != "" && !f.repeated:
 					template = fixedBytesTemplate
-				} else if f.fixedLength[0] == "" && f.fixedLength[1] != "" {
+				case f.fixedLength[0] == "" && f.fixedLength[1] != "":
 					template = repeatedFixedBytesTemplate
-				} else {
+				case f.fixedLength[0] != "" && f.fixedLength[1] == "":
+					template = fixedRepeatedBytesTemplate
+				default:
 					template = bytesTemplates[f.repeated]
 				}
 			default:
