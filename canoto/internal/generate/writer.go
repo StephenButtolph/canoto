@@ -630,13 +630,13 @@ func makeUnmarshal(m message) (string, error) {
 		var template string
 		switch f.canotoType {
 		case canotoInt, canotoSint:
-			if f.fixedLength[0] != "" {
+			if f.fixedLength[0] {
 				template = fixedRepeatedIntTemplate
 			} else {
 				template = intTemplates[f.repeated]
 			}
 		case canotoFint, canotoBool:
-			if f.fixedLength[0] != "" {
+			if f.fixedLength[0] {
 				template = fixedRepeatedIntTemplate
 			} else {
 				template = fixedSizeTemplates[f.repeated]
@@ -644,26 +644,26 @@ func makeUnmarshal(m message) (string, error) {
 		case canotoBytes:
 			switch f.goType {
 			case goString:
-				if f.fixedLength[0] != "" {
+				if f.fixedLength[0] {
 					template = fixedRepeatedBytesTemplate
 				} else {
 					template = bytesTemplates[f.repeated]
 				}
 			case goBytes:
 				switch {
-				case f.fixedLength[0] != "" && !f.repeated:
+				case f.fixedLength[0] && !f.repeated:
 					template = fixedBytesTemplate
-				case f.fixedLength[0] == "" && f.fixedLength[1] != "":
+				case !f.fixedLength[0] && f.fixedLength[1]:
 					template = repeatedFixedBytesTemplate
-				case f.fixedLength[0] != "" && f.fixedLength[1] == "":
+				case f.fixedLength[0] && !f.fixedLength[1]:
 					template = fixedRepeatedBytesTemplate
-				case f.fixedLength[0] != "" && f.fixedLength[1] != "":
+				case f.fixedLength[0] && f.fixedLength[1]:
 					template = fixedRepeatedFixedBytesTemplate
 				default:
 					template = bytesTemplates[f.repeated]
 				}
 			default:
-				if f.fixedLength[0] != "" {
+				if f.fixedLength[0] {
 					template = fixedRepeatedCustomTemplate
 				} else {
 					template = customTemplates[f.repeated]
@@ -858,13 +858,13 @@ func makeSize(m message) (string, error) {
 		var template string
 		switch f.canotoType {
 		case canotoInt, canotoSint:
-			if f.fixedLength[0] != "" {
+			if f.fixedLength[0] {
 				template = fixedRepeatedIntTemplate
 			} else {
 				template = intTemplates[f.repeated]
 			}
 		case canotoFint, canotoBool:
-			if f.fixedLength[0] != "" {
+			if f.fixedLength[0] {
 				template = fixedRepeatedFixedSizeTemplate
 			} else {
 				template = fixedSizeTemplates[f.repeated]
@@ -872,26 +872,26 @@ func makeSize(m message) (string, error) {
 		case canotoBytes:
 			switch f.goType {
 			case goString:
-				if f.fixedLength[0] != "" {
+				if f.fixedLength[0] {
 					template = fixedRepeatedStringTemplate
 				} else {
 					template = bytesTemplates[f.repeated]
 				}
 			case goBytes:
 				switch {
-				case f.fixedLength[0] != "" && !f.repeated:
+				case f.fixedLength[0] && !f.repeated:
 					template = fixedBytesTemplate
-				case f.fixedLength[0] == "" && f.fixedLength[1] != "":
+				case !f.fixedLength[0] && f.fixedLength[1]:
 					template = repeatedFixedBytesTemplate
-				case f.fixedLength[0] != "" && f.fixedLength[1] == "":
+				case f.fixedLength[0] && !f.fixedLength[1]:
 					template = fixedRepeatedBytesTemplate
-				case f.fixedLength[0] != "" && f.fixedLength[1] != "":
+				case f.fixedLength[0] && f.fixedLength[1]:
 					template = fixedRepeatedFixedBytesTemplate
 				default:
 					template = bytesTemplates[f.repeated]
 				}
 			default:
-				if f.fixedLength[0] != "" {
+				if f.fixedLength[0] {
 					template = fixedRepeatedCustomTemplate
 				} else {
 					template = customTemplates[f.repeated]
@@ -1057,19 +1057,19 @@ func makeMarshal(m message) (string, error) {
 		var template string
 		switch f.canotoType {
 		case canotoInt, canotoSint:
-			if f.fixedLength[0] != "" {
+			if f.fixedLength[0] {
 				template = fixedRepeatedIntTemplate
 			} else {
 				template = intTemplates[f.repeated]
 			}
 		case canotoFint:
-			if f.fixedLength[0] != "" {
+			if f.fixedLength[0] {
 				template = fixedRepeatedFixedSizeTemplate
 			} else {
 				template = fintTemplates[f.repeated]
 			}
 		case canotoBool:
-			if f.fixedLength[0] != "" {
+			if f.fixedLength[0] {
 				template = fixedRepeatedFixedSizeTemplate
 			} else {
 				template = boolTemplates[f.repeated]
@@ -1077,26 +1077,26 @@ func makeMarshal(m message) (string, error) {
 		case canotoBytes:
 			switch f.goType {
 			case goString:
-				if f.fixedLength[0] != "" {
+				if f.fixedLength[0] {
 					template = fixedRepeatedStringTemplate
 				} else {
 					template = bytesTemplates[f.repeated]
 				}
 			case goBytes:
 				switch {
-				case f.fixedLength[0] != "" && !f.repeated:
+				case f.fixedLength[0] && !f.repeated:
 					template = fixedBytesTemplate
-				case f.fixedLength[0] == "" && f.fixedLength[1] != "":
+				case !f.fixedLength[0] && f.fixedLength[1]:
 					template = repeatedFixedBytesTemplate
-				case f.fixedLength[0] != "" && f.fixedLength[1] == "":
+				case f.fixedLength[0] && !f.fixedLength[1]:
 					template = fixedRepeatedBytesTemplate
-				case f.fixedLength[0] != "" && f.fixedLength[1] != "":
+				case f.fixedLength[0] && f.fixedLength[1]:
 					template = fixedRepeatedFixedBytesTemplate
 				default:
 					template = bytesTemplates[f.repeated]
 				}
 			default:
-				if f.fixedLength[0] != "" {
+				if f.fixedLength[0] {
 					template = fixedRepeatedCustomTemplate
 				} else {
 					template = customTemplates[f.repeated]
