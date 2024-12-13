@@ -31,6 +31,17 @@ func castSlice[I, O canoto.Int](s []I) []O {
 	return newS
 }
 
+func arrayToSlice[T any](s [][32]T) [][]T {
+	if len(s) == 0 {
+		return nil
+	}
+	newS := make([][]T, len(s))
+	for i, v := range s {
+		newS[i] = slices.Clone(v[:])
+	}
+	return newS
+}
+
 func canonicalizeCanotoScalars(s Scalars) Scalars {
 	s.Bytes = canonicalizeSlice(s.Bytes)
 	s.RepeatedInt8 = canonicalizeSlice(s.RepeatedInt8)
@@ -53,6 +64,7 @@ func canonicalizeCanotoScalars(s Scalars) Scalars {
 	s.RepeatedString = canonicalizeSlice(s.RepeatedString)
 	s.RepeatedBytes = canonicalizeSlice(s.RepeatedBytes)
 	s.RepeatedLargestFieldNumber = canonicalizeSlice(s.RepeatedLargestFieldNumber)
+	s.RepeatedFixedBytes = canonicalizeSlice(s.RepeatedFixedBytes)
 	s.canotoData = canotoData_Scalars{}
 	return s
 }
@@ -136,6 +148,7 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 		FixedRepeatedBool:     s.FixedRepeatedBool,
 		FixedRepeatedString:   s.FixedRepeatedString,
 		FixedBytes:            s.FixedBytes,
+		RepeatedFixedBytes:    s.RepeatedFixedBytes,
 	}
 }
 
@@ -195,6 +208,8 @@ func canotoScalarsToProto(s Scalars) *pb.Scalars {
 		RepeatedString:             s.RepeatedString,
 		RepeatedBytes:              s.RepeatedBytes,
 		RepeatedLargestFieldNumber: canonicalizeSlice(repeatedLargestFieldNumbers),
+
+		RepeatedFixedBytes: arrayToSlice(s.RepeatedFixedBytes),
 	}
 	if !canoto.IsZero(s.FixedRepeatedInt8) {
 		pbs.FixedRepeatedInt8 = castSlice[int8, int32](s.FixedRepeatedInt8[:])
@@ -395,6 +410,7 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 				FixedRepeatedBool:     [3]bool{true, false, true},
 				FixedRepeatedString:   [3]string{"hi", "my", "name"},
 				FixedBytes:            [32]byte{1},
+				RepeatedFixedBytes:    [][32]byte{{1}, {2}, {3}},
 			}
 			cbScalars.MarshalCanoto()
 		}
@@ -467,6 +483,7 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 			FixedRepeatedBool:     [3]bool{true, false, true},
 			FixedRepeatedString:   [3]string{"hi", "my", "name"},
 			FixedBytes:            [32]byte{1},
+			RepeatedFixedBytes:    [][32]byte{{1}, {2}, {3}},
 		}
 		for range b.N {
 			cbScalars.MarshalCanoto()
@@ -601,6 +618,7 @@ func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
 			FixedRepeatedBool:     [3]bool{true, false, true},
 			FixedRepeatedString:   [3]string{"hi", "my", "name"},
 			FixedBytes:            [32]byte{1},
+			RepeatedFixedBytes:    [][32]byte{{1}, {2}, {3}},
 		}
 		bytes := cbScalars.MarshalCanoto()
 
@@ -733,6 +751,11 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 				FixedRepeatedBool:     []bool{true, false, true},
 				FixedRepeatedString:   []string{"hi", "my", "name"},
 				FixedBytes:            []byte{0: 1, 31: 0},
+				RepeatedFixedBytes: [][]byte{
+					{0: 1, 31: 0},
+					{0: 2, 31: 0},
+					{0: 3, 31: 0},
+				},
 			}
 			_, _ = proto.Marshal(&pbScalars)
 		}
@@ -805,6 +828,11 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 			FixedRepeatedBool:     []bool{true, false, true},
 			FixedRepeatedString:   []string{"hi", "my", "name"},
 			FixedBytes:            []byte{0: 1, 31: 0},
+			RepeatedFixedBytes: [][]byte{
+				{0: 1, 31: 0},
+				{0: 2, 31: 0},
+				{0: 3, 31: 0},
+			},
 		}
 		for range b.N {
 			_, _ = proto.Marshal(&pbScalars)
@@ -939,6 +967,11 @@ func BenchmarkScalars_UnmarshalProto(b *testing.B) {
 			FixedRepeatedBool:     []bool{true, false, true},
 			FixedRepeatedString:   []string{"hi", "my", "name"},
 			FixedBytes:            []byte{0: 1, 31: 0},
+			RepeatedFixedBytes: [][]byte{
+				{0: 1, 31: 0},
+				{0: 2, 31: 0},
+				{0: 3, 31: 0},
+			},
 		}
 		scalarsBytes, err := proto.Marshal(&pbScalars)
 		require.NoError(b, err)

@@ -62,6 +62,7 @@ type Scalars struct {
 	FixedRepeatedBool          [3]bool              `canoto:"bool,57"`
 	FixedRepeatedString        [3]string            `canoto:"bytes,58"`
 	FixedBytes                 [32]byte             `canoto:"bytes,59"`
+	RepeatedFixedBytes         [][32]byte           `canoto:"bytes,60"`
 
 	canotoData canotoData_Scalars
 }

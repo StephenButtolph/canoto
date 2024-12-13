@@ -294,6 +294,10 @@ func AppendBytes[T Bytes](w *Writer, v T) {
 	w.B = append(w.B, v...)
 }
 
+func MakeSlice[T any](_ []T, size int) []T {
+	return make([]T, size)
+}
+
 func IsZero[T comparable](v T) bool {
 	var zero T
 	return v == zero
