@@ -443,6 +443,53 @@ func makeUnmarshal(m message) (string, error) {
 				return canoto.ErrZeroValue
 			}
 `
+		fixedRepeatedFixedBytesTemplate = `		case ${fieldNumber}:
+			if wireType != canoto.Len {
+				return canoto.ErrInvalidWireType
+			}
+
+			length, err := canoto.ReadInt[int32](r)
+			if err != nil {
+				return err
+			}
+
+			const (
+				expectedLength      = len(c.${fieldName}[0])
+				expectedLengthInt32 = int32(expectedLength)
+			)
+			if length != expectedLengthInt32 {
+				return canoto.ErrInvalidLength
+			}
+			if expectedLength > len(r.B) {
+				return io.ErrUnexpectedEOF
+			}
+
+			copy(c.${fieldName}[0][:], r.B)
+			r.B = r.B[expectedLength:]
+			for i := range len(c.${fieldName})-1 {
+				if !canoto.HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
+					return canoto.ErrUnknownField
+				}
+				r.B = r.B[canoto__${escapedStructName}__${escapedFieldName}__tag__size:]
+
+				length, err := canoto.ReadInt[int32](r)
+				if err != nil {
+					return err
+				}
+				if length != expectedLengthInt32 {
+					return canoto.ErrInvalidLength
+				}
+				if expectedLength > len(r.B) {
+					return io.ErrUnexpectedEOF
+				}
+
+				copy(c.${fieldName}[1+i][:], r.B)
+				r.B = r.B[expectedLength:]
+			}
+			if canoto.IsZero(c.${fieldName}) {
+				return canoto.ErrZeroValue
+			}
+`
 		customTemplate = `		case ${fieldNumber}:
 			if wireType != canoto.Len {
 				return canoto.ErrInvalidWireType
@@ -563,6 +610,8 @@ func makeUnmarshal(m message) (string, error) {
 					template = repeatedFixedBytesTemplate
 				case f.fixedLength[0] != "" && f.fixedLength[1] == "":
 					template = fixedRepeatedBytesTemplate
+				case f.fixedLength[0] != "" && f.fixedLength[1] != "":
+					template = fixedRepeatedFixedBytesTemplate
 				default:
 					template = bytesTemplates[f.repeated]
 				}
@@ -688,9 +737,15 @@ func makeSize(m message) (string, error) {
 			}
 		}
 		if !isZero {
-			for _, v := range c.FixedRepeatedBytes {
-				c.canotoData.size += canoto__Scalars__FixedRepeatedBytes__tag__size + canoto.SizeBytes(v)
+			for _, v := range c.${fieldName} {
+				c.canotoData.size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeBytes(v)
 			}
+		}
+	}
+`
+		fixedRepeatedFixedBytesTemplate = `	if !canoto.IsZero(c.${fieldName}) {
+		for i := range c.${fieldName} {
+			c.canotoData.size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeBytes(c.${fieldName}[i][:])
 		}
 	}
 `
@@ -764,6 +819,8 @@ func makeSize(m message) (string, error) {
 					template = repeatedFixedBytesTemplate
 				case f.fixedLength[0] != "" && f.fixedLength[1] == "":
 					template = fixedRepeatedBytesTemplate
+				case f.fixedLength[0] != "" && f.fixedLength[1] != "":
+					template = fixedRepeatedFixedBytesTemplate
 				default:
 					template = bytesTemplates[f.repeated]
 				}
@@ -852,10 +909,17 @@ func makeMarshal(m message) (string, error) {
 			}
 		}
 		if !isZero {
-			for _, v := range c.FixedRepeatedBytes {
+			for _, v := range c.${fieldName} {
 				canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 				canoto.AppendBytes(w, v)
 			}
+		}
+	}
+`
+		fixedRepeatedFixedBytesTemplate = `	if !canoto.IsZero(c.${fieldName}) {
+		for i := range c.${fieldName} {
+			canoto.Append(w, canoto__Scalars__FixedRepeatedFixedBytes__tag)
+			canoto.AppendBytes(w, c.${fieldName}[i][:])
 		}
 	}
 `
@@ -939,6 +1003,8 @@ func makeMarshal(m message) (string, error) {
 					template = repeatedFixedBytesTemplate
 				case f.fixedLength[0] != "" && f.fixedLength[1] == "":
 					template = fixedRepeatedBytesTemplate
+				case f.fixedLength[0] != "" && f.fixedLength[1] != "":
+					template = fixedRepeatedFixedBytesTemplate
 				default:
 					template = bytesTemplates[f.repeated]
 				}
