@@ -1,7 +1,5 @@
 package canoto
 
-import "errors"
-
 const (
 	Varint WireType = iota
 	I64
@@ -16,8 +14,9 @@ const (
 	wireTypeMask   = 0x07
 )
 
-var ErrInvalidWireType = errors.New("invalid wire type")
-
+// WireType represents the Proto wire description of a field. Within Proto it is
+// used to provide forwards compatibility. For Canoto, it exists to provide
+// compatibility with Proto.
 type WireType byte
 
 func (w WireType) IsValid() bool {

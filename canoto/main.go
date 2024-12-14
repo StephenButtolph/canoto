@@ -1,5 +1,4 @@
-// Canoto is a code generator that generates Go code for reading and writing the
-// canoto format.
+// Canoto is a code generator for reading and writing the canoto format.
 package main
 
 import (

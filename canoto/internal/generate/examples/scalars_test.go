@@ -68,6 +68,9 @@ func canonicalizeCanotoScalars(s *Scalars) *Scalars {
 	for i := range s.FixedRepeatedBytes {
 		s.FixedRepeatedBytes[i] = canonicalizeSlice(s.FixedRepeatedBytes[i])
 	}
+	if s.CustomType.CalculateCanotoSize() == 0 {
+		s.CustomType.Int = nil
+	}
 	s.canotoData = canotoData_Scalars{}
 	return s
 }
@@ -171,6 +174,7 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 		FixedRepeatedLargestFieldNumber: canonicalizeSlice(fixedRepeatedLargestFieldNumber),
 
 		ConstRepeatedUint64: s.ConstRepeatedUint64,
+		CustomType:          s.CustomType,
 	}
 }
 
@@ -205,6 +209,10 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 		fixedLargestFieldNumbers = nil
 	}
 
+	var customType []byte
+	if s.CustomType.CalculateCanotoSize() != 0 {
+		customType = s.CustomType.Int.Bytes()
+	}
 	pbs := pb.Scalars{
 		Int8:               int32(s.Int8),
 		Int16:              int32(s.Int16),
@@ -250,6 +258,7 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 
 		RepeatedFixedBytes:              arrayToSlice(s.RepeatedFixedBytes),
 		FixedRepeatedLargestFieldNumber: fixedLargestFieldNumbers,
+		CustomType:                      customType,
 	}
 	if !canoto.IsZero(s.FixedRepeatedInt8) {
 		pbs.FixedRepeatedInt8 = castSlice[int8, int32](s.FixedRepeatedInt8[:])

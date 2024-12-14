@@ -49,13 +49,19 @@ var (
 func writeStruct(w io.Writer, m message) error {
 	const structTemplate = `
 const (
-${tagConstants}
-${tagSizeConstants})
+${tagConstants})
+
+// Ensure that the generated methods correctly implement the interface
+var _ canoto.Message = (*${structName})(nil)
 
 type canotoData_${structName} struct {
 	size atomic.Int64
 ${cache}}
 
+// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// The struct is not cleared before unmarshaling, any fields not present in the
+// bytes will retain their previous values.
 func (c *${structName}) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -63,6 +69,13 @@ func (c *${structName}) UnmarshalCanoto(bytes []byte) error {
 	return c.UnmarshalCanotoFrom(&r)
 }
 
+// UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
+// should just use UnmarshalCanoto.
+//
+// The struct is not cleared before unmarshaling, any fields not present in the
+// bytes will retain their previous values.
+//
+// This function enables configuration of reader options.
 func (c *${structName}) UnmarshalCanotoFrom(r *canoto.Reader) error {
 	var minField uint32
 	for canoto.HasNext(r) {
@@ -84,20 +97,41 @@ ${unmarshal}		default:
 	return nil
 }
 
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// Specifically, ValidCanoto ensures that all strings are valid utf-8 and all
+// custom types are ValidCanoto.
 func (c *${structName}) ValidCanoto() bool {
 ${valid}	return true
 }
 
+// CalculateCanotoSize calculates the size of the Canoto representation and
+// caches it.
+//
+// It is not safe to call this function concurrently.
 func (c *${structName}) CalculateCanotoSize() int {
 	var size int
 ${size}	c.canotoData.size.Store(int64(size))
 	return size
 }
 
+// CachedCanotoSize returns the previously calculated size of the Canoto
+// representation from CalculateCanotoSize.
+//
+// If CalculateCanotoSize has not yet been called, it will return 0.
+//
+// If the struct has been modified since the last call to CalculateCanotoSize,
+// the returned size may be incorrect.
 func (c *${structName}) CachedCanotoSize() int {
 	return int(c.canotoData.size.Load())
 }
 
+// MarshalCanoto returns the Canoto representation of this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *${structName}) MarshalCanoto() []byte {
 	w := canoto.Writer{
 		B: make([]byte, 0, c.CalculateCanotoSize()),
@@ -106,6 +140,15 @@ func (c *${structName}) MarshalCanoto() []byte {
 	return w.B
 }
 
+// MarshalCanotoInto writes the struct into a canoto.Writer. Most users should
+// just use MarshalCanoto.
+//
+// It is assumed that CalculateCanotoSize has been called since the last
+// modification to this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *${structName}) MarshalCanotoInto(w *canoto.Writer) {
 ${marshal}}
 `
@@ -128,14 +171,13 @@ ${marshal}}
 	}
 
 	return writeTemplate(w, structTemplate, map[string]string{
-		"tagConstants":     tagConstants,
-		"tagSizeConstants": makeTagSizeConstants(m),
-		"structName":       m.name,
-		"cache":            makeCache(m),
-		"unmarshal":        unmarshal,
-		"valid":            makeValid(m),
-		"size":             size,
-		"marshal":          marshal,
+		"tagConstants": tagConstants,
+		"structName":   m.name,
+		"cache":        makeCache(m),
+		"unmarshal":    unmarshal,
+		"valid":        makeValid(m),
+		"size":         size,
+		"marshal":      marshal,
 	})
 }
 
@@ -169,21 +211,6 @@ func makeTagConstants(m message) (string, error) {
 	return s.String(), nil
 }
 
-func makeTagSizeConstants(m message) string {
-	var s strings.Builder
-	for _, f := range m.fields {
-		_, _ = fmt.Fprintf(
-			&s,
-			"\tcanoto__%s__%s__tag__size = len(canoto__%s__%s__tag)\n",
-			m.canonicalizedName,
-			f.canonicalizedName,
-			m.canonicalizedName,
-			f.canonicalizedName,
-		)
-	}
-	return s.String()
-}
-
 func makeCache(m message) string {
 	var s strings.Builder
 	for _, f := range m.fields {
@@ -204,7 +231,7 @@ func makeUnmarshal(m message) (string, error) {
 	const (
 		intTemplate = `		case ${fieldNumber}:
 			if wireType != canoto.${wireType} {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 			c.${fieldName}, err = canoto.Read${readFunction}(r)
 			if err != nil {
@@ -216,7 +243,7 @@ func makeUnmarshal(m message) (string, error) {
 `
 		fixedRepeatedIntTemplate = `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			originalUnsafe := r.Unsafe
@@ -248,7 +275,7 @@ func makeUnmarshal(m message) (string, error) {
 `
 		repeatedFixedSizeTemplate = `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			originalUnsafe := r.Unsafe
@@ -278,7 +305,7 @@ func makeUnmarshal(m message) (string, error) {
 `
 		bytesTemplate = `		case ${fieldNumber}:
 			if wireType != canoto.${wireType} {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 			c.${fieldName}, err = canoto.Read${readFunction}(r)
 			if err != nil {
@@ -290,7 +317,7 @@ func makeUnmarshal(m message) (string, error) {
 `
 		repeatedBytesTemplate = `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			v, err := canoto.Read${readFunction}(r)
@@ -306,7 +333,7 @@ func makeUnmarshal(m message) (string, error) {
 			c.${fieldName} = make([]${goType}, 1, 1+count)
 			c.${fieldName}[0] = v
 			for range count {
-				r.B = r.B[canoto__${escapedStructName}__${escapedFieldName}__tag__size:]
+				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 				v, err := canoto.Read${readFunction}(r)
 				if err != nil {
 					return err
@@ -316,7 +343,7 @@ func makeUnmarshal(m message) (string, error) {
 `
 		fixedRepeatedBytes = `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			v, err := canoto.Read${readFunction}(r)
@@ -330,7 +357,7 @@ func makeUnmarshal(m message) (string, error) {
 				if !canoto.HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
 					return canoto.ErrUnknownField
 				}
-				r.B = r.B[canoto__${escapedStructName}__${escapedFieldName}__tag__size:]
+				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 				v, err := canoto.Read${readFunction}(r)
 				if err != nil {
 					return err
@@ -348,7 +375,7 @@ func makeUnmarshal(m message) (string, error) {
 			single: intTemplate,
 			repeated: `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			originalUnsafe := r.Unsafe
@@ -396,7 +423,7 @@ func makeUnmarshal(m message) (string, error) {
 		repeatedBytesTemplate: repeatedBytesTemplate,
 		fixedBytesTemplate: `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			length, err := canoto.ReadInt[int32](r)
@@ -423,7 +450,7 @@ func makeUnmarshal(m message) (string, error) {
 `,
 		repeatedFixedBytesTemplate: `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			length, err := canoto.ReadInt[int32](r)
@@ -452,7 +479,7 @@ func makeUnmarshal(m message) (string, error) {
 			c.${fieldName} = canoto.MakeSlice(c.${fieldName}, 1+count)
 			copy(c.${fieldName}[0][:], firstEntry)
 			for i := range count {
-				r.B = r.B[canoto__${escapedStructName}__${escapedFieldName}__tag__size:]
+				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 				length, err := canoto.ReadInt[int32](r)
 				if err != nil {
 					return err
@@ -471,7 +498,7 @@ func makeUnmarshal(m message) (string, error) {
 		fixedRepeatedBytesTemplate: fixedRepeatedBytes,
 		fixedRepeatedFixedBytesTemplate: `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			length, err := canoto.ReadInt[int32](r)
@@ -496,7 +523,7 @@ func makeUnmarshal(m message) (string, error) {
 				if !canoto.HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
 					return canoto.ErrUnknownField
 				}
-				r.B = r.B[canoto__${escapedStructName}__${escapedFieldName}__tag__size:]
+				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 
 				length, err := canoto.ReadInt[int32](r)
 				if err != nil {
@@ -519,7 +546,7 @@ func makeUnmarshal(m message) (string, error) {
 		customs: typeTemplate{
 			single: `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			originalUnsafe := r.Unsafe
@@ -543,7 +570,7 @@ func makeUnmarshal(m message) (string, error) {
 `,
 			repeated: `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			originalUnsafe := r.Unsafe
@@ -569,7 +596,7 @@ func makeUnmarshal(m message) (string, error) {
 			}
 
 			for i := range count {
-				r.B = r.B[canoto__${escapedStructName}__${escapedFieldName}__tag__size:]
+				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 				r.Unsafe = true
 				msgBytes, err := canoto.ReadBytes(r)
 				r.Unsafe = originalUnsafe
@@ -588,7 +615,7 @@ func makeUnmarshal(m message) (string, error) {
 `,
 			fixedRepeated: `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			originalUnsafe := r.Unsafe
@@ -612,7 +639,7 @@ func makeUnmarshal(m message) (string, error) {
 				if !canoto.HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
 					return canoto.ErrUnknownField
 				}
-				r.B = r.B[canoto__${escapedStructName}__${escapedFieldName}__tag__size:]
+				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 				r.Unsafe = true
 				msgBytes, err := canoto.ReadBytes(r)
 				r.Unsafe = originalUnsafe
@@ -693,32 +720,32 @@ func makeValid(m message) string {
 func makeSize(m message) (string, error) {
 	const (
 		fixedSizeTemplate = `	if !canoto.IsZero(c.${fieldName}) {
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.Size${sizeConstant}
+		size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.Size${sizeConstant}
 	}
 `
 		repeatedFixedSizeTemplate = `	if num := len(c.${fieldName}); num != 0 {
 		fieldSize := num * canoto.Size${sizeConstant}
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 `
 		fixedRepeatedFixedSizeTemplate = `	if !canoto.IsZero(c.${fieldName}) {
 		const fieldSize = len(c.${fieldName}) * canoto.Size${sizeConstant}
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + fieldSize + canoto.SizeInt(int64(fieldSize))
+		size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + fieldSize + canoto.SizeInt(int64(fieldSize))
 	}
 `
 		bytesTemplate = `	if len(c.${fieldName}) != 0 {
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeBytes(c.${fieldName})
+		size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeBytes(c.${fieldName})
 	}
 `
 		repeatedBytesTemplate = `	for _, v := range c.${fieldName} {
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeBytes(v)
+		size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeBytes(v)
 	}
 `
 	)
 	return writeMessage(m, messageTemplate{
 		ints: typeTemplate{
 			single: `	if !canoto.IsZero(c.${fieldName}) {
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.Size${sizeFunction}(c.${fieldName})
+		size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.Size${sizeFunction}(c.${fieldName})
 	}
 `,
 			repeated: `	if len(c.${fieldName}) != 0 {
@@ -726,7 +753,7 @@ func makeSize(m message) (string, error) {
 		for _, v := range c.${fieldName} {
 			fieldSize += canoto.Size${sizeFunction}(v)
 		}
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 		c.canotoData.${fieldName}Size.Store(int64(fieldSize))
 	}
 `,
@@ -735,7 +762,7 @@ func makeSize(m message) (string, error) {
 		for _, v := range c.${fieldName} {
 			fieldSize += canoto.Size${sizeFunction}(v)
 		}
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 		c.canotoData.${fieldName}Size.Store(int64(fieldSize))
 	}
 `,
@@ -755,7 +782,7 @@ func makeSize(m message) (string, error) {
 			repeated: repeatedBytesTemplate,
 			fixedRepeated: `	if !canoto.IsZero(c.${fieldName}) {
 		for _, v := range c.${fieldName} {
-			size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeBytes(v)
+			size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeBytes(v)
 		}
 	}
 `,
@@ -763,11 +790,11 @@ func makeSize(m message) (string, error) {
 		bytesTemplate:         bytesTemplate,
 		repeatedBytesTemplate: repeatedBytesTemplate,
 		fixedBytesTemplate: `	if !canoto.IsZero(c.${fieldName}) {
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeBytes(c.${fieldName}[:])
+		size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeBytes(c.${fieldName}[:])
 	}
 `,
 		repeatedFixedBytesTemplate: `	if num := len(c.${fieldName}); num != 0 {
-		fieldSize := canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeBytes(c.${fieldName}[0][:])
+		fieldSize := len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeBytes(c.${fieldName}[0][:])
 		size += num * fieldSize
 	}
 `,
@@ -781,25 +808,25 @@ func makeSize(m message) (string, error) {
 		}
 		if !isZero {
 			for _, v := range c.${fieldName} {
-				size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeBytes(v)
+				size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeBytes(v)
 			}
 		}
 	}
 `,
 		fixedRepeatedFixedBytesTemplate: `	if !canoto.IsZero(c.${fieldName}) {
 		for i := range c.${fieldName} {
-			size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeBytes(c.${fieldName}[i][:])
+			size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeBytes(c.${fieldName}[i][:])
 		}
 	}
 `,
 		customs: typeTemplate{
 			single: `	if fieldSize := c.${fieldName}.CalculateCanotoSize(); fieldSize != 0 {
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 `,
 			repeated: `	for i := range c.${fieldName} {
 		fieldSize := c.${fieldName}[i].CalculateCanotoSize()
-		size += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 `,
 			fixedRepeated: `	{
@@ -810,7 +837,7 @@ func makeSize(m message) (string, error) {
 		for i := range c.${fieldName} {
 			fieldSize := c.${fieldName}[i].CalculateCanotoSize()
 			fieldSizeSum += fieldSize
-			totalSize += canoto__${escapedStructName}__${escapedFieldName}__tag__size + canoto.SizeInt(int64(fieldSize)) + fieldSize
+			totalSize += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 		}
 		if fieldSizeSum != 0 {
 			size += totalSize

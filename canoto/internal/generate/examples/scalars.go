@@ -69,6 +69,7 @@ type Scalars struct {
 	FixedRepeatedFixedBytes         [3][32]byte                    `canoto:"bytes,62"`
 	FixedRepeatedLargestFieldNumber [3]LargestFieldNumber          `canoto:"bytes,63"`
 	ConstRepeatedUint64             [constRepeatedUint64Len]uint64 `canoto:"int,64"`
+	CustomType                      CustomType                     `canoto:"bytes,65"`
 
 	canotoData canotoData_Scalars
 }
