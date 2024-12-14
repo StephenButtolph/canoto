@@ -1801,8 +1801,6 @@ func (c *Scalars) ValidCanoto() bool {
 
 // CalculateCanotoSize calculates the size of the Canoto representation and
 // caches it.
-//
-// It is not safe to call this function concurrently.
 func (c *Scalars) CalculateCanotoSize() int {
 	var size int
 	if !canoto.IsZero(c.Int8) {
@@ -2181,8 +2179,6 @@ func (c *Scalars) CachedCanotoSize() int {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *Scalars) MarshalCanoto() []byte {
 	w := canoto.Writer{
 		B: make([]byte, 0, c.CalculateCanotoSize()),
@@ -2198,8 +2194,6 @@ func (c *Scalars) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 	if !canoto.IsZero(c.Int8) {
 		canoto.Append(w, canoto__Scalars__Int8__tag)
