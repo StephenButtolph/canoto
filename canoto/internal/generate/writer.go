@@ -384,7 +384,7 @@ func makeUnmarshal(m message) string {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 `,
 			fixedRepeated: fixedRepeatedIntTemplate,

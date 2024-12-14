@@ -400,7 +400,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 22:
 			if wireType != canoto.Len {
@@ -431,7 +431,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 23:
 			if wireType != canoto.Len {
@@ -462,7 +462,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 24:
 			if wireType != canoto.Len {
@@ -493,7 +493,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 25:
 			if wireType != canoto.Len {
@@ -524,7 +524,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 26:
 			if wireType != canoto.Len {
@@ -555,7 +555,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 27:
 			if wireType != canoto.Len {
@@ -586,7 +586,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 28:
 			if wireType != canoto.Len {
@@ -617,7 +617,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 29:
 			if wireType != canoto.Len {
@@ -648,7 +648,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 30:
 			if wireType != canoto.Len {
@@ -679,7 +679,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 31:
 			if wireType != canoto.Len {
@@ -710,7 +710,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 32:
 			if wireType != canoto.Len {
@@ -741,7 +741,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 33:
 			if wireType != canoto.Len {
