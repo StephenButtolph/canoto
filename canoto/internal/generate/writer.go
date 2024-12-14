@@ -24,8 +24,8 @@ import (
 	"github.com/StephenButtolph/canoto"
 )
 
-// Ensure that unused imports do not error
 var (
+	// Ensure that unused imports do not error
 	_ = io.ErrUnexpectedEOF
 	_ = utf8.ValidString
 )
@@ -50,6 +50,9 @@ func writeStruct(w io.Writer, m message) error {
 const (
 ${tagConstants}
 ${tagSizeConstants})
+
+// Ensure that the generated methods correctly implement the interface
+var _ canoto.Message = (*${structName})(nil)
 
 type canotoData_${structName} struct {
 	size int
@@ -136,9 +139,11 @@ func (c *${structName}) MarshalCanoto() []byte {
 	return w.B
 }
 
-
 // MarshalCanotoInto writes the struct into a canoto.Writer. Most users should
 // just use MarshalCanoto.
+//
+// It is assumed that CalculateCanotoSize has been called since the last
+// modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
@@ -241,7 +246,7 @@ func makeUnmarshal(m message) (string, error) {
 	const (
 		intTemplate = `		case ${fieldNumber}:
 			if wireType != canoto.${wireType} {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 			c.${fieldName}, err = canoto.Read${readFunction}(r)
 			if err != nil {
@@ -253,7 +258,7 @@ func makeUnmarshal(m message) (string, error) {
 `
 		fixedRepeatedIntTemplate = `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			originalUnsafe := r.Unsafe
@@ -285,7 +290,7 @@ func makeUnmarshal(m message) (string, error) {
 `
 		repeatedFixedSizeTemplate = `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			originalUnsafe := r.Unsafe
@@ -315,7 +320,7 @@ func makeUnmarshal(m message) (string, error) {
 `
 		bytesTemplate = `		case ${fieldNumber}:
 			if wireType != canoto.${wireType} {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 			c.${fieldName}, err = canoto.Read${readFunction}(r)
 			if err != nil {
@@ -327,7 +332,7 @@ func makeUnmarshal(m message) (string, error) {
 `
 		repeatedBytesTemplate = `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			v, err := canoto.Read${readFunction}(r)
@@ -353,7 +358,7 @@ func makeUnmarshal(m message) (string, error) {
 `
 		fixedRepeatedBytes = `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			v, err := canoto.Read${readFunction}(r)
@@ -385,7 +390,7 @@ func makeUnmarshal(m message) (string, error) {
 			single: intTemplate,
 			repeated: `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			originalUnsafe := r.Unsafe
@@ -433,7 +438,7 @@ func makeUnmarshal(m message) (string, error) {
 		repeatedBytesTemplate: repeatedBytesTemplate,
 		fixedBytesTemplate: `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			length, err := canoto.ReadInt[int32](r)
@@ -460,7 +465,7 @@ func makeUnmarshal(m message) (string, error) {
 `,
 		repeatedFixedBytesTemplate: `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			length, err := canoto.ReadInt[int32](r)
@@ -508,7 +513,7 @@ func makeUnmarshal(m message) (string, error) {
 		fixedRepeatedBytesTemplate: fixedRepeatedBytes,
 		fixedRepeatedFixedBytesTemplate: `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			length, err := canoto.ReadInt[int32](r)
@@ -556,7 +561,7 @@ func makeUnmarshal(m message) (string, error) {
 		customs: typeTemplate{
 			single: `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			originalUnsafe := r.Unsafe
@@ -580,7 +585,7 @@ func makeUnmarshal(m message) (string, error) {
 `,
 			repeated: `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			originalUnsafe := r.Unsafe
@@ -625,7 +630,7 @@ func makeUnmarshal(m message) (string, error) {
 `,
 			fixedRepeated: `		case ${fieldNumber}:
 			if wireType != canoto.Len {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 
 			originalUnsafe := r.Unsafe

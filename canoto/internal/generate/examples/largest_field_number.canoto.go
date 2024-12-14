@@ -9,8 +9,8 @@ import (
 	"github.com/StephenButtolph/canoto"
 )
 
-// Ensure that unused imports do not error
 var (
+	// Ensure that unused imports do not error
 	_ = io.ErrUnexpectedEOF
 	_ = utf8.ValidString
 )
@@ -20,6 +20,9 @@ const (
 
 	canoto__LargestFieldNumber__Int32__tag__size = len(canoto__LargestFieldNumber__Int32__tag)
 )
+
+// Ensure that the generated methods correctly implement the interface
+var _ canoto.Message = (*LargestFieldNumber)(nil)
 
 type canotoData_LargestFieldNumber struct {
 	size int
@@ -57,7 +60,7 @@ func (c *LargestFieldNumber) UnmarshalCanotoFrom(r *canoto.Reader) error {
 		switch field {
 		case 536870911:
 			if wireType != canoto.Varint {
-				return canoto.ErrInvalidWireType
+				return canoto.ErrUnexpectedWireType
 			}
 			c.Int32, err = canoto.ReadInt[int32](r)
 			if err != nil {
@@ -120,9 +123,11 @@ func (c *LargestFieldNumber) MarshalCanoto() []byte {
 	return w.B
 }
 
-
 // MarshalCanotoInto writes the struct into a canoto.Writer. Most users should
 // just use MarshalCanoto.
+//
+// It is assumed that CalculateCanotoSize has been called since the last
+// modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //

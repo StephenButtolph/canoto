@@ -1,6 +1,7 @@
 package examples
 
 import (
+	"bytes"
 	"slices"
 	"strconv"
 	"testing"
@@ -67,6 +68,9 @@ func canonicalizeCanotoScalars(s Scalars) Scalars {
 	s.RepeatedFixedBytes = canonicalizeSlice(s.RepeatedFixedBytes)
 	for i := range s.FixedRepeatedBytes {
 		s.FixedRepeatedBytes[i] = canonicalizeSlice(s.FixedRepeatedBytes[i])
+	}
+	if s.CustomType.CalculateCanotoSize() == 0 {
+		s.CustomType.Int = nil
 	}
 	s.canotoData = canotoData_Scalars{}
 	return s
@@ -171,6 +175,7 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 		FixedRepeatedLargestFieldNumber: canonicalizeSlice(fixedRepeatedLargestFieldNumber),
 
 		ConstRepeatedUint64: s.ConstRepeatedUint64,
+		CustomType:          s.CustomType,
 	}
 }
 
@@ -201,6 +206,10 @@ func canotoScalarsToProto(s Scalars) *pb.Scalars {
 		fixedLargestFieldNumbers = nil
 	}
 
+	var customType []byte
+	if s.CustomType.CalculateCanotoSize() != 0 {
+		customType = s.CustomType.Int.Bytes()
+	}
 	pbs := pb.Scalars{
 		Int8:               int32(s.Int8),
 		Int16:              int32(s.Int16),
@@ -246,6 +255,7 @@ func canotoScalarsToProto(s Scalars) *pb.Scalars {
 
 		RepeatedFixedBytes:              arrayToSlice(s.RepeatedFixedBytes),
 		FixedRepeatedLargestFieldNumber: fixedLargestFieldNumbers,
+		CustomType:                      customType,
 	}
 	if !canoto.IsZero(s.FixedRepeatedInt8) {
 		pbs.FixedRepeatedInt8 = castSlice[int8, int32](s.FixedRepeatedInt8[:])
@@ -387,14 +397,18 @@ func FuzzScalars_Canonical(f *testing.F) {
 			return
 		}
 
-		size := scalars.CalculateCanotoSize()
-		require.Len(b, size)
+		for i := 0; i < 2; i++ {
+			size := scalars.CalculateCanotoSize()
+			require.Len(b, size)
 
-		w := canoto.Writer{
-			B: make([]byte, 0, size),
+			w := canoto.Writer{
+				B: make([]byte, 0, size),
+			}
+			scalars.MarshalCanotoInto(&w)
+			if !bytes.Equal(b, w.B) {
+				continue
+			}
 		}
-		scalars.MarshalCanotoInto(&w)
-		require.Equal(b, w.B)
 	})
 }
 

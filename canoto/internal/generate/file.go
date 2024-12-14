@@ -33,6 +33,9 @@ func File(inputFilePath string) error {
 	if err != nil {
 		return err
 	}
+	if len(messages) == 0 {
+		return nil
+	}
 
 	outputFilePath := inputFilePath[:len(inputFilePath)-len(goExtension)] + canotoExtension
 	outputFile, err := os.Create(outputFilePath)
