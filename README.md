@@ -204,7 +204,7 @@ It is valid to define a `Field` that implements a non-standard format. However, 
 
 ## Why not Proto?
 
-Proto is a fast, compact encoding format with extensive language support. However, [Proto is not canonical](https://protobuf.dev/programming-guides/serialization-not-canonical/).
+Proto is a fast, compact, encoding format with extensive language support. However, [Proto is not canonical](https://protobuf.dev/programming-guides/serialization-not-canonical/).
 
 Proto is designed to be forwards-compatible. Almost by definition, a forwards-compatible serialization format can not be canonical. The format of a field can not validated to be canonical if the expected type of the field is not known during decoding.
 
@@ -216,11 +216,11 @@ For example, if the hash of the serialized data is important or if the serialize
 
 In order to ensure that the hash of the serialized data does not change, it is important to carefully avoid re-serializing a message that was previously serialized.
 
-For canonical serialization formats, the hash of the serialized data is guaranteed never to change, and every correct implementation of the format will produce the same hash.
+For canonical serialization formats, the hash of the serialized data is guaranteed never to change. Every correct implementation of the format will produce the same hash.
 
 ## Why be read compatible with Proto?
 
-By being read compatible with Proto, users of the Canoto format to inherit some of the cross language support that Proto has already made.
+By being read compatible with Proto, users of the Canoto format inherit some Proto's cross language support.
 
 If an application only needs to read Canoto messages, but not write them, it can simply treat the Canoto message as a Proto message.
 
