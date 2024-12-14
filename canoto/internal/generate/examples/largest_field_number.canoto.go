@@ -9,8 +9,8 @@ import (
 	"github.com/StephenButtolph/canoto"
 )
 
+// Ensure that unused imports do not error
 var (
-	// Ensure that unused imports do not error
 	_ = io.ErrUnexpectedEOF
 	_ = utf8.ValidString
 )
