@@ -902,9 +902,9 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
+			remainingBytes := r.B
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
-			remainingBytes := r.B
 			err := canoto.ReadBytes(r, new([]byte))
 			r.Unsafe = originalUnsafe
 			if err != nil {
@@ -932,9 +932,9 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
+			remainingBytes := r.B
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
-			remainingBytes := r.B
 			err := canoto.ReadBytes(r, new([]byte))
 			r.Unsafe = originalUnsafe
 			if err != nil {
