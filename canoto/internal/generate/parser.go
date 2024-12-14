@@ -12,7 +12,10 @@ import (
 	"github.com/fatih/structtag"
 )
 
-const canotoTag = "canoto"
+const (
+	canotoTag = "canoto"
+	goBytes   = "[]byte"
+)
 
 var (
 	errUnexpectedNumberOfIdentifiers       = errors.New("unexpected number of identifiers")
@@ -100,71 +103,21 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 	}
 
 	name := af.Names[0].Name
-	f := field{
+	canonicalizedName := canonicalizeName(name)
+	return field{
 		name:              name,
-		canonicalizedName: canonicalizeName(name),
+		canonicalizedName: canonicalizedName,
 		canotoType:        canotoType,
 		fieldNumber:       fieldNumber,
-	}
-
-	firstFixedLength, goT, innerExpr, err := unwrapType(fs, af.Type)
-	if err != nil {
-		return field{}, false, err
-	}
-	if innerExpr == nil {
-		f.goType = goType(goT)
-		f.templateArgs, err = makeTemplateArgs(canonicalizedStructName, f)
-		return f, true, err
-	}
-
-	secondFixedLength, goT, innerExpr, err := unwrapType(fs, innerExpr)
-	if err != nil {
-		return field{}, false, err
-	}
-	f.fixedLength = [2]bool{firstFixedLength, secondFixedLength}
-
-	if innerExpr == nil {
-		if goT == "byte" {
-			f.goType = goBytes
-		} else {
-			f.repeated = true
-			f.goType = goType(goT)
-		}
-		f.templateArgs, err = makeTemplateArgs(canonicalizedStructName, f)
-		return f, true, err
-	}
-
-	_, goT, innerExpr, err = unwrapType(fs, innerExpr)
-	if err != nil {
-		return field{}, false, err
-	}
-	if innerExpr != nil || goT != "byte" {
-		return field{}, false, fmt.Errorf("%w %T at %s",
-			errUnexpectedGoType,
-			innerExpr,
-			fs.Position(innerExpr.Pos()),
-		)
-	}
-
-	f.repeated = true
-	f.goType = goBytes
-	f.templateArgs, err = makeTemplateArgs(canonicalizedStructName, f)
-	return f, true, err
-}
-
-func unwrapType(fs *token.FileSet, expr ast.Expr) (bool, string, ast.Expr, error) {
-	switch t := expr.(type) {
-	case *ast.Ident:
-		return false, t.Name, nil, nil
-	case *ast.ArrayType:
-		return t.Len != nil, "", t.Elt, nil
-	default:
-		return false, "", nil, fmt.Errorf("%w %T at %s",
-			errUnexpectedGoType,
-			t,
-			fs.Position(expr.Pos()),
-		)
-	}
+		templateArgs: map[string]string{
+			"escapedStructName": canonicalizedStructName,
+			"fieldNumber":       strconv.FormatUint(uint64(fieldNumber), 10),
+			"wireType":          canotoType.WireType().String(),
+			"fieldName":         name,
+			"escapedFieldName":  canonicalizedName,
+			"suffix":            canotoType.Suffix(),
+		},
+	}, true, nil
 }
 
 // canonicalizeName replaces "_" with "_1" to avoid collisions with "__" which
@@ -224,52 +177,4 @@ func isUniquelySorted[S ~[]E, E any](x S, cmp func(a E, b E) int) bool {
 		}
 	}
 	return true
-}
-
-func makeTemplateArgs(structName string, field field) (map[string]string, error) {
-	wireType, err := field.WireType()
-	if err != nil {
-		return nil, err
-	}
-
-	args := map[string]string{
-		"escapedStructName": structName,
-		"fieldNumber":       strconv.FormatUint(uint64(field.fieldNumber), 10),
-		"wireType":          wireType.String(),
-		"fieldName":         field.name,
-		"escapedFieldName":  field.canonicalizedName,
-		"goType":            string(field.goType),
-	}
-	switch field.canotoType {
-	case canotoInt:
-		args["readFunction"] = fmt.Sprintf("Int[%s]", field.goType)
-		args["sizeFunction"] = "Int"
-	case canotoSint:
-		args["readFunction"] = fmt.Sprintf("Sint[%s]", field.goType)
-		args["sizeFunction"] = "Sint"
-	case canotoFint:
-		switch field.goType {
-		case goInt32, goUint32:
-			args["readFunction"] = fmt.Sprintf("Fint32[%s]", field.goType)
-			args["sizeConstant"] = "Fint32"
-		case goInt64, goUint64:
-			args["readFunction"] = fmt.Sprintf("Fint64[%s]", field.goType)
-			args["sizeConstant"] = "Fint64"
-		default:
-			return nil, fmt.Errorf("%w: %q should have fixed size", errUnexpectedGoType, field.goType)
-		}
-	case canotoBool:
-		args["readFunction"] = "Bool"
-		args["sizeConstant"] = "Bool"
-	case canotoBytes:
-		switch field.goType {
-		case goString:
-			args["readFunction"] = "String"
-		case goBytes:
-			args["readFunction"] = "Bytes"
-		}
-	default:
-		return nil, fmt.Errorf("%w: %q", errUnexpectedCanotoType, field.canotoType)
-	}
-	return args, nil
 }

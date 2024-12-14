@@ -45,8 +45,8 @@ type (
 		~uint8 | ~uint16 | ~uint32 | ~uint64
 	}
 	Int   interface{ Sint | Uint }
-	Int32 interface{ ~int32 | uint32 }
-	Int64 interface{ ~int64 | uint64 }
+	Int32 interface{ ~int32 | ~uint32 }
+	Int64 interface{ ~int64 | ~uint64 }
 	Bytes interface{ ~string | ~[]byte }
 
 	// Reader contains all the state needed to unmarshal a Canoto type.
@@ -89,8 +89,8 @@ func Tag(fieldNumber uint32, wireType WireType) []byte {
 
 // ReadTag reads the next field number and wire type from the reader.
 func ReadTag(r *Reader) (uint32, WireType, error) {
-	val, err := ReadInt[uint32](r)
-	if err != nil {
+	var val uint32
+	if err := ReadInt(r, &val); err != nil {
 		return 0, 0, err
 	}
 
@@ -99,7 +99,7 @@ func ReadTag(r *Reader) (uint32, WireType, error) {
 		return 0, 0, ErrInvalidWireType
 	}
 
-	return val >> wireTypeLength, wireType, err
+	return val >> wireTypeLength, wireType, nil
 }
 
 // SizeInt calculates the size of an integer when encoded as a varint.
@@ -122,23 +122,24 @@ func CountInts(bytes []byte) int {
 }
 
 // ReadInt reads a varint encoded integer from the reader.
-func ReadInt[T Int](r *Reader) (T, error) {
+func ReadInt[T Int](r *Reader, v *T) error {
 	val, bytesRead := binary.Uvarint(r.B)
 	switch {
 	case bytesRead == 0:
-		return 0, io.ErrUnexpectedEOF
+		return io.ErrUnexpectedEOF
 	case bytesRead < 0 || uint64(T(val)) != val:
-		return 0, ErrOverflow
+		return ErrOverflow
 	// To ensure decoding is canonical, we check for padded zeroes in the
 	// varint.
 	// The last byte of the varint includes the most significant bits.
 	// If the last byte is 0, then the number should have been encoded more
 	// efficiently by removing this zero.
 	case bytesRead > 1 && r.B[bytesRead-1] == 0x00:
-		return 0, ErrPaddedZeroes
+		return ErrPaddedZeroes
 	default:
 		r.B = r.B[bytesRead:]
-		return T(val), nil
+		*v = T(val)
+		return nil
 	}
 }
 
@@ -163,10 +164,10 @@ func SizeSint[T Sint](v T) int {
 }
 
 // ReadSint reads a zigzag encoded integer from the reader.
-func ReadSint[T Sint](r *Reader) (T, error) {
-	largeVal, err := ReadInt[uint64](r)
-	if err != nil {
-		return 0, err
+func ReadSint[T Sint](r *Reader, v *T) error {
+	var largeVal uint64
+	if err := ReadInt(r, &largeVal); err != nil {
+		return err
 	}
 
 	uVal := largeVal >> 1
@@ -175,13 +176,14 @@ func ReadSint[T Sint](r *Reader) (T, error) {
 	// cast. In this case, casting back to uint64 would result in a different
 	// value.
 	if uint64(val) != uVal {
-		return 0, ErrOverflow
+		return ErrOverflow
 	}
 
 	if largeVal&1 != 0 {
 		val = ^val
 	}
-	return val, err
+	*v = val
+	return nil
 }
 
 // AppendSint writes an integer to the writer as a zigzag encoded varint.
@@ -194,14 +196,14 @@ func AppendSint[T Sint](w *Writer, v T) {
 }
 
 // ReadFint32 reads a 32-bit fixed size integer from the reader.
-func ReadFint32[T Int32](r *Reader) (T, error) {
+func ReadFint32[T Int32](r *Reader, v *T) error {
 	if len(r.B) < SizeFint32 {
-		return 0, io.ErrUnexpectedEOF
+		return io.ErrUnexpectedEOF
 	}
 
-	val := binary.LittleEndian.Uint32(r.B)
+	*v = T(binary.LittleEndian.Uint32(r.B))
 	r.B = r.B[SizeFint32:]
-	return T(val), nil
+	return nil
 }
 
 // AppendFint32 writes a 32-bit fixed size integer to the writer.
@@ -210,14 +212,14 @@ func AppendFint32[T Int32](w *Writer, v T) {
 }
 
 // ReadFint64 reads a 64-bit fixed size integer from the reader.
-func ReadFint64[T Int64](r *Reader) (T, error) {
+func ReadFint64[T Int64](r *Reader, v *T) error {
 	if len(r.B) < SizeFint64 {
-		return 0, io.ErrUnexpectedEOF
+		return io.ErrUnexpectedEOF
 	}
 
-	val := binary.LittleEndian.Uint64(r.B)
+	*v = T(binary.LittleEndian.Uint64(r.B))
 	r.B = r.B[SizeFint64:]
-	return T(val), nil
+	return nil
 }
 
 // AppendFint64 writes a 64-bit fixed size integer to the writer.
@@ -226,21 +228,21 @@ func AppendFint64[T Int64](w *Writer, v T) {
 }
 
 // ReadBool reads a boolean from the reader.
-func ReadBool(r *Reader) (bool, error) {
+func ReadBool[T ~bool](r *Reader, v *T) error {
 	switch {
 	case len(r.B) < SizeBool:
-		return false, io.ErrUnexpectedEOF
+		return io.ErrUnexpectedEOF
 	case r.B[0] > trueByte:
-		return false, ErrInvalidBool
+		return ErrInvalidBool
 	default:
-		isTrue := r.B[0] == trueByte
+		*v = r.B[0] == trueByte
 		r.B = r.B[SizeBool:]
-		return isTrue, nil
+		return nil
 	}
 }
 
 // AppendBool writes a boolean to the writer.
-func AppendBool(w *Writer, b bool) {
+func AppendBool[T ~bool](w *Writer, b T) {
 	if b {
 		w.B = append(w.B, trueByte)
 	} else {
@@ -263,8 +265,8 @@ func CountBytes(bytes []byte, tag string) (int, error) {
 	)
 	for HasPrefix(r.B, tag) {
 		r.B = r.B[len(tag):]
-		length, err := ReadInt[int64](&r)
-		if err != nil {
+		var length int64
+		if err := ReadInt(&r, &length); err != nil {
 			return 0, err
 		}
 		if length < 0 {
@@ -286,49 +288,52 @@ func HasPrefix(bytes []byte, prefix string) bool {
 
 // ReadString reads a string from the reader. The string is verified to be valid
 // UTF-8.
-func ReadString(r *Reader) (string, error) {
-	length, err := ReadInt[int64](r)
-	if err != nil {
-		return "", err
+func ReadString[T ~string](r *Reader, v *T) error {
+	var length int64
+	if err := ReadInt[int64](r, &length); err != nil {
+		return err
 	}
 	if length < 0 {
-		return "", ErrInvalidLength
+		return ErrInvalidLength
 	}
 	if length > int64(len(r.B)) {
-		return "", io.ErrUnexpectedEOF
+		return io.ErrUnexpectedEOF
 	}
 
 	bytes := r.B[:length]
 	if !utf8.Valid(bytes) {
-		return "", ErrStringNotUTF8
+		return ErrStringNotUTF8
 	}
 
 	r.B = r.B[length:]
 	if r.Unsafe {
-		return unsafeString(bytes), nil
+		*v = T(unsafeString(bytes))
+	} else {
+		*v = T(bytes)
 	}
-	return string(bytes), nil
+	return nil
 }
 
 // ReadBytes reads a byte slice from the reader.
-func ReadBytes(r *Reader) ([]byte, error) {
-	length, err := ReadInt[int64](r)
-	if err != nil {
-		return nil, err
+func ReadBytes[T ~[]byte](r *Reader, v *T) error {
+	var length int64
+	if err := ReadInt[int64](r, &length); err != nil {
+		return err
 	}
 	if length < 0 {
-		return nil, ErrInvalidLength
+		return ErrInvalidLength
 	}
 	if length > int64(len(r.B)) {
-		return nil, io.ErrUnexpectedEOF
+		return io.ErrUnexpectedEOF
 	}
 
 	bytes := r.B[:length]
 	r.B = r.B[length:]
-	if r.Unsafe {
-		return bytes, nil
+	if !r.Unsafe {
+		bytes = slices.Clone(bytes)
 	}
-	return slices.Clone(bytes), nil
+	*v = T(bytes)
+	return nil
 }
 
 // AppendBytes writes a length-prefixed byte slice to the writer.
@@ -337,15 +342,15 @@ func AppendBytes[T Bytes](w *Writer, v T) {
 	w.B = append(w.B, v...)
 }
 
-// MakeSlice creates a new slice with the given size. It is equivalent to
-// `make([]T, size)`.
+// MakeSlice creates a new slice with the given length. It is equivalent to
+// `make([]T, length)`.
 //
 // This function is useful to use in auto-generated code, when the type of a
 // variable is unknown. For example, if we have a variable `v` which we know to
 // be a slice, but we do not know the type of the elements, we can use this
 // function to leverage golang's type inference to create the new slice.
-func MakeSlice[T any](_ []T, size int) []T {
-	return make([]T, size)
+func MakeSlice[T any](_ []T, length int) []T {
+	return make([]T, length)
 }
 
 // IsZero returns true if the value is the zero value for its type.

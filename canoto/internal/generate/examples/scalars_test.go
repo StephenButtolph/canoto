@@ -71,6 +71,12 @@ func canonicalizeCanotoScalars(s *Scalars) *Scalars {
 	if s.CustomType.CalculateCanotoSize() == 0 {
 		s.CustomType.Int = nil
 	}
+	s.CustomBytes = canonicalizeSlice(s.CustomBytes)
+	s.CustomRepeatedBytes = canonicalizeSlice(s.CustomRepeatedBytes)
+	s.CustomRepeatedFixedBytes = canonicalizeSlice(s.CustomRepeatedFixedBytes)
+	for i := range s.CustomFixedRepeatedBytes {
+		s.CustomFixedRepeatedBytes[i] = canonicalizeSlice(s.CustomFixedRepeatedBytes[i])
+	}
 	s.canotoData = canotoData_Scalars{}
 	return s
 }
@@ -105,6 +111,10 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 	fixedRepeatedBytes := make([][]byte, len(s.FixedRepeatedBytes))
 	for i, v := range s.FixedRepeatedBytes {
 		fixedRepeatedBytes[i] = canonicalizeSlice(v)
+	}
+	customFixedRepeatedBytes := make([][]byte, len(s.CustomFixedRepeatedBytes))
+	for i, v := range s.CustomFixedRepeatedBytes {
+		customFixedRepeatedBytes[i] = canonicalizeSlice(v)
 	}
 	return &pb.Scalars{
 		Int8:               s.Int8,
@@ -173,8 +183,15 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 		FixedRepeatedFixedBytes:         s.FixedRepeatedFixedBytes,
 		FixedRepeatedLargestFieldNumber: canonicalizeSlice(fixedRepeatedLargestFieldNumber),
 
-		ConstRepeatedUint64: s.ConstRepeatedUint64,
-		CustomType:          s.CustomType,
+		ConstRepeatedUint64:           s.ConstRepeatedUint64,
+		CustomType:                    s.CustomType,
+		CustomUint32:                  s.CustomUint32,
+		CustomBytes:                   s.CustomBytes,
+		CustomFixedBytes:              s.CustomFixedBytes,
+		CustomRepeatedBytes:           s.CustomRepeatedBytes,
+		CustomRepeatedFixedBytes:      s.CustomRepeatedFixedBytes,
+		CustomFixedRepeatedBytes:      canonicalizeSlice(customFixedRepeatedBytes),
+		CustomFixedRepeatedFixedBytes: s.CustomFixedRepeatedFixedBytes,
 	}
 }
 
@@ -259,6 +276,10 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 		RepeatedFixedBytes:              arrayToSlice(s.RepeatedFixedBytes),
 		FixedRepeatedLargestFieldNumber: fixedLargestFieldNumbers,
 		CustomType:                      customType,
+		CustomUint32:                    uint32(s.CustomUint32),
+		CustomBytes:                     s.CustomBytes,
+		CustomRepeatedBytes:             s.CustomRepeatedBytes,
+		CustomRepeatedFixedBytes:        arrayToSlice(s.CustomRepeatedFixedBytes),
 	}
 	if !canoto.IsZero(s.FixedRepeatedInt8) {
 		pbs.FixedRepeatedInt8 = castSlice[int8, int32](s.FixedRepeatedInt8[:])
@@ -335,6 +356,25 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 	}
 	if !canoto.IsZero(s.ConstRepeatedUint64) {
 		pbs.ConstRepeatedUint64 = slices.Clone(s.ConstRepeatedUint64[:])
+	}
+	if !canoto.IsZero(s.CustomFixedBytes) {
+		pbs.CustomFixedBytes = slices.Clone(s.CustomFixedBytes[:])
+	}
+	{
+		isZero := true
+		for _, v := range s.CustomFixedRepeatedBytes {
+			isZero = isZero && len(v) == 0
+		}
+		if !isZero {
+			for _, v := range s.CustomFixedRepeatedBytes {
+				pbs.CustomFixedRepeatedBytes = append(pbs.CustomFixedRepeatedBytes, canonicalizeSlice(v))
+			}
+		}
+	}
+	if !canoto.IsZero(s.CustomFixedRepeatedFixedBytes) {
+		for _, v := range s.CustomFixedRepeatedFixedBytes {
+			pbs.CustomFixedRepeatedFixedBytes = append(pbs.CustomFixedRepeatedFixedBytes, slices.Clone(v[:]))
+		}
 	}
 	return &pbs
 }

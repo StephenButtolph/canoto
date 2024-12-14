@@ -118,85 +118,74 @@ at the top of a file will update the `.canoto.go` version of the file every time
 
 ## Supported Types
 
-### Single Value
-
-| go type     | canoto type | proto type | wire type |
-|-------------|-------------|------------|-----------|
-| `int8`      | `int`       | `int32`    | `varint`  |
-| `int16`     | `int`       | `int32`    | `varint`  |
-| `int32`     | `int`       | `int32`    | `varint`  |
-| `int64`     | `int`       | `int64`    | `varint`  |
-| `uint8`     | `int`       | `uint32`   | `varint`  |
-| `uint16`    | `int`       | `uint32`   | `varint`  |
-| `uint32`    | `int`       | `uint32`   | `varint`  |
-| `uint64`    | `int`       | `uint64`   | `varint`  |
-| `int8`      | `sint`      | `sint32`   | `varint`  |
-| `int16`     | `sint`      | `sint32`   | `varint`  |
-| `int32`     | `sint`      | `sint32`   | `varint`  |
-| `int64`     | `sint`      | `sint64`   | `varint`  |
-| `uint32`    | `fint`      | `fixed32`  | `i32`     |
-| `uint64`    | `fint`      | `fixed64`  | `i64`     |
-| `int32`     | `fint`      | `sfixed32` | `i32`     |
-| `int64`     | `fint`      | `sfixed64` | `i64`     |
-| `bool`      | `bool`      | `bool`     | `varint`  |
-| `string`    | `bytes`     | `string`   | `len`     |
-| `[]byte`    | `bytes`     | `bytes`    | `len`     |
-| `T Field`   | `bytes`     | `bytes`    | `len`     |
-| `T Message` | `bytes`     | `message`  | `len`     |
-
-### Repeated Values
-
-| go type       | canoto type | proto type          | wire type | packed  |
-|---------------|-------------|---------------------|-----------|---------|
-| `[]int8`      | `int`       | `repeated int32`    | `len`     | `true`  |
-| `[]int16`     | `int`       | `repeated int32`    | `len`     | `true`  |
-| `[]int32`     | `int`       | `repeated int32`    | `len`     | `true`  |
-| `[]int64`     | `int`       | `repeated int64`    | `len`     | `true`  |
-| `[]uint8`     | `int`       | `repeated uint32`   | `len`     | `true`  |
-| `[]uint16`    | `int`       | `repeated uint32`   | `len`     | `true`  |
-| `[]uint32`    | `int`       | `repeated uint32`   | `len`     | `true`  |
-| `[]uint64`    | `int`       | `repeated uint64`   | `len`     | `true`  |
-| `[]int8`      | `sint`      | `repeated sint32`   | `len`     | `true`  |
-| `[]int16`     | `sint`      | `repeated sint32`   | `len`     | `true`  |
-| `[]int32`     | `sint`      | `repeated sint32`   | `len`     | `true`  |
-| `[]int64`     | `sint`      | `repeated sint64`   | `len`     | `true`  |
-| `[]uint32`    | `fint`      | `repeated fixed32`  | `len`     | `true`  |
-| `[]uint64`    | `fint`      | `repeated fixed64`  | `len`     | `true`  |
-| `[]int32`     | `fint`      | `repeated sfixed32` | `len`     | `true`  |
-| `[]int64`     | `fint`      | `repeated sfixed64` | `len`     | `true`  |
-| `[]bool`      | `bool`      | `repeated bool`     | `len`     | `true`  |
-| `[]string`    | `bytes`     | `repeated string`   | `len`     | `false` |
-| `[][]byte`    | `bytes`     | `repeated bytes`    | `len`     | `false` |
-| `[]T Field`   | `bytes`     | `repeated bytes`    | `len`     | `false` |
-| `[]T Message` | `bytes`     | `repeated message`  | `len`     | `false` |
-
-### Fixed Length Repeated Values
-
-| go type        | canoto type | proto type          | wire type | packed  |
-|----------------|-------------|---------------------|-----------|---------|
-| `[x]int8`      | `int`       | `repeated int32`    | `len`     | `true`  |
-| `[x]int16`     | `int`       | `repeated int32`    | `len`     | `true`  |
-| `[x]int32`     | `int`       | `repeated int32`    | `len`     | `true`  |
-| `[x]int64`     | `int`       | `repeated int64`    | `len`     | `true`  |
-| `[x]uint8`     | `int`       | `repeated uint32`   | `len`     | `true`  |
-| `[x]uint16`    | `int`       | `repeated uint32`   | `len`     | `true`  |
-| `[x]uint32`    | `int`       | `repeated uint32`   | `len`     | `true`  |
-| `[x]uint64`    | `int`       | `repeated uint64`   | `len`     | `true`  |
-| `[x]int8`      | `sint`      | `repeated sint32`   | `len`     | `true`  |
-| `[x]int16`     | `sint`      | `repeated sint32`   | `len`     | `true`  |
-| `[x]int32`     | `sint`      | `repeated sint32`   | `len`     | `true`  |
-| `[x]int64`     | `sint`      | `repeated sint64`   | `len`     | `true`  |
-| `[x]uint32`    | `fint`      | `repeated fixed32`  | `len`     | `true`  |
-| `[x]uint64`    | `fint`      | `repeated fixed64`  | `len`     | `true`  |
-| `[x]int32`     | `fint`      | `repeated sfixed32` | `len`     | `true`  |
-| `[x]int64`     | `fint`      | `repeated sfixed64` | `len`     | `true`  |
-| `[x]bool`      | `bool`      | `repeated bool`     | `len`     | `true`  |
-| `[x]string`    | `bytes`     | `repeated string`   | `len`     | `false` |
-| `[x][]byte`    | `bytes`     | `repeated bytes`    | `len`     | `false` |
-| `[][x]byte`    | `bytes`     | `repeated bytes`    | `len`     | `false` |
-| `[x][y]byte`   | `bytes`     | `repeated bytes`    | `len`     | `false` |
-| `[x]T Field`   | `bytes`     | `repeated bytes`    | `len`     | `false` |
-| `[x]T Message` | `bytes`     | `repeated message`  | `len`     | `false` |
+| go type        | canoto type                  | proto type          | wire type |
+|----------------|------------------------------|---------------------|-----------|
+| `int8`         | `int`                        | `int32`             | `varint`  |
+| `int16`        | `int`                        | `int32`             | `varint`  |
+| `int32`        | `int`                        | `int32`             | `varint`  |
+| `int64`        | `int`                        | `int64`             | `varint`  |
+| `uint8`        | `int`                        | `uint32`            | `varint`  |
+| `uint16`       | `int`                        | `uint32`            | `varint`  |
+| `uint32`       | `int`                        | `uint32`            | `varint`  |
+| `uint64`       | `int`                        | `uint64`            | `varint`  |
+| `int8`         | `sint`                       | `sint32`            | `varint`  |
+| `int16`        | `sint`                       | `sint32`            | `varint`  |
+| `int32`        | `sint`                       | `sint32`            | `varint`  |
+| `int64`        | `sint`                       | `sint64`            | `varint`  |
+| `uint32`       | `fint32`                     | `fixed32`           | `i32`     |
+| `uint64`       | `fint64`                     | `fixed64`           | `i64`     |
+| `int32`        | `fint32`                     | `sfixed32`          | `i32`     |
+| `int64`        | `fint64`                     | `sfixed64`          | `i64`     |
+| `bool`         | `bool`                       | `bool`              | `varint`  |
+| `string`       | `string`                     | `string`            | `len`     |
+| `[]byte`       | `bytes`                      | `bytes`             | `len`     |
+| `[x]byte`      | `fixed bytes`                | `bytes`             | `len`     |
+| `T Field`      | `field`                      | `bytes`             | `len`     |
+| `T Message`    | `field`                      | `message`           | `len`     |
+| `[]int8`       | `repeated int`               | `repeated int32`    | `len`     |
+| `[]int16`      | `repeated int`               | `repeated int32`    | `len`     |
+| `[]int32`      | `repeated int`               | `repeated int32`    | `len`     |
+| `[]int64`      | `repeated int`               | `repeated int64`    | `len`     |
+| `[]uint8`      | `repeated int`               | `repeated uint32`   | `len`     |
+| `[]uint16`     | `repeated int`               | `repeated uint32`   | `len`     |
+| `[]uint32`     | `repeated int`               | `repeated uint32`   | `len`     |
+| `[]uint64`     | `repeated int`               | `repeated uint64`   | `len`     |
+| `[]int8`       | `repeated sint`              | `repeated sint32`   | `len`     |
+| `[]int16`      | `repeated sint`              | `repeated sint32`   | `len`     |
+| `[]int32`      | `repeated sint`              | `repeated sint32`   | `len`     |
+| `[]int64`      | `repeated sint`              | `repeated sint64`   | `len`     |
+| `[]uint32`     | `repeated fint32`            | `repeated fixed32`  | `len`     |
+| `[]uint64`     | `repeated fint64`            | `repeated fixed64`  | `len`     |
+| `[]int32`      | `repeated fint32`            | `repeated sfixed32` | `len`     |
+| `[]int64`      | `repeated fint64`            | `repeated sfixed64` | `len`     |
+| `[]bool`       | `repeated bool`              | `repeated bool`     | `len`     |
+| `[]string`     | `repeated string`            | `repeated string`   | `len`     |
+| `[][]byte`     | `repeated bytes`             | `repeated bytes`    | `len`     |
+| `[][x]byte`    | `repeated fixed bytes`       | `repeated bytes`    | `len`     |
+| `[]T Field`    | `repeated field`             | `repeated bytes`    | `len`     |
+| `[]T Message`  | `repeated field`             | `repeated message`  | `len`     |
+| `[x]int8`      | `fixed repeated int`         | `repeated int32`    | `len`     |
+| `[x]int16`     | `fixed repeated int`         | `repeated int32`    | `len`     |
+| `[x]int32`     | `fixed repeated int`         | `repeated int32`    | `len`     |
+| `[x]int64`     | `fixed repeated int`         | `repeated int64`    | `len`     |
+| `[x]uint8`     | `fixed repeated int`         | `repeated uint32`   | `len`     |
+| `[x]uint16`    | `fixed repeated int`         | `repeated uint32`   | `len`     |
+| `[x]uint32`    | `fixed repeated int`         | `repeated uint32`   | `len`     |
+| `[x]uint64`    | `fixed repeated int`         | `repeated uint64`   | `len`     |
+| `[x]int8`      | `fixed repeated sint`        | `repeated sint32`   | `len`     |
+| `[x]int16`     | `fixed repeated sint`        | `repeated sint32`   | `len`     |
+| `[x]int32`     | `fixed repeated sint`        | `repeated sint32`   | `len`     |
+| `[x]int64`     | `fixed repeated sint`        | `repeated sint64`   | `len`     |
+| `[x]uint32`    | `fixed repeated fint32`      | `repeated fixed32`  | `len`     |
+| `[x]uint64`    | `fixed repeated fint64`      | `repeated fixed64`  | `len`     |
+| `[x]int32`     | `fixed repeated fint32`      | `repeated sfixed32` | `len`     |
+| `[x]int64`     | `fixed repeated fint64`      | `repeated sfixed64` | `len`     |
+| `[x]bool`      | `fixed repeated bool`        | `repeated bool`     | `len`     |
+| `[x]string`    | `fixed repeated string`      | `repeated string`   | `len`     |
+| `[x][]byte`    | `fixed repeated bytes`       | `repeated bytes`    | `len`     |
+| `[x][y]byte`   | `fixed repeated fixed bytes` | `repeated bytes`    | `len`     |
+| `[x]T Field`   | `fixed repeated field`       | `repeated bytes`    | `len`     |
+| `[x]T Message` | `fixed repeated field`       | `repeated message`  | `len`     |
 
 ### Non-standard encoding
 
