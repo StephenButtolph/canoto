@@ -4,6 +4,7 @@ package examples
 
 import (
 	"io"
+	"sync/atomic"
 	"unicode/utf8"
 
 	"github.com/StephenButtolph/canoto"
@@ -23,6 +24,10 @@ const (
 var _ canoto.Message = (*LargestFieldNumber)(nil)
 
 type canotoData_LargestFieldNumber struct {
+	// Enforce noCopy before atomic usage.
+	// See https://github.com/StephenButtolph/canoto/pull/32
+	_ atomic.Int64
+
 	size int
 }
 

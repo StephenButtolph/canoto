@@ -19,6 +19,7 @@ package ${package}
 
 import (
 	"io"
+	"sync/atomic"
 	"unicode/utf8"
 
 	"github.com/StephenButtolph/canoto"
@@ -54,6 +55,10 @@ ${tagConstants})
 var _ canoto.Message = (*${structName})(nil)
 
 type canotoData_${structName} struct {
+	// Enforce noCopy before atomic usage.
+	// See https://github.com/StephenButtolph/canoto/pull/32
+	_ atomic.Int64
+
 	size int
 ${cache}}
 
