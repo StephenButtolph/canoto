@@ -53,7 +53,6 @@ ${tagConstants})
 var _ canoto.Message = (*${structName})(nil)
 
 type canotoData_${structName} struct {
-	size atomic.Int64
 ${cache}}
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -157,43 +156,71 @@ ${marshal}}
 }
 
 func makeTagConstants(m message) string {
-	var s strings.Builder
+	const tagSizeOverhead = len("canoto______tag")
+	var (
+		largestTagConstSize int
+		largestTagSize      int
+	)
 	for _, f := range m.fields {
-		_, _ = fmt.Fprintf(
-			&s,
-			`	canoto__%s__%s__tag = "`,
-			m.canonicalizedName,
-			f.canonicalizedName,
-		)
+		tagConstSize := tagSizeOverhead + len(m.canonicalizedName) + len(f.canonicalizedName)
+		largestTagConstSize = max(largestTagConstSize, tagConstSize)
 
+		wireType := f.canotoType.WireType()
+		tagBytes := canoto.Tag(f.fieldNumber, wireType)
+		tagSize := 2 + 4*len(tagBytes)
+		largestTagSize = max(largestTagSize, tagSize)
+	}
+
+	var (
+		template = fmt.Sprintf("\t%%-%ds = %%-%ds // canoto.Tag(%%d, canoto.%%s)\n",
+			largestTagConstSize,
+			largestTagSize,
+		)
+		s strings.Builder
+	)
+	for _, f := range m.fields {
+		tag := fmt.Sprintf("canoto__%s__%s__tag", m.canonicalizedName, f.canonicalizedName)
+
+		var tagString strings.Builder
+		_, _ = tagString.WriteString(`"`)
 		wireType := f.canotoType.WireType()
 		tagBytes := canoto.Tag(f.fieldNumber, wireType)
 		tagHex := hex.EncodeToString(tagBytes)
 		for i := 0; i < len(tagHex); i += 2 {
-			_, _ = fmt.Fprintf(&s, "\\x%s", tagHex[i:i+2])
+			_, _ = fmt.Fprintf(&tagString, "\\x%s", tagHex[i:i+2])
 		}
-		_, _ = fmt.Fprintf(
-			&s,
-			"\" // canoto.Tag(%d, canoto.%s)\n",
-			f.fieldNumber,
-			wireType,
-		)
+		_, _ = tagString.WriteString(`"`)
+
+		_, _ = fmt.Fprintf(&s, template, tag, &tagString, f.fieldNumber, wireType)
 	}
 	return s.String()
 }
 
 func makeCache(m message) string {
-	var s strings.Builder
+	const (
+		sizeVar    = "size"
+		sizeSuffix = "Size"
+	)
+	largestNameSize := len(sizeVar)
 	for _, f := range m.fields {
 		if !f.canotoType.IsRepeated() || !f.canotoType.IsVarint() {
 			continue
 		}
 
-		_, _ = fmt.Fprintf(
-			&s,
-			"\t%sSize atomic.Int64\n",
-			f.name,
-		)
+		largestNameSize = max(largestNameSize, len(f.name)+len(sizeSuffix))
+	}
+
+	var (
+		template = fmt.Sprintf("\t%%-%ds atomic.Int64\n", largestNameSize)
+		s        strings.Builder
+	)
+	_, _ = fmt.Fprintf(&s, template, sizeVar)
+	for _, f := range m.fields {
+		if !f.canotoType.IsRepeated() || !f.canotoType.IsVarint() {
+			continue
+		}
+
+		_, _ = fmt.Fprintf(&s, template, f.name+sizeSuffix)
 	}
 	return s.String()
 }
@@ -327,7 +354,7 @@ func makeUnmarshal(m message) string {
 			}
 
 			isZero := len(c.${fieldName}[0]) == 0
-			const numToRead = uint(len(c.${fieldName})-1)
+			const numToRead = uint(len(c.${fieldName}) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
 					return canoto.ErrUnknownField
@@ -375,7 +402,7 @@ func makeUnmarshal(m message) string {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 `,
 			fixedRepeated: fixedRepeatedIntTemplate,
@@ -494,7 +521,7 @@ func makeUnmarshal(m message) string {
 
 			copy(c.${fieldName}[0][:], r.B)
 			r.B = r.B[expectedLength:]
-			const numToRead = uint(len(c.${fieldName})-1)
+			const numToRead = uint(len(c.${fieldName}) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
 					return canoto.ErrUnknownField
@@ -613,7 +640,7 @@ func makeUnmarshal(m message) string {
 			}
 
 			isZero := len(msgBytes) == 0
-			const numToRead = uint(len(c.${fieldName})-1)
+			const numToRead = uint(len(c.${fieldName}) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
 					return canoto.ErrUnknownField
@@ -835,7 +862,7 @@ func makeMarshal(m message) string {
 	}
 `
 		fixedRepeatedFintTemplate = `	if !canoto.IsZero(c.${fieldName}) {
-		const fieldSize = len(c.${fieldName})*canoto.Size${suffix}
+		const fieldSize = len(c.${fieldName}) * canoto.Size${suffix}
 		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		canoto.AppendInt(w, int64(fieldSize))
 		for _, v := range c.${fieldName} {

@@ -17,106 +17,106 @@ var (
 )
 
 const (
-	canoto__Scalars__Int8__tag = "\x08" // canoto.Tag(1, canoto.Varint)
-	canoto__Scalars__Int16__tag = "\x10" // canoto.Tag(2, canoto.Varint)
-	canoto__Scalars__Int32__tag = "\x18" // canoto.Tag(3, canoto.Varint)
-	canoto__Scalars__Int64__tag = "\x20" // canoto.Tag(4, canoto.Varint)
-	canoto__Scalars__Uint8__tag = "\x28" // canoto.Tag(5, canoto.Varint)
-	canoto__Scalars__Uint16__tag = "\x30" // canoto.Tag(6, canoto.Varint)
-	canoto__Scalars__Uint32__tag = "\x38" // canoto.Tag(7, canoto.Varint)
-	canoto__Scalars__Uint64__tag = "\x40" // canoto.Tag(8, canoto.Varint)
-	canoto__Scalars__Sint8__tag = "\x48" // canoto.Tag(9, canoto.Varint)
-	canoto__Scalars__Sint16__tag = "\x50" // canoto.Tag(10, canoto.Varint)
-	canoto__Scalars__Sint32__tag = "\x58" // canoto.Tag(11, canoto.Varint)
-	canoto__Scalars__Sint64__tag = "\x60" // canoto.Tag(12, canoto.Varint)
-	canoto__Scalars__Fixed32__tag = "\x6d" // canoto.Tag(13, canoto.I32)
-	canoto__Scalars__Fixed64__tag = "\x71" // canoto.Tag(14, canoto.I64)
-	canoto__Scalars__Sfixed32__tag = "\x7d" // canoto.Tag(15, canoto.I32)
-	canoto__Scalars__Sfixed64__tag = "\x81\x01" // canoto.Tag(16, canoto.I64)
-	canoto__Scalars__Bool__tag = "\x88\x01" // canoto.Tag(17, canoto.Varint)
-	canoto__Scalars__String__tag = "\x92\x01" // canoto.Tag(18, canoto.Len)
-	canoto__Scalars__Bytes__tag = "\x9a\x01" // canoto.Tag(19, canoto.Len)
-	canoto__Scalars__LargestFieldNumber__tag = "\xa2\x01" // canoto.Tag(20, canoto.Len)
-	canoto__Scalars__RepeatedInt8__tag = "\xaa\x01" // canoto.Tag(21, canoto.Len)
-	canoto__Scalars__RepeatedInt16__tag = "\xb2\x01" // canoto.Tag(22, canoto.Len)
-	canoto__Scalars__RepeatedInt32__tag = "\xba\x01" // canoto.Tag(23, canoto.Len)
-	canoto__Scalars__RepeatedInt64__tag = "\xc2\x01" // canoto.Tag(24, canoto.Len)
-	canoto__Scalars__RepeatedUint8__tag = "\xca\x01" // canoto.Tag(25, canoto.Len)
-	canoto__Scalars__RepeatedUint16__tag = "\xd2\x01" // canoto.Tag(26, canoto.Len)
-	canoto__Scalars__RepeatedUint32__tag = "\xda\x01" // canoto.Tag(27, canoto.Len)
-	canoto__Scalars__RepeatedUint64__tag = "\xe2\x01" // canoto.Tag(28, canoto.Len)
-	canoto__Scalars__RepeatedSint8__tag = "\xea\x01" // canoto.Tag(29, canoto.Len)
-	canoto__Scalars__RepeatedSint16__tag = "\xf2\x01" // canoto.Tag(30, canoto.Len)
-	canoto__Scalars__RepeatedSint32__tag = "\xfa\x01" // canoto.Tag(31, canoto.Len)
-	canoto__Scalars__RepeatedSint64__tag = "\x82\x02" // canoto.Tag(32, canoto.Len)
-	canoto__Scalars__RepeatedFixed32__tag = "\x8a\x02" // canoto.Tag(33, canoto.Len)
-	canoto__Scalars__RepeatedFixed64__tag = "\x92\x02" // canoto.Tag(34, canoto.Len)
-	canoto__Scalars__RepeatedSfixed32__tag = "\x9a\x02" // canoto.Tag(35, canoto.Len)
-	canoto__Scalars__RepeatedSfixed64__tag = "\xa2\x02" // canoto.Tag(36, canoto.Len)
-	canoto__Scalars__RepeatedBool__tag = "\xaa\x02" // canoto.Tag(37, canoto.Len)
-	canoto__Scalars__RepeatedString__tag = "\xb2\x02" // canoto.Tag(38, canoto.Len)
-	canoto__Scalars__RepeatedBytes__tag = "\xba\x02" // canoto.Tag(39, canoto.Len)
-	canoto__Scalars__RepeatedLargestFieldNumber__tag = "\xc2\x02" // canoto.Tag(40, canoto.Len)
-	canoto__Scalars__FixedRepeatedInt8__tag = "\xca\x02" // canoto.Tag(41, canoto.Len)
-	canoto__Scalars__FixedRepeatedInt16__tag = "\xd2\x02" // canoto.Tag(42, canoto.Len)
-	canoto__Scalars__FixedRepeatedInt32__tag = "\xda\x02" // canoto.Tag(43, canoto.Len)
-	canoto__Scalars__FixedRepeatedInt64__tag = "\xe2\x02" // canoto.Tag(44, canoto.Len)
-	canoto__Scalars__FixedRepeatedUint8__tag = "\xea\x02" // canoto.Tag(45, canoto.Len)
-	canoto__Scalars__FixedRepeatedUint16__tag = "\xf2\x02" // canoto.Tag(46, canoto.Len)
-	canoto__Scalars__FixedRepeatedUint32__tag = "\xfa\x02" // canoto.Tag(47, canoto.Len)
-	canoto__Scalars__FixedRepeatedUint64__tag = "\x82\x03" // canoto.Tag(48, canoto.Len)
-	canoto__Scalars__FixedRepeatedSint8__tag = "\x8a\x03" // canoto.Tag(49, canoto.Len)
-	canoto__Scalars__FixedRepeatedSint16__tag = "\x92\x03" // canoto.Tag(50, canoto.Len)
-	canoto__Scalars__FixedRepeatedSint32__tag = "\x9a\x03" // canoto.Tag(51, canoto.Len)
-	canoto__Scalars__FixedRepeatedSint64__tag = "\xa2\x03" // canoto.Tag(52, canoto.Len)
-	canoto__Scalars__FixedRepeatedFixed32__tag = "\xaa\x03" // canoto.Tag(53, canoto.Len)
-	canoto__Scalars__FixedRepeatedFixed64__tag = "\xb2\x03" // canoto.Tag(54, canoto.Len)
-	canoto__Scalars__FixedRepeatedSfixed32__tag = "\xba\x03" // canoto.Tag(55, canoto.Len)
-	canoto__Scalars__FixedRepeatedSfixed64__tag = "\xc2\x03" // canoto.Tag(56, canoto.Len)
-	canoto__Scalars__FixedRepeatedBool__tag = "\xca\x03" // canoto.Tag(57, canoto.Len)
-	canoto__Scalars__FixedRepeatedString__tag = "\xd2\x03" // canoto.Tag(58, canoto.Len)
-	canoto__Scalars__FixedBytes__tag = "\xda\x03" // canoto.Tag(59, canoto.Len)
-	canoto__Scalars__RepeatedFixedBytes__tag = "\xe2\x03" // canoto.Tag(60, canoto.Len)
-	canoto__Scalars__FixedRepeatedBytes__tag = "\xea\x03" // canoto.Tag(61, canoto.Len)
-	canoto__Scalars__FixedRepeatedFixedBytes__tag = "\xf2\x03" // canoto.Tag(62, canoto.Len)
+	canoto__Scalars__Int8__tag                            = "\x08"     // canoto.Tag(1, canoto.Varint)
+	canoto__Scalars__Int16__tag                           = "\x10"     // canoto.Tag(2, canoto.Varint)
+	canoto__Scalars__Int32__tag                           = "\x18"     // canoto.Tag(3, canoto.Varint)
+	canoto__Scalars__Int64__tag                           = "\x20"     // canoto.Tag(4, canoto.Varint)
+	canoto__Scalars__Uint8__tag                           = "\x28"     // canoto.Tag(5, canoto.Varint)
+	canoto__Scalars__Uint16__tag                          = "\x30"     // canoto.Tag(6, canoto.Varint)
+	canoto__Scalars__Uint32__tag                          = "\x38"     // canoto.Tag(7, canoto.Varint)
+	canoto__Scalars__Uint64__tag                          = "\x40"     // canoto.Tag(8, canoto.Varint)
+	canoto__Scalars__Sint8__tag                           = "\x48"     // canoto.Tag(9, canoto.Varint)
+	canoto__Scalars__Sint16__tag                          = "\x50"     // canoto.Tag(10, canoto.Varint)
+	canoto__Scalars__Sint32__tag                          = "\x58"     // canoto.Tag(11, canoto.Varint)
+	canoto__Scalars__Sint64__tag                          = "\x60"     // canoto.Tag(12, canoto.Varint)
+	canoto__Scalars__Fixed32__tag                         = "\x6d"     // canoto.Tag(13, canoto.I32)
+	canoto__Scalars__Fixed64__tag                         = "\x71"     // canoto.Tag(14, canoto.I64)
+	canoto__Scalars__Sfixed32__tag                        = "\x7d"     // canoto.Tag(15, canoto.I32)
+	canoto__Scalars__Sfixed64__tag                        = "\x81\x01" // canoto.Tag(16, canoto.I64)
+	canoto__Scalars__Bool__tag                            = "\x88\x01" // canoto.Tag(17, canoto.Varint)
+	canoto__Scalars__String__tag                          = "\x92\x01" // canoto.Tag(18, canoto.Len)
+	canoto__Scalars__Bytes__tag                           = "\x9a\x01" // canoto.Tag(19, canoto.Len)
+	canoto__Scalars__LargestFieldNumber__tag              = "\xa2\x01" // canoto.Tag(20, canoto.Len)
+	canoto__Scalars__RepeatedInt8__tag                    = "\xaa\x01" // canoto.Tag(21, canoto.Len)
+	canoto__Scalars__RepeatedInt16__tag                   = "\xb2\x01" // canoto.Tag(22, canoto.Len)
+	canoto__Scalars__RepeatedInt32__tag                   = "\xba\x01" // canoto.Tag(23, canoto.Len)
+	canoto__Scalars__RepeatedInt64__tag                   = "\xc2\x01" // canoto.Tag(24, canoto.Len)
+	canoto__Scalars__RepeatedUint8__tag                   = "\xca\x01" // canoto.Tag(25, canoto.Len)
+	canoto__Scalars__RepeatedUint16__tag                  = "\xd2\x01" // canoto.Tag(26, canoto.Len)
+	canoto__Scalars__RepeatedUint32__tag                  = "\xda\x01" // canoto.Tag(27, canoto.Len)
+	canoto__Scalars__RepeatedUint64__tag                  = "\xe2\x01" // canoto.Tag(28, canoto.Len)
+	canoto__Scalars__RepeatedSint8__tag                   = "\xea\x01" // canoto.Tag(29, canoto.Len)
+	canoto__Scalars__RepeatedSint16__tag                  = "\xf2\x01" // canoto.Tag(30, canoto.Len)
+	canoto__Scalars__RepeatedSint32__tag                  = "\xfa\x01" // canoto.Tag(31, canoto.Len)
+	canoto__Scalars__RepeatedSint64__tag                  = "\x82\x02" // canoto.Tag(32, canoto.Len)
+	canoto__Scalars__RepeatedFixed32__tag                 = "\x8a\x02" // canoto.Tag(33, canoto.Len)
+	canoto__Scalars__RepeatedFixed64__tag                 = "\x92\x02" // canoto.Tag(34, canoto.Len)
+	canoto__Scalars__RepeatedSfixed32__tag                = "\x9a\x02" // canoto.Tag(35, canoto.Len)
+	canoto__Scalars__RepeatedSfixed64__tag                = "\xa2\x02" // canoto.Tag(36, canoto.Len)
+	canoto__Scalars__RepeatedBool__tag                    = "\xaa\x02" // canoto.Tag(37, canoto.Len)
+	canoto__Scalars__RepeatedString__tag                  = "\xb2\x02" // canoto.Tag(38, canoto.Len)
+	canoto__Scalars__RepeatedBytes__tag                   = "\xba\x02" // canoto.Tag(39, canoto.Len)
+	canoto__Scalars__RepeatedLargestFieldNumber__tag      = "\xc2\x02" // canoto.Tag(40, canoto.Len)
+	canoto__Scalars__FixedRepeatedInt8__tag               = "\xca\x02" // canoto.Tag(41, canoto.Len)
+	canoto__Scalars__FixedRepeatedInt16__tag              = "\xd2\x02" // canoto.Tag(42, canoto.Len)
+	canoto__Scalars__FixedRepeatedInt32__tag              = "\xda\x02" // canoto.Tag(43, canoto.Len)
+	canoto__Scalars__FixedRepeatedInt64__tag              = "\xe2\x02" // canoto.Tag(44, canoto.Len)
+	canoto__Scalars__FixedRepeatedUint8__tag              = "\xea\x02" // canoto.Tag(45, canoto.Len)
+	canoto__Scalars__FixedRepeatedUint16__tag             = "\xf2\x02" // canoto.Tag(46, canoto.Len)
+	canoto__Scalars__FixedRepeatedUint32__tag             = "\xfa\x02" // canoto.Tag(47, canoto.Len)
+	canoto__Scalars__FixedRepeatedUint64__tag             = "\x82\x03" // canoto.Tag(48, canoto.Len)
+	canoto__Scalars__FixedRepeatedSint8__tag              = "\x8a\x03" // canoto.Tag(49, canoto.Len)
+	canoto__Scalars__FixedRepeatedSint16__tag             = "\x92\x03" // canoto.Tag(50, canoto.Len)
+	canoto__Scalars__FixedRepeatedSint32__tag             = "\x9a\x03" // canoto.Tag(51, canoto.Len)
+	canoto__Scalars__FixedRepeatedSint64__tag             = "\xa2\x03" // canoto.Tag(52, canoto.Len)
+	canoto__Scalars__FixedRepeatedFixed32__tag            = "\xaa\x03" // canoto.Tag(53, canoto.Len)
+	canoto__Scalars__FixedRepeatedFixed64__tag            = "\xb2\x03" // canoto.Tag(54, canoto.Len)
+	canoto__Scalars__FixedRepeatedSfixed32__tag           = "\xba\x03" // canoto.Tag(55, canoto.Len)
+	canoto__Scalars__FixedRepeatedSfixed64__tag           = "\xc2\x03" // canoto.Tag(56, canoto.Len)
+	canoto__Scalars__FixedRepeatedBool__tag               = "\xca\x03" // canoto.Tag(57, canoto.Len)
+	canoto__Scalars__FixedRepeatedString__tag             = "\xd2\x03" // canoto.Tag(58, canoto.Len)
+	canoto__Scalars__FixedBytes__tag                      = "\xda\x03" // canoto.Tag(59, canoto.Len)
+	canoto__Scalars__RepeatedFixedBytes__tag              = "\xe2\x03" // canoto.Tag(60, canoto.Len)
+	canoto__Scalars__FixedRepeatedBytes__tag              = "\xea\x03" // canoto.Tag(61, canoto.Len)
+	canoto__Scalars__FixedRepeatedFixedBytes__tag         = "\xf2\x03" // canoto.Tag(62, canoto.Len)
 	canoto__Scalars__FixedRepeatedLargestFieldNumber__tag = "\xfa\x03" // canoto.Tag(63, canoto.Len)
-	canoto__Scalars__ConstRepeatedUint64__tag = "\x82\x04" // canoto.Tag(64, canoto.Len)
-	canoto__Scalars__CustomType__tag = "\x8a\x04" // canoto.Tag(65, canoto.Len)
-	canoto__Scalars__CustomUint32__tag = "\x95\x04" // canoto.Tag(66, canoto.I32)
-	canoto__Scalars__CustomBytes__tag = "\x9a\x04" // canoto.Tag(67, canoto.Len)
-	canoto__Scalars__CustomFixedBytes__tag = "\xa2\x04" // canoto.Tag(68, canoto.Len)
-	canoto__Scalars__CustomRepeatedBytes__tag = "\xaa\x04" // canoto.Tag(69, canoto.Len)
-	canoto__Scalars__CustomRepeatedFixedBytes__tag = "\xb2\x04" // canoto.Tag(70, canoto.Len)
-	canoto__Scalars__CustomFixedRepeatedBytes__tag = "\xba\x04" // canoto.Tag(71, canoto.Len)
-	canoto__Scalars__CustomFixedRepeatedFixedBytes__tag = "\xc2\x04" // canoto.Tag(72, canoto.Len)
+	canoto__Scalars__ConstRepeatedUint64__tag             = "\x82\x04" // canoto.Tag(64, canoto.Len)
+	canoto__Scalars__CustomType__tag                      = "\x8a\x04" // canoto.Tag(65, canoto.Len)
+	canoto__Scalars__CustomUint32__tag                    = "\x95\x04" // canoto.Tag(66, canoto.I32)
+	canoto__Scalars__CustomBytes__tag                     = "\x9a\x04" // canoto.Tag(67, canoto.Len)
+	canoto__Scalars__CustomFixedBytes__tag                = "\xa2\x04" // canoto.Tag(68, canoto.Len)
+	canoto__Scalars__CustomRepeatedBytes__tag             = "\xaa\x04" // canoto.Tag(69, canoto.Len)
+	canoto__Scalars__CustomRepeatedFixedBytes__tag        = "\xb2\x04" // canoto.Tag(70, canoto.Len)
+	canoto__Scalars__CustomFixedRepeatedBytes__tag        = "\xba\x04" // canoto.Tag(71, canoto.Len)
+	canoto__Scalars__CustomFixedRepeatedFixedBytes__tag   = "\xc2\x04" // canoto.Tag(72, canoto.Len)
 )
 
 // Ensure that the generated methods correctly implement the interface
 var _ canoto.Message = (*Scalars)(nil)
 
 type canotoData_Scalars struct {
-	size atomic.Int64
-	RepeatedInt8Size atomic.Int64
-	RepeatedInt16Size atomic.Int64
-	RepeatedInt32Size atomic.Int64
-	RepeatedInt64Size atomic.Int64
-	RepeatedUint8Size atomic.Int64
-	RepeatedUint16Size atomic.Int64
-	RepeatedUint32Size atomic.Int64
-	RepeatedUint64Size atomic.Int64
-	RepeatedSint8Size atomic.Int64
-	RepeatedSint16Size atomic.Int64
-	RepeatedSint32Size atomic.Int64
-	RepeatedSint64Size atomic.Int64
-	FixedRepeatedInt8Size atomic.Int64
-	FixedRepeatedInt16Size atomic.Int64
-	FixedRepeatedInt32Size atomic.Int64
-	FixedRepeatedInt64Size atomic.Int64
-	FixedRepeatedUint8Size atomic.Int64
+	size                    atomic.Int64
+	RepeatedInt8Size        atomic.Int64
+	RepeatedInt16Size       atomic.Int64
+	RepeatedInt32Size       atomic.Int64
+	RepeatedInt64Size       atomic.Int64
+	RepeatedUint8Size       atomic.Int64
+	RepeatedUint16Size      atomic.Int64
+	RepeatedUint32Size      atomic.Int64
+	RepeatedUint64Size      atomic.Int64
+	RepeatedSint8Size       atomic.Int64
+	RepeatedSint16Size      atomic.Int64
+	RepeatedSint32Size      atomic.Int64
+	RepeatedSint64Size      atomic.Int64
+	FixedRepeatedInt8Size   atomic.Int64
+	FixedRepeatedInt16Size  atomic.Int64
+	FixedRepeatedInt32Size  atomic.Int64
+	FixedRepeatedInt64Size  atomic.Int64
+	FixedRepeatedUint8Size  atomic.Int64
 	FixedRepeatedUint16Size atomic.Int64
 	FixedRepeatedUint32Size atomic.Int64
 	FixedRepeatedUint64Size atomic.Int64
-	FixedRepeatedSint8Size atomic.Int64
+	FixedRepeatedSint8Size  atomic.Int64
 	FixedRepeatedSint16Size atomic.Int64
 	FixedRepeatedSint32Size atomic.Int64
 	FixedRepeatedSint64Size atomic.Int64
@@ -396,7 +396,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 22:
 			if wireType != canoto.Len {
@@ -427,7 +427,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 23:
 			if wireType != canoto.Len {
@@ -458,7 +458,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 24:
 			if wireType != canoto.Len {
@@ -489,7 +489,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 25:
 			if wireType != canoto.Len {
@@ -520,7 +520,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 26:
 			if wireType != canoto.Len {
@@ -551,7 +551,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 27:
 			if wireType != canoto.Len {
@@ -582,7 +582,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 28:
 			if wireType != canoto.Len {
@@ -613,7 +613,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 29:
 			if wireType != canoto.Len {
@@ -644,7 +644,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 30:
 			if wireType != canoto.Len {
@@ -675,7 +675,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 31:
 			if wireType != canoto.Len {
@@ -706,7 +706,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 32:
 			if wireType != canoto.Len {
@@ -737,7 +737,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			hasNext := canoto.HasNext(r)
 			r.B = remainingBytes
 			if hasNext {
-				return canoto.ErrInvalidLength	
+				return canoto.ErrInvalidLength
 			}
 		case 33:
 			if wireType != canoto.Len {
@@ -1524,7 +1524,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			}
 
 			isZero := len(c.FixedRepeatedString[0]) == 0
-			const numToRead = uint(len(c.FixedRepeatedString)-1)
+			const numToRead = uint(len(c.FixedRepeatedString) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__Scalars__FixedRepeatedString__tag) {
 					return canoto.ErrUnknownField
@@ -1619,7 +1619,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			}
 
 			isZero := len(c.FixedRepeatedBytes[0]) == 0
-			const numToRead = uint(len(c.FixedRepeatedBytes)-1)
+			const numToRead = uint(len(c.FixedRepeatedBytes) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__Scalars__FixedRepeatedBytes__tag) {
 					return canoto.ErrUnknownField
@@ -1656,7 +1656,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 
 			copy(c.FixedRepeatedFixedBytes[0][:], r.B)
 			r.B = r.B[expectedLength:]
-			const numToRead = uint(len(c.FixedRepeatedFixedBytes)-1)
+			const numToRead = uint(len(c.FixedRepeatedFixedBytes) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__Scalars__FixedRepeatedFixedBytes__tag) {
 					return canoto.ErrUnknownField
@@ -1702,7 +1702,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			}
 
 			isZero := len(msgBytes) == 0
-			const numToRead = uint(len(c.FixedRepeatedLargestFieldNumber)-1)
+			const numToRead = uint(len(c.FixedRepeatedLargestFieldNumber) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__Scalars__FixedRepeatedLargestFieldNumber__tag) {
 					return canoto.ErrUnknownField
@@ -1912,7 +1912,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			}
 
 			isZero := len(c.CustomFixedRepeatedBytes[0]) == 0
-			const numToRead = uint(len(c.CustomFixedRepeatedBytes)-1)
+			const numToRead = uint(len(c.CustomFixedRepeatedBytes) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__Scalars__CustomFixedRepeatedBytes__tag) {
 					return canoto.ErrUnknownField
@@ -1949,7 +1949,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 
 			copy(c.CustomFixedRepeatedFixedBytes[0][:], r.B)
 			r.B = r.B[expectedLength:]
-			const numToRead = uint(len(c.CustomFixedRepeatedFixedBytes)-1)
+			const numToRead = uint(len(c.CustomFixedRepeatedFixedBytes) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__Scalars__CustomFixedRepeatedFixedBytes__tag) {
 					return canoto.ErrUnknownField
@@ -2748,7 +2748,7 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedFixed32) {
-		const fieldSize = len(c.FixedRepeatedFixed32)*canoto.SizeFint32
+		const fieldSize = len(c.FixedRepeatedFixed32) * canoto.SizeFint32
 		canoto.Append(w, canoto__Scalars__FixedRepeatedFixed32__tag)
 		canoto.AppendInt(w, int64(fieldSize))
 		for _, v := range c.FixedRepeatedFixed32 {
@@ -2756,7 +2756,7 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedFixed64) {
-		const fieldSize = len(c.FixedRepeatedFixed64)*canoto.SizeFint64
+		const fieldSize = len(c.FixedRepeatedFixed64) * canoto.SizeFint64
 		canoto.Append(w, canoto__Scalars__FixedRepeatedFixed64__tag)
 		canoto.AppendInt(w, int64(fieldSize))
 		for _, v := range c.FixedRepeatedFixed64 {
@@ -2764,7 +2764,7 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSfixed32) {
-		const fieldSize = len(c.FixedRepeatedSfixed32)*canoto.SizeFint32
+		const fieldSize = len(c.FixedRepeatedSfixed32) * canoto.SizeFint32
 		canoto.Append(w, canoto__Scalars__FixedRepeatedSfixed32__tag)
 		canoto.AppendInt(w, int64(fieldSize))
 		for _, v := range c.FixedRepeatedSfixed32 {
@@ -2772,7 +2772,7 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSfixed64) {
-		const fieldSize = len(c.FixedRepeatedSfixed64)*canoto.SizeFint64
+		const fieldSize = len(c.FixedRepeatedSfixed64) * canoto.SizeFint64
 		canoto.Append(w, canoto__Scalars__FixedRepeatedSfixed64__tag)
 		canoto.AppendInt(w, int64(fieldSize))
 		for _, v := range c.FixedRepeatedSfixed64 {
@@ -2780,7 +2780,7 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedBool) {
-		const fieldSize = len(c.FixedRepeatedBool)*canoto.SizeBool
+		const fieldSize = len(c.FixedRepeatedBool) * canoto.SizeBool
 		canoto.Append(w, canoto__Scalars__FixedRepeatedBool__tag)
 		canoto.AppendInt(w, int64(fieldSize))
 		for _, v := range c.FixedRepeatedBool {

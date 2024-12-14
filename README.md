@@ -25,14 +25,14 @@ type ExampleStruct0 struct {
 	Uint64      uint64         `canoto:"int,4"`
 	Sint32      int32          `canoto:"sint,5"`
 	Sint64      int64          `canoto:"sint,6"`
-	Fixed32     uint32         `canoto:"fint,7"`
-	Fixed64     uint64         `canoto:"fint,8"`
-	Sfixed32    int32          `canoto:"fint,9"`
-	Sfixed64    int64          `canoto:"fint,10"`
+	Fixed32     uint32         `canoto:"fint32,7"`
+	Fixed64     uint64         `canoto:"fint64,8"`
+	Sfixed32    int32          `canoto:"fint32,9"`
+	Sfixed64    int64          `canoto:"fint64,10"`
 	Bool        bool           `canoto:"bool,11"`
-	String      string         `canoto:"bytes,12"`
+	String      string         `canoto:"string,12"`
 	Bytes       []byte         `canoto:"bytes,13"`
-	OtherStruct ExampleStruct1 `canoto:"bytes,14"`
+	OtherStruct ExampleStruct1 `canoto:"field,14"`
 
 	canotoData canotoData_ExampleStruct0
 }
