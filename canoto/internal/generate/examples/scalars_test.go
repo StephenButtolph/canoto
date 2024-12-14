@@ -175,6 +175,7 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 
 		ConstRepeatedUint64: s.ConstRepeatedUint64,
 		CustomType:          s.CustomType,
+		CustomFixedType:     s.CustomFixedType,
 	}
 }
 
@@ -259,6 +260,7 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 		RepeatedFixedBytes:              arrayToSlice(s.RepeatedFixedBytes),
 		FixedRepeatedLargestFieldNumber: fixedLargestFieldNumbers,
 		CustomType:                      customType,
+		CustomFixedType:                 uint32(s.CustomFixedType),
 	}
 	if !canoto.IsZero(s.FixedRepeatedInt8) {
 		pbs.FixedRepeatedInt8 = castSlice[int8, int32](s.FixedRepeatedInt8[:])
