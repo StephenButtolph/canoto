@@ -842,7 +842,7 @@ func makeMarshal(m message) string {
 	}
 `
 		fixedRepeatedFintTemplate = `	if !canoto.IsZero(c.${fieldName}) {
-		const fieldSize = len(c.${fieldName})*canoto.Size${suffix}
+		const fieldSize = len(c.${fieldName}) * canoto.Size${suffix}
 		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		canoto.AppendInt(w, int64(fieldSize))
 		for _, v := range c.${fieldName} {

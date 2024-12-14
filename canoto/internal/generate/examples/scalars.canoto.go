@@ -2732,7 +2732,7 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedFixed32) {
-		const fieldSize = len(c.FixedRepeatedFixed32)*canoto.SizeFint32
+		const fieldSize = len(c.FixedRepeatedFixed32) * canoto.SizeFint32
 		canoto.Append(w, canoto__Scalars__FixedRepeatedFixed32__tag)
 		canoto.AppendInt(w, int64(fieldSize))
 		for _, v := range c.FixedRepeatedFixed32 {
@@ -2740,7 +2740,7 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedFixed64) {
-		const fieldSize = len(c.FixedRepeatedFixed64)*canoto.SizeFint64
+		const fieldSize = len(c.FixedRepeatedFixed64) * canoto.SizeFint64
 		canoto.Append(w, canoto__Scalars__FixedRepeatedFixed64__tag)
 		canoto.AppendInt(w, int64(fieldSize))
 		for _, v := range c.FixedRepeatedFixed64 {
@@ -2748,7 +2748,7 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSfixed32) {
-		const fieldSize = len(c.FixedRepeatedSfixed32)*canoto.SizeFint32
+		const fieldSize = len(c.FixedRepeatedSfixed32) * canoto.SizeFint32
 		canoto.Append(w, canoto__Scalars__FixedRepeatedSfixed32__tag)
 		canoto.AppendInt(w, int64(fieldSize))
 		for _, v := range c.FixedRepeatedSfixed32 {
@@ -2756,7 +2756,7 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSfixed64) {
-		const fieldSize = len(c.FixedRepeatedSfixed64)*canoto.SizeFint64
+		const fieldSize = len(c.FixedRepeatedSfixed64) * canoto.SizeFint64
 		canoto.Append(w, canoto__Scalars__FixedRepeatedSfixed64__tag)
 		canoto.AppendInt(w, int64(fieldSize))
 		for _, v := range c.FixedRepeatedSfixed64 {
@@ -2764,7 +2764,7 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedBool) {
-		const fieldSize = len(c.FixedRepeatedBool)*canoto.SizeBool
+		const fieldSize = len(c.FixedRepeatedBool) * canoto.SizeBool
 		canoto.Append(w, canoto__Scalars__FixedRepeatedBool__tag)
 		canoto.AppendInt(w, int64(fieldSize))
 		for _, v := range c.FixedRepeatedBool {
