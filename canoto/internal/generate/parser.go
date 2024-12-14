@@ -12,11 +12,15 @@ import (
 	"github.com/fatih/structtag"
 )
 
-const canotoTag = "canoto"
+const (
+	canotoTag = "canoto"
+	goBytes   = "[]byte"
+)
 
 var (
 	errUnexpectedNumberOfIdentifiers       = errors.New("unexpected number of identifiers")
 	errMalformedTag                        = errors.New("expected type,fieldNumber got")
+	errUnexpectedGoType                    = errors.New("unexpected go type")
 	errStructContainsDuplicateFieldNumbers = errors.New("struct contains duplicate field numbers")
 )
 
@@ -112,7 +116,7 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 		return field{}, false, err
 	}
 	if innerExpr == nil {
-		f.goType = goType(goT)
+		f.goType = goT
 		f.templateArgs, err = makeTemplateArgs(canonicalizedStructName, f)
 		return f, true, err
 	}
@@ -128,7 +132,7 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 			f.goType = goBytes
 		} else {
 			f.repeated = true
-			f.goType = goType(goT)
+			f.goType = goT
 		}
 		f.templateArgs, err = makeTemplateArgs(canonicalizedStructName, f)
 		return f, true, err
@@ -238,7 +242,7 @@ func makeTemplateArgs(structName string, field field) (map[string]string, error)
 		"wireType":          wireType.String(),
 		"fieldName":         field.name,
 		"escapedFieldName":  field.canonicalizedName,
-		"goType":            string(field.goType),
+		"goType":            field.goType,
 	}
 	switch field.canotoType {
 	case canotoInt:
@@ -247,27 +251,19 @@ func makeTemplateArgs(structName string, field field) (map[string]string, error)
 	case canotoSint:
 		args["readFunction"] = fmt.Sprintf("Sint[%s]", field.goType)
 		args["sizeFunction"] = "Sint"
-	case canotoFint:
-		switch field.goType {
-		case goInt32, goUint32:
-			args["readFunction"] = fmt.Sprintf("Fint32[%s]", field.goType)
-			args["sizeConstant"] = "Fint32"
-		case goInt64, goUint64:
-			args["readFunction"] = fmt.Sprintf("Fint64[%s]", field.goType)
-			args["sizeConstant"] = "Fint64"
-		default:
-			return nil, fmt.Errorf("%w: %q should have fixed size", errUnexpectedGoType, field.goType)
-		}
+	case canotoFint32:
+		args["readFunction"] = fmt.Sprintf("Fint32[%s]", field.goType)
+		args["sizeConstant"] = "Fint32"
+	case canotoFint64:
+		args["readFunction"] = fmt.Sprintf("Fint64[%s]", field.goType)
+		args["sizeConstant"] = "Fint64"
 	case canotoBool:
 		args["readFunction"] = "Bool"
 		args["sizeConstant"] = "Bool"
-	case canotoBytes:
-		switch field.goType {
-		case goString:
-			args["readFunction"] = "String"
-		case goBytes:
-			args["readFunction"] = "Bytes"
-		}
+	case canotoString:
+		args["readFunction"] = "String"
+	case canotoBytes, canotoField:
+		args["readFunction"] = "Bytes"
 	default:
 		return nil, fmt.Errorf("%w: %q", errUnexpectedCanotoType, field.canotoType)
 	}

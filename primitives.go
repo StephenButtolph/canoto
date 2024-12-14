@@ -45,8 +45,8 @@ type (
 		~uint8 | ~uint16 | ~uint32 | ~uint64
 	}
 	Int   interface{ Sint | Uint }
-	Int32 interface{ ~int32 | uint32 }
-	Int64 interface{ ~int64 | uint64 }
+	Int32 interface{ ~int32 | ~uint32 }
+	Int64 interface{ ~int64 | ~uint64 }
 	Bytes interface{ ~string | ~[]byte }
 
 	// Reader contains all the state needed to unmarshal a Canoto type.

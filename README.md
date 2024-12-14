@@ -134,15 +134,15 @@ at the top of a file will update the `.canoto.go` version of the file every time
 | `int16`     | `sint`      | `sint32`   | `varint`  |
 | `int32`     | `sint`      | `sint32`   | `varint`  |
 | `int64`     | `sint`      | `sint64`   | `varint`  |
-| `uint32`    | `fint`      | `fixed32`  | `i32`     |
-| `uint64`    | `fint`      | `fixed64`  | `i64`     |
-| `int32`     | `fint`      | `sfixed32` | `i32`     |
-| `int64`     | `fint`      | `sfixed64` | `i64`     |
+| `uint32`    | `fint32`    | `fixed32`  | `i32`     |
+| `uint64`    | `fint64`    | `fixed64`  | `i64`     |
+| `int32`     | `fint32`    | `sfixed32` | `i32`     |
+| `int64`     | `fint64`    | `sfixed64` | `i64`     |
 | `bool`      | `bool`      | `bool`     | `varint`  |
-| `string`    | `bytes`     | `string`   | `len`     |
+| `string`    | `string`    | `string`   | `len`     |
 | `[]byte`    | `bytes`     | `bytes`    | `len`     |
-| `T Field`   | `bytes`     | `bytes`    | `len`     |
-| `T Message` | `bytes`     | `message`  | `len`     |
+| `T Field`   | `field`     | `bytes`    | `len`     |
+| `T Message` | `field`     | `message`  | `len`     |
 
 ### Repeated Values
 
@@ -160,15 +160,15 @@ at the top of a file will update the `.canoto.go` version of the file every time
 | `[]int16`     | `sint`      | `repeated sint32`   | `len`     | `true`  |
 | `[]int32`     | `sint`      | `repeated sint32`   | `len`     | `true`  |
 | `[]int64`     | `sint`      | `repeated sint64`   | `len`     | `true`  |
-| `[]uint32`    | `fint`      | `repeated fixed32`  | `len`     | `true`  |
-| `[]uint64`    | `fint`      | `repeated fixed64`  | `len`     | `true`  |
-| `[]int32`     | `fint`      | `repeated sfixed32` | `len`     | `true`  |
-| `[]int64`     | `fint`      | `repeated sfixed64` | `len`     | `true`  |
+| `[]uint32`    | `fint32`    | `repeated fixed32`  | `len`     | `true`  |
+| `[]uint64`    | `fint64`    | `repeated fixed64`  | `len`     | `true`  |
+| `[]int32`     | `fint32`    | `repeated sfixed32` | `len`     | `true`  |
+| `[]int64`     | `fint64`    | `repeated sfixed64` | `len`     | `true`  |
 | `[]bool`      | `bool`      | `repeated bool`     | `len`     | `true`  |
-| `[]string`    | `bytes`     | `repeated string`   | `len`     | `false` |
+| `[]string`    | `string`    | `repeated string`   | `len`     | `false` |
 | `[][]byte`    | `bytes`     | `repeated bytes`    | `len`     | `false` |
-| `[]T Field`   | `bytes`     | `repeated bytes`    | `len`     | `false` |
-| `[]T Message` | `bytes`     | `repeated message`  | `len`     | `false` |
+| `[]T Field`   | `field`     | `repeated bytes`    | `len`     | `false` |
+| `[]T Message` | `field`     | `repeated message`  | `len`     | `false` |
 
 ### Fixed Length Repeated Values
 
@@ -186,17 +186,17 @@ at the top of a file will update the `.canoto.go` version of the file every time
 | `[x]int16`     | `sint`      | `repeated sint32`   | `len`     | `true`  |
 | `[x]int32`     | `sint`      | `repeated sint32`   | `len`     | `true`  |
 | `[x]int64`     | `sint`      | `repeated sint64`   | `len`     | `true`  |
-| `[x]uint32`    | `fint`      | `repeated fixed32`  | `len`     | `true`  |
-| `[x]uint64`    | `fint`      | `repeated fixed64`  | `len`     | `true`  |
-| `[x]int32`     | `fint`      | `repeated sfixed32` | `len`     | `true`  |
-| `[x]int64`     | `fint`      | `repeated sfixed64` | `len`     | `true`  |
+| `[x]uint32`    | `fint32`    | `repeated fixed32`  | `len`     | `true`  |
+| `[x]uint64`    | `fint64`    | `repeated fixed64`  | `len`     | `true`  |
+| `[x]int32`     | `fint32`    | `repeated sfixed32` | `len`     | `true`  |
+| `[x]int64`     | `fint64`    | `repeated sfixed64` | `len`     | `true`  |
 | `[x]bool`      | `bool`      | `repeated bool`     | `len`     | `true`  |
-| `[x]string`    | `bytes`     | `repeated string`   | `len`     | `false` |
+| `[x]string`    | `string`    | `repeated string`   | `len`     | `false` |
 | `[x][]byte`    | `bytes`     | `repeated bytes`    | `len`     | `false` |
 | `[][x]byte`    | `bytes`     | `repeated bytes`    | `len`     | `false` |
 | `[x][y]byte`   | `bytes`     | `repeated bytes`    | `len`     | `false` |
-| `[x]T Field`   | `bytes`     | `repeated bytes`    | `len`     | `false` |
-| `[x]T Message` | `bytes`     | `repeated message`  | `len`     | `false` |
+| `[x]T Field`   | `field`     | `repeated bytes`    | `len`     | `false` |
+| `[x]T Message` | `field`     | `repeated message`  | `len`     | `false` |
 
 ### Non-standard encoding
 

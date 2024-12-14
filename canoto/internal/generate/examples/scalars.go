@@ -4,6 +4,8 @@ package examples
 
 const constRepeatedUint64Len = 3
 
+type fixed32 uint32
+
 type Scalars struct {
 	Int8                            int8                           `canoto:"int,1"`
 	Int16                           int16                          `canoto:"int,2"`
@@ -17,14 +19,14 @@ type Scalars struct {
 	Sint16                          int16                          `canoto:"sint,10"`
 	Sint32                          int32                          `canoto:"sint,11"`
 	Sint64                          int64                          `canoto:"sint,12"`
-	Fixed32                         uint32                         `canoto:"fint,13"`
-	Fixed64                         uint64                         `canoto:"fint,14"`
-	Sfixed32                        int32                          `canoto:"fint,15"`
-	Sfixed64                        int64                          `canoto:"fint,16"`
+	Fixed32                         uint32                         `canoto:"fint32,13"`
+	Fixed64                         uint64                         `canoto:"fint64,14"`
+	Sfixed32                        int32                          `canoto:"fint32,15"`
+	Sfixed64                        int64                          `canoto:"fint64,16"`
 	Bool                            bool                           `canoto:"bool,17"`
-	String                          string                         `canoto:"bytes,18"`
+	String                          string                         `canoto:"string,18"`
 	Bytes                           []byte                         `canoto:"bytes,19"`
-	LargestFieldNumber              LargestFieldNumber             `canoto:"bytes,20"`
+	LargestFieldNumber              LargestFieldNumber             `canoto:"field,20"`
 	RepeatedInt8                    []int8                         `canoto:"int,21"`
 	RepeatedInt16                   []int16                        `canoto:"int,22"`
 	RepeatedInt32                   []int32                        `canoto:"int,23"`
@@ -37,14 +39,14 @@ type Scalars struct {
 	RepeatedSint16                  []int16                        `canoto:"sint,30"`
 	RepeatedSint32                  []int32                        `canoto:"sint,31"`
 	RepeatedSint64                  []int64                        `canoto:"sint,32"`
-	RepeatedFixed32                 []uint32                       `canoto:"fint,33"`
-	RepeatedFixed64                 []uint64                       `canoto:"fint,34"`
-	RepeatedSfixed32                []int32                        `canoto:"fint,35"`
-	RepeatedSfixed64                []int64                        `canoto:"fint,36"`
+	RepeatedFixed32                 []uint32                       `canoto:"fint32,33"`
+	RepeatedFixed64                 []uint64                       `canoto:"fint64,34"`
+	RepeatedSfixed32                []int32                        `canoto:"fint32,35"`
+	RepeatedSfixed64                []int64                        `canoto:"fint64,36"`
 	RepeatedBool                    []bool                         `canoto:"bool,37"`
-	RepeatedString                  []string                       `canoto:"bytes,38"`
+	RepeatedString                  []string                       `canoto:"string,38"`
 	RepeatedBytes                   [][]byte                       `canoto:"bytes,39"`
-	RepeatedLargestFieldNumber      []LargestFieldNumber           `canoto:"bytes,40"`
+	RepeatedLargestFieldNumber      []LargestFieldNumber           `canoto:"field,40"`
 	FixedRepeatedInt8               [3]int8                        `canoto:"int,41"`
 	FixedRepeatedInt16              [3]int16                       `canoto:"int,42"`
 	FixedRepeatedInt32              [3]int32                       `canoto:"int,43"`
@@ -57,19 +59,20 @@ type Scalars struct {
 	FixedRepeatedSint16             [3]int16                       `canoto:"sint,50"`
 	FixedRepeatedSint32             [3]int32                       `canoto:"sint,51"`
 	FixedRepeatedSint64             [3]int64                       `canoto:"sint,52"`
-	FixedRepeatedFixed32            [3]uint32                      `canoto:"fint,53"`
-	FixedRepeatedFixed64            [3]uint64                      `canoto:"fint,54"`
-	FixedRepeatedSfixed32           [3]int32                       `canoto:"fint,55"`
-	FixedRepeatedSfixed64           [3]int64                       `canoto:"fint,56"`
+	FixedRepeatedFixed32            [3]uint32                      `canoto:"fint32,53"`
+	FixedRepeatedFixed64            [3]uint64                      `canoto:"fint64,54"`
+	FixedRepeatedSfixed32           [3]int32                       `canoto:"fint32,55"`
+	FixedRepeatedSfixed64           [3]int64                       `canoto:"fint64,56"`
 	FixedRepeatedBool               [3]bool                        `canoto:"bool,57"`
-	FixedRepeatedString             [3]string                      `canoto:"bytes,58"`
+	FixedRepeatedString             [3]string                      `canoto:"string,58"`
 	FixedBytes                      [32]byte                       `canoto:"bytes,59"`
 	RepeatedFixedBytes              [][32]byte                     `canoto:"bytes,60"`
 	FixedRepeatedBytes              [3][]byte                      `canoto:"bytes,61"`
 	FixedRepeatedFixedBytes         [3][32]byte                    `canoto:"bytes,62"`
-	FixedRepeatedLargestFieldNumber [3]LargestFieldNumber          `canoto:"bytes,63"`
+	FixedRepeatedLargestFieldNumber [3]LargestFieldNumber          `canoto:"field,63"`
 	ConstRepeatedUint64             [constRepeatedUint64Len]uint64 `canoto:"int,64"`
-	CustomType                      CustomType                     `canoto:"bytes,65"`
+	CustomType                      CustomType                     `canoto:"field,65"`
+	CustomFixedType                 fixed32                        `canoto:"fint32,66"`
 
 	canotoData canotoData_Scalars
 }

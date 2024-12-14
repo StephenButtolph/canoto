@@ -702,16 +702,14 @@ func makeValid(m message) string {
 		s strings.Builder
 	)
 	for _, f := range m.fields {
-		if f.canotoType != canotoBytes || f.goType == goBytes {
-			continue
-		}
-
-		// goType is either string or a custom type
 		var template string
-		if f.goType == goString {
+		switch f.canotoType {
+		case canotoString:
 			template = stringTemplates[f.repeated]
-		} else {
+		case canotoField:
 			template = customTemplates[f.repeated]
+		default:
+			continue
 		}
 		_ = writeTemplate(&s, template, map[string]string{
 			"fieldName": f.name,
@@ -1038,32 +1036,29 @@ func writeMessage(m message, t messageTemplate) (string, error) {
 		switch f.canotoType {
 		case canotoInt, canotoSint:
 			template = t.ints.Template(f.repeated, f.fixedLength[0])
-		case canotoFint:
+		case canotoFint32, canotoFint64:
 			template = t.fints.Template(f.repeated, f.fixedLength[0])
 		case canotoBool:
 			template = t.bools.Template(f.repeated, f.fixedLength[0])
+		case canotoString:
+			template = t.strings.Template(f.repeated, f.fixedLength[0])
 		case canotoBytes:
-			switch f.goType {
-			case goString:
-				template = t.strings.Template(f.repeated, f.fixedLength[0])
-			case goBytes:
-				switch {
-				case f.fixedLength[0] && !f.repeated:
-					template = t.fixedBytesTemplate
-				case !f.fixedLength[0] && f.fixedLength[1]:
-					template = t.repeatedFixedBytesTemplate
-				case f.fixedLength[0] && !f.fixedLength[1]:
-					template = t.fixedRepeatedBytesTemplate
-				case f.fixedLength[0] && f.fixedLength[1]:
-					template = t.fixedRepeatedFixedBytesTemplate
-				case !f.repeated:
-					template = t.bytesTemplate
-				default:
-					template = t.repeatedBytesTemplate
-				}
+			switch {
+			case f.fixedLength[0] && !f.repeated:
+				template = t.fixedBytesTemplate
+			case !f.fixedLength[0] && f.fixedLength[1]:
+				template = t.repeatedFixedBytesTemplate
+			case f.fixedLength[0] && !f.fixedLength[1]:
+				template = t.fixedRepeatedBytesTemplate
+			case f.fixedLength[0] && f.fixedLength[1]:
+				template = t.fixedRepeatedFixedBytesTemplate
+			case !f.repeated:
+				template = t.bytesTemplate
 			default:
-				template = t.customs.Template(f.repeated, f.fixedLength[0])
+				template = t.repeatedBytesTemplate
 			}
+		case canotoField:
+			template = t.customs.Template(f.repeated, f.fixedLength[0])
 		default:
 			return "", fmt.Errorf("%w: %q", errUnexpectedCanotoType, f.canotoType)
 		}

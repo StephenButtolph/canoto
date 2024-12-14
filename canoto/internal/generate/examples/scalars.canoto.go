@@ -82,6 +82,7 @@ const (
 	canoto__Scalars__FixedRepeatedLargestFieldNumber__tag = "\xfa\x03" // canoto.Tag(63, canoto.Len)
 	canoto__Scalars__ConstRepeatedUint64__tag = "\x82\x04" // canoto.Tag(64, canoto.Len)
 	canoto__Scalars__CustomType__tag = "\x8a\x04" // canoto.Tag(65, canoto.Len)
+	canoto__Scalars__CustomFixedType__tag = "\x95\x04" // canoto.Tag(66, canoto.I32)
 )
 
 // Ensure that the generated methods correctly implement the interface
@@ -1756,6 +1757,17 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if err != nil {
 				return err
 			}
+		case 66:
+			if wireType != canoto.I32 {
+				return canoto.ErrUnexpectedWireType
+			}
+			c.CustomFixedType, err = canoto.ReadFint32[fixed32](r)
+			if err != nil {
+				return err
+			}
+			if canoto.IsZero(c.CustomFixedType) {
+				return canoto.ErrZeroValue
+			}
 		default:
 			return canoto.ErrUnknownField
 		}
@@ -2141,6 +2153,9 @@ func (c *Scalars) CalculateCanotoSize() int {
 	}
 	if fieldSize := c.CustomType.CalculateCanotoSize(); fieldSize != 0 {
 		c.canotoData.size += len(canoto__Scalars__CustomType__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+	}
+	if !canoto.IsZero(c.CustomFixedType) {
+		c.canotoData.size += len(canoto__Scalars__CustomFixedType__tag) + canoto.SizeFint32
 	}
 	return c.canotoData.size
 }
@@ -2578,5 +2593,9 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		canoto.Append(w, canoto__Scalars__CustomType__tag)
 		canoto.AppendInt(w, int64(fieldSize))
 		c.CustomType.MarshalCanotoInto(w)
+	}
+	if !canoto.IsZero(c.CustomFixedType) {
+		canoto.Append(w, canoto__Scalars__CustomFixedType__tag)
+		canoto.AppendFint32(w, c.CustomFixedType)
 	}
 }

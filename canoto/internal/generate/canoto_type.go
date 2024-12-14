@@ -6,20 +6,26 @@ import (
 )
 
 const (
-	canotoInt   canotoType = "int"
-	canotoSint  canotoType = "sint" // signed int
-	canotoFint  canotoType = "fint" // fixed int
-	canotoBool  canotoType = "bool"
-	canotoBytes canotoType = "bytes"
+	canotoInt    canotoType = "int"
+	canotoSint   canotoType = "sint"   // signed int
+	canotoFint32 canotoType = "fint32" // fixed 32-bit int
+	canotoFint64 canotoType = "fint64" // fixed 64-bit int
+	canotoBool   canotoType = "bool"
+	canotoString canotoType = "string"
+	canotoBytes  canotoType = "bytes"
+	canotoField  canotoType = "field"
 )
 
 var (
 	canotoTypes = []canotoType{
 		canotoInt,
 		canotoSint,
-		canotoFint,
+		canotoFint32,
+		canotoFint64,
 		canotoBool,
+		canotoString,
 		canotoBytes,
+		canotoField,
 	}
 	canotoVarintTypes = []canotoType{
 		canotoInt,

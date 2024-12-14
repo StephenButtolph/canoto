@@ -73,6 +73,7 @@ message Scalars {
 
   repeated uint64 const_repeated_uint64 = 64;
   bytes custom_type = 65;
+  fixed32 custom_fixed_type = 66;
 }
 
 message LargestFieldNumber {
