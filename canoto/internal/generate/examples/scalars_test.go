@@ -1,7 +1,6 @@
 package examples
 
 import (
-	"bytes"
 	"slices"
 	"strconv"
 	"testing"
@@ -397,18 +396,14 @@ func FuzzScalars_Canonical(f *testing.F) {
 			return
 		}
 
-		for i := 0; i < 2; i++ {
-			size := scalars.CalculateCanotoSize()
-			require.Len(b, size)
+		size := scalars.CalculateCanotoSize()
+		require.Len(b, size)
 
-			w := canoto.Writer{
-				B: make([]byte, 0, size),
-			}
-			scalars.MarshalCanotoInto(&w)
-			if !bytes.Equal(b, w.B) {
-				continue
-			}
+		w := canoto.Writer{
+			B: make([]byte, 0, size),
 		}
+		scalars.MarshalCanotoInto(&w)
+		require.Equal(b, w.B)
 	})
 }
 
