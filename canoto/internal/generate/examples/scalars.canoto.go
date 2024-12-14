@@ -1528,7 +1528,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			}
 
 			isZero := len(c.FixedRepeatedString[0]) == 0
-			const numToRead = uint(len(c.FixedRepeatedString)-1)
+			const numToRead = uint(len(c.FixedRepeatedString) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__Scalars__FixedRepeatedString__tag) {
 					return canoto.ErrUnknownField
@@ -1623,7 +1623,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			}
 
 			isZero := len(c.FixedRepeatedBytes[0]) == 0
-			const numToRead = uint(len(c.FixedRepeatedBytes)-1)
+			const numToRead = uint(len(c.FixedRepeatedBytes) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__Scalars__FixedRepeatedBytes__tag) {
 					return canoto.ErrUnknownField
@@ -1660,7 +1660,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 
 			copy(c.FixedRepeatedFixedBytes[0][:], r.B)
 			r.B = r.B[expectedLength:]
-			const numToRead = uint(len(c.FixedRepeatedFixedBytes)-1)
+			const numToRead = uint(len(c.FixedRepeatedFixedBytes) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__Scalars__FixedRepeatedFixedBytes__tag) {
 					return canoto.ErrUnknownField
@@ -1706,7 +1706,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			}
 
 			isZero := len(msgBytes) == 0
-			const numToRead = uint(len(c.FixedRepeatedLargestFieldNumber)-1)
+			const numToRead = uint(len(c.FixedRepeatedLargestFieldNumber) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__Scalars__FixedRepeatedLargestFieldNumber__tag) {
 					return canoto.ErrUnknownField
@@ -1916,7 +1916,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			}
 
 			isZero := len(c.CustomFixedRepeatedBytes[0]) == 0
-			const numToRead = uint(len(c.CustomFixedRepeatedBytes)-1)
+			const numToRead = uint(len(c.CustomFixedRepeatedBytes) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__Scalars__CustomFixedRepeatedBytes__tag) {
 					return canoto.ErrUnknownField
@@ -1953,7 +1953,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 
 			copy(c.CustomFixedRepeatedFixedBytes[0][:], r.B)
 			r.B = r.B[expectedLength:]
-			const numToRead = uint(len(c.CustomFixedRepeatedFixedBytes)-1)
+			const numToRead = uint(len(c.CustomFixedRepeatedFixedBytes) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__Scalars__CustomFixedRepeatedFixedBytes__tag) {
 					return canoto.ErrUnknownField

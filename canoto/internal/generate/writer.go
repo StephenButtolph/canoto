@@ -336,7 +336,7 @@ func makeUnmarshal(m message) string {
 			}
 
 			isZero := len(c.${fieldName}[0]) == 0
-			const numToRead = uint(len(c.${fieldName})-1)
+			const numToRead = uint(len(c.${fieldName}) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
 					return canoto.ErrUnknownField
@@ -503,7 +503,7 @@ func makeUnmarshal(m message) string {
 
 			copy(c.${fieldName}[0][:], r.B)
 			r.B = r.B[expectedLength:]
-			const numToRead = uint(len(c.${fieldName})-1)
+			const numToRead = uint(len(c.${fieldName}) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
 					return canoto.ErrUnknownField
@@ -622,7 +622,7 @@ func makeUnmarshal(m message) string {
 			}
 
 			isZero := len(msgBytes) == 0
-			const numToRead = uint(len(c.${fieldName})-1)
+			const numToRead = uint(len(c.${fieldName}) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
 					return canoto.ErrUnknownField
