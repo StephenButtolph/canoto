@@ -17,8 +17,6 @@ var (
 
 const (
 	canoto__LargestFieldNumber__Int32__tag = "\xf8\xff\xff\xff\x0f" // canoto.Tag(536870911, canoto.Varint)
-
-	canoto__LargestFieldNumber__Int32__tag__size = len(canoto__LargestFieldNumber__Int32__tag)
 )
 
 type canotoData_LargestFieldNumber struct {
@@ -71,7 +69,7 @@ func (c *LargestFieldNumber) ValidCanoto() bool {
 func (c *LargestFieldNumber) CalculateCanotoSize() int {
 	c.canotoData.size = 0
 	if !canoto.IsZero(c.Int32) {
-		c.canotoData.size += canoto__LargestFieldNumber__Int32__tag__size + canoto.SizeInt(c.Int32)
+		c.canotoData.size += len(canoto__LargestFieldNumber__Int32__tag) + canoto.SizeInt(c.Int32)
 	}
 	return c.canotoData.size
 }
