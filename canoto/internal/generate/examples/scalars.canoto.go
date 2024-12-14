@@ -176,6 +176,10 @@ type canotoData_Scalars struct {
 	ConstRepeatedUint64Size int
 }
 
+// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// The struct is not cleared before unmarshaling, any fields not present in the
+// bytes will retain their previous values.
 func (c *Scalars) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -183,6 +187,13 @@ func (c *Scalars) UnmarshalCanoto(bytes []byte) error {
 	return c.UnmarshalCanotoFrom(&r)
 }
 
+// UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
+// should just use UnmarshalCanoto.
+//
+// The struct is not cleared before unmarshaling, any fields not present in the
+// bytes will retain their previous values.
+//
+// This function enables configuration of reader options.
 func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 	var minField uint32
 	for canoto.HasNext(r) {
@@ -1787,6 +1798,11 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 	return nil
 }
 
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// Specifically, ValidCanoto ensures that all strings are valid utf-8 and all
+// custom types are ValidCanoto.
 func (c *Scalars) ValidCanoto() bool {
 	if !utf8.ValidString(c.String) {
 		return false
@@ -1817,6 +1833,10 @@ func (c *Scalars) ValidCanoto() bool {
 	return true
 }
 
+// CalculateCanotoSize calculates the size of the Canoto representation and
+// caches it.
+//
+// It is not safe to call this function concurrently.
 func (c *Scalars) CalculateCanotoSize() int {
 	c.canotoData.size = 0
 	if !canoto.IsZero(c.Int8) {
@@ -2152,10 +2172,22 @@ func (c *Scalars) CalculateCanotoSize() int {
 	return c.canotoData.size
 }
 
+// CachedCanotoSize returns the previously calculated size of the Canoto
+// representation from CalculateCanotoSize.
+//
+// If CalculateCanotoSize has not yet been called, it will return 0.
+//
+// If the struct has been modified since the last call to CalculateCanotoSize,
+// the returned size may be incorrect.
 func (c *Scalars) CachedCanotoSize() int {
 	return c.canotoData.size
 }
 
+// MarshalCanoto returns the Canoto representation of this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *Scalars) MarshalCanoto() []byte {
 	w := canoto.Writer{
 		B: make([]byte, 0, c.CalculateCanotoSize()),
@@ -2164,6 +2196,13 @@ func (c *Scalars) MarshalCanoto() []byte {
 	return w.B
 }
 
+
+// MarshalCanotoInto writes the struct into a canoto.Writer. Most users should
+// just use MarshalCanoto.
+//
+// It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 	if !canoto.IsZero(c.Int8) {
 		canoto.Append(w, canoto__Scalars__Int8__tag)
