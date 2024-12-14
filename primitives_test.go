@@ -160,8 +160,8 @@ func TestReadInt_int32(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{B: test.Bytes(t)}
-			got, err := ReadInt[int32](r)
-			require.NoError(err)
+			var got int32
+			require.NoError(ReadInt(r, &got))
 			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
@@ -204,7 +204,7 @@ func TestReadInt_int32(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			_, err := ReadInt[int32](r)
+			err := ReadInt(r, new(int32))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
@@ -230,8 +230,8 @@ func TestReadInt_uint32(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{B: test.Bytes(t)}
-			got, err := ReadInt[uint32](r)
-			require.NoError(err)
+			var got uint32
+			require.NoError(ReadInt(r, &got))
 			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
@@ -266,7 +266,7 @@ func TestReadInt_uint32(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			_, err := ReadInt[uint32](r)
+			err := ReadInt(r, new(uint32))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
@@ -302,8 +302,8 @@ func TestReadInt_int64(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{B: test.Bytes(t)}
-			got, err := ReadInt[int64](r)
-			require.NoError(err)
+			var got int64
+			require.NoError(ReadInt(r, &got))
 			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
@@ -337,7 +337,7 @@ func TestReadInt_int64(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			_, err := ReadInt[int64](r)
+			err := ReadInt(r, new(int64))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
@@ -373,8 +373,8 @@ func TestReadInt_uint64(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{B: test.Bytes(t)}
-			got, err := ReadInt[uint64](r)
-			require.NoError(err)
+			var got uint64
+			require.NoError(ReadInt(r, &got))
 			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
@@ -408,7 +408,7 @@ func TestReadInt_uint64(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			_, err := ReadInt[uint64](r)
+			err := ReadInt(r, new(uint64))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
@@ -430,8 +430,8 @@ func testAppendInt[T Int](t *testing.T, v T) {
 	AppendInt(w, v)
 
 	r := &Reader{B: w.B}
-	got, err := ReadInt[T](r)
-	require.NoError(err)
+	var got T
+	require.NoError(ReadInt(r, &got))
 	require.Equal(v, got)
 	require.Empty(r.B)
 }
@@ -471,8 +471,8 @@ func TestReadSint_int32(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{B: test.Bytes(t)}
-			got, err := ReadSint[int32](r)
-			require.NoError(err)
+			var got int32
+			require.NoError(ReadSint(r, &got))
 			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
@@ -507,7 +507,7 @@ func TestReadSint_int32(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			_, err := ReadSint[int32](r)
+			err := ReadSint(r, new(int32))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
@@ -535,8 +535,8 @@ func TestReadSint_int64(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{B: test.Bytes(t)}
-			got, err := ReadSint[int64](r)
-			require.NoError(err)
+			var got int64
+			require.NoError(ReadSint(r, &got))
 			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
@@ -570,7 +570,7 @@ func TestReadSint_int64(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			_, err := ReadSint[int64](r)
+			err := ReadSint(r, new(int64))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
@@ -588,8 +588,8 @@ func testAppendSint[T Sint](t *testing.T, v T) {
 	AppendSint(w, v)
 
 	r := &Reader{B: w.B}
-	got, err := ReadSint[T](r)
-	require.NoError(err)
+	var got T
+	require.NoError(ReadSint(r, &got))
 	require.Equal(v, got)
 	require.Empty(r.B)
 }
@@ -607,8 +607,8 @@ func TestReadFint32_int32(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{B: test.Bytes(t)}
-			got, err := ReadFint32[int32](r)
-			require.NoError(err)
+			var got int32
+			require.NoError(ReadFint32(r, &got))
 			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
@@ -623,7 +623,7 @@ func TestReadFint32_int32(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			_, err := ReadFint32[int32](r)
+			err := ReadFint32(r, new(int32))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
@@ -641,8 +641,8 @@ func TestReadFint32_uint32(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{B: test.Bytes(t)}
-			got, err := ReadFint32[uint32](r)
-			require.NoError(err)
+			var got uint32
+			require.NoError(ReadFint32(r, &got))
 			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
@@ -657,7 +657,7 @@ func TestReadFint32_uint32(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			_, err := ReadFint32[uint32](r)
+			err := ReadFint32(r, new(uint32))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
@@ -674,8 +674,8 @@ func testAppendFint32[T Int32](t *testing.T, v T) {
 	require.Len(w.B, SizeFint32)
 
 	r := &Reader{B: w.B}
-	got, err := ReadFint32[T](r)
-	require.NoError(err)
+	var got T
+	require.NoError(ReadFint32(r, &got))
 	require.Equal(v, got)
 	require.Empty(r.B)
 }
@@ -693,8 +693,8 @@ func TestReadFint64_int64(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{B: test.Bytes(t)}
-			got, err := ReadFint64[int64](r)
-			require.NoError(err)
+			var got int64
+			require.NoError(ReadFint64(r, &got))
 			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
@@ -713,7 +713,7 @@ func TestReadFint64_int64(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			_, err := ReadFint64[int64](r)
+			err := ReadFint64(r, new(int64))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
@@ -731,8 +731,8 @@ func TestReadFint64_uint64(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{B: test.Bytes(t)}
-			got, err := ReadFint64[uint64](r)
-			require.NoError(err)
+			var got uint64
+			require.NoError(ReadFint64(r, &got))
 			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
@@ -751,7 +751,7 @@ func TestReadFint64_uint64(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			_, err := ReadFint64[uint64](r)
+			err := ReadFint64(r, new(uint64))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
@@ -768,8 +768,8 @@ func testAppendFint64[T Int64](t *testing.T, v T) {
 	require.Len(w.B, SizeFint64)
 
 	r := &Reader{B: w.B}
-	got, err := ReadFint64[T](r)
-	require.NoError(err)
+	var got T
+	require.NoError(ReadFint64(r, &got))
 	require.Equal(v, got)
 	require.Empty(r.B)
 }
@@ -784,9 +784,9 @@ func TestReadBool(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{B: test.Bytes(t)}
-			v, err := ReadBool(r)
-			require.NoError(err)
-			require.Equal(test.want, v)
+			var got bool
+			require.NoError(ReadBool(r, &got))
+			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
 	}
@@ -799,7 +799,7 @@ func TestReadBool(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			_, err := ReadBool(r)
+			err := ReadBool(r, new(bool))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
@@ -815,9 +815,9 @@ func TestAppendBool(t *testing.T) {
 			require.Len(w.B, SizeBool)
 
 			r := &Reader{B: w.B}
-			v, err := ReadBool(r)
-			require.NoError(err)
-			require.Equal(b, v)
+			var got bool
+			require.NoError(ReadBool(r, &got))
+			require.Equal(b, got)
 			require.Empty(r.B)
 		})
 	}
@@ -870,8 +870,8 @@ func TestReadString(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{B: test.Bytes(t)}
-			got, err := ReadString(r)
-			require.NoError(err)
+			var got string
+			require.NoError(ReadString(r, &got))
 			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
@@ -887,7 +887,7 @@ func TestReadString(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			_, err := ReadString(r)
+			err := ReadString(r, new(string))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
@@ -903,8 +903,8 @@ func TestReadBytes(t *testing.T) {
 			require := require.New(t)
 
 			r := &Reader{B: test.Bytes(t)}
-			got, err := ReadBytes(r)
-			require.NoError(err)
+			var got []byte
+			require.NoError(ReadBytes(r, &got))
 			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
@@ -919,7 +919,7 @@ func TestReadBytes(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			_, err := ReadBytes(r)
+			err := ReadBytes(r, new([]byte))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
@@ -937,8 +937,8 @@ func FuzzAppendBytes_string(f *testing.F) {
 		AppendBytes(w, v)
 
 		r := &Reader{B: w.B}
-		got, err := ReadString(r)
-		require.NoError(err)
+		var got string
+		require.NoError(ReadString(r, &got))
 		require.Equal(v, got)
 		require.Empty(r.B)
 	})
@@ -952,8 +952,8 @@ func FuzzAppendBytes_bytes(f *testing.F) {
 		AppendBytes(w, v)
 
 		r := &Reader{B: w.B}
-		got, err := ReadBytes(r)
-		require.NoError(err)
+		var got []byte
+		require.NoError(ReadBytes(r, &got))
 		require.Equal(v, got)
 		require.Empty(r.B)
 	})

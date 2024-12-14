@@ -27,50 +27,50 @@ type Scalars struct {
 	String                          string                         `canoto:"string,18"`
 	Bytes                           []byte                         `canoto:"bytes,19"`
 	LargestFieldNumber              LargestFieldNumber             `canoto:"field,20"`
-	RepeatedInt8                    []int8                         `canoto:"int,21"`
-	RepeatedInt16                   []int16                        `canoto:"int,22"`
-	RepeatedInt32                   []int32                        `canoto:"int,23"`
-	RepeatedInt64                   []int64                        `canoto:"int,24"`
-	RepeatedUint8                   []uint8                        `canoto:"int,25"`
-	RepeatedUint16                  []uint16                       `canoto:"int,26"`
-	RepeatedUint32                  []uint32                       `canoto:"int,27"`
-	RepeatedUint64                  []uint64                       `canoto:"int,28"`
-	RepeatedSint8                   []int8                         `canoto:"sint,29"`
-	RepeatedSint16                  []int16                        `canoto:"sint,30"`
-	RepeatedSint32                  []int32                        `canoto:"sint,31"`
-	RepeatedSint64                  []int64                        `canoto:"sint,32"`
-	RepeatedFixed32                 []uint32                       `canoto:"fint32,33"`
-	RepeatedFixed64                 []uint64                       `canoto:"fint64,34"`
-	RepeatedSfixed32                []int32                        `canoto:"fint32,35"`
-	RepeatedSfixed64                []int64                        `canoto:"fint64,36"`
-	RepeatedBool                    []bool                         `canoto:"bool,37"`
-	RepeatedString                  []string                       `canoto:"string,38"`
-	RepeatedBytes                   [][]byte                       `canoto:"bytes,39"`
-	RepeatedLargestFieldNumber      []LargestFieldNumber           `canoto:"field,40"`
-	FixedRepeatedInt8               [3]int8                        `canoto:"int,41"`
-	FixedRepeatedInt16              [3]int16                       `canoto:"int,42"`
-	FixedRepeatedInt32              [3]int32                       `canoto:"int,43"`
-	FixedRepeatedInt64              [3]int64                       `canoto:"int,44"`
-	FixedRepeatedUint8              [3]uint8                       `canoto:"int,45"`
-	FixedRepeatedUint16             [3]uint16                      `canoto:"int,46"`
-	FixedRepeatedUint32             [3]uint32                      `canoto:"int,47"`
-	FixedRepeatedUint64             [3]uint64                      `canoto:"int,48"`
-	FixedRepeatedSint8              [3]int8                        `canoto:"sint,49"`
-	FixedRepeatedSint16             [3]int16                       `canoto:"sint,50"`
-	FixedRepeatedSint32             [3]int32                       `canoto:"sint,51"`
-	FixedRepeatedSint64             [3]int64                       `canoto:"sint,52"`
-	FixedRepeatedFixed32            [3]uint32                      `canoto:"fint32,53"`
-	FixedRepeatedFixed64            [3]uint64                      `canoto:"fint64,54"`
-	FixedRepeatedSfixed32           [3]int32                       `canoto:"fint32,55"`
-	FixedRepeatedSfixed64           [3]int64                       `canoto:"fint64,56"`
-	FixedRepeatedBool               [3]bool                        `canoto:"bool,57"`
-	FixedRepeatedString             [3]string                      `canoto:"string,58"`
-	FixedBytes                      [32]byte                       `canoto:"bytes,59"`
-	RepeatedFixedBytes              [][32]byte                     `canoto:"bytes,60"`
-	FixedRepeatedBytes              [3][]byte                      `canoto:"bytes,61"`
-	FixedRepeatedFixedBytes         [3][32]byte                    `canoto:"bytes,62"`
-	FixedRepeatedLargestFieldNumber [3]LargestFieldNumber          `canoto:"field,63"`
-	ConstRepeatedUint64             [constRepeatedUint64Len]uint64 `canoto:"int,64"`
+	RepeatedInt8                    []int8                         `canoto:"repeated int,21"`
+	RepeatedInt16                   []int16                        `canoto:"repeated int,22"`
+	RepeatedInt32                   []int32                        `canoto:"repeated int,23"`
+	RepeatedInt64                   []int64                        `canoto:"repeated int,24"`
+	RepeatedUint8                   []uint8                        `canoto:"repeated int,25"`
+	RepeatedUint16                  []uint16                       `canoto:"repeated int,26"`
+	RepeatedUint32                  []uint32                       `canoto:"repeated int,27"`
+	RepeatedUint64                  []uint64                       `canoto:"repeated int,28"`
+	RepeatedSint8                   []int8                         `canoto:"repeated sint,29"`
+	RepeatedSint16                  []int16                        `canoto:"repeated sint,30"`
+	RepeatedSint32                  []int32                        `canoto:"repeated sint,31"`
+	RepeatedSint64                  []int64                        `canoto:"repeated sint,32"`
+	RepeatedFixed32                 []uint32                       `canoto:"repeated fint32,33"`
+	RepeatedFixed64                 []uint64                       `canoto:"repeated fint64,34"`
+	RepeatedSfixed32                []int32                        `canoto:"repeated fint32,35"`
+	RepeatedSfixed64                []int64                        `canoto:"repeated fint64,36"`
+	RepeatedBool                    []bool                         `canoto:"repeated bool,37"`
+	RepeatedString                  []string                       `canoto:"repeated string,38"`
+	RepeatedBytes                   [][]byte                       `canoto:"repeated bytes,39"`
+	RepeatedLargestFieldNumber      []LargestFieldNumber           `canoto:"repeated field,40"`
+	FixedRepeatedInt8               [3]int8                        `canoto:"fixed repeated int,41"`
+	FixedRepeatedInt16              [3]int16                       `canoto:"fixed repeated int,42"`
+	FixedRepeatedInt32              [3]int32                       `canoto:"fixed repeated int,43"`
+	FixedRepeatedInt64              [3]int64                       `canoto:"fixed repeated int,44"`
+	FixedRepeatedUint8              [3]uint8                       `canoto:"fixed repeated int,45"`
+	FixedRepeatedUint16             [3]uint16                      `canoto:"fixed repeated int,46"`
+	FixedRepeatedUint32             [3]uint32                      `canoto:"fixed repeated int,47"`
+	FixedRepeatedUint64             [3]uint64                      `canoto:"fixed repeated int,48"`
+	FixedRepeatedSint8              [3]int8                        `canoto:"fixed repeated sint,49"`
+	FixedRepeatedSint16             [3]int16                       `canoto:"fixed repeated sint,50"`
+	FixedRepeatedSint32             [3]int32                       `canoto:"fixed repeated sint,51"`
+	FixedRepeatedSint64             [3]int64                       `canoto:"fixed repeated sint,52"`
+	FixedRepeatedFixed32            [3]uint32                      `canoto:"fixed repeated fint32,53"`
+	FixedRepeatedFixed64            [3]uint64                      `canoto:"fixed repeated fint64,54"`
+	FixedRepeatedSfixed32           [3]int32                       `canoto:"fixed repeated fint32,55"`
+	FixedRepeatedSfixed64           [3]int64                       `canoto:"fixed repeated fint64,56"`
+	FixedRepeatedBool               [3]bool                        `canoto:"fixed repeated bool,57"`
+	FixedRepeatedString             [3]string                      `canoto:"fixed repeated string,58"`
+	FixedBytes                      [32]byte                       `canoto:"fixed bytes,59"`
+	RepeatedFixedBytes              [][32]byte                     `canoto:"repeated fixed bytes,60"`
+	FixedRepeatedBytes              [3][]byte                      `canoto:"fixed repeated bytes,61"`
+	FixedRepeatedFixedBytes         [3][32]byte                    `canoto:"fixed repeated fixed bytes,62"`
+	FixedRepeatedLargestFieldNumber [3]LargestFieldNumber          `canoto:"fixed repeated field,63"`
+	ConstRepeatedUint64             [constRepeatedUint64Len]uint64 `canoto:"fixed repeated int,64"`
 	CustomType                      CustomType                     `canoto:"field,65"`
 	CustomFixedType                 fixed32                        `canoto:"fint32,66"`
 

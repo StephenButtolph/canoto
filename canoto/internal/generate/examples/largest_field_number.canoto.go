@@ -65,8 +65,7 @@ func (c *LargestFieldNumber) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			c.Int32, err = canoto.ReadInt[int32](r)
-			if err != nil {
+			if err := canoto.ReadInt(r, &c.Int32); err != nil {
 				return err
 			}
 			if canoto.IsZero(c.Int32) {
