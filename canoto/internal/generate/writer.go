@@ -57,7 +57,6 @@ type canotoData_${structName} struct {
 	// See https://github.com/StephenButtolph/canoto/pull/32
 	_ atomic.Int64
 
-	size int
 ${cache}}
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -192,17 +191,30 @@ func makeTagConstants(m message) string {
 }
 
 func makeCache(m message) string {
-	var s strings.Builder
+	const (
+		sizeVar    = "size"
+		sizeSuffix = "Size"
+	)
+	largestNameSize := len(sizeVar)
 	for _, f := range m.fields {
 		if !f.canotoType.IsRepeated() || !f.canotoType.IsVarint() {
 			continue
 		}
 
-		_, _ = fmt.Fprintf(
-			&s,
-			"\t%sSize int\n",
-			f.name,
-		)
+		largestNameSize = max(largestNameSize, len(f.name)+len(sizeSuffix))
+	}
+
+	var (
+		template = fmt.Sprintf("\t%%-%ds int\n", largestNameSize)
+		s        strings.Builder
+	)
+	_, _ = fmt.Fprintf(&s, template, sizeVar)
+	for _, f := range m.fields {
+		if !f.canotoType.IsRepeated() || !f.canotoType.IsVarint() {
+			continue
+		}
+
+		_, _ = fmt.Fprintf(&s, template, f.name+sizeSuffix)
 	}
 	return s.String()
 }

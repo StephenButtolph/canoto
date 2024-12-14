@@ -99,28 +99,28 @@ type canotoData_Scalars struct {
 	// See https://github.com/StephenButtolph/canoto/pull/32
 	_ atomic.Int64
 
-	size int
-	RepeatedInt8Size int
-	RepeatedInt16Size int
-	RepeatedInt32Size int
-	RepeatedInt64Size int
-	RepeatedUint8Size int
-	RepeatedUint16Size int
-	RepeatedUint32Size int
-	RepeatedUint64Size int
-	RepeatedSint8Size int
-	RepeatedSint16Size int
-	RepeatedSint32Size int
-	RepeatedSint64Size int
-	FixedRepeatedInt8Size int
-	FixedRepeatedInt16Size int
-	FixedRepeatedInt32Size int
-	FixedRepeatedInt64Size int
-	FixedRepeatedUint8Size int
+	size                    int
+	RepeatedInt8Size        int
+	RepeatedInt16Size       int
+	RepeatedInt32Size       int
+	RepeatedInt64Size       int
+	RepeatedUint8Size       int
+	RepeatedUint16Size      int
+	RepeatedUint32Size      int
+	RepeatedUint64Size      int
+	RepeatedSint8Size       int
+	RepeatedSint16Size      int
+	RepeatedSint32Size      int
+	RepeatedSint64Size      int
+	FixedRepeatedInt8Size   int
+	FixedRepeatedInt16Size  int
+	FixedRepeatedInt32Size  int
+	FixedRepeatedInt64Size  int
+	FixedRepeatedUint8Size  int
 	FixedRepeatedUint16Size int
 	FixedRepeatedUint32Size int
 	FixedRepeatedUint64Size int
-	FixedRepeatedSint8Size int
+	FixedRepeatedSint8Size  int
 	FixedRepeatedSint16Size int
 	FixedRepeatedSint32Size int
 	FixedRepeatedSint64Size int
