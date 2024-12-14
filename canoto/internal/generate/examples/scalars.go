@@ -4,7 +4,15 @@ package examples
 
 const constRepeatedUint64Len = 3
 
-type fixed32 uint32
+type (
+	customUint32                  uint32
+	customBytes                   []byte
+	customFixedBytes              [3]byte
+	customRepeatedBytes           [][]byte
+	customRepeatedFixedBytes      [][32]byte
+	customFixedRepeatedBytes      [3][]byte
+	customFixedRepeatedFixedBytes [3][32]byte
+)
 
 type Scalars struct {
 	Int8                            int8                           `canoto:"int,1"`
@@ -72,7 +80,13 @@ type Scalars struct {
 	FixedRepeatedLargestFieldNumber [3]LargestFieldNumber          `canoto:"fixed repeated field,63"`
 	ConstRepeatedUint64             [constRepeatedUint64Len]uint64 `canoto:"fixed repeated int,64"`
 	CustomType                      CustomType                     `canoto:"field,65"`
-	CustomFixedType                 fixed32                        `canoto:"fint32,66"`
+	CustomUint32                    customUint32                   `canoto:"fint32,66"`
+	CustomBytes                     customBytes                    `canoto:"bytes,67"`
+	CustomFixedBytes                customFixedBytes               `canoto:"fixed bytes,68"`
+	CustomRepeatedBytes             customRepeatedBytes            `canoto:"repeated bytes,69"`
+	CustomRepeatedFixedBytes        customRepeatedFixedBytes       `canoto:"repeated fixed bytes,70"`
+	CustomFixedRepeatedBytes        customFixedRepeatedBytes       `canoto:"fixed repeated bytes,71"`
+	CustomFixedRepeatedFixedBytes   customFixedRepeatedFixedBytes  `canoto:"fixed repeated fixed bytes,72"`
 
 	canotoData canotoData_Scalars
 }
