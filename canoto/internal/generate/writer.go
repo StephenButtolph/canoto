@@ -307,7 +307,7 @@ func makeUnmarshal(m message) string {
 				return err
 			}
 
-			numMsgBytes := uint64(len(msgBytes))
+			numMsgBytes := uint(len(msgBytes))
 			if numMsgBytes == 0 {
 				return canoto.ErrZeroValue
 			}

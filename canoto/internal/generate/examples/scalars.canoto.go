@@ -754,7 +754,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				return err
 			}
 
-			numMsgBytes := uint64(len(msgBytes))
+			numMsgBytes := uint(len(msgBytes))
 			if numMsgBytes == 0 {
 				return canoto.ErrZeroValue
 			}
@@ -786,7 +786,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				return err
 			}
 
-			numMsgBytes := uint64(len(msgBytes))
+			numMsgBytes := uint(len(msgBytes))
 			if numMsgBytes == 0 {
 				return canoto.ErrZeroValue
 			}
@@ -818,7 +818,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				return err
 			}
 
-			numMsgBytes := uint64(len(msgBytes))
+			numMsgBytes := uint(len(msgBytes))
 			if numMsgBytes == 0 {
 				return canoto.ErrZeroValue
 			}
@@ -850,7 +850,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				return err
 			}
 
-			numMsgBytes := uint64(len(msgBytes))
+			numMsgBytes := uint(len(msgBytes))
 			if numMsgBytes == 0 {
 				return canoto.ErrZeroValue
 			}
@@ -882,7 +882,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				return err
 			}
 
-			numMsgBytes := uint64(len(msgBytes))
+			numMsgBytes := uint(len(msgBytes))
 			if numMsgBytes == 0 {
 				return canoto.ErrZeroValue
 			}
