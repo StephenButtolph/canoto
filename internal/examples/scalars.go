@@ -34,7 +34,7 @@ type Scalars struct {
 	Bool                            bool                           `canoto:"bool,17"`
 	String                          string                         `canoto:"string,18"`
 	Bytes                           []byte                         `canoto:"bytes,19"`
-	LargestFieldNumber              LargestFieldNumber             `canoto:"field,20"`
+	LargestFieldNumber              LargestFieldNumber[int32]      `canoto:"field,20"`
 	RepeatedInt8                    []int8                         `canoto:"repeated int,21"`
 	RepeatedInt16                   []int16                        `canoto:"repeated int,22"`
 	RepeatedInt32                   []int32                        `canoto:"repeated int,23"`
@@ -54,7 +54,7 @@ type Scalars struct {
 	RepeatedBool                    []bool                         `canoto:"repeated bool,37"`
 	RepeatedString                  []string                       `canoto:"repeated string,38"`
 	RepeatedBytes                   [][]byte                       `canoto:"repeated bytes,39"`
-	RepeatedLargestFieldNumber      []LargestFieldNumber           `canoto:"repeated field,40"`
+	RepeatedLargestFieldNumber      []LargestFieldNumber[int32]    `canoto:"repeated field,40"`
 	FixedRepeatedInt8               [3]int8                        `canoto:"fixed repeated int,41"`
 	FixedRepeatedInt16              [3]int16                       `canoto:"fixed repeated int,42"`
 	FixedRepeatedInt32              [3]int32                       `canoto:"fixed repeated int,43"`
@@ -77,7 +77,7 @@ type Scalars struct {
 	RepeatedFixedBytes              [][32]byte                     `canoto:"repeated fixed bytes,60"`
 	FixedRepeatedBytes              [3][]byte                      `canoto:"fixed repeated bytes,61"`
 	FixedRepeatedFixedBytes         [3][32]byte                    `canoto:"fixed repeated fixed bytes,62"`
-	FixedRepeatedLargestFieldNumber [3]LargestFieldNumber          `canoto:"fixed repeated field,63"`
+	FixedRepeatedLargestFieldNumber [3]LargestFieldNumber[int32]   `canoto:"fixed repeated field,63"`
 	ConstRepeatedUint64             [constRepeatedUint64Len]uint64 `canoto:"fixed repeated int,64"`
 	CustomType                      CustomType                     `canoto:"field,65"`
 	CustomUint32                    customUint32                   `canoto:"fint32,66"`

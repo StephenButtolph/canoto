@@ -54,6 +54,9 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 			name:              name,
 			canonicalizedName: canonicalizeName(name),
 		}
+		if ts.TypeParams != nil {
+			message.numTypes = len(ts.TypeParams.List)
+		}
 		for _, sf := range st.Fields.List {
 			var (
 				field  field
@@ -113,6 +116,7 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 			"escapedStructName": canonicalizedStructName,
 			"fieldNumber":       strconv.FormatUint(uint64(fieldNumber), 10),
 			"wireType":          canotoType.WireType().String(),
+			"protoType":         canotoType.ProtoType(),
 			"fieldName":         name,
 			"escapedFieldName":  canonicalizedName,
 			"suffix":            canotoType.Suffix(),

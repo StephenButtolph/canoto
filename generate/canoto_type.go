@@ -148,6 +148,39 @@ func (c canotoType) WireType() canoto.WireType {
 	}
 }
 
+func (c canotoType) ProtoType() string {
+	switch c {
+	case canotoInt:
+		return "uint64"
+	case canotoSint:
+		return "sint64"
+	case canotoFint32:
+		return "fixed32"
+	case canotoFint64:
+		return "fixed64"
+	case canotoBool:
+		return "bool"
+	case canotoString:
+		return "string"
+	case canotoBytes, canotoFixedBytes, canotoField:
+		return "bytes"
+	case canotoRepeatedInt, canotoFixedRepeatedInt:
+		return "repeated uint64"
+	case canotoRepeatedSint, canotoFixedRepeatedSint:
+		return "repeated sint64"
+	case canotoRepeatedFint32, canotoFixedRepeatedFint32:
+		return "repeated fixed32"
+	case canotoRepeatedFint64, canotoFixedRepeatedFint64:
+		return "repeated fixed64"
+	case canotoRepeatedBool, canotoFixedRepeatedBool:
+		return "repeated bool"
+	case canotoRepeatedString, canotoFixedRepeatedString:
+		return "repeated string"
+	default:
+		return "repeated bytes"
+	}
+}
+
 func (c canotoType) Suffix() string {
 	switch c {
 	case canotoInt, canotoRepeatedInt, canotoFixedRepeatedInt:

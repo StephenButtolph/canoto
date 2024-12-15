@@ -20,9 +20,6 @@ const (
 	canoto__LargestFieldNumber__Int32__tag = "\xf8\xff\xff\xff\x0f" // canoto.Tag(536870911, canoto.Varint)
 )
 
-// Ensure that the generated methods correctly implement the interface
-var _ canoto.Message = (*LargestFieldNumber)(nil)
-
 type canotoData_LargestFieldNumber struct {
 	size atomic.Int64
 }
@@ -31,7 +28,7 @@ type canotoData_LargestFieldNumber struct {
 //
 // The struct is not cleared before unmarshaling, any fields not present in the
 // bytes will retain their previous values.
-func (c *LargestFieldNumber) UnmarshalCanoto(bytes []byte) error {
+func (c *LargestFieldNumber[_]) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
 	}
@@ -45,7 +42,7 @@ func (c *LargestFieldNumber) UnmarshalCanoto(bytes []byte) error {
 // bytes will retain their previous values.
 //
 // This function enables configuration of reader options.
-func (c *LargestFieldNumber) UnmarshalCanotoFrom(r *canoto.Reader) error {
+func (c *LargestFieldNumber[_]) UnmarshalCanotoFrom(r *canoto.Reader) error {
 	var minField uint32
 	for canoto.HasNext(r) {
 		field, wireType, err := canoto.ReadTag(r)
@@ -81,13 +78,13 @@ func (c *LargestFieldNumber) UnmarshalCanotoFrom(r *canoto.Reader) error {
 //
 // Specifically, ValidCanoto ensures that all strings are valid utf-8 and all
 // custom types are ValidCanoto.
-func (c *LargestFieldNumber) ValidCanoto() bool {
+func (c *LargestFieldNumber[_]) ValidCanoto() bool {
 	return true
 }
 
 // CalculateCanotoSize calculates the size of the Canoto representation and
 // caches it.
-func (c *LargestFieldNumber) CalculateCanotoSize() int {
+func (c *LargestFieldNumber[_]) CalculateCanotoSize() int {
 	var size int
 	if !canoto.IsZero(c.Int32) {
 		size += len(canoto__LargestFieldNumber__Int32__tag) + canoto.SizeInt(c.Int32)
@@ -103,14 +100,14 @@ func (c *LargestFieldNumber) CalculateCanotoSize() int {
 //
 // If the struct has been modified since the last call to CalculateCanotoSize,
 // the returned size may be incorrect.
-func (c *LargestFieldNumber) CachedCanotoSize() int {
+func (c *LargestFieldNumber[_]) CachedCanotoSize() int {
 	return int(c.canotoData.size.Load())
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-func (c *LargestFieldNumber) MarshalCanoto() []byte {
+func (c *LargestFieldNumber[_]) MarshalCanoto() []byte {
 	w := canoto.Writer{
 		B: make([]byte, 0, c.CalculateCanotoSize()),
 	}
@@ -125,7 +122,7 @@ func (c *LargestFieldNumber) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-func (c *LargestFieldNumber) MarshalCanotoInto(w *canoto.Writer) {
+func (c *LargestFieldNumber[_]) MarshalCanotoInto(w *canoto.Writer) {
 	if !canoto.IsZero(c.Int32) {
 		canoto.Append(w, canoto__LargestFieldNumber__Int32__tag)
 		canoto.AppendInt(w, c.Int32)
