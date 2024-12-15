@@ -454,7 +454,7 @@ func makeUnmarshal(m message) string {
 			}
 
 			var length int64
-			if err := canoto.ReadInt[int64](r, &length); err != nil {
+			if err := canoto.ReadInt(r, &length); err != nil {
 				return err
 			}
 
@@ -481,7 +481,7 @@ func makeUnmarshal(m message) string {
 			}
 
 			var length int64
-			if err := canoto.ReadInt[int64](r, &length); err != nil {
+			if err := canoto.ReadInt(r, &length); err != nil {
 				return err
 			}
 
@@ -507,7 +507,7 @@ func makeUnmarshal(m message) string {
 			copy(c.${fieldName}[0][:], firstEntry)
 			for i := range count {
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
-				if err := canoto.ReadInt[int64](r, &length); err != nil {
+				if err := canoto.ReadInt(r, &length); err != nil {
 					return err
 				}
 				if length != expectedLengthInt64 {
@@ -528,7 +528,7 @@ func makeUnmarshal(m message) string {
 			}
 
 			var length int64
-			if err := canoto.ReadInt[int64](r, &length); err != nil {
+			if err := canoto.ReadInt(r, &length); err != nil {
 				return err
 			}
 
@@ -552,7 +552,7 @@ func makeUnmarshal(m message) string {
 				}
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 
-				if err := canoto.ReadInt[int64](r, &length); err != nil {
+				if err := canoto.ReadInt(r, &length); err != nil {
 					return err
 				}
 				if length != expectedLengthInt64 {
