@@ -739,12 +739,12 @@ func makeUnmarshal(m message) string {
 
 func makeValid(m message) string {
 	const (
-		stringTemplate = `	if !utf8.ValidString(c.${fieldName}) {
+		stringTemplate = `	if !utf8.ValidString(string(c.${fieldName})) {
 		return false
 	}
 `
 		repeatedStringTemplate = `	for _, v := range c.${fieldName} {
-		if !utf8.ValidString(v) {
+		if !utf8.ValidString(string(v)) {
 			return false
 		}
 	}
