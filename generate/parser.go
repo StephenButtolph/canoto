@@ -116,6 +116,7 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 			"escapedStructName": canonicalizedStructName,
 			"fieldNumber":       strconv.FormatUint(uint64(fieldNumber), 10),
 			"wireType":          canotoType.WireType().String(),
+			"protoType":         canotoType.ProtoType(),
 			"fieldName":         name,
 			"escapedFieldName":  canonicalizedName,
 			"suffix":            canotoType.Suffix(),

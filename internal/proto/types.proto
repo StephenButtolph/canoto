@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package pb;
 
-option go_package = "github.com/StephenButtolph/canoto/canoto/internal/generate/proto/pb";
+option go_package = "github.com/StephenButtolph/canoto/internal/proto/pb";
 
 message Scalars {
   int32 int8 = 1;

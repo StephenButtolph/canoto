@@ -1,4 +1,4 @@
-//go:generate canoto $GOFILE
+//go:generate canoto --proto=true $GOFILE
 
 package examples
 
