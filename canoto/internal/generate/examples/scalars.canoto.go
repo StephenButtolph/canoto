@@ -1545,7 +1545,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			}
 
 			var length int64
-			if err := canoto.ReadInt[int64](r, &length); err != nil {
+			if err := canoto.ReadInt(r, &length); err != nil {
 				return err
 			}
 
@@ -1571,7 +1571,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			}
 
 			var length int64
-			if err := canoto.ReadInt[int64](r, &length); err != nil {
+			if err := canoto.ReadInt(r, &length); err != nil {
 				return err
 			}
 
@@ -1597,7 +1597,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			copy(c.RepeatedFixedBytes[0][:], firstEntry)
 			for i := range count {
 				r.B = r.B[len(canoto__Scalars__RepeatedFixedBytes__tag):]
-				if err := canoto.ReadInt[int64](r, &length); err != nil {
+				if err := canoto.ReadInt(r, &length); err != nil {
 					return err
 				}
 				if length != expectedLengthInt64 {
@@ -1640,7 +1640,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			}
 
 			var length int64
-			if err := canoto.ReadInt[int64](r, &length); err != nil {
+			if err := canoto.ReadInt(r, &length); err != nil {
 				return err
 			}
 
@@ -1664,7 +1664,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				}
 				r.B = r.B[len(canoto__Scalars__FixedRepeatedFixedBytes__tag):]
 
-				if err := canoto.ReadInt[int64](r, &length); err != nil {
+				if err := canoto.ReadInt(r, &length); err != nil {
 					return err
 				}
 				if length != expectedLengthInt64 {
@@ -1808,7 +1808,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			}
 
 			var length int64
-			if err := canoto.ReadInt[int64](r, &length); err != nil {
+			if err := canoto.ReadInt(r, &length); err != nil {
 				return err
 			}
 
@@ -1864,7 +1864,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			}
 
 			var length int64
-			if err := canoto.ReadInt[int64](r, &length); err != nil {
+			if err := canoto.ReadInt(r, &length); err != nil {
 				return err
 			}
 
@@ -1890,7 +1890,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			copy(c.CustomRepeatedFixedBytes[0][:], firstEntry)
 			for i := range count {
 				r.B = r.B[len(canoto__Scalars__CustomRepeatedFixedBytes__tag):]
-				if err := canoto.ReadInt[int64](r, &length); err != nil {
+				if err := canoto.ReadInt(r, &length); err != nil {
 					return err
 				}
 				if length != expectedLengthInt64 {
@@ -1933,7 +1933,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			}
 
 			var length int64
-			if err := canoto.ReadInt[int64](r, &length); err != nil {
+			if err := canoto.ReadInt(r, &length); err != nil {
 				return err
 			}
 
@@ -1957,7 +1957,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				}
 				r.B = r.B[len(canoto__Scalars__CustomFixedRepeatedFixedBytes__tag):]
 
-				if err := canoto.ReadInt[int64](r, &length); err != nil {
+				if err := canoto.ReadInt(r, &length); err != nil {
 					return err
 				}
 				if length != expectedLengthInt64 {
