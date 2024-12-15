@@ -91,9 +91,6 @@ const (
 	canoto__Scalars__CustomFixedRepeatedFixedBytes__tag   = "\xc2\x04" // canoto.Tag(72, canoto.Len)
 )
 
-// Ensure that the generated methods correctly implement the interface
-var _ canoto.Message = (*Scalars)(nil)
-
 type canotoData_Scalars struct {
 	// Enforce noCopy before atomic usage.
 	// See https://github.com/StephenButtolph/canoto/pull/32

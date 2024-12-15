@@ -54,6 +54,9 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 			name:              name,
 			canonicalizedName: canonicalizeName(name),
 		}
+		if ts.TypeParams != nil {
+			message.numTypes = len(ts.TypeParams.List)
+		}
 		for _, sf := range st.Fields.List {
 			var (
 				field  field

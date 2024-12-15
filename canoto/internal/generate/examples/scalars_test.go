@@ -474,7 +474,7 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 				Bool:     true,
 				String:   "hi my name is Bob",
 				Bytes:    []byte("hi my name is Bob too"),
-				LargestFieldNumber: LargestFieldNumber{
+				LargestFieldNumber: LargestFieldNumber[int32]{
 					Int32: 216457,
 				},
 
@@ -497,7 +497,7 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 				RepeatedBool:     []bool{true, false, true},
 				RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
 				RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
-				RepeatedLargestFieldNumber: []LargestFieldNumber{
+				RepeatedLargestFieldNumber: []LargestFieldNumber[int32]{
 					{Int32: 123455},
 					{Int32: 876523},
 				},
@@ -524,7 +524,7 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 				RepeatedFixedBytes:      [][32]byte{{1}, {2}, {3}},
 				FixedRepeatedBytes:      [3][]byte{{1}, {2}, {3}},
 				FixedRepeatedFixedBytes: [3][32]byte{{1}, {2}, {3}},
-				FixedRepeatedLargestFieldNumber: [3]LargestFieldNumber{
+				FixedRepeatedLargestFieldNumber: [3]LargestFieldNumber[int32]{
 					{Int32: 123455},
 					{Int32: 876523},
 					{Int32: -576214},
@@ -556,7 +556,7 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 			Bool:     true,
 			String:   "hi my name is Bob",
 			Bytes:    []byte("hi my name is Bob too"),
-			LargestFieldNumber: LargestFieldNumber{
+			LargestFieldNumber: LargestFieldNumber[int32]{
 				Int32: 216457,
 			},
 
@@ -579,7 +579,7 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 			RepeatedBool:     []bool{true, false, true},
 			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
 			RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
-			RepeatedLargestFieldNumber: []LargestFieldNumber{
+			RepeatedLargestFieldNumber: []LargestFieldNumber[int32]{
 				{Int32: 123455},
 				{Int32: 876523},
 			},
@@ -606,7 +606,7 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 			RepeatedFixedBytes:      [][32]byte{{1}, {2}, {3}},
 			FixedRepeatedBytes:      [3][]byte{{1}, {2}, {3}},
 			FixedRepeatedFixedBytes: [3][32]byte{{1}, {2}, {3}},
-			FixedRepeatedLargestFieldNumber: [3]LargestFieldNumber{
+			FixedRepeatedLargestFieldNumber: [3]LargestFieldNumber[int32]{
 				{Int32: 123455},
 				{Int32: 876523},
 				{Int32: -576214},
@@ -640,7 +640,7 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 				Bool:     true,
 				String:   "hi my name is Bob",
 				Bytes:    []byte("hi my name is Bob too"),
-				LargestFieldNumber: LargestFieldNumber{
+				LargestFieldNumber: LargestFieldNumber[int32]{
 					Int32: 216457,
 				},
 			}
@@ -668,7 +668,7 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 			Bool:     true,
 			String:   "hi my name is Bob",
 			Bytes:    []byte("hi my name is Bob too"),
-			LargestFieldNumber: LargestFieldNumber{
+			LargestFieldNumber: LargestFieldNumber[int32]{
 				Int32: 216457,
 			},
 		}
@@ -700,7 +700,7 @@ func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
 			Bool:     true,
 			String:   "hi my name is Bob",
 			Bytes:    []byte("hi my name is Bob too"),
-			LargestFieldNumber: LargestFieldNumber{
+			LargestFieldNumber: LargestFieldNumber[int32]{
 				Int32: 216457,
 			},
 
@@ -723,7 +723,7 @@ func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
 			RepeatedBool:     []bool{true, false, true},
 			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
 			RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
-			RepeatedLargestFieldNumber: []LargestFieldNumber{
+			RepeatedLargestFieldNumber: []LargestFieldNumber[int32]{
 				{Int32: 123455},
 				{Int32: 876523},
 			},
@@ -750,7 +750,7 @@ func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
 			RepeatedFixedBytes:      [][32]byte{{1}, {2}, {3}},
 			FixedRepeatedBytes:      [3][]byte{{1}, {2}, {3}},
 			FixedRepeatedFixedBytes: [3][32]byte{{1}, {2}, {3}},
-			FixedRepeatedLargestFieldNumber: [3]LargestFieldNumber{
+			FixedRepeatedLargestFieldNumber: [3]LargestFieldNumber[int32]{
 				{Int32: 123455},
 				{Int32: 876523},
 				{Int32: -576214},
@@ -796,7 +796,7 @@ func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
 			Bool:     true,
 			String:   "hi my name is Bob",
 			Bytes:    []byte("hi my name is Bob too"),
-			LargestFieldNumber: LargestFieldNumber{
+			LargestFieldNumber: LargestFieldNumber[int32]{
 				Int32: 216457,
 			},
 		}

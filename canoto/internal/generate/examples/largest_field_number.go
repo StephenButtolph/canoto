@@ -2,8 +2,10 @@
 
 package examples
 
-type LargestFieldNumber struct {
-	Int32 int32 `canoto:"int,536870911"`
+import "github.com/StephenButtolph/canoto"
+
+type LargestFieldNumber[T canoto.Int] struct {
+	Int32 T `canoto:"int,536870911"`
 
 	canotoData canotoData_LargestFieldNumber
 }

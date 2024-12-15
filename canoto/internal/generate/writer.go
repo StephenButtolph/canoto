@@ -49,9 +49,6 @@ func writeStruct(w io.Writer, m message) error {
 const (
 ${tagConstants})
 
-// Ensure that the generated methods correctly implement the interface
-var _ canoto.Message = (*${structName})(nil)
-
 type canotoData_${structName} struct {
 	// Enforce noCopy before atomic usage.
 	// See https://github.com/StephenButtolph/canoto/pull/32
@@ -63,7 +60,7 @@ ${cache}}
 //
 // The struct is not cleared before unmarshaling, any fields not present in the
 // bytes will retain their previous values.
-func (c *${structName}) UnmarshalCanoto(bytes []byte) error {
+func (c *${structName}${generics}) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
 	}
@@ -77,7 +74,7 @@ func (c *${structName}) UnmarshalCanoto(bytes []byte) error {
 // bytes will retain their previous values.
 //
 // This function enables configuration of reader options.
-func (c *${structName}) UnmarshalCanotoFrom(r *canoto.Reader) error {
+func (c *${structName}${generics}) UnmarshalCanotoFrom(r *canoto.Reader) error {
 	var minField uint32
 	for canoto.HasNext(r) {
 		field, wireType, err := canoto.ReadTag(r)
@@ -103,7 +100,7 @@ ${unmarshal}		default:
 //
 // Specifically, ValidCanoto ensures that all strings are valid utf-8 and all
 // custom types are ValidCanoto.
-func (c *${structName}) ValidCanoto() bool {
+func (c *${structName}${generics}) ValidCanoto() bool {
 ${valid}	return true
 }
 
@@ -111,7 +108,7 @@ ${valid}	return true
 // caches it.
 //
 // It is not safe to call this function concurrently.
-func (c *${structName}) CalculateCanotoSize() int {
+func (c *${structName}${generics}) CalculateCanotoSize() int {
 	c.canotoData.size = 0
 ${size}	return c.canotoData.size
 }
@@ -123,7 +120,7 @@ ${size}	return c.canotoData.size
 //
 // If the struct has been modified since the last call to CalculateCanotoSize,
 // the returned size may be incorrect.
-func (c *${structName}) CachedCanotoSize() int {
+func (c *${structName}${generics}) CachedCanotoSize() int {
 	return c.canotoData.size
 }
 
@@ -132,7 +129,7 @@ func (c *${structName}) CachedCanotoSize() int {
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to call this function concurrently.
-func (c *${structName}) MarshalCanoto() []byte {
+func (c *${structName}${generics}) MarshalCanoto() []byte {
 	w := canoto.Writer{
 		B: make([]byte, 0, c.CalculateCanotoSize()),
 	}
@@ -149,19 +146,37 @@ func (c *${structName}) MarshalCanoto() []byte {
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to call this function concurrently.
-func (c *${structName}) MarshalCanotoInto(w *canoto.Writer) {
+func (c *${structName}${generics}) MarshalCanotoInto(w *canoto.Writer) {
 ${marshal}}
 `
 
 	return writeTemplate(w, structTemplate, map[string]string{
 		"tagConstants": makeTagConstants(m),
 		"structName":   m.name,
+		"generics":     makeGenerics(m),
 		"cache":        makeCache(m),
 		"unmarshal":    makeUnmarshal(m),
 		"valid":        makeValid(m),
 		"size":         makeSize(m),
 		"marshal":      makeMarshal(m),
 	})
+}
+
+func makeGenerics(m message) string {
+	if m.numTypes == 0 {
+		return ""
+	}
+
+	var s strings.Builder
+	_, _ = s.WriteString("[")
+	for i := range m.numTypes {
+		if i != 0 {
+			_, _ = s.WriteString(", ")
+		}
+		_, _ = s.WriteString("_")
+	}
+	_, _ = s.WriteString("]")
+	return s.String()
 }
 
 func makeTagConstants(m message) string {
