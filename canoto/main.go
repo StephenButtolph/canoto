@@ -15,7 +15,7 @@ const (
 	protoFlag   = "proto"
 	versionFlag = "version"
 
-	version = "canoto/v0.2.0"
+	version = "canoto/v0.3.0-dev"
 )
 
 func init() {
