@@ -63,7 +63,7 @@ func main() {
 	}
 
 	flags := cmd.Flags()
-	flags.Bool(versionFlag, false, "Display the commit hash and exit")
+	flags.Bool(versionFlag, false, "Display the version and exit")
 	flags.Bool(canotoFlag, true, "Generate canoto file")
 	flags.Bool(protoFlag, false, "Generate proto file")
 
