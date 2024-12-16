@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime/debug"
 
 	"github.com/spf13/cobra"
 
@@ -11,12 +12,24 @@ import (
 )
 
 const (
-	canoto = "canoto"
-	proto  = "proto"
+	canoto  = "canoto"
+	proto   = "proto"
+	version = "version"
 )
+
+var commit string
 
 func init() {
 	cobra.EnablePrefixMatching = true
+
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, setting := range info.Settings {
+			if setting.Key == "vcs.revision" {
+				commit = setting.Value
+				break
+			}
+		}
+	}
 }
 
 func main() {
@@ -25,6 +38,15 @@ func main() {
 		Short: "Processes the provided files and generates the corresponding canoto and proto files",
 		RunE: func(c *cobra.Command, args []string) error {
 			flags := c.Flags()
+			version, err := flags.GetBool(version)
+			if err != nil {
+				return fmt.Errorf("failed to get version flag: %w", err)
+			}
+			if version {
+				fmt.Println(commit)
+				return nil
+			}
+
 			canoto, err := flags.GetBool(canoto)
 			if err != nil {
 				return fmt.Errorf("failed to get canoto flag: %w", err)
@@ -51,6 +73,7 @@ func main() {
 	}
 
 	flags := cmd.Flags()
+	flags.Bool(version, false, "Display the commit hash and exit")
 	flags.Bool(canoto, true, "Generate canoto file")
 	flags.Bool(proto, false, "Generate proto file")
 
