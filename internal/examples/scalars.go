@@ -6,6 +6,7 @@ const constRepeatedUint64Len = 3
 
 type (
 	customUint32                  uint32
+	customString                  string
 	customBytes                   []byte
 	customFixedBytes              [3]byte
 	customRepeatedBytes           [][]byte
@@ -81,12 +82,13 @@ type Scalars struct {
 	ConstRepeatedUint64             [constRepeatedUint64Len]uint64 `canoto:"fixed repeated int,64"`
 	CustomType                      CustomType                     `canoto:"field,65"`
 	CustomUint32                    customUint32                   `canoto:"fint32,66"`
-	CustomBytes                     customBytes                    `canoto:"bytes,67"`
-	CustomFixedBytes                customFixedBytes               `canoto:"fixed bytes,68"`
-	CustomRepeatedBytes             customRepeatedBytes            `canoto:"repeated bytes,69"`
-	CustomRepeatedFixedBytes        customRepeatedFixedBytes       `canoto:"repeated fixed bytes,70"`
-	CustomFixedRepeatedBytes        customFixedRepeatedBytes       `canoto:"fixed repeated bytes,71"`
-	CustomFixedRepeatedFixedBytes   customFixedRepeatedFixedBytes  `canoto:"fixed repeated fixed bytes,72"`
+	CustomString                    customString                   `canoto:"string,67"`
+	CustomBytes                     customBytes                    `canoto:"bytes,68"`
+	CustomFixedBytes                customFixedBytes               `canoto:"fixed bytes,69"`
+	CustomRepeatedBytes             customRepeatedBytes            `canoto:"repeated bytes,70"`
+	CustomRepeatedFixedBytes        customRepeatedFixedBytes       `canoto:"repeated fixed bytes,71"`
+	CustomFixedRepeatedBytes        customFixedRepeatedBytes       `canoto:"fixed repeated bytes,72"`
+	CustomFixedRepeatedFixedBytes   customFixedRepeatedFixedBytes  `canoto:"fixed repeated fixed bytes,73"`
 
 	canotoData canotoData_Scalars
 }
