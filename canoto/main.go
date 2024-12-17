@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/StephenButtolph/canoto"
 	"github.com/StephenButtolph/canoto/generate"
 )
 
@@ -14,8 +15,6 @@ const (
 	canotoFlag  = "canoto"
 	protoFlag   = "proto"
 	versionFlag = "version"
-
-	version = "canoto/v0.3.0-dev"
 )
 
 func init() {
@@ -33,7 +32,7 @@ func main() {
 				return fmt.Errorf("failed to get version flag: %w", err)
 			}
 			if showVersion {
-				fmt.Println(version)
+				fmt.Println("canoto/" + canoto.Version)
 				return nil
 			}
 
