@@ -97,7 +97,7 @@ type canotoData_${structName} struct {
 	// See https://github.com/StephenButtolph/canoto/pull/32
 	_ atomic.Int64
 
-${cache}}
+${sizeCache}${oneOfCache}}
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
@@ -197,7 +197,8 @@ ${marshal}}
 		"tagConstants": makeTagConstants(m),
 		"structName":   m.name,
 		"generics":     makeGenerics(m),
-		"cache":        makeCache(m),
+		"sizeCache":    makeSizeCache(m),
+		"oneOfCache":   makeOneOfCache(m),
 		"unmarshal":    makeUnmarshal(m),
 		"valid":        makeValid(m),
 		"size":         makeSize(m),
@@ -263,7 +264,7 @@ func makeTagConstants(m message) string {
 	return s.String()
 }
 
-func makeCache(m message) string {
+func makeSizeCache(m message) string {
 	const (
 		sizeVar    = "size"
 		sizeSuffix = "Size"
@@ -288,6 +289,29 @@ func makeCache(m message) string {
 		}
 
 		_, _ = fmt.Fprintf(&s, template, f.name+sizeSuffix)
+	}
+	return s.String()
+}
+
+func makeOneOfCache(m message) string {
+	oneOfs := m.OneOfs()
+	if len(oneOfs) == 0 {
+		return ""
+	}
+
+	var largestNameSize int
+	for _, oneOf := range oneOfs {
+		largestNameSize = max(largestNameSize, len(oneOf))
+	}
+
+	const oneOfSuffix = "OneOf"
+	var (
+		template = fmt.Sprintf("\t%%-%ds uint32\n", largestNameSize+len(oneOfSuffix))
+		s        strings.Builder
+	)
+	_, _ = s.WriteString("\n")
+	for _, oneOf := range oneOfs {
+		_, _ = fmt.Fprintf(&s, template, oneOf+oneOfSuffix)
 	}
 	return s.String()
 }

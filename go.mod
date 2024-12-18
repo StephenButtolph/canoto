@@ -7,6 +7,7 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.10.0
 	github.com/thepudds/fzgen v0.4.3
+	golang.org/x/exp v0.0.0-20241215155358-4a5509556b9e
 	google.golang.org/protobuf v1.35.2
 )
 

@@ -86,3 +86,16 @@ message Scalars {
 message LargestFieldNumber {
   int32 int32 = 536870911;
 }
+
+message OneOf {
+	oneof a {
+		int32 a1 = 1;
+		int64 a2 = 2;
+	}
+	oneof b {
+		int32 b1 = 3;
+		int64 b2 = 4;
+	}
+	int32 c = 5;
+	int64 d = 6;
+}
