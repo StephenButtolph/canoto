@@ -104,12 +104,11 @@ func (c *LargestFieldNumber[_]) ValidCanoto() bool {
 // values in the struct.
 //
 // It is not safe to call this function concurrently.
-func (c *LargestFieldNumber[_]) CalculateCanotoCache() int {
+func (c *LargestFieldNumber[_]) CalculateCanotoCache() {
 	c.canotoData.size = 0
 	if !canoto.IsZero(c.Int32) {
 		c.canotoData.size += len(canoto__LargestFieldNumber__Int32__tag) + canoto.SizeInt(c.Int32)
 	}
-	return c.canotoData.size
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto

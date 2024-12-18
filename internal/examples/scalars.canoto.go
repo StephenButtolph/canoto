@@ -2073,7 +2073,7 @@ func (c *Scalars) ValidCanoto() bool {
 // values in the struct.
 //
 // It is not safe to call this function concurrently.
-func (c *Scalars) CalculateCanotoCache() int {
+func (c *Scalars) CalculateCanotoCache() {
 	c.canotoData.size = 0
 	if !canoto.IsZero(c.Int8) {
 		c.canotoData.size += len(canoto__Scalars__Int8__tag) + canoto.SizeInt(c.Int8)
@@ -2450,7 +2450,6 @@ func (c *Scalars) CalculateCanotoCache() int {
 			c.canotoData.size += len(canoto__Scalars__CustomFixedRepeatedFixedBytes__tag) + canoto.SizeBytes(c.CustomFixedRepeatedFixedBytes[i][:])
 		}
 	}
-	return c.canotoData.size
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto

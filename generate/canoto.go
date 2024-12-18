@@ -166,10 +166,9 @@ ${validOneOf}${valid}	return true
 // values in the struct.
 //
 // It is not safe to call this function concurrently.
-func (c *${structName}${generics}) CalculateCanotoCache() int {
+func (c *${structName}${generics}) CalculateCanotoCache() {
 ${zeroOneOfCache}	c.canotoData.size = 0
-${size}	return c.canotoData.size
-}
+${size}}
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
 // representation from CalculateCanotoCache.

@@ -2868,7 +2868,7 @@ func (c *OneOf) ValidCanoto() bool {
 // values in the struct.
 //
 // It is not safe to call this function concurrently.
-func (c *OneOf) CalculateCanotoCache() int {
+func (c *OneOf) CalculateCanotoCache() {
 	c.canotoData.aOneOf = 0
 	c.canotoData.bOneOf = 0
 	c.canotoData.cOneOf = 0
@@ -3335,7 +3335,6 @@ func (c *OneOf) CalculateCanotoCache() int {
 		}
 		c.canotoData.qOneOf = 73
 	}
-	return c.canotoData.size
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
