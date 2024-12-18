@@ -2,6 +2,10 @@
 
 package examples
 
+import "github.com/StephenButtolph/canoto"
+
+var _ canoto.Message = (*OneOf)(nil)
+
 type OneOf struct {
 	Int8                            int8                           `canoto:"int,1,a"`
 	Int16                           int16                          `canoto:"int,2,a"`

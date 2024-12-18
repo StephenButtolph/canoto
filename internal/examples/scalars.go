@@ -2,7 +2,11 @@
 
 package examples
 
+import "github.com/StephenButtolph/canoto"
+
 const constRepeatedUint64Len = 3
+
+var _ canoto.Message = (*Scalars)(nil)
 
 type (
 	customUint32                  uint32
