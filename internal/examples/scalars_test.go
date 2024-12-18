@@ -68,7 +68,7 @@ func canonicalizeCanotoScalars(s *Scalars) *Scalars {
 	for i := range s.FixedRepeatedBytes {
 		s.FixedRepeatedBytes[i] = canonicalizeSlice(s.FixedRepeatedBytes[i])
 	}
-	if s.CustomType.CalculateCanotoSize() == 0 {
+	if s.CustomType.CachedCanotoSize() == 0 {
 		s.CustomType.Int = nil
 	}
 	s.CustomBytes = canonicalizeSlice(s.CustomBytes)
@@ -228,7 +228,7 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 	}
 
 	var customType []byte
-	if s.CustomType.CalculateCanotoSize() != 0 {
+	if s.CustomType.CachedCanotoSize() != 0 {
 		customType = s.CustomType.Int.Bytes()
 	}
 	pbs := pb.Scalars{
@@ -417,7 +417,8 @@ func FuzzScalars_MarshalCanoto(f *testing.F) {
 			return
 		}
 
-		size := canotoScalars.CalculateCanotoSize()
+		canotoScalars.CalculateCanotoCache()
+		size := canotoScalars.CachedCanotoSize()
 		w := canoto.Writer{
 			B: make([]byte, 0, size),
 		}
@@ -442,7 +443,8 @@ func FuzzScalars_Canonical(f *testing.F) {
 			return
 		}
 
-		size := scalars.CalculateCanotoSize()
+		scalars.CalculateCanotoCache()
+		size := scalars.CachedCanotoSize()
 		require.Len(b, size)
 
 		w := canoto.Writer{

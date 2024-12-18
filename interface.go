@@ -18,21 +18,20 @@ type Message interface {
 type Field interface {
 	// MarshalCanotoInto writes the field into a canoto.Writer.
 	//
-	// It is assumed that CalculateCanotoSize has been called since the last
+	// It is assumed that CalculateCanotoCache has been called since the last
 	// modification to this field.
 	//
 	// It is assumed that this field is ValidCanoto.
 	MarshalCanotoInto(w *Writer)
-	// CalculateCanotoSize calculates the size of this field's Canoto
-	// representation and caches it.
-	CalculateCanotoSize() int
+	// CalculateCanotoCache populates size and oneOf caches based on the current
+	// values in the struct.
+	CalculateCanotoCache()
 	// CachedCanotoSize returns the previously calculated size of the Canoto
-	// representation from CalculateCanotoSize.
+	// representation from CalculateCanotoCache.
 	//
-	// If CalculateCanotoSize has not yet been called, it will return 0.
-	//
-	// If the field has been modified since the last call to
-	// CalculateCanotoSize, the returned size may be incorrect.
+	// If CalculateCanotoCache has not yet been called, or the field has been
+	// modified since the last call to CalculateCanotoCache, or the returned
+	// size may be incorrect.
 	CachedCanotoSize() int
 	// UnmarshalCanotoFrom populates the field from a canoto.Reader.
 	//

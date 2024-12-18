@@ -106,8 +106,12 @@ ${sizeCache}${oneOfCache}}
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
+// OneOf fields are cached during the unmarshaling process.
+//
 // The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values.
+// bytes will retain their previous values. If a OneOf field was previously
+// cached as being set, attempting to unmarshal that OneOf again will return
+// canoto.ErrDuplicateOneOf.
 func (c *${structName}${generics}) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -118,8 +122,12 @@ func (c *${structName}${generics}) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
+// OneOf fields are cached during the unmarshaling process.
+//
 // The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values.
+// bytes will retain their previous values. If a OneOf field was previously
+// cached as being set, attempting to unmarshal that OneOf again will return
+// canoto.ErrDuplicateOneOf.
 //
 // This function enables configuration of reader options.
 func (c *${structName}${generics}) UnmarshalCanotoFrom(r *canoto.Reader) error {
@@ -146,27 +154,29 @@ ${unmarshal}		default:
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.
 //
-// Specifically, ValidCanoto ensures that all strings are valid utf-8 and all
-// custom types are ValidCanoto.
+// Specifically, ValidCanoto ensures:
+// 1. All OneOfs are specified at most once.
+// 2. All strings are valid utf-8.
+// 3. All custom fields are ValidCanoto.
 func (c *${structName}${generics}) ValidCanoto() bool {
 ${validOneOf}${valid}	return true
 }
 
-// CalculateCanotoSize calculates the size of the Canoto representation and
-// caches it.
+// CalculateCanotoCache populates size and OneOf caches based on the current
+// values in the struct.
 //
 // It is not safe to call this function concurrently.
-func (c *${structName}${generics}) CalculateCanotoSize() int {
-	c.canotoData.size = 0
+func (c *${structName}${generics}) CalculateCanotoCache() int {
+${zeroOneOfCache}	c.canotoData.size = 0
 ${size}	return c.canotoData.size
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoSize.
+// representation from CalculateCanotoCache.
 //
-// If CalculateCanotoSize has not yet been called, it will return 0.
+// If CalculateCanotoCache has not yet been called, it will return 0.
 //
-// If the struct has been modified since the last call to CalculateCanotoSize,
+// If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *${structName}${generics}) CachedCanotoSize() int {
 	return c.canotoData.size
@@ -178,8 +188,9 @@ func (c *${structName}${generics}) CachedCanotoSize() int {
 //
 // It is not safe to call this function concurrently.
 func (c *${structName}${generics}) MarshalCanoto() []byte {
+	c.CalculateCanotoCache()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CalculateCanotoSize()),
+		B: make([]byte, 0, c.CachedCanotoSize()),
 	}
 	c.MarshalCanotoInto(&w)
 	return w.B
@@ -188,7 +199,7 @@ func (c *${structName}${generics}) MarshalCanoto() []byte {
 // MarshalCanotoInto writes the struct into a canoto.Writer. Most users should
 // just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoSize has been called since the last
+// It is assumed that CalculateCanotoCache has been called since the last
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
@@ -199,16 +210,17 @@ ${marshal}}
 `
 
 	return writeTemplate(w, structTemplate, map[string]string{
-		"tagConstants": makeTagConstants(m),
-		"structName":   m.name,
-		"generics":     makeGenerics(m),
-		"sizeCache":    makeSizeCache(m),
-		"oneOfCache":   makeOneOfCache(m),
-		"unmarshal":    makeUnmarshal(m),
-		"validOneOf":   makeValidOneOf(m),
-		"valid":        makeValid(m),
-		"size":         makeSize(m),
-		"marshal":      makeMarshal(m),
+		"tagConstants":   makeTagConstants(m),
+		"structName":     m.name,
+		"generics":       makeGenerics(m),
+		"sizeCache":      makeSizeCache(m),
+		"oneOfCache":     makeOneOfCache(m),
+		"unmarshal":      makeUnmarshal(m),
+		"validOneOf":     makeValidOneOf(m),
+		"valid":          makeValid(m),
+		"zeroOneOfCache": makeZeroOneOfCache(m),
+		"size":           makeSize(m),
+		"marshal":        makeMarshal(m),
 	})
 }
 
@@ -842,7 +854,7 @@ func makeValidOneOf(m message) string {
 			fixedRepeatedFixedBytesTemplate: functionTemplate,
 
 			customs: typeTemplate{
-				single: `	if (&c.${fieldName}).CalculateCanotoSize() != 0 {
+				single: `	if (&c.${fieldName}).CalculateCanotoCache(); (&c.${fieldName}).CachedCanotoSize() != 0 {
 		if ${oneOf}OneOf != 0 {
 			return false
 		}
@@ -853,7 +865,7 @@ func makeValidOneOf(m message) string {
 				fixedRepeated: `	{
 		isZero := true
 		for i := range c.${fieldName} {
-			if (&c.${fieldName}[i]).CalculateCanotoSize() != 0 {
+			if (&c.${fieldName}[i]).CalculateCanotoCache(); (&c.${fieldName}[i]).CachedCanotoSize() != 0 {
 				isZero = false
 				break
 			}
@@ -916,6 +928,14 @@ func makeValid(m message) string {
 			fixedRepeated: repeatedFieldTemplate,
 		},
 	})
+}
+
+func makeZeroOneOfCache(m message) string {
+	var s strings.Builder
+	for _, oneOf := range m.OneOfs() {
+		_, _ = fmt.Fprintf(&s, "\tc.canotoData.%sOneOf = 0\n", oneOf)
+	}
+	return s.String()
 }
 
 func makeSize(m message) string {
@@ -1019,12 +1039,14 @@ func makeSize(m message) string {
 	}
 `,
 		customs: typeTemplate{
-			single: `	if fieldSize := (&c.${fieldName}).CalculateCanotoSize(); fieldSize != 0 {
+			single: `	(&c.${fieldName}).CalculateCanotoCache()
+	if fieldSize := (&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
 		c.canotoData.size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize${sizeOneOf}
 	}
 `,
 			repeated: `	for i := range c.${fieldName} {
-		fieldSize := (&c.${fieldName}[i]).CalculateCanotoSize()
+		(&c.${fieldName}[i]).CalculateCanotoCache()
+		fieldSize := (&c.${fieldName}[i]).CachedCanotoSize()
 		c.canotoData.size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize${sizeOneOf}
 	}
 `,
@@ -1034,7 +1056,8 @@ func makeSize(m message) string {
 			totalSize    int
 		)
 		for i := range c.${fieldName} {
-			fieldSize := (&c.${fieldName}[i]).CalculateCanotoSize()
+			(&c.${fieldName}[i]).CalculateCanotoCache()
+			fieldSize := (&c.${fieldName}[i]).CachedCanotoSize()
 			fieldSizeSum += fieldSize
 			totalSize += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 		}
