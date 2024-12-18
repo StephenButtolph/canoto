@@ -109,6 +109,25 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 		)
 	}
 
+	var (
+		unmarshalOneOf  string
+		sizeOneOf       string
+		sizeOneOfIndent string
+	)
+	if oneOfName != "" {
+		assignOneOf := fmt.Sprintf("c.canotoData.%sOneOf = %d", oneOfName, fieldNumber)
+		unmarshalOneOf = fmt.Sprintf(`
+			if c.canotoData.%sOneOf != 0 {
+				return canoto.ErrDuplicateOneOf
+			}
+			%s`,
+			oneOfName,
+			assignOneOf,
+		)
+		sizeOneOf = "\n\t\t" + assignOneOf
+		sizeOneOfIndent = "\n\t\t\t" + assignOneOf
+	}
+
 	name := af.Names[0].Name
 	canonicalizedName := canonicalizeName(name)
 	return field{
@@ -125,6 +144,10 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 			"fieldName":         name,
 			"escapedFieldName":  canonicalizedName,
 			"suffix":            canotoType.Suffix(),
+			"oneOf":             oneOfName,
+			"unmarshalOneOf":    unmarshalOneOf,
+			"sizeOneOf":         sizeOneOf,
+			"sizeOneOfIndent":   sizeOneOfIndent,
 		},
 	}, true, nil
 }

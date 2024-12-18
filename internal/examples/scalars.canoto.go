@@ -162,6 +162,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadInt(r, &c.Int8); err != nil {
 				return err
 			}
@@ -172,6 +173,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadInt(r, &c.Int16); err != nil {
 				return err
 			}
@@ -182,6 +184,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadInt(r, &c.Int32); err != nil {
 				return err
 			}
@@ -192,6 +195,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadInt(r, &c.Int64); err != nil {
 				return err
 			}
@@ -202,6 +206,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadInt(r, &c.Uint8); err != nil {
 				return err
 			}
@@ -212,6 +217,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadInt(r, &c.Uint16); err != nil {
 				return err
 			}
@@ -222,6 +228,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadInt(r, &c.Uint32); err != nil {
 				return err
 			}
@@ -232,6 +239,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadInt(r, &c.Uint64); err != nil {
 				return err
 			}
@@ -242,6 +250,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadSint(r, &c.Sint8); err != nil {
 				return err
 			}
@@ -252,6 +261,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadSint(r, &c.Sint16); err != nil {
 				return err
 			}
@@ -262,6 +272,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadSint(r, &c.Sint32); err != nil {
 				return err
 			}
@@ -272,6 +283,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadSint(r, &c.Sint64); err != nil {
 				return err
 			}
@@ -282,6 +294,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.I32 {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadFint32(r, &c.Fixed32); err != nil {
 				return err
 			}
@@ -292,6 +305,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.I64 {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadFint64(r, &c.Fixed64); err != nil {
 				return err
 			}
@@ -302,6 +316,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.I32 {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadFint32(r, &c.Sfixed32); err != nil {
 				return err
 			}
@@ -312,6 +327,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.I64 {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadFint64(r, &c.Sfixed64); err != nil {
 				return err
 			}
@@ -322,6 +338,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadBool(r, &c.Bool); err != nil {
 				return err
 			}
@@ -332,6 +349,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadString(r, &c.String); err != nil {
 				return err
 			}
@@ -342,6 +360,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadBytes(r, &c.Bytes); err != nil {
 				return err
 			}
@@ -1790,6 +1809,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.I32 {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadFint32(r, &c.CustomUint32); err != nil {
 				return err
 			}
@@ -1800,6 +1820,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadString(r, &c.CustomString); err != nil {
 				return err
 			}
@@ -1810,6 +1831,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
+
 			if err := canoto.ReadBytes(r, &c.CustomBytes); err != nil {
 				return err
 			}
