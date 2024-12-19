@@ -2,7 +2,10 @@
 
 package examples
 
-import "github.com/StephenButtolph/canoto"
+import (
+	"github.com/StephenButtolph/canoto"
+	"github.com/StephenButtolph/canoto/internal/big"
+)
 
 const constRepeatedUint64Len = 3
 
@@ -105,7 +108,7 @@ type Scalars struct {
 	FixedRepeatedFixedBytes         [3][32]byte                    `canoto:"fixed repeated fixed bytes,62"`
 	FixedRepeatedLargestFieldNumber [3]LargestFieldNumber[int32]   `canoto:"fixed repeated field,63"`
 	ConstRepeatedUint64             [constRepeatedUint64Len]uint64 `canoto:"fixed repeated int,64"`
-	CustomType                      CustomType                     `canoto:"field,65"`
+	CustomType                      big.Int                        `canoto:"field,65"`
 	CustomUint32                    customUint32                   `canoto:"fint32,66"`
 	CustomString                    customString                   `canoto:"string,67"`
 	CustomBytes                     customBytes                    `canoto:"bytes,68"`

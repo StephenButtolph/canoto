@@ -137,6 +137,7 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 		switch tt := t.(type) {
 		case *ast.Ident:
 			goType = tt.Name
+		case *ast.SelectorExpr:
 		case *ast.ArrayType:
 			t = tt.Elt
 			continue
