@@ -97,36 +97,32 @@ const (
 )
 
 type canotoData_Scalars struct {
-	// Enforce noCopy before atomic usage.
-	// See https://github.com/StephenButtolph/canoto/pull/32
-	_ atomic.Int64
-
-	size                    int
-	RepeatedInt8Size        int
-	RepeatedInt16Size       int
-	RepeatedInt32Size       int
-	RepeatedInt64Size       int
-	RepeatedUint8Size       int
-	RepeatedUint16Size      int
-	RepeatedUint32Size      int
-	RepeatedUint64Size      int
-	RepeatedSint8Size       int
-	RepeatedSint16Size      int
-	RepeatedSint32Size      int
-	RepeatedSint64Size      int
-	FixedRepeatedInt8Size   int
-	FixedRepeatedInt16Size  int
-	FixedRepeatedInt32Size  int
-	FixedRepeatedInt64Size  int
-	FixedRepeatedUint8Size  int
-	FixedRepeatedUint16Size int
-	FixedRepeatedUint32Size int
-	FixedRepeatedUint64Size int
-	FixedRepeatedSint8Size  int
-	FixedRepeatedSint16Size int
-	FixedRepeatedSint32Size int
-	FixedRepeatedSint64Size int
-	ConstRepeatedUint64Size int
+	size                    atomic.Int64
+	RepeatedInt8Size        atomic.Int64
+	RepeatedInt16Size       atomic.Int64
+	RepeatedInt32Size       atomic.Int64
+	RepeatedInt64Size       atomic.Int64
+	RepeatedUint8Size       atomic.Int64
+	RepeatedUint16Size      atomic.Int64
+	RepeatedUint32Size      atomic.Int64
+	RepeatedUint64Size      atomic.Int64
+	RepeatedSint8Size       atomic.Int64
+	RepeatedSint16Size      atomic.Int64
+	RepeatedSint32Size      atomic.Int64
+	RepeatedSint64Size      atomic.Int64
+	FixedRepeatedInt8Size   atomic.Int64
+	FixedRepeatedInt16Size  atomic.Int64
+	FixedRepeatedInt32Size  atomic.Int64
+	FixedRepeatedInt64Size  atomic.Int64
+	FixedRepeatedUint8Size  atomic.Int64
+	FixedRepeatedUint16Size atomic.Int64
+	FixedRepeatedUint32Size atomic.Int64
+	FixedRepeatedUint64Size atomic.Int64
+	FixedRepeatedSint8Size  atomic.Int64
+	FixedRepeatedSint16Size atomic.Int64
+	FixedRepeatedSint32Size atomic.Int64
+	FixedRepeatedSint64Size atomic.Int64
+	ConstRepeatedUint64Size atomic.Int64
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -2099,301 +2095,323 @@ func (c *Scalars) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
-//
-// It is not safe to call this function concurrently.
 func (c *Scalars) CalculateCanotoCache() {
-	c.canotoData.size = 0
+	var size int
 	if !canoto.IsZero(c.Int8) {
-		c.canotoData.size += len(canoto__Scalars__Int8__tag) + canoto.SizeInt(c.Int8)
+		size += len(canoto__Scalars__Int8__tag) + canoto.SizeInt(c.Int8)
 	}
 	if !canoto.IsZero(c.Int16) {
-		c.canotoData.size += len(canoto__Scalars__Int16__tag) + canoto.SizeInt(c.Int16)
+		size += len(canoto__Scalars__Int16__tag) + canoto.SizeInt(c.Int16)
 	}
 	if !canoto.IsZero(c.Int32) {
-		c.canotoData.size += len(canoto__Scalars__Int32__tag) + canoto.SizeInt(c.Int32)
+		size += len(canoto__Scalars__Int32__tag) + canoto.SizeInt(c.Int32)
 	}
 	if !canoto.IsZero(c.Int64) {
-		c.canotoData.size += len(canoto__Scalars__Int64__tag) + canoto.SizeInt(c.Int64)
+		size += len(canoto__Scalars__Int64__tag) + canoto.SizeInt(c.Int64)
 	}
 	if !canoto.IsZero(c.Uint8) {
-		c.canotoData.size += len(canoto__Scalars__Uint8__tag) + canoto.SizeInt(c.Uint8)
+		size += len(canoto__Scalars__Uint8__tag) + canoto.SizeInt(c.Uint8)
 	}
 	if !canoto.IsZero(c.Uint16) {
-		c.canotoData.size += len(canoto__Scalars__Uint16__tag) + canoto.SizeInt(c.Uint16)
+		size += len(canoto__Scalars__Uint16__tag) + canoto.SizeInt(c.Uint16)
 	}
 	if !canoto.IsZero(c.Uint32) {
-		c.canotoData.size += len(canoto__Scalars__Uint32__tag) + canoto.SizeInt(c.Uint32)
+		size += len(canoto__Scalars__Uint32__tag) + canoto.SizeInt(c.Uint32)
 	}
 	if !canoto.IsZero(c.Uint64) {
-		c.canotoData.size += len(canoto__Scalars__Uint64__tag) + canoto.SizeInt(c.Uint64)
+		size += len(canoto__Scalars__Uint64__tag) + canoto.SizeInt(c.Uint64)
 	}
 	if !canoto.IsZero(c.Sint8) {
-		c.canotoData.size += len(canoto__Scalars__Sint8__tag) + canoto.SizeSint(c.Sint8)
+		size += len(canoto__Scalars__Sint8__tag) + canoto.SizeSint(c.Sint8)
 	}
 	if !canoto.IsZero(c.Sint16) {
-		c.canotoData.size += len(canoto__Scalars__Sint16__tag) + canoto.SizeSint(c.Sint16)
+		size += len(canoto__Scalars__Sint16__tag) + canoto.SizeSint(c.Sint16)
 	}
 	if !canoto.IsZero(c.Sint32) {
-		c.canotoData.size += len(canoto__Scalars__Sint32__tag) + canoto.SizeSint(c.Sint32)
+		size += len(canoto__Scalars__Sint32__tag) + canoto.SizeSint(c.Sint32)
 	}
 	if !canoto.IsZero(c.Sint64) {
-		c.canotoData.size += len(canoto__Scalars__Sint64__tag) + canoto.SizeSint(c.Sint64)
+		size += len(canoto__Scalars__Sint64__tag) + canoto.SizeSint(c.Sint64)
 	}
 	if !canoto.IsZero(c.Fixed32) {
-		c.canotoData.size += len(canoto__Scalars__Fixed32__tag) + canoto.SizeFint32
+		size += len(canoto__Scalars__Fixed32__tag) + canoto.SizeFint32
 	}
 	if !canoto.IsZero(c.Fixed64) {
-		c.canotoData.size += len(canoto__Scalars__Fixed64__tag) + canoto.SizeFint64
+		size += len(canoto__Scalars__Fixed64__tag) + canoto.SizeFint64
 	}
 	if !canoto.IsZero(c.Sfixed32) {
-		c.canotoData.size += len(canoto__Scalars__Sfixed32__tag) + canoto.SizeFint32
+		size += len(canoto__Scalars__Sfixed32__tag) + canoto.SizeFint32
 	}
 	if !canoto.IsZero(c.Sfixed64) {
-		c.canotoData.size += len(canoto__Scalars__Sfixed64__tag) + canoto.SizeFint64
+		size += len(canoto__Scalars__Sfixed64__tag) + canoto.SizeFint64
 	}
 	if !canoto.IsZero(c.Bool) {
-		c.canotoData.size += len(canoto__Scalars__Bool__tag) + canoto.SizeBool
+		size += len(canoto__Scalars__Bool__tag) + canoto.SizeBool
 	}
 	if len(c.String) != 0 {
-		c.canotoData.size += len(canoto__Scalars__String__tag) + canoto.SizeBytes(c.String)
+		size += len(canoto__Scalars__String__tag) + canoto.SizeBytes(c.String)
 	}
 	if len(c.Bytes) != 0 {
-		c.canotoData.size += len(canoto__Scalars__Bytes__tag) + canoto.SizeBytes(c.Bytes)
+		size += len(canoto__Scalars__Bytes__tag) + canoto.SizeBytes(c.Bytes)
 	}
 	(&c.LargestFieldNumber).CalculateCanotoCache()
 	if fieldSize := (&c.LargestFieldNumber).CachedCanotoSize(); fieldSize != 0 {
-		c.canotoData.size += len(canoto__Scalars__LargestFieldNumber__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		size += len(canoto__Scalars__LargestFieldNumber__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 	if len(c.RepeatedInt8) != 0 {
-		c.canotoData.RepeatedInt8Size = 0
+		var fieldSize int
 		for _, v := range c.RepeatedInt8 {
-			c.canotoData.RepeatedInt8Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__RepeatedInt8__tag) + canoto.SizeInt(int64(c.canotoData.RepeatedInt8Size)) + c.canotoData.RepeatedInt8Size
+		size += len(canoto__Scalars__RepeatedInt8__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedInt8Size.Store(int64(fieldSize))
 	}
 	if len(c.RepeatedInt16) != 0 {
-		c.canotoData.RepeatedInt16Size = 0
+		var fieldSize int
 		for _, v := range c.RepeatedInt16 {
-			c.canotoData.RepeatedInt16Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__RepeatedInt16__tag) + canoto.SizeInt(int64(c.canotoData.RepeatedInt16Size)) + c.canotoData.RepeatedInt16Size
+		size += len(canoto__Scalars__RepeatedInt16__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedInt16Size.Store(int64(fieldSize))
 	}
 	if len(c.RepeatedInt32) != 0 {
-		c.canotoData.RepeatedInt32Size = 0
+		var fieldSize int
 		for _, v := range c.RepeatedInt32 {
-			c.canotoData.RepeatedInt32Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__RepeatedInt32__tag) + canoto.SizeInt(int64(c.canotoData.RepeatedInt32Size)) + c.canotoData.RepeatedInt32Size
+		size += len(canoto__Scalars__RepeatedInt32__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedInt32Size.Store(int64(fieldSize))
 	}
 	if len(c.RepeatedInt64) != 0 {
-		c.canotoData.RepeatedInt64Size = 0
+		var fieldSize int
 		for _, v := range c.RepeatedInt64 {
-			c.canotoData.RepeatedInt64Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__RepeatedInt64__tag) + canoto.SizeInt(int64(c.canotoData.RepeatedInt64Size)) + c.canotoData.RepeatedInt64Size
+		size += len(canoto__Scalars__RepeatedInt64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedInt64Size.Store(int64(fieldSize))
 	}
 	if len(c.RepeatedUint8) != 0 {
-		c.canotoData.RepeatedUint8Size = 0
+		var fieldSize int
 		for _, v := range c.RepeatedUint8 {
-			c.canotoData.RepeatedUint8Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__RepeatedUint8__tag) + canoto.SizeInt(int64(c.canotoData.RepeatedUint8Size)) + c.canotoData.RepeatedUint8Size
+		size += len(canoto__Scalars__RepeatedUint8__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedUint8Size.Store(int64(fieldSize))
 	}
 	if len(c.RepeatedUint16) != 0 {
-		c.canotoData.RepeatedUint16Size = 0
+		var fieldSize int
 		for _, v := range c.RepeatedUint16 {
-			c.canotoData.RepeatedUint16Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__RepeatedUint16__tag) + canoto.SizeInt(int64(c.canotoData.RepeatedUint16Size)) + c.canotoData.RepeatedUint16Size
+		size += len(canoto__Scalars__RepeatedUint16__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedUint16Size.Store(int64(fieldSize))
 	}
 	if len(c.RepeatedUint32) != 0 {
-		c.canotoData.RepeatedUint32Size = 0
+		var fieldSize int
 		for _, v := range c.RepeatedUint32 {
-			c.canotoData.RepeatedUint32Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__RepeatedUint32__tag) + canoto.SizeInt(int64(c.canotoData.RepeatedUint32Size)) + c.canotoData.RepeatedUint32Size
+		size += len(canoto__Scalars__RepeatedUint32__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedUint32Size.Store(int64(fieldSize))
 	}
 	if len(c.RepeatedUint64) != 0 {
-		c.canotoData.RepeatedUint64Size = 0
+		var fieldSize int
 		for _, v := range c.RepeatedUint64 {
-			c.canotoData.RepeatedUint64Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__RepeatedUint64__tag) + canoto.SizeInt(int64(c.canotoData.RepeatedUint64Size)) + c.canotoData.RepeatedUint64Size
+		size += len(canoto__Scalars__RepeatedUint64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedUint64Size.Store(int64(fieldSize))
 	}
 	if len(c.RepeatedSint8) != 0 {
-		c.canotoData.RepeatedSint8Size = 0
+		var fieldSize int
 		for _, v := range c.RepeatedSint8 {
-			c.canotoData.RepeatedSint8Size += canoto.SizeSint(v)
+			fieldSize += canoto.SizeSint(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__RepeatedSint8__tag) + canoto.SizeInt(int64(c.canotoData.RepeatedSint8Size)) + c.canotoData.RepeatedSint8Size
+		size += len(canoto__Scalars__RepeatedSint8__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedSint8Size.Store(int64(fieldSize))
 	}
 	if len(c.RepeatedSint16) != 0 {
-		c.canotoData.RepeatedSint16Size = 0
+		var fieldSize int
 		for _, v := range c.RepeatedSint16 {
-			c.canotoData.RepeatedSint16Size += canoto.SizeSint(v)
+			fieldSize += canoto.SizeSint(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__RepeatedSint16__tag) + canoto.SizeInt(int64(c.canotoData.RepeatedSint16Size)) + c.canotoData.RepeatedSint16Size
+		size += len(canoto__Scalars__RepeatedSint16__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedSint16Size.Store(int64(fieldSize))
 	}
 	if len(c.RepeatedSint32) != 0 {
-		c.canotoData.RepeatedSint32Size = 0
+		var fieldSize int
 		for _, v := range c.RepeatedSint32 {
-			c.canotoData.RepeatedSint32Size += canoto.SizeSint(v)
+			fieldSize += canoto.SizeSint(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__RepeatedSint32__tag) + canoto.SizeInt(int64(c.canotoData.RepeatedSint32Size)) + c.canotoData.RepeatedSint32Size
+		size += len(canoto__Scalars__RepeatedSint32__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedSint32Size.Store(int64(fieldSize))
 	}
 	if len(c.RepeatedSint64) != 0 {
-		c.canotoData.RepeatedSint64Size = 0
+		var fieldSize int
 		for _, v := range c.RepeatedSint64 {
-			c.canotoData.RepeatedSint64Size += canoto.SizeSint(v)
+			fieldSize += canoto.SizeSint(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__RepeatedSint64__tag) + canoto.SizeInt(int64(c.canotoData.RepeatedSint64Size)) + c.canotoData.RepeatedSint64Size
+		size += len(canoto__Scalars__RepeatedSint64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedSint64Size.Store(int64(fieldSize))
 	}
 	if num := len(c.RepeatedFixed32); num != 0 {
 		fieldSize := num * canoto.SizeFint32
-		c.canotoData.size += len(canoto__Scalars__RepeatedFixed32__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		size += len(canoto__Scalars__RepeatedFixed32__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 	if num := len(c.RepeatedFixed64); num != 0 {
 		fieldSize := num * canoto.SizeFint64
-		c.canotoData.size += len(canoto__Scalars__RepeatedFixed64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		size += len(canoto__Scalars__RepeatedFixed64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 	if num := len(c.RepeatedSfixed32); num != 0 {
 		fieldSize := num * canoto.SizeFint32
-		c.canotoData.size += len(canoto__Scalars__RepeatedSfixed32__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		size += len(canoto__Scalars__RepeatedSfixed32__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 	if num := len(c.RepeatedSfixed64); num != 0 {
 		fieldSize := num * canoto.SizeFint64
-		c.canotoData.size += len(canoto__Scalars__RepeatedSfixed64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		size += len(canoto__Scalars__RepeatedSfixed64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 	if num := len(c.RepeatedBool); num != 0 {
 		fieldSize := num * canoto.SizeBool
-		c.canotoData.size += len(canoto__Scalars__RepeatedBool__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		size += len(canoto__Scalars__RepeatedBool__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 	for _, v := range c.RepeatedString {
-		c.canotoData.size += len(canoto__Scalars__RepeatedString__tag) + canoto.SizeBytes(v)
+		size += len(canoto__Scalars__RepeatedString__tag) + canoto.SizeBytes(v)
 	}
 	for _, v := range c.RepeatedBytes {
-		c.canotoData.size += len(canoto__Scalars__RepeatedBytes__tag) + canoto.SizeBytes(v)
+		size += len(canoto__Scalars__RepeatedBytes__tag) + canoto.SizeBytes(v)
 	}
 	for i := range c.RepeatedLargestFieldNumber {
 		(&c.RepeatedLargestFieldNumber[i]).CalculateCanotoCache()
 		fieldSize := (&c.RepeatedLargestFieldNumber[i]).CachedCanotoSize()
-		c.canotoData.size += len(canoto__Scalars__RepeatedLargestFieldNumber__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		size += len(canoto__Scalars__RepeatedLargestFieldNumber__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt8) {
-		c.canotoData.FixedRepeatedInt8Size = 0
+		var fieldSize int
 		for _, v := range c.FixedRepeatedInt8 {
-			c.canotoData.FixedRepeatedInt8Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedInt8__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedInt8Size)) + c.canotoData.FixedRepeatedInt8Size
+		size += len(canoto__Scalars__FixedRepeatedInt8__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.FixedRepeatedInt8Size.Store(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt16) {
-		c.canotoData.FixedRepeatedInt16Size = 0
+		var fieldSize int
 		for _, v := range c.FixedRepeatedInt16 {
-			c.canotoData.FixedRepeatedInt16Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedInt16__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedInt16Size)) + c.canotoData.FixedRepeatedInt16Size
+		size += len(canoto__Scalars__FixedRepeatedInt16__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.FixedRepeatedInt16Size.Store(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt32) {
-		c.canotoData.FixedRepeatedInt32Size = 0
+		var fieldSize int
 		for _, v := range c.FixedRepeatedInt32 {
-			c.canotoData.FixedRepeatedInt32Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedInt32__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedInt32Size)) + c.canotoData.FixedRepeatedInt32Size
+		size += len(canoto__Scalars__FixedRepeatedInt32__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.FixedRepeatedInt32Size.Store(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt64) {
-		c.canotoData.FixedRepeatedInt64Size = 0
+		var fieldSize int
 		for _, v := range c.FixedRepeatedInt64 {
-			c.canotoData.FixedRepeatedInt64Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedInt64__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedInt64Size)) + c.canotoData.FixedRepeatedInt64Size
+		size += len(canoto__Scalars__FixedRepeatedInt64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.FixedRepeatedInt64Size.Store(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint8) {
-		c.canotoData.FixedRepeatedUint8Size = 0
+		var fieldSize int
 		for _, v := range c.FixedRepeatedUint8 {
-			c.canotoData.FixedRepeatedUint8Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedUint8__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedUint8Size)) + c.canotoData.FixedRepeatedUint8Size
+		size += len(canoto__Scalars__FixedRepeatedUint8__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.FixedRepeatedUint8Size.Store(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint16) {
-		c.canotoData.FixedRepeatedUint16Size = 0
+		var fieldSize int
 		for _, v := range c.FixedRepeatedUint16 {
-			c.canotoData.FixedRepeatedUint16Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedUint16__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedUint16Size)) + c.canotoData.FixedRepeatedUint16Size
+		size += len(canoto__Scalars__FixedRepeatedUint16__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.FixedRepeatedUint16Size.Store(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint32) {
-		c.canotoData.FixedRepeatedUint32Size = 0
+		var fieldSize int
 		for _, v := range c.FixedRepeatedUint32 {
-			c.canotoData.FixedRepeatedUint32Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedUint32__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedUint32Size)) + c.canotoData.FixedRepeatedUint32Size
+		size += len(canoto__Scalars__FixedRepeatedUint32__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.FixedRepeatedUint32Size.Store(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint64) {
-		c.canotoData.FixedRepeatedUint64Size = 0
+		var fieldSize int
 		for _, v := range c.FixedRepeatedUint64 {
-			c.canotoData.FixedRepeatedUint64Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedUint64__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedUint64Size)) + c.canotoData.FixedRepeatedUint64Size
+		size += len(canoto__Scalars__FixedRepeatedUint64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.FixedRepeatedUint64Size.Store(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint8) {
-		c.canotoData.FixedRepeatedSint8Size = 0
+		var fieldSize int
 		for _, v := range c.FixedRepeatedSint8 {
-			c.canotoData.FixedRepeatedSint8Size += canoto.SizeSint(v)
+			fieldSize += canoto.SizeSint(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedSint8__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedSint8Size)) + c.canotoData.FixedRepeatedSint8Size
+		size += len(canoto__Scalars__FixedRepeatedSint8__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.FixedRepeatedSint8Size.Store(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint16) {
-		c.canotoData.FixedRepeatedSint16Size = 0
+		var fieldSize int
 		for _, v := range c.FixedRepeatedSint16 {
-			c.canotoData.FixedRepeatedSint16Size += canoto.SizeSint(v)
+			fieldSize += canoto.SizeSint(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedSint16__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedSint16Size)) + c.canotoData.FixedRepeatedSint16Size
+		size += len(canoto__Scalars__FixedRepeatedSint16__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.FixedRepeatedSint16Size.Store(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint32) {
-		c.canotoData.FixedRepeatedSint32Size = 0
+		var fieldSize int
 		for _, v := range c.FixedRepeatedSint32 {
-			c.canotoData.FixedRepeatedSint32Size += canoto.SizeSint(v)
+			fieldSize += canoto.SizeSint(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedSint32__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedSint32Size)) + c.canotoData.FixedRepeatedSint32Size
+		size += len(canoto__Scalars__FixedRepeatedSint32__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.FixedRepeatedSint32Size.Store(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint64) {
-		c.canotoData.FixedRepeatedSint64Size = 0
+		var fieldSize int
 		for _, v := range c.FixedRepeatedSint64 {
-			c.canotoData.FixedRepeatedSint64Size += canoto.SizeSint(v)
+			fieldSize += canoto.SizeSint(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedSint64__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedSint64Size)) + c.canotoData.FixedRepeatedSint64Size
+		size += len(canoto__Scalars__FixedRepeatedSint64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.FixedRepeatedSint64Size.Store(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedFixed32) {
 		const fieldSize = len(c.FixedRepeatedFixed32) * canoto.SizeFint32
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedFixed32__tag) + fieldSize + canoto.SizeInt(int64(fieldSize))
+		size += len(canoto__Scalars__FixedRepeatedFixed32__tag) + fieldSize + canoto.SizeInt(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedFixed64) {
 		const fieldSize = len(c.FixedRepeatedFixed64) * canoto.SizeFint64
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedFixed64__tag) + fieldSize + canoto.SizeInt(int64(fieldSize))
+		size += len(canoto__Scalars__FixedRepeatedFixed64__tag) + fieldSize + canoto.SizeInt(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedSfixed32) {
 		const fieldSize = len(c.FixedRepeatedSfixed32) * canoto.SizeFint32
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedSfixed32__tag) + fieldSize + canoto.SizeInt(int64(fieldSize))
+		size += len(canoto__Scalars__FixedRepeatedSfixed32__tag) + fieldSize + canoto.SizeInt(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedSfixed64) {
 		const fieldSize = len(c.FixedRepeatedSfixed64) * canoto.SizeFint64
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedSfixed64__tag) + fieldSize + canoto.SizeInt(int64(fieldSize))
+		size += len(canoto__Scalars__FixedRepeatedSfixed64__tag) + fieldSize + canoto.SizeInt(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedBool) {
 		const fieldSize = len(c.FixedRepeatedBool) * canoto.SizeBool
-		c.canotoData.size += len(canoto__Scalars__FixedRepeatedBool__tag) + fieldSize + canoto.SizeInt(int64(fieldSize))
+		size += len(canoto__Scalars__FixedRepeatedBool__tag) + fieldSize + canoto.SizeInt(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedString) {
 		for _, v := range c.FixedRepeatedString {
-			c.canotoData.size += len(canoto__Scalars__FixedRepeatedString__tag) + canoto.SizeBytes(v)
+			size += len(canoto__Scalars__FixedRepeatedString__tag) + canoto.SizeBytes(v)
 		}
 	}
 	if !canoto.IsZero(c.FixedBytes) {
-		c.canotoData.size += len(canoto__Scalars__FixedBytes__tag) + canoto.SizeBytes(c.FixedBytes[:])
+		size += len(canoto__Scalars__FixedBytes__tag) + canoto.SizeBytes(c.FixedBytes[:])
 	}
 	if num := len(c.RepeatedFixedBytes); num != 0 {
 		fieldSize := len(canoto__Scalars__RepeatedFixedBytes__tag) + canoto.SizeBytes(c.RepeatedFixedBytes[0][:])
-		c.canotoData.size += num * fieldSize
+		size += num * fieldSize
 	}
 	{
 		isZero := true
@@ -2405,13 +2423,13 @@ func (c *Scalars) CalculateCanotoCache() {
 		}
 		if !isZero {
 			for _, v := range c.FixedRepeatedBytes {
-				c.canotoData.size += len(canoto__Scalars__FixedRepeatedBytes__tag) + canoto.SizeBytes(v)
+				size += len(canoto__Scalars__FixedRepeatedBytes__tag) + canoto.SizeBytes(v)
 			}
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedFixedBytes) {
 		for i := range c.FixedRepeatedFixedBytes {
-			c.canotoData.size += len(canoto__Scalars__FixedRepeatedFixedBytes__tag) + canoto.SizeBytes(c.FixedRepeatedFixedBytes[i][:])
+			size += len(canoto__Scalars__FixedRepeatedFixedBytes__tag) + canoto.SizeBytes(c.FixedRepeatedFixedBytes[i][:])
 		}
 	}
 	{
@@ -2426,38 +2444,39 @@ func (c *Scalars) CalculateCanotoCache() {
 			totalSize += len(canoto__Scalars__FixedRepeatedLargestFieldNumber__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 		}
 		if fieldSizeSum != 0 {
-			c.canotoData.size += totalSize
+			size += totalSize
 		}
 	}
 	if !canoto.IsZero(c.ConstRepeatedUint64) {
-		c.canotoData.ConstRepeatedUint64Size = 0
+		var fieldSize int
 		for _, v := range c.ConstRepeatedUint64 {
-			c.canotoData.ConstRepeatedUint64Size += canoto.SizeInt(v)
+			fieldSize += canoto.SizeInt(v)
 		}
-		c.canotoData.size += len(canoto__Scalars__ConstRepeatedUint64__tag) + canoto.SizeInt(int64(c.canotoData.ConstRepeatedUint64Size)) + c.canotoData.ConstRepeatedUint64Size
+		size += len(canoto__Scalars__ConstRepeatedUint64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		c.canotoData.ConstRepeatedUint64Size.Store(int64(fieldSize))
 	}
 	(&c.CustomType).CalculateCanotoCache()
 	if fieldSize := (&c.CustomType).CachedCanotoSize(); fieldSize != 0 {
-		c.canotoData.size += len(canoto__Scalars__CustomType__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		size += len(canoto__Scalars__CustomType__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 	if !canoto.IsZero(c.CustomUint32) {
-		c.canotoData.size += len(canoto__Scalars__CustomUint32__tag) + canoto.SizeFint32
+		size += len(canoto__Scalars__CustomUint32__tag) + canoto.SizeFint32
 	}
 	if len(c.CustomString) != 0 {
-		c.canotoData.size += len(canoto__Scalars__CustomString__tag) + canoto.SizeBytes(c.CustomString)
+		size += len(canoto__Scalars__CustomString__tag) + canoto.SizeBytes(c.CustomString)
 	}
 	if len(c.CustomBytes) != 0 {
-		c.canotoData.size += len(canoto__Scalars__CustomBytes__tag) + canoto.SizeBytes(c.CustomBytes)
+		size += len(canoto__Scalars__CustomBytes__tag) + canoto.SizeBytes(c.CustomBytes)
 	}
 	if !canoto.IsZero(c.CustomFixedBytes) {
-		c.canotoData.size += len(canoto__Scalars__CustomFixedBytes__tag) + canoto.SizeBytes(c.CustomFixedBytes[:])
+		size += len(canoto__Scalars__CustomFixedBytes__tag) + canoto.SizeBytes(c.CustomFixedBytes[:])
 	}
 	for _, v := range c.CustomRepeatedBytes {
-		c.canotoData.size += len(canoto__Scalars__CustomRepeatedBytes__tag) + canoto.SizeBytes(v)
+		size += len(canoto__Scalars__CustomRepeatedBytes__tag) + canoto.SizeBytes(v)
 	}
 	if num := len(c.CustomRepeatedFixedBytes); num != 0 {
 		fieldSize := len(canoto__Scalars__CustomRepeatedFixedBytes__tag) + canoto.SizeBytes(c.CustomRepeatedFixedBytes[0][:])
-		c.canotoData.size += num * fieldSize
+		size += num * fieldSize
 	}
 	{
 		isZero := true
@@ -2469,19 +2488,20 @@ func (c *Scalars) CalculateCanotoCache() {
 		}
 		if !isZero {
 			for _, v := range c.CustomFixedRepeatedBytes {
-				c.canotoData.size += len(canoto__Scalars__CustomFixedRepeatedBytes__tag) + canoto.SizeBytes(v)
+				size += len(canoto__Scalars__CustomFixedRepeatedBytes__tag) + canoto.SizeBytes(v)
 			}
 		}
 	}
 	if !canoto.IsZero(c.CustomFixedRepeatedFixedBytes) {
 		for i := range c.CustomFixedRepeatedFixedBytes {
-			c.canotoData.size += len(canoto__Scalars__CustomFixedRepeatedFixedBytes__tag) + canoto.SizeBytes(c.CustomFixedRepeatedFixedBytes[i][:])
+			size += len(canoto__Scalars__CustomFixedRepeatedFixedBytes__tag) + canoto.SizeBytes(c.CustomFixedRepeatedFixedBytes[i][:])
 		}
 	}
 	(&c.OneOf).CalculateCanotoCache()
 	if fieldSize := (&c.OneOf).CachedCanotoSize(); fieldSize != 0 {
-		c.canotoData.size += len(canoto__Scalars__OneOf__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		size += len(canoto__Scalars__OneOf__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
+	c.canotoData.size.Store(int64(size))
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -2492,14 +2512,12 @@ func (c *Scalars) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *Scalars) CachedCanotoSize() int {
-	return c.canotoData.size
+	return int(c.canotoData.size.Load())
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *Scalars) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := canoto.Writer{
@@ -2516,8 +2534,6 @@ func (c *Scalars) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 	if !canoto.IsZero(c.Int8) {
 		canoto.Append(w, canoto__Scalars__Int8__tag)
@@ -2602,84 +2618,84 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 	}
 	if len(c.RepeatedInt8) != 0 {
 		canoto.Append(w, canoto__Scalars__RepeatedInt8__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedInt8Size))
+		canoto.AppendInt(w, c.canotoData.RepeatedInt8Size.Load())
 		for _, v := range c.RepeatedInt8 {
 			canoto.AppendInt(w, v)
 		}
 	}
 	if len(c.RepeatedInt16) != 0 {
 		canoto.Append(w, canoto__Scalars__RepeatedInt16__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedInt16Size))
+		canoto.AppendInt(w, c.canotoData.RepeatedInt16Size.Load())
 		for _, v := range c.RepeatedInt16 {
 			canoto.AppendInt(w, v)
 		}
 	}
 	if len(c.RepeatedInt32) != 0 {
 		canoto.Append(w, canoto__Scalars__RepeatedInt32__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedInt32Size))
+		canoto.AppendInt(w, c.canotoData.RepeatedInt32Size.Load())
 		for _, v := range c.RepeatedInt32 {
 			canoto.AppendInt(w, v)
 		}
 	}
 	if len(c.RepeatedInt64) != 0 {
 		canoto.Append(w, canoto__Scalars__RepeatedInt64__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedInt64Size))
+		canoto.AppendInt(w, c.canotoData.RepeatedInt64Size.Load())
 		for _, v := range c.RepeatedInt64 {
 			canoto.AppendInt(w, v)
 		}
 	}
 	if len(c.RepeatedUint8) != 0 {
 		canoto.Append(w, canoto__Scalars__RepeatedUint8__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedUint8Size))
+		canoto.AppendInt(w, c.canotoData.RepeatedUint8Size.Load())
 		for _, v := range c.RepeatedUint8 {
 			canoto.AppendInt(w, v)
 		}
 	}
 	if len(c.RepeatedUint16) != 0 {
 		canoto.Append(w, canoto__Scalars__RepeatedUint16__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedUint16Size))
+		canoto.AppendInt(w, c.canotoData.RepeatedUint16Size.Load())
 		for _, v := range c.RepeatedUint16 {
 			canoto.AppendInt(w, v)
 		}
 	}
 	if len(c.RepeatedUint32) != 0 {
 		canoto.Append(w, canoto__Scalars__RepeatedUint32__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedUint32Size))
+		canoto.AppendInt(w, c.canotoData.RepeatedUint32Size.Load())
 		for _, v := range c.RepeatedUint32 {
 			canoto.AppendInt(w, v)
 		}
 	}
 	if len(c.RepeatedUint64) != 0 {
 		canoto.Append(w, canoto__Scalars__RepeatedUint64__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedUint64Size))
+		canoto.AppendInt(w, c.canotoData.RepeatedUint64Size.Load())
 		for _, v := range c.RepeatedUint64 {
 			canoto.AppendInt(w, v)
 		}
 	}
 	if len(c.RepeatedSint8) != 0 {
 		canoto.Append(w, canoto__Scalars__RepeatedSint8__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedSint8Size))
+		canoto.AppendInt(w, c.canotoData.RepeatedSint8Size.Load())
 		for _, v := range c.RepeatedSint8 {
 			canoto.AppendSint(w, v)
 		}
 	}
 	if len(c.RepeatedSint16) != 0 {
 		canoto.Append(w, canoto__Scalars__RepeatedSint16__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedSint16Size))
+		canoto.AppendInt(w, c.canotoData.RepeatedSint16Size.Load())
 		for _, v := range c.RepeatedSint16 {
 			canoto.AppendSint(w, v)
 		}
 	}
 	if len(c.RepeatedSint32) != 0 {
 		canoto.Append(w, canoto__Scalars__RepeatedSint32__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedSint32Size))
+		canoto.AppendInt(w, c.canotoData.RepeatedSint32Size.Load())
 		for _, v := range c.RepeatedSint32 {
 			canoto.AppendSint(w, v)
 		}
 	}
 	if len(c.RepeatedSint64) != 0 {
 		canoto.Append(w, canoto__Scalars__RepeatedSint64__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedSint64Size))
+		canoto.AppendInt(w, c.canotoData.RepeatedSint64Size.Load())
 		for _, v := range c.RepeatedSint64 {
 			canoto.AppendSint(w, v)
 		}
@@ -2734,84 +2750,84 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt8) {
 		canoto.Append(w, canoto__Scalars__FixedRepeatedInt8__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedInt8Size))
+		canoto.AppendInt(w, c.canotoData.FixedRepeatedInt8Size.Load())
 		for _, v := range c.FixedRepeatedInt8 {
 			canoto.AppendInt(w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt16) {
 		canoto.Append(w, canoto__Scalars__FixedRepeatedInt16__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedInt16Size))
+		canoto.AppendInt(w, c.canotoData.FixedRepeatedInt16Size.Load())
 		for _, v := range c.FixedRepeatedInt16 {
 			canoto.AppendInt(w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt32) {
 		canoto.Append(w, canoto__Scalars__FixedRepeatedInt32__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedInt32Size))
+		canoto.AppendInt(w, c.canotoData.FixedRepeatedInt32Size.Load())
 		for _, v := range c.FixedRepeatedInt32 {
 			canoto.AppendInt(w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt64) {
 		canoto.Append(w, canoto__Scalars__FixedRepeatedInt64__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedInt64Size))
+		canoto.AppendInt(w, c.canotoData.FixedRepeatedInt64Size.Load())
 		for _, v := range c.FixedRepeatedInt64 {
 			canoto.AppendInt(w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint8) {
 		canoto.Append(w, canoto__Scalars__FixedRepeatedUint8__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedUint8Size))
+		canoto.AppendInt(w, c.canotoData.FixedRepeatedUint8Size.Load())
 		for _, v := range c.FixedRepeatedUint8 {
 			canoto.AppendInt(w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint16) {
 		canoto.Append(w, canoto__Scalars__FixedRepeatedUint16__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedUint16Size))
+		canoto.AppendInt(w, c.canotoData.FixedRepeatedUint16Size.Load())
 		for _, v := range c.FixedRepeatedUint16 {
 			canoto.AppendInt(w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint32) {
 		canoto.Append(w, canoto__Scalars__FixedRepeatedUint32__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedUint32Size))
+		canoto.AppendInt(w, c.canotoData.FixedRepeatedUint32Size.Load())
 		for _, v := range c.FixedRepeatedUint32 {
 			canoto.AppendInt(w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint64) {
 		canoto.Append(w, canoto__Scalars__FixedRepeatedUint64__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedUint64Size))
+		canoto.AppendInt(w, c.canotoData.FixedRepeatedUint64Size.Load())
 		for _, v := range c.FixedRepeatedUint64 {
 			canoto.AppendInt(w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint8) {
 		canoto.Append(w, canoto__Scalars__FixedRepeatedSint8__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedSint8Size))
+		canoto.AppendInt(w, c.canotoData.FixedRepeatedSint8Size.Load())
 		for _, v := range c.FixedRepeatedSint8 {
 			canoto.AppendSint(w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint16) {
 		canoto.Append(w, canoto__Scalars__FixedRepeatedSint16__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedSint16Size))
+		canoto.AppendInt(w, c.canotoData.FixedRepeatedSint16Size.Load())
 		for _, v := range c.FixedRepeatedSint16 {
 			canoto.AppendSint(w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint32) {
 		canoto.Append(w, canoto__Scalars__FixedRepeatedSint32__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedSint32Size))
+		canoto.AppendInt(w, c.canotoData.FixedRepeatedSint32Size.Load())
 		for _, v := range c.FixedRepeatedSint32 {
 			canoto.AppendSint(w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint64) {
 		canoto.Append(w, canoto__Scalars__FixedRepeatedSint64__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedSint64Size))
+		canoto.AppendInt(w, c.canotoData.FixedRepeatedSint64Size.Load())
 		for _, v := range c.FixedRepeatedSint64 {
 			canoto.AppendSint(w, v)
 		}
@@ -2909,7 +2925,7 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 	}
 	if !canoto.IsZero(c.ConstRepeatedUint64) {
 		canoto.Append(w, canoto__Scalars__ConstRepeatedUint64__tag)
-		canoto.AppendInt(w, int64(c.canotoData.ConstRepeatedUint64Size))
+		canoto.AppendInt(w, c.canotoData.ConstRepeatedUint64Size.Load())
 		for _, v := range c.ConstRepeatedUint64 {
 			canoto.AppendInt(w, v)
 		}

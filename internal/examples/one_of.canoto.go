@@ -29,14 +29,10 @@ const (
 )
 
 type canotoData_OneOf struct {
-	// Enforce noCopy before atomic usage.
-	// See https://github.com/StephenButtolph/canoto/pull/32
-	_ atomic.Int64
+	size atomic.Int64
 
-	size int
-
-	aOneOf uint32
-	bOneOf uint32
+	aOneOf atomic.Uint32
+	bOneOf atomic.Uint32
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -81,10 +77,10 @@ func (c *OneOf) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.aOneOf != 0 {
+			if c.canotoData.aOneOf.Load() != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
-			c.canotoData.aOneOf = 1
+			c.canotoData.aOneOf.Store(1)
 
 			if err := canoto.ReadInt(r, &c.A1); err != nil {
 				return err
@@ -96,10 +92,10 @@ func (c *OneOf) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.bOneOf != 0 {
+			if c.canotoData.bOneOf.Load() != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
-			c.canotoData.bOneOf = 3
+			c.canotoData.bOneOf.Store(3)
 
 			if err := canoto.ReadInt(r, &c.B1); err != nil {
 				return err
@@ -111,10 +107,10 @@ func (c *OneOf) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.bOneOf != 0 {
+			if c.canotoData.bOneOf.Load() != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
-			c.canotoData.bOneOf = 4
+			c.canotoData.bOneOf.Store(4)
 
 			if err := canoto.ReadInt(r, &c.B2); err != nil {
 				return err
@@ -148,10 +144,10 @@ func (c *OneOf) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.aOneOf != 0 {
+			if c.canotoData.aOneOf.Load() != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
-			c.canotoData.aOneOf = 7
+			c.canotoData.aOneOf.Store(7)
 
 			if err := canoto.ReadInt(r, &c.A2); err != nil {
 				return err
@@ -209,34 +205,33 @@ func (c *OneOf) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
-//
-// It is not safe to call this function concurrently.
 func (c *OneOf) CalculateCanotoCache() {
-	c.canotoData.aOneOf = 0
-	c.canotoData.bOneOf = 0
-	c.canotoData.size = 0
+	c.canotoData.aOneOf.Store(0)
+	c.canotoData.bOneOf.Store(0)
+	var size int
 	if !canoto.IsZero(c.A1) {
-		c.canotoData.size += len(canoto__OneOf__A1__tag) + canoto.SizeInt(c.A1)
-		c.canotoData.aOneOf = 1
+		size += len(canoto__OneOf__A1__tag) + canoto.SizeInt(c.A1)
+		c.canotoData.aOneOf.Store(1)
 	}
 	if !canoto.IsZero(c.B1) {
-		c.canotoData.size += len(canoto__OneOf__B1__tag) + canoto.SizeInt(c.B1)
-		c.canotoData.bOneOf = 3
+		size += len(canoto__OneOf__B1__tag) + canoto.SizeInt(c.B1)
+		c.canotoData.bOneOf.Store(3)
 	}
 	if !canoto.IsZero(c.B2) {
-		c.canotoData.size += len(canoto__OneOf__B2__tag) + canoto.SizeInt(c.B2)
-		c.canotoData.bOneOf = 4
+		size += len(canoto__OneOf__B2__tag) + canoto.SizeInt(c.B2)
+		c.canotoData.bOneOf.Store(4)
 	}
 	if !canoto.IsZero(c.C) {
-		c.canotoData.size += len(canoto__OneOf__C__tag) + canoto.SizeInt(c.C)
+		size += len(canoto__OneOf__C__tag) + canoto.SizeInt(c.C)
 	}
 	if !canoto.IsZero(c.D) {
-		c.canotoData.size += len(canoto__OneOf__D__tag) + canoto.SizeInt(c.D)
+		size += len(canoto__OneOf__D__tag) + canoto.SizeInt(c.D)
 	}
 	if !canoto.IsZero(c.A2) {
-		c.canotoData.size += len(canoto__OneOf__A2__tag) + canoto.SizeInt(c.A2)
-		c.canotoData.aOneOf = 7
+		size += len(canoto__OneOf__A2__tag) + canoto.SizeInt(c.A2)
+		c.canotoData.aOneOf.Store(7)
 	}
+	c.canotoData.size.Store(int64(size))
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -247,14 +242,12 @@ func (c *OneOf) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *OneOf) CachedCanotoSize() int {
-	return c.canotoData.size
+	return int(c.canotoData.size.Load())
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *OneOf) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := canoto.Writer{
@@ -271,8 +264,6 @@ func (c *OneOf) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *OneOf) MarshalCanotoInto(w *canoto.Writer) {
 	if !canoto.IsZero(c.A1) {
 		canoto.Append(w, canoto__OneOf__A1__tag)

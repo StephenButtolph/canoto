@@ -115,9 +115,9 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 		sizeOneOfIndent string
 	)
 	if oneOfName != "" {
-		assignOneOf := fmt.Sprintf("c.canotoData.%sOneOf = %d", oneOfName, fieldNumber)
+		assignOneOf := fmt.Sprintf("c.canotoData.%sOneOf.Store(%d)", oneOfName, fieldNumber)
 		unmarshalOneOf = fmt.Sprintf(`
-			if c.canotoData.%sOneOf != 0 {
+			if c.canotoData.%sOneOf.Load() != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
 			%s`,

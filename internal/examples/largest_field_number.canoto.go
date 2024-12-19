@@ -24,11 +24,7 @@ const (
 )
 
 type canotoData_LargestFieldNumber struct {
-	// Enforce noCopy before atomic usage.
-	// See https://github.com/StephenButtolph/canoto/pull/32
-	_ atomic.Int64
-
-	size int
+	size atomic.Int64
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -102,13 +98,12 @@ func (c *LargestFieldNumber[_]) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
-//
-// It is not safe to call this function concurrently.
 func (c *LargestFieldNumber[_]) CalculateCanotoCache() {
-	c.canotoData.size = 0
+	var size int
 	if !canoto.IsZero(c.Int32) {
-		c.canotoData.size += len(canoto__LargestFieldNumber__Int32__tag) + canoto.SizeInt(c.Int32)
+		size += len(canoto__LargestFieldNumber__Int32__tag) + canoto.SizeInt(c.Int32)
 	}
+	c.canotoData.size.Store(int64(size))
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -119,14 +114,12 @@ func (c *LargestFieldNumber[_]) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *LargestFieldNumber[_]) CachedCanotoSize() int {
-	return c.canotoData.size
+	return int(c.canotoData.size.Load())
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *LargestFieldNumber[_]) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := canoto.Writer{
@@ -143,8 +136,6 @@ func (c *LargestFieldNumber[_]) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *LargestFieldNumber[_]) MarshalCanotoInto(w *canoto.Writer) {
 	if !canoto.IsZero(c.Int32) {
 		canoto.Append(w, canoto__LargestFieldNumber__Int32__tag)
