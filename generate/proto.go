@@ -86,20 +86,22 @@ ${fields}}
 }
 
 func makeFields(m message) string {
+	const (
+		template      = "  ${protoType} ${fieldName} = ${fieldNumber};\n"
+		oneOfTemplate = "  " + template
+	)
 	var s strings.Builder
 	for _, o := range m.OneOfs() {
 		_, _ = s.WriteString(fmt.Sprintf("  oneof %s {\n", o))
-		const template = "    ${protoType} ${fieldName} = ${fieldNumber};\n"
 		for _, f := range m.fields {
 			if f.oneOfName != o {
 				continue
 			}
 
-			_ = writeTemplate(&s, template, f.templateArgs)
+			_ = writeTemplate(&s, oneOfTemplate, f.templateArgs)
 		}
 		_, _ = s.WriteString("  }\n")
 	}
-	const template = "  ${protoType} ${fieldName} = ${fieldNumber};\n"
 	for _, f := range m.fields {
 		if f.oneOfName != "" {
 			continue
