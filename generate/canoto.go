@@ -179,7 +179,7 @@ ${size}}
 // the returned size may be incorrect.
 func (c *${structName}${generics}) CachedCanotoSize() int {
 	return c.canotoData.size
-}
+}${oneOfCacheAccessors}
 
 // MarshalCanoto returns the Canoto representation of this struct.
 //
@@ -209,17 +209,18 @@ ${marshal}}
 `
 
 	return writeTemplate(w, structTemplate, map[string]string{
-		"tagConstants":   makeTagConstants(m),
-		"structName":     m.name,
-		"generics":       makeGenerics(m),
-		"sizeCache":      makeSizeCache(m),
-		"oneOfCache":     makeOneOfCache(m),
-		"unmarshal":      makeUnmarshal(m),
-		"validOneOf":     makeValidOneOf(m),
-		"valid":          makeValid(m),
-		"zeroOneOfCache": makeZeroOneOfCache(m),
-		"size":           makeSize(m),
-		"marshal":        makeMarshal(m),
+		"tagConstants":        makeTagConstants(m),
+		"structName":          m.name,
+		"generics":            makeGenerics(m),
+		"sizeCache":           makeSizeCache(m),
+		"oneOfCache":          makeOneOfCache(m),
+		"unmarshal":           makeUnmarshal(m),
+		"validOneOf":          makeValidOneOf(m),
+		"valid":               makeValid(m),
+		"zeroOneOfCache":      makeZeroOneOfCache(m),
+		"size":                makeSize(m),
+		"oneOfCacheAccessors": makeOneOfCacheAccessors(m),
+		"marshal":             makeMarshal(m),
 	})
 }
 
@@ -1066,6 +1067,34 @@ func makeSize(m message) string {
 `,
 		},
 	})
+}
+
+func makeOneOfCacheAccessors(m message) string {
+	const template = `
+
+// CachedWhichOneOf${oneOf} returns the previously calculated field number used
+// to represent ${oneOf}.
+//
+// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CalculateCanotoCache.
+//
+// If the field has not yet been cached, it will return 0.
+//
+// If the struct has been modified since the field was last cached, the returned
+// field number may be incorrect.
+func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() uint32 {
+	return c.canotoData.${oneOf}OneOf
+}`
+	var s strings.Builder
+	generics := makeGenerics(m)
+	for _, oneOf := range m.OneOfs() {
+		_ = writeTemplate(&s, template, map[string]string{
+			"oneOf":      oneOf,
+			"structName": m.name,
+			"generics":   generics,
+		})
+	}
+	return s.String()
 }
 
 func makeMarshal(m message) string {

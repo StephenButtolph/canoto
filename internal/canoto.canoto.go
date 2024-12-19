@@ -168,8 +168,8 @@ type canotoData_OneOf struct {
 
 	size int
 
-	aOneOf uint32
-	bOneOf uint32
+	AOneOf uint32
+	BOneOf uint32
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -214,10 +214,10 @@ func (c *OneOf) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.aOneOf != 0 {
+			if c.canotoData.AOneOf != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
-			c.canotoData.aOneOf = 1
+			c.canotoData.AOneOf = 1
 
 			if err := canoto.ReadInt(r, &c.A1); err != nil {
 				return err
@@ -229,10 +229,10 @@ func (c *OneOf) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.bOneOf != 0 {
+			if c.canotoData.BOneOf != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
-			c.canotoData.bOneOf = 3
+			c.canotoData.BOneOf = 3
 
 			if err := canoto.ReadInt(r, &c.B1); err != nil {
 				return err
@@ -244,10 +244,10 @@ func (c *OneOf) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.bOneOf != 0 {
+			if c.canotoData.BOneOf != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
-			c.canotoData.bOneOf = 4
+			c.canotoData.BOneOf = 4
 
 			if err := canoto.ReadInt(r, &c.B2); err != nil {
 				return err
@@ -281,10 +281,10 @@ func (c *OneOf) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.aOneOf != 0 {
+			if c.canotoData.AOneOf != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
-			c.canotoData.aOneOf = 7
+			c.canotoData.AOneOf = 7
 
 			if err := canoto.ReadInt(r, &c.A2); err != nil {
 				return err
@@ -310,32 +310,32 @@ func (c *OneOf) UnmarshalCanotoFrom(r *canoto.Reader) error {
 // 3. All custom fields are ValidCanoto.
 func (c *OneOf) ValidCanoto() bool {
 	var (
-		aOneOf uint32
-		bOneOf uint32
+		AOneOf uint32
+		BOneOf uint32
 	)
 	if !canoto.IsZero(c.A1) {
-		if aOneOf != 0 {
+		if AOneOf != 0 {
 			return false
 		}
-		aOneOf = 1
+		AOneOf = 1
 	}
 	if !canoto.IsZero(c.B1) {
-		if bOneOf != 0 {
+		if BOneOf != 0 {
 			return false
 		}
-		bOneOf = 3
+		BOneOf = 3
 	}
 	if !canoto.IsZero(c.B2) {
-		if bOneOf != 0 {
+		if BOneOf != 0 {
 			return false
 		}
-		bOneOf = 4
+		BOneOf = 4
 	}
 	if !canoto.IsZero(c.A2) {
-		if aOneOf != 0 {
+		if AOneOf != 0 {
 			return false
 		}
-		aOneOf = 7
+		AOneOf = 7
 	}
 	return true
 }
@@ -345,20 +345,20 @@ func (c *OneOf) ValidCanoto() bool {
 //
 // It is not safe to call this function concurrently.
 func (c *OneOf) CalculateCanotoCache() {
-	c.canotoData.aOneOf = 0
-	c.canotoData.bOneOf = 0
+	c.canotoData.AOneOf = 0
+	c.canotoData.BOneOf = 0
 	c.canotoData.size = 0
 	if !canoto.IsZero(c.A1) {
 		c.canotoData.size += len(canoto__OneOf__A1__tag) + canoto.SizeInt(c.A1)
-		c.canotoData.aOneOf = 1
+		c.canotoData.AOneOf = 1
 	}
 	if !canoto.IsZero(c.B1) {
 		c.canotoData.size += len(canoto__OneOf__B1__tag) + canoto.SizeInt(c.B1)
-		c.canotoData.bOneOf = 3
+		c.canotoData.BOneOf = 3
 	}
 	if !canoto.IsZero(c.B2) {
 		c.canotoData.size += len(canoto__OneOf__B2__tag) + canoto.SizeInt(c.B2)
-		c.canotoData.bOneOf = 4
+		c.canotoData.BOneOf = 4
 	}
 	if !canoto.IsZero(c.C) {
 		c.canotoData.size += len(canoto__OneOf__C__tag) + canoto.SizeInt(c.C)
@@ -368,7 +368,7 @@ func (c *OneOf) CalculateCanotoCache() {
 	}
 	if !canoto.IsZero(c.A2) {
 		c.canotoData.size += len(canoto__OneOf__A2__tag) + canoto.SizeInt(c.A2)
-		c.canotoData.aOneOf = 7
+		c.canotoData.AOneOf = 7
 	}
 }
 
@@ -381,6 +381,34 @@ func (c *OneOf) CalculateCanotoCache() {
 // the returned size may be incorrect.
 func (c *OneOf) CachedCanotoSize() int {
 	return c.canotoData.size
+}
+
+// CachedWhichOneOfA returns the previously calculated field number used
+// to represent A.
+//
+// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CalculateCanotoCache.
+//
+// If the field has not yet been cached, it will return 0.
+//
+// If the struct has been modified since the field was last cached, the returned
+// field number may be incorrect.
+func (c *OneOf) CachedWhichOneOfA() uint32 {
+	return c.canotoData.AOneOf
+}
+
+// CachedWhichOneOfB returns the previously calculated field number used
+// to represent B.
+//
+// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CalculateCanotoCache.
+//
+// If the field has not yet been cached, it will return 0.
+//
+// If the struct has been modified since the field was last cached, the returned
+// field number may be incorrect.
+func (c *OneOf) CachedWhichOneOfB() uint32 {
+	return c.canotoData.BOneOf
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.

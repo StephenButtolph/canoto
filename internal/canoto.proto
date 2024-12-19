@@ -12,11 +12,11 @@ message LargestFieldNumber {
 }
 
 message OneOf {
-  oneof a {
+  oneof A {
     int32 A1 = 1;
     int64 A2 = 7;
   }
-  oneof b {
+  oneof B {
     int32 B1 = 3;
     int64 B2 = 4;
   }
