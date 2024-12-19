@@ -1090,12 +1090,12 @@ func BenchmarkScalars_Proto(b *testing.B) {
 		b.Run("unmarshal/"+bm.name, func(b *testing.B) {
 			for range b.N {
 				var (
-					scalars pb.Scalars
-					reader  = proto.UnmarshalOptions{
+					s      pb.Scalars
+					reader = proto.UnmarshalOptions{
 						Merge: true,
 					}
 				)
-				_ = reader.Unmarshal(bytes, &scalars)
+				_ = reader.Unmarshal(bytes, &s)
 			}
 		})
 	}
