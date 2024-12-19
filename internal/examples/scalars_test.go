@@ -1070,24 +1070,23 @@ func BenchmarkScalars_Proto(b *testing.B) {
 		})
 	}
 
-	fullBytes, err := proto.Marshal(&full)
-	require.NoError(b, err)
-	simpleBytes, err := proto.Marshal(&simple)
-	require.NoError(b, err)
 	unmarshalBenchmarks := []struct {
-		name  string
-		bytes []byte
+		name string
+		s    *pb.Scalars
 	}{
 		{
-			name:  "full",
-			bytes: fullBytes,
+			name: "full",
+			s:    &full,
 		},
 		{
-			name:  "primitives",
-			bytes: simpleBytes,
+			name: "primitives",
+			s:    &simple,
 		},
 	}
 	for _, bm := range unmarshalBenchmarks {
+		bytes, err := proto.Marshal(bm.s)
+		require.NoError(b, err)
+
 		for _, unsafe := range []bool{false, true} {
 			b.Run("unmarshal/"+bm.name+"/unsafe="+strconv.FormatBool(unsafe), func(b *testing.B) {
 				for range b.N {
@@ -1097,7 +1096,7 @@ func BenchmarkScalars_Proto(b *testing.B) {
 							Merge: true,
 						}
 					)
-					_ = reader.Unmarshal(bm.bytes, &scalars)
+					_ = reader.Unmarshal(bytes, &scalars)
 				}
 			})
 		}
