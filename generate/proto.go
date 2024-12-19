@@ -65,15 +65,19 @@ package ${package};
 		return err
 	}
 
+	customTypes := make(map[string]bool, len(messages))
 	for _, m := range messages {
-		if err := writeProtoMessage(w, m); err != nil {
+		customTypes[m.name] = true
+	}
+	for _, m := range messages {
+		if err := writeProtoMessage(w, m, customTypes); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func writeProtoMessage(w io.Writer, m message) error {
+func writeProtoMessage(w io.Writer, m message, customTypes map[string]bool) error {
 	const structTemplate = `
 message ${messageName} {
 ${fields}}
@@ -81,14 +85,20 @@ ${fields}}
 
 	return writeTemplate(w, structTemplate, map[string]string{
 		"messageName": m.name,
-		"fields":      makeFields(m),
+		"fields":      makeFields(m, customTypes),
 	})
 }
 
-func makeFields(m message) string {
+func makeFields(m message, customTypes map[string]bool) string {
 	const (
-		template      = "  ${protoType} ${fieldName} = ${fieldNumber};\n"
-		oneOfTemplate = "  " + template
+		defaultTemplate      = "  ${protoTypePrefix}${protoTypeSuffix} ${fieldName} = ${fieldNumber};\n"
+		oneOfDefaultTemplate = "  " + defaultTemplate
+
+		specialTemplate      = "  ${protoTypePrefix}${protoType} ${fieldName} = ${fieldNumber};\n"
+		oneOfSpecialTemplate = "  " + specialTemplate
+
+		customTemplate      = "  ${protoTypePrefix}${goType} ${fieldName} = ${fieldNumber};\n"
+		oneOfCustomTemplate = "  " + customTemplate
 	)
 	var s strings.Builder
 	for _, o := range m.OneOfs() {
@@ -98,13 +108,32 @@ func makeFields(m message) string {
 				continue
 			}
 
-			_ = writeTemplate(&s, oneOfTemplate, f.templateArgs)
+			var template string
+			switch {
+			case f.protoType != "":
+				template = oneOfSpecialTemplate
+			case customTypes[f.goType]:
+				template = oneOfCustomTemplate
+			default:
+				template = oneOfDefaultTemplate
+			}
+			_ = writeTemplate(&s, template, f.templateArgs)
 		}
 		_, _ = s.WriteString("  }\n")
 	}
 	for _, f := range m.fields {
 		if f.oneOfName != "" {
 			continue
+		}
+
+		var template string
+		switch {
+		case f.protoType != "":
+			template = specialTemplate
+		case customTypes[f.goType]:
+			template = customTemplate
+		default:
+			template = defaultTemplate
 		}
 		_ = writeTemplate(&s, template, f.templateArgs)
 	}

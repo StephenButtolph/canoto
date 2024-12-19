@@ -7,6 +7,8 @@ import (
 type field struct {
 	name              string
 	canonicalizedName string
+	goType            string
+	protoType         string
 	canotoType        canotoType
 	fieldNumber       uint32
 	oneOfName         string

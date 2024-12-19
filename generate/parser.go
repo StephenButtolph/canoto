@@ -22,6 +22,7 @@ var (
 	oneOfRegex = regexp.MustCompile(`\A[a-zA-Z0-9_]+\z`)
 
 	errUnexpectedNumberOfIdentifiers       = errors.New("unexpected number of identifiers")
+	errInvalidGoType                       = errors.New("invalid Go type")
 	errMalformedTag                        = errors.New("expected type,fieldNumber[,oneof] got")
 	errInvalidOneOfName                    = errors.New("invalid oneof name")
 	errStructContainsDuplicateFieldNumbers = errors.New("struct contains duplicate field numbers")
@@ -128,11 +129,38 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 		sizeOneOfIndent = "\n\t\t\t" + assignOneOf
 	}
 
+	var (
+		t      = af.Type
+		goType string
+	)
+	for {
+		switch tt := t.(type) {
+		case *ast.Ident:
+			goType = tt.Name
+		case *ast.ArrayType:
+			t = tt.Elt
+			continue
+		case *ast.IndexExpr:
+			t = tt.X
+			continue
+		default:
+			return field{}, false, fmt.Errorf("%w %T at %s",
+				errInvalidGoType,
+				t,
+				fs.Position(t.Pos()),
+			)
+		}
+		break
+	}
+
 	name := af.Names[0].Name
 	canonicalizedName := canonicalizeName(name)
+	protoType := canotoType.ProtoType(goType)
 	return field{
 		name:              name,
 		canonicalizedName: canonicalizedName,
+		goType:            goType,
+		protoType:         protoType,
 		canotoType:        canotoType,
 		fieldNumber:       fieldNumber,
 		oneOfName:         oneOfName,
@@ -140,7 +168,10 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 			"escapedStructName": canonicalizedStructName,
 			"fieldNumber":       strconv.FormatUint(uint64(fieldNumber), 10),
 			"wireType":          canotoType.WireType().String(),
-			"protoType":         canotoType.ProtoType(),
+			"goType":            goType,
+			"protoType":         protoType,
+			"protoTypePrefix":   canotoType.ProtoTypePrefix(),
+			"protoTypeSuffix":   canotoType.ProtoTypeSuffix(),
 			"fieldName":         name,
 			"escapedFieldName":  canonicalizedName,
 			"suffix":            canotoType.Suffix(),

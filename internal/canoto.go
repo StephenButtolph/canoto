@@ -1,4 +1,4 @@
-//go:generate canoto $GOFILE
+//go:generate canoto --proto $GOFILE
 
 package examples
 
@@ -6,7 +6,11 @@ import "github.com/StephenButtolph/canoto"
 
 const constRepeatedUint64Len = 3
 
-var _ canoto.Message = (*Scalars)(nil)
+var (
+	_ canoto.Message = (*LargestFieldNumber[int32])(nil)
+	_ canoto.Message = (*OneOf)(nil)
+	_ canoto.Message = (*Scalars)(nil)
+)
 
 type (
 	customUint32                  uint32
@@ -18,6 +22,23 @@ type (
 	customFixedRepeatedBytes      [3][]byte
 	customFixedRepeatedFixedBytes [3][32]byte
 )
+
+type LargestFieldNumber[T canoto.Int] struct {
+	Int32 T `canoto:"int,536870911"`
+
+	canotoData canotoData_LargestFieldNumber
+}
+
+type OneOf struct {
+	A1 int32 `canoto:"int,1,a"`
+	A2 int64 `canoto:"int,7,a"`
+	B1 int32 `canoto:"int,3,b"`
+	B2 int64 `canoto:"int,4,b"`
+	C  int32 `canoto:"int,5"`
+	D  int64 `canoto:"int,6"`
+
+	canotoData canotoData_OneOf
+}
 
 type Scalars struct {
 	Int8                            int8                           `canoto:"int,1"`
