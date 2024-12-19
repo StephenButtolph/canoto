@@ -888,7 +888,6 @@ func makeValidOneOf(m message) string {
 
 		_ = writeField(&s, f, t)
 	}
-	s.WriteString("\n")
 	return s.String()
 }
 

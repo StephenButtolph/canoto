@@ -93,6 +93,7 @@ const (
 	canoto__Scalars__CustomRepeatedFixedBytes__tag        = "\xba\x04" // canoto.Tag(71, canoto.Len)
 	canoto__Scalars__CustomFixedRepeatedBytes__tag        = "\xc2\x04" // canoto.Tag(72, canoto.Len)
 	canoto__Scalars__CustomFixedRepeatedFixedBytes__tag   = "\xca\x04" // canoto.Tag(73, canoto.Len)
+	canoto__Scalars__OneOf__tag                           = "\xd2\x04" // canoto.Tag(74, canoto.Len)
 )
 
 type canotoData_Scalars struct {
@@ -2017,6 +2018,30 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if canoto.IsZero(c.CustomFixedRepeatedFixedBytes) {
 				return canoto.ErrZeroValue
 			}
+		case 74:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			err := canoto.ReadBytes(r, &msgBytes)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return canoto.ErrZeroValue
+			}
+
+			remainingBytes := r.B
+			r.B = msgBytes
+			err = (&c.OneOf).UnmarshalCanotoFrom(r)
+			r.B = remainingBytes
+			if err != nil {
+				return err
+			}
 		default:
 			return canoto.ErrUnknownField
 		}
@@ -2064,6 +2089,9 @@ func (c *Scalars) ValidCanoto() bool {
 		return false
 	}
 	if !utf8.ValidString(string(c.CustomString)) {
+		return false
+	}
+	if !(&c.OneOf).ValidCanoto() {
 		return false
 	}
 	return true
@@ -2449,6 +2477,10 @@ func (c *Scalars) CalculateCanotoCache() {
 		for i := range c.CustomFixedRepeatedFixedBytes {
 			c.canotoData.size += len(canoto__Scalars__CustomFixedRepeatedFixedBytes__tag) + canoto.SizeBytes(c.CustomFixedRepeatedFixedBytes[i][:])
 		}
+	}
+	(&c.OneOf).CalculateCanotoCache()
+	if fieldSize := (&c.OneOf).CachedCanotoSize(); fieldSize != 0 {
+		c.canotoData.size += len(canoto__Scalars__OneOf__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 }
 
@@ -2931,5 +2963,10 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 			canoto.Append(w, canoto__Scalars__CustomFixedRepeatedFixedBytes__tag)
 			canoto.AppendBytes(w, c.CustomFixedRepeatedFixedBytes[i][:])
 		}
+	}
+	if fieldSize := (&c.OneOf).CachedCanotoSize(); fieldSize != 0 {
+		canoto.Append(w, canoto__Scalars__OneOf__tag)
+		canoto.AppendInt(w, int64(fieldSize))
+		(&c.OneOf).MarshalCanotoInto(w)
 	}
 }

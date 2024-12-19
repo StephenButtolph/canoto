@@ -81,6 +81,8 @@ message Scalars {
   repeated bytes custom_repeated_fixed_bytes = 71;
   repeated bytes custom_fixed_repeated_bytes = 72;
   repeated bytes custom_fixed_repeated_fixed_bytes = 73;
+
+  OneOf one_of = 74;
 }
 
 message LargestFieldNumber {
@@ -90,7 +92,7 @@ message LargestFieldNumber {
 message OneOf {
 	oneof a {
 		int32 a1 = 1;
-		int64 a2 = 2;
+		int64 a2 = 7;
 	}
 	oneof b {
 		int32 b1 = 3;
