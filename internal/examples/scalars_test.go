@@ -1,7 +1,6 @@
 package examples
 
 import (
-	"reflect"
 	"slices"
 	"strconv"
 	"testing"
@@ -491,15 +490,10 @@ func FuzzScalars_MarshalCanoto(f *testing.F) {
 
 		var pbScalars pb.Scalars
 		require.NoError(proto.Unmarshal(w.B, &pbScalars))
-		if !reflect.DeepEqual(
+		require.Equal(
 			canotoScalarsToProto(canotoScalars),
 			canonicalizeProtoScalars(&pbScalars),
-		) {
-			require.Equal(
-				canotoScalarsToProto(canotoScalars),
-				canonicalizeProtoScalars(&pbScalars),
-			)
-		}
+		)
 	})
 }
 
