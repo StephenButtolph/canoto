@@ -26,6 +26,7 @@ const (
 var (
 	ErrInvalidFieldOrder  = errors.New("invalid field order")
 	ErrUnexpectedWireType = errors.New("unexpected wire type")
+	ErrDuplicateOneOf     = errors.New("duplicate oneof field")
 	ErrInvalidLength      = errors.New("decoded length is invalid")
 	ErrZeroValue          = errors.New("zero value")
 	ErrUnknownField       = errors.New("unknown field")

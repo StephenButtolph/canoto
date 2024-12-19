@@ -17,25 +17,20 @@ func (c *CustomType) UnmarshalCanotoFrom(r *canoto.Reader) error {
 		c.Int = new(big.Int)
 	}
 	c.Int.SetBytes(r.B)
-	if c.CalculateCanotoSize() != len(r.B) {
+	if c.CachedCanotoSize() != len(r.B) {
 		return canoto.ErrPaddedZeroes
 	}
 	return nil
 }
 
-func (*CustomType) ValidCanoto() bool {
-	return true
-}
+func (*CustomType) ValidCanoto() bool     { return true }
+func (*CustomType) CalculateCanotoCache() {}
 
-func (c *CustomType) CalculateCanotoSize() int {
+func (c *CustomType) CachedCanotoSize() int {
 	if c.Int == nil {
 		return 0
 	}
 	return (c.Int.BitLen() + 7) / 8
-}
-
-func (c *CustomType) CachedCanotoSize() int {
-	return c.CalculateCanotoSize()
 }
 
 func (c *CustomType) MarshalCanotoInto(w *canoto.Writer) {
@@ -43,6 +38,6 @@ func (c *CustomType) MarshalCanotoInto(w *canoto.Writer) {
 		return
 	}
 	startIndex := len(w.B)
-	w.B = append(w.B, make([]byte, c.CalculateCanotoSize())...)
+	w.B = append(w.B, make([]byte, c.CachedCanotoSize())...)
 	c.Int.FillBytes(w.B[startIndex:])
 }

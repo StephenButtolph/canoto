@@ -9,6 +9,7 @@ type field struct {
 	canonicalizedName string
 	canotoType        canotoType
 	fieldNumber       uint32
+	oneOfName         string
 	templateArgs      map[string]string
 }
 

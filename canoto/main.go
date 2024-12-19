@@ -7,12 +7,14 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/StephenButtolph/canoto"
 	"github.com/StephenButtolph/canoto/generate"
 )
 
 const (
-	canoto = "canoto"
-	proto  = "proto"
+	canotoFlag  = "canoto"
+	protoFlag   = "proto"
+	versionFlag = "version"
 )
 
 func init() {
@@ -25,11 +27,20 @@ func main() {
 		Short: "Processes the provided files and generates the corresponding canoto and proto files",
 		RunE: func(c *cobra.Command, args []string) error {
 			flags := c.Flags()
-			canoto, err := flags.GetBool(canoto)
+			showVersion, err := flags.GetBool(versionFlag)
+			if err != nil {
+				return fmt.Errorf("failed to get version flag: %w", err)
+			}
+			if showVersion {
+				fmt.Println("canoto/" + canoto.Version)
+				return nil
+			}
+
+			canoto, err := flags.GetBool(canotoFlag)
 			if err != nil {
 				return fmt.Errorf("failed to get canoto flag: %w", err)
 			}
-			proto, err := flags.GetBool(proto)
+			proto, err := flags.GetBool(protoFlag)
 			if err != nil {
 				return fmt.Errorf("failed to get proto flag: %w", err)
 			}
@@ -51,8 +62,9 @@ func main() {
 	}
 
 	flags := cmd.Flags()
-	flags.Bool(canoto, true, "Generate canoto file")
-	flags.Bool(proto, false, "Generate proto file")
+	flags.Bool(versionFlag, false, "Display the version and exit")
+	flags.Bool(canotoFlag, true, "Generate canoto file")
+	flags.Bool(protoFlag, false, "Generate proto file")
 
 	if err := cmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "command failed %v\n", err)

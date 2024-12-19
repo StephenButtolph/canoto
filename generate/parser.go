@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -18,8 +19,11 @@ const (
 )
 
 var (
+	oneOfRegex = regexp.MustCompile(`\A[a-zA-Z0-9_]+\z`)
+
 	errUnexpectedNumberOfIdentifiers       = errors.New("unexpected number of identifiers")
-	errMalformedTag                        = errors.New("expected type,fieldNumber got")
+	errMalformedTag                        = errors.New("expected type,fieldNumber[,oneof] got")
+	errInvalidOneOfName                    = errors.New("invalid oneof name")
 	errStructContainsDuplicateFieldNumbers = errors.New("struct contains duplicate field numbers")
 )
 
@@ -91,7 +95,7 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 }
 
 func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field) (field, bool, error) {
-	canotoType, fieldNumber, hasTag, err := parseFieldTag(fs, af)
+	canotoType, fieldNumber, oneOfName, hasTag, err := parseFieldTag(fs, af)
 	if err != nil || !hasTag {
 		return field{}, false, err
 	}
@@ -105,6 +109,25 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 		)
 	}
 
+	var (
+		unmarshalOneOf  string
+		sizeOneOf       string
+		sizeOneOfIndent string
+	)
+	if oneOfName != "" {
+		assignOneOf := fmt.Sprintf("c.canotoData.%sOneOf.Store(%d)", oneOfName, fieldNumber)
+		unmarshalOneOf = fmt.Sprintf(`
+			if c.canotoData.%sOneOf.Load() != 0 {
+				return canoto.ErrDuplicateOneOf
+			}
+			%s`,
+			oneOfName,
+			assignOneOf,
+		)
+		sizeOneOf = "\n\t\t" + assignOneOf
+		sizeOneOfIndent = "\n\t\t\t" + assignOneOf
+	}
+
 	name := af.Names[0].Name
 	canonicalizedName := canonicalizeName(name)
 	return field{
@@ -112,6 +135,7 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 		canonicalizedName: canonicalizedName,
 		canotoType:        canotoType,
 		fieldNumber:       fieldNumber,
+		oneOfName:         oneOfName,
 		templateArgs: map[string]string{
 			"escapedStructName": canonicalizedStructName,
 			"fieldNumber":       strconv.FormatUint(uint64(fieldNumber), 10),
@@ -120,6 +144,10 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 			"fieldName":         name,
 			"escapedFieldName":  canonicalizedName,
 			"suffix":            canotoType.Suffix(),
+			"oneOf":             oneOfName,
+			"unmarshalOneOf":    unmarshalOneOf,
+			"sizeOneOf":         sizeOneOf,
+			"sizeOneOfIndent":   sizeOneOfIndent,
 		},
 	}, true, nil
 }
@@ -132,33 +160,39 @@ func canonicalizeName(name string) string {
 
 // parseFieldTag parses the tag of the provided field and returns the canoto
 // description, if one exists.
-func parseFieldTag(fs *token.FileSet, field *ast.Field) (canotoType, uint32, bool, error) {
+func parseFieldTag(fs *token.FileSet, field *ast.Field) (
+	canotoType,
+	uint32,
+	string,
+	bool,
+	error,
+) {
 	if field.Tag == nil {
-		return "", 0, false, nil
+		return "", 0, "", false, nil
 	}
 
 	rawTag := strings.Trim(field.Tag.Value, "`")
 	tags, err := structtag.Parse(rawTag)
 	if err != nil {
-		return "", 0, false, err
+		return "", 0, "", false, err
 	}
 
 	tag, err := tags.Get(canotoTag)
 	if err != nil {
-		return "", 0, false, nil //nolint: nilerr // errors imply the tag was not found
+		return "", 0, "", false, nil //nolint: nilerr // errors imply the tag was not found
 	}
 
 	fieldType := canotoType(tag.Name)
 	if !fieldType.IsValid() {
-		return "", 0, false, fmt.Errorf("%w %s at %s",
+		return "", 0, "", false, fmt.Errorf("%w %q at %s",
 			errUnexpectedCanotoType,
 			tag.Name,
 			fs.Position(field.Pos()),
 		)
 	}
 
-	if len(tag.Options) != 1 {
-		return "", 0, false, fmt.Errorf("%w %s at %s",
+	if len(tag.Options) > 2 {
+		return "", 0, "", false, fmt.Errorf("%w %q at %s",
 			errMalformedTag,
 			tag.Value(),
 			fs.Position(field.Pos()),
@@ -167,9 +201,24 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (canotoType, uint32, boo
 
 	fieldNumber, err := strconv.ParseUint(tag.Options[0], 10, 32)
 	if err != nil {
-		return "", 0, false, err
+		return "", 0, "", false, fmt.Errorf("%w at %s",
+			err,
+			fs.Position(field.Pos()),
+		)
 	}
-	return fieldType, uint32(fieldNumber), true, nil
+
+	var oneof string
+	if len(tag.Options) == 2 {
+		oneof = tag.Options[1]
+		if !oneOfRegex.MatchString(oneof) {
+			return "", 0, "", false, fmt.Errorf("%w %q at %s",
+				errInvalidOneOfName,
+				oneof,
+				fs.Position(field.Pos()),
+			)
+		}
+	}
+	return fieldType, uint32(fieldNumber), oneof, true, nil
 }
 
 // isUniquelySorted returns true if the provided slice is sorted in ascending

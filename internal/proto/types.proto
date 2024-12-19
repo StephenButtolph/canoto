@@ -74,14 +74,30 @@ message Scalars {
   repeated uint64 const_repeated_uint64 = 64;
   bytes custom_type = 65;
   fixed32 custom_uint32 = 66;
-  bytes custom_bytes = 67;
-  bytes custom_fixed_bytes = 68;
-  repeated bytes custom_repeated_bytes = 69;
-  repeated bytes custom_repeated_fixed_bytes = 70;
-  repeated bytes custom_fixed_repeated_bytes = 71;
-  repeated bytes custom_fixed_repeated_fixed_bytes = 72;
+  string custom_string = 67;
+  bytes custom_bytes = 68;
+  bytes custom_fixed_bytes = 69;
+  repeated bytes custom_repeated_bytes = 70;
+  repeated bytes custom_repeated_fixed_bytes = 71;
+  repeated bytes custom_fixed_repeated_bytes = 72;
+  repeated bytes custom_fixed_repeated_fixed_bytes = 73;
+
+  OneOf one_of = 74;
 }
 
 message LargestFieldNumber {
   int32 int32 = 536870911;
+}
+
+message OneOf {
+	oneof a {
+		int32 a1 = 1;
+		int64 a2 = 7;
+	}
+	oneof b {
+		int32 b1 = 3;
+		int64 b2 = 4;
+	}
+	int32 c = 5;
+	int64 d = 6;
 }

@@ -1,6 +1,7 @@
 package examples
 
 import (
+	"reflect"
 	"slices"
 	"strconv"
 	"testing"
@@ -68,7 +69,7 @@ func canonicalizeCanotoScalars(s *Scalars) *Scalars {
 	for i := range s.FixedRepeatedBytes {
 		s.FixedRepeatedBytes[i] = canonicalizeSlice(s.FixedRepeatedBytes[i])
 	}
-	if s.CustomType.CalculateCanotoSize() == 0 {
+	if s.CustomType.CachedCanotoSize() == 0 {
 		s.CustomType.Int = nil
 	}
 	s.CustomBytes = canonicalizeSlice(s.CustomBytes)
@@ -78,6 +79,7 @@ func canonicalizeCanotoScalars(s *Scalars) *Scalars {
 		s.CustomFixedRepeatedBytes[i] = canonicalizeSlice(s.CustomFixedRepeatedBytes[i])
 	}
 	s.canotoData = canotoData_Scalars{}
+	s.OneOf.canotoData = canotoData_OneOf{}
 	return s
 }
 
@@ -115,6 +117,32 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 	customFixedRepeatedBytes := make([][]byte, len(s.CustomFixedRepeatedBytes))
 	for i, v := range s.CustomFixedRepeatedBytes {
 		customFixedRepeatedBytes[i] = canonicalizeSlice(v)
+	}
+
+	var oneOf *pb.OneOf
+	if s.OneOf != nil {
+		oneOf = &pb.OneOf{
+			C: s.OneOf.C,
+			D: s.OneOf.D,
+		}
+		if a := s.OneOf.GetA1(); a != 0 {
+			oneOf.A = &pb.OneOf_A1{
+				A1: a,
+			}
+		} else if a := s.OneOf.GetA2(); a != 0 {
+			oneOf.A = &pb.OneOf_A2{
+				A2: a,
+			}
+		}
+		if b := s.OneOf.GetB1(); b != 0 {
+			oneOf.B = &pb.OneOf_B1{
+				B1: b,
+			}
+		} else if b := s.OneOf.GetB2(); b != 0 {
+			oneOf.B = &pb.OneOf_B2{
+				B2: b,
+			}
+		}
 	}
 	return &pb.Scalars{
 		Int8:               s.Int8,
@@ -186,12 +214,15 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 		ConstRepeatedUint64:           s.ConstRepeatedUint64,
 		CustomType:                    s.CustomType,
 		CustomUint32:                  s.CustomUint32,
+		CustomString:                  s.CustomString,
 		CustomBytes:                   s.CustomBytes,
 		CustomFixedBytes:              s.CustomFixedBytes,
 		CustomRepeatedBytes:           s.CustomRepeatedBytes,
 		CustomRepeatedFixedBytes:      s.CustomRepeatedFixedBytes,
 		CustomFixedRepeatedBytes:      canonicalizeSlice(customFixedRepeatedBytes),
 		CustomFixedRepeatedFixedBytes: s.CustomFixedRepeatedFixedBytes,
+
+		OneOf: oneOf,
 	}
 }
 
@@ -227,9 +258,36 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 	}
 
 	var customType []byte
-	if s.CustomType.CalculateCanotoSize() != 0 {
+	if s.CustomType.CachedCanotoSize() != 0 {
 		customType = s.CustomType.Int.Bytes()
 	}
+
+	var oneOf *pb.OneOf
+	if s.OneOf.A1 != 0 || s.OneOf.A2 != 0 || s.OneOf.B1 != 0 || s.OneOf.B2 != 0 || s.OneOf.C != 0 || s.OneOf.D != 0 {
+		oneOf = &pb.OneOf{
+			C: s.OneOf.C,
+			D: s.OneOf.D,
+		}
+		if s.OneOf.A1 != 0 {
+			oneOf.A = &pb.OneOf_A1{
+				A1: s.OneOf.A1,
+			}
+		} else if s.OneOf.A2 != 0 {
+			oneOf.A = &pb.OneOf_A2{
+				A2: s.OneOf.A2,
+			}
+		}
+		if s.OneOf.B1 != 0 {
+			oneOf.B = &pb.OneOf_B1{
+				B1: s.OneOf.B1,
+			}
+		} else if s.OneOf.B2 != 0 {
+			oneOf.B = &pb.OneOf_B2{
+				B2: s.OneOf.B2,
+			}
+		}
+	}
+
 	pbs := pb.Scalars{
 		Int8:               int32(s.Int8),
 		Int16:              int32(s.Int16),
@@ -277,9 +335,12 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 		FixedRepeatedLargestFieldNumber: fixedLargestFieldNumbers,
 		CustomType:                      customType,
 		CustomUint32:                    uint32(s.CustomUint32),
+		CustomString:                    string(s.CustomString),
 		CustomBytes:                     s.CustomBytes,
 		CustomRepeatedBytes:             s.CustomRepeatedBytes,
 		CustomRepeatedFixedBytes:        arrayToSlice(s.CustomRepeatedFixedBytes),
+
+		OneOf: oneOf,
 	}
 	if !canoto.IsZero(s.FixedRepeatedInt8) {
 		pbs.FixedRepeatedInt8 = castSlice[int8, int32](s.FixedRepeatedInt8[:])
@@ -386,6 +447,10 @@ func FuzzScalars_UnmarshalCanoto(f *testing.F) {
 		canotoScalars := &Scalars{}
 		fz := fuzzer.NewFuzzer(data)
 		fz.Fill(&canotoScalars)
+		if !canotoScalars.ValidCanoto() {
+			return
+		}
+
 		canotoScalars = canonicalizeCanotoScalars(canotoScalars)
 
 		pbScalars := canotoScalarsToProto(canotoScalars)
@@ -396,6 +461,7 @@ func FuzzScalars_UnmarshalCanoto(f *testing.F) {
 
 		canotoScalarsFromProto := &Scalars{}
 		require.NoError(canotoScalarsFromProto.UnmarshalCanoto(pbScalarsBytes))
+		require.True(canotoScalarsFromProto.ValidCanoto())
 		require.Equal(
 			canotoScalars,
 			canonicalizeCanotoScalars(canotoScalarsFromProto),
@@ -415,7 +481,8 @@ func FuzzScalars_MarshalCanoto(f *testing.F) {
 			return
 		}
 
-		size := canotoScalars.CalculateCanotoSize()
+		canotoScalars.CalculateCanotoCache()
+		size := canotoScalars.CachedCanotoSize()
 		w := canoto.Writer{
 			B: make([]byte, 0, size),
 		}
@@ -424,10 +491,15 @@ func FuzzScalars_MarshalCanoto(f *testing.F) {
 
 		var pbScalars pb.Scalars
 		require.NoError(proto.Unmarshal(w.B, &pbScalars))
-		require.Equal(
+		if !reflect.DeepEqual(
 			canotoScalarsToProto(canotoScalars),
 			canonicalizeProtoScalars(&pbScalars),
-		)
+		) {
+			require.Equal(
+				canotoScalarsToProto(canotoScalars),
+				canonicalizeProtoScalars(&pbScalars),
+			)
+		}
 	})
 }
 
@@ -439,8 +511,10 @@ func FuzzScalars_Canonical(f *testing.F) {
 		if err := scalars.UnmarshalCanoto(b); err != nil {
 			return
 		}
+		require.True(scalars.ValidCanoto())
 
-		size := scalars.CalculateCanotoSize()
+		scalars.CalculateCanotoCache()
+		size := scalars.CachedCanotoSize()
 		require.Len(b, size)
 
 		w := canoto.Writer{
@@ -531,6 +605,13 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 				},
 
 				ConstRepeatedUint64: [constRepeatedUint64Len]uint64{1, 2, 3},
+
+				OneOf: OneOf{
+					A1: 1,
+					B2: 2,
+					C:  3,
+					D:  4,
+				},
 			}
 			cbScalars.MarshalCanoto()
 		}
@@ -613,6 +694,13 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 			},
 
 			ConstRepeatedUint64: [constRepeatedUint64Len]uint64{1, 2, 3},
+
+			OneOf: OneOf{
+				A1: 1,
+				B2: 2,
+				C:  3,
+				D:  4,
+			},
 		}
 		for range b.N {
 			cbScalars.MarshalCanoto()
@@ -757,6 +845,13 @@ func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
 			},
 
 			ConstRepeatedUint64: [constRepeatedUint64Len]uint64{1, 2, 3},
+
+			OneOf: OneOf{
+				A1: 1,
+				B2: 2,
+				C:  3,
+				D:  4,
+			},
 		}
 		bytes := cbScalars.MarshalCanoto()
 
@@ -907,6 +1002,13 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 				},
 
 				ConstRepeatedUint64: []uint64{1, 2, 3},
+
+				OneOf: &pb.OneOf{
+					A: &pb.OneOf_A1{A1: 1},
+					B: &pb.OneOf_B2{B2: 2},
+					C: 3,
+					D: 4,
+				},
 			}
 			_, _ = proto.Marshal(&pbScalars)
 		}
@@ -997,6 +1099,13 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 			},
 
 			ConstRepeatedUint64: []uint64{1, 2, 3},
+
+			OneOf: &pb.OneOf{
+				A: &pb.OneOf_A1{A1: 1},
+				B: &pb.OneOf_B2{B2: 2},
+				C: 3,
+				D: 4,
+			},
 		}
 		for range b.N {
 			_, _ = proto.Marshal(&pbScalars)
@@ -1149,6 +1258,13 @@ func BenchmarkScalars_UnmarshalProto(b *testing.B) {
 			},
 
 			ConstRepeatedUint64: []uint64{1, 2, 3},
+
+			OneOf: &pb.OneOf{
+				A: &pb.OneOf_A1{A1: 1},
+				B: &pb.OneOf_B2{B2: 2},
+				C: 3,
+				D: 4,
+			},
 		}
 		scalarsBytes, err := proto.Marshal(&pbScalars)
 		require.NoError(b, err)
