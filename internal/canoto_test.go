@@ -230,7 +230,7 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 	var largestFieldNumber *pb.LargestFieldNumber
 	if s.LargestFieldNumber.Int32 != 0 {
 		largestFieldNumber = &pb.LargestFieldNumber{
-			Int32: uint64(s.LargestFieldNumber.Int32), //nolint:gosec // the conversion is consistent
+			Int32: uint64(s.LargestFieldNumber.Int32),
 		}
 	}
 	repeatedLargestFieldNumbers := make([]*pb.LargestFieldNumber, len(s.RepeatedLargestFieldNumber))
@@ -238,7 +238,7 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 		v := &s.RepeatedLargestFieldNumber[i]
 
 		repeatedLargestFieldNumbers[i] = &pb.LargestFieldNumber{
-			Int32: uint64(v.Int32), //nolint:gosec // the conversion is consistent
+			Int32: uint64(v.Int32),
 		}
 	}
 	var (
@@ -249,7 +249,7 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 		v := &s.FixedRepeatedLargestFieldNumber[i]
 
 		fixedLargestFieldNumbers[i] = &pb.LargestFieldNumber{
-			Int32: uint64(v.Int32), //nolint:gosec // the conversion is consistent
+			Int32: uint64(v.Int32),
 		}
 		isZero = isZero && v.Int32 == 0
 	}
