@@ -1087,18 +1087,16 @@ func BenchmarkScalars_Proto(b *testing.B) {
 		bytes, err := proto.Marshal(bm.s)
 		require.NoError(b, err)
 
-		for _, unsafe := range []bool{false, true} {
-			b.Run("unmarshal/"+bm.name+"/unsafe="+strconv.FormatBool(unsafe), func(b *testing.B) {
-				for range b.N {
-					var (
-						scalars pb.Scalars
-						reader  = proto.UnmarshalOptions{
-							Merge: true,
-						}
-					)
-					_ = reader.Unmarshal(bytes, &scalars)
-				}
-			})
-		}
+		b.Run("unmarshal/"+bm.name, func(b *testing.B) {
+			for range b.N {
+				var (
+					scalars pb.Scalars
+					reader  = proto.UnmarshalOptions{
+						Merge: true,
+					}
+				)
+				_ = reader.Unmarshal(bytes, &scalars)
+			}
+		})
 	}
 }
