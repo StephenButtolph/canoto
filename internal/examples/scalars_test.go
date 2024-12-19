@@ -525,6 +525,105 @@ func FuzzScalars_Canonical(f *testing.F) {
 	})
 }
 
+func TestScalars_Concurrent_MarshalCanoto(t *testing.T) {
+	s := Scalars{
+		Int8:     31,
+		Int16:    2164,
+		Int32:    216457,
+		Int64:    -2138746,
+		Uint8:    254,
+		Uint16:   21645,
+		Uint32:   32485976,
+		Uint64:   287634,
+		Sint8:    -31,
+		Sint16:   -2164,
+		Sint32:   -12786345,
+		Sint64:   98761243,
+		Fixed32:  98765234,
+		Fixed64:  1234576,
+		Sfixed32: -21348976,
+		Sfixed64: 98756432,
+		Bool:     true,
+		String:   "hi my name is Bob",
+		Bytes:    []byte("hi my name is Bob too"),
+		LargestFieldNumber: LargestFieldNumber[int32]{
+			Int32: 216457,
+		},
+
+		RepeatedInt8:     []int8{1, 2, 3},
+		RepeatedInt16:    []int16{1, 2, 3},
+		RepeatedInt32:    []int32{1, 2, 3},
+		RepeatedInt64:    []int64{1, 2, 3},
+		RepeatedUint8:    []uint8{1, 2, 3},
+		RepeatedUint16:   []uint16{1, 2, 3},
+		RepeatedUint32:   []uint32{1, 2, 3},
+		RepeatedUint64:   []uint64{1, 2, 3},
+		RepeatedSint8:    []int8{1, 2, 3},
+		RepeatedSint16:   []int16{1, 2, 3},
+		RepeatedSint32:   []int32{1, 2, 3},
+		RepeatedSint64:   []int64{1, 2, 3},
+		RepeatedFixed32:  []uint32{1, 2, 3},
+		RepeatedFixed64:  []uint64{1, 2, 3},
+		RepeatedSfixed32: []int32{1, 2, 3},
+		RepeatedSfixed64: []int64{1, 2, 3},
+		RepeatedBool:     []bool{true, false, true},
+		RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
+		RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
+		RepeatedLargestFieldNumber: []LargestFieldNumber[int32]{
+			{Int32: 123455},
+			{Int32: 876523},
+		},
+
+		FixedRepeatedInt8:       [3]int8{1, 2, 3},
+		FixedRepeatedInt16:      [3]int16{1, 2, 3},
+		FixedRepeatedInt32:      [3]int32{1, 2, 3},
+		FixedRepeatedInt64:      [3]int64{1, 2, 3},
+		FixedRepeatedUint8:      [3]uint8{1, 2, 3},
+		FixedRepeatedUint16:     [3]uint16{1, 2, 3},
+		FixedRepeatedUint32:     [3]uint32{1, 2, 3},
+		FixedRepeatedUint64:     [3]uint64{1, 2, 3},
+		FixedRepeatedSint8:      [3]int8{1, 2, 3},
+		FixedRepeatedSint16:     [3]int16{1, 2, 3},
+		FixedRepeatedSint32:     [3]int32{1, 2, 3},
+		FixedRepeatedSint64:     [3]int64{1, 2, 3},
+		FixedRepeatedFixed32:    [3]uint32{1, 2, 3},
+		FixedRepeatedFixed64:    [3]uint64{1, 2, 3},
+		FixedRepeatedSfixed32:   [3]int32{1, 2, 3},
+		FixedRepeatedSfixed64:   [3]int64{1, 2, 3},
+		FixedRepeatedBool:       [3]bool{true, false, true},
+		FixedRepeatedString:     [3]string{"hi", "my", "name"},
+		FixedBytes:              [32]byte{1},
+		RepeatedFixedBytes:      [][32]byte{{1}, {2}, {3}},
+		FixedRepeatedBytes:      [3][]byte{{1}, {2}, {3}},
+		FixedRepeatedFixedBytes: [3][32]byte{{1}, {2}, {3}},
+		FixedRepeatedLargestFieldNumber: [3]LargestFieldNumber[int32]{
+			{Int32: 123455},
+			{Int32: 876523},
+			{Int32: -576214},
+		},
+
+		ConstRepeatedUint64: [constRepeatedUint64Len]uint64{1, 2, 3},
+
+		OneOf: OneOf{
+			A1: 1,
+			B2: 2,
+			C:  3,
+			D:  4,
+		},
+	}
+
+	expected := s.MarshalCanoto()
+	actual := make(chan []byte, 10)
+	for range cap(actual) {
+		go func() {
+			actual <- s.MarshalCanoto()
+		}()
+	}
+	for range cap(actual) {
+		require.Equal(t, expected, <-actual)
+	}
+}
+
 func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 	b.Run("full stack", func(b *testing.B) {
 		for range b.N {
