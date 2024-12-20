@@ -230,8 +230,7 @@ func parseField(
 	}
 
 	var genericTypeCast string
-	genericType, ok := genericTypes[goType]
-	if ok {
+	if genericType, ok := genericTypes[goType]; ok {
 		genericTypeCast = fmt.Sprintf("T%d", genericType)
 	}
 
