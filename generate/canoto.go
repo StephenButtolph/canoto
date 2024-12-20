@@ -808,7 +808,7 @@ func makeUnmarshal(m message) string {
 			remainingBytes := r.B
 			r.B = msgBytes
 			c.${fieldName} = canoto.MakePointer(c.${fieldName})
-			err = c.${fieldName}.UnmarshalCanotoFrom(r)
+			err = ${genericTypeCast}(c.${fieldName}).UnmarshalCanotoFrom(r)
 			r.B = remainingBytes
 			if err != nil {
 				return err
@@ -1029,8 +1029,8 @@ func makeValidOneOf(m message) string {
 			},
 			pointers: typeTemplate{
 				single: `	if c.${fieldName} != nil {
-		c.${fieldName}.CalculateCanotoCache()
-		if c.${fieldName}.CachedCanotoSize() != 0 {
+		${genericTypeCast}(c.${fieldName}).CalculateCanotoCache()
+		if ${genericTypeCast}(c.${fieldName}).CachedCanotoSize() != 0 {
 			if ${oneOf}OneOf != 0 {
 				return false
 			}
@@ -1095,7 +1095,7 @@ func makeValid(m message) string {
 		}
 	}
 `
-		pointerTemplate = `	if c.${fieldName} != nil && !c.${fieldName}.ValidCanoto() {
+		pointerTemplate = `	if c.${fieldName} != nil && !${genericTypeCast}(c.${fieldName}).ValidCanoto() {
 		return false
 	}
 `
@@ -1264,8 +1264,8 @@ func makeSize(m message) string {
 		},
 		pointers: typeTemplate{
 			single: `	if c.${fieldName} != nil {
-		c.${fieldName}.CalculateCanotoCache()
-		if fieldSize := c.${fieldName}.CachedCanotoSize(); fieldSize != 0 {
+		${genericTypeCast}(c.${fieldName}).CalculateCanotoCache()
+		if fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
 			c.canotoData.size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize${sizeOneOf}
 		}
 	}
@@ -1478,10 +1478,10 @@ func makeMarshal(m message) string {
 		},
 		pointers: typeTemplate{
 			single: `	if c.${fieldName} != nil {
-		if fieldSize := c.${fieldName}.CachedCanotoSize(); fieldSize != 0 {
+		if fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
 			canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 			canoto.AppendInt(w, int64(fieldSize))
-			c.${fieldName}.MarshalCanotoInto(w)
+			${genericTypeCast}(c.${fieldName}).MarshalCanotoInto(w)
 		}
 	}
 `,

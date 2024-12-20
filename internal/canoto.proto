@@ -24,12 +24,14 @@ message OneOf {
   int64 D = 6;
 }
 
-message GenericValue {
-  bytes Field = 1;
+message GenericField {
+  bytes Value = 1;
+  bytes Pointer = 2;
 }
 
-message NestedGenericValue {
-  GenericValue Field = 1;
+message NestedGenericField {
+  GenericField Field = 1;
+  GenericField Pointer = 2;
 }
 
 message Scalars {

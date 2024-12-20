@@ -12,7 +12,7 @@ const constRepeatedUint64Len = 3
 var (
 	_ canoto.Message = (*LargestFieldNumber[int32])(nil)
 	_ canoto.Message = (*OneOf)(nil)
-	_ canoto.Message = (*GenericValue[OneOf, *OneOf])(nil)
+	_ canoto.Message = (*GenericField[OneOf, *OneOf])(nil)
 	_ canoto.Message = (*Scalars)(nil)
 )
 
@@ -44,16 +44,18 @@ type OneOf struct {
 	canotoData canotoData_OneOf
 }
 
-type GenericValue[T any, _ canoto.FieldPointer[T]] struct {
-	Field T `canoto:"value,1"`
+type GenericField[T any, _ canoto.FieldPointer[T]] struct {
+	Value   T  `canoto:"value,1"`
+	Pointer *T `canoto:"pointer,2"`
 
-	canotoData canotoData_GenericValue
+	canotoData canotoData_GenericField
 }
 
-type NestedGenericValue[T any, TP canoto.FieldPointer[T]] struct {
-	Field GenericValue[T, TP] `canoto:"value,1"`
+type NestedGenericField[T any, TP canoto.FieldPointer[T]] struct {
+	Field   GenericField[T, TP]  `canoto:"value,1"`
+	Pointer *GenericField[T, TP] `canoto:"pointer,2"`
 
-	canotoData canotoData_NestedGenericValue
+	canotoData canotoData_NestedGenericField
 }
 
 type Scalars struct {
