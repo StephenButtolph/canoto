@@ -136,7 +136,7 @@ To implement a struct with a generic field `T`, the struct must include a type p
 
 ```golang
 type GenericField[T any, _ canoto.FieldPointer[T]] struct {
-	Field T `canoto:"field,1"`
+	Field T `canoto:"value,1"`
 
 	canotoData canotoData_GenericField
 }
