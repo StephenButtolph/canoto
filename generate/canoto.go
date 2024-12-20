@@ -1006,6 +1006,39 @@ func makeValidOneOf(m message) string {
 	}
 `,
 			},
+			pointers: typeTemplate{
+				single: `	if c.${fieldName} != nil {
+		c.${fieldName}.CalculateCanotoCache()
+		if c.${fieldName}.CachedCanotoSize() != 0 {
+			if ${oneOf}OneOf != 0 {
+				return false
+			}
+			${oneOf}OneOf = ${fieldNumber}
+		}
+	}
+`,
+				repeated: repeatedTemplate,
+				fixedRepeated: `	{
+		isZero := true
+		for i := range c.${fieldName} {
+			if c.${fieldName}[i] == nil {
+				continue
+			}
+			c.${fieldName}[i].CalculateCanotoCache()
+			if c.${fieldName}[i].CachedCanotoSize() != 0 {
+				isZero = false
+				break
+			}
+		}
+		if !isZero {
+			if ${oneOf}OneOf != 0 {
+				return false
+			}
+			${oneOf}OneOf = ${fieldNumber}
+		}
+	}
+`,
+			},
 		}
 	)
 
@@ -1041,6 +1074,16 @@ func makeValid(m message) string {
 		}
 	}
 `
+		pointerTemplate = `	if c.${fieldName} != nil && !c.${fieldName}.ValidCanoto() {
+		return false
+	}
+`
+		repeatedPointerTemplate = `	for i := range c.${fieldName} {
+		if c.${fieldName}[i] != nil && !c.${fieldName}[i].ValidCanoto() {
+			return false
+		}
+	}
+`
 	)
 	return writeMessage(m, messageTemplate{
 		strings: typeTemplate{
@@ -1052,6 +1095,11 @@ func makeValid(m message) string {
 			single:        fieldTemplate,
 			repeated:      repeatedFieldTemplate,
 			fixedRepeated: repeatedFieldTemplate,
+		},
+		pointers: typeTemplate{
+			single:        pointerTemplate,
+			repeated:      repeatedPointerTemplate,
+			fixedRepeated: repeatedPointerTemplate,
 		},
 	})
 }

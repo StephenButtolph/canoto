@@ -2864,6 +2864,9 @@ func (c *Scalars) ValidCanoto() bool {
 	if !(&c.OneOf).ValidCanoto() {
 		return false
 	}
+	if c.Pointer != nil && !c.Pointer.ValidCanoto() {
+		return false
+	}
 	return true
 }
 
