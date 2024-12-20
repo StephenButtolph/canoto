@@ -109,7 +109,7 @@ message Scalars {
   repeated bytes CustomFixedRepeatedBytes = 72;
   repeated bytes CustomFixedRepeatedFixedBytes = 73;
   OneOf OneOf = 74;
-  OneOf Pointer = 75;
-  repeated OneOf RepeatedPointer = 76;
-  repeated OneOf FixedRepeatedPointer = 77;
+  LargestFieldNumber Pointer = 75;
+  repeated LargestFieldNumber RepeatedPointer = 76;
+  repeated LargestFieldNumber FixedRepeatedPointer = 77;
 }

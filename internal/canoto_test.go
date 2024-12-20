@@ -78,6 +78,20 @@ func canonicalizeCanotoScalars(s *Scalars) *Scalars {
 	for i := range s.CustomFixedRepeatedBytes {
 		s.CustomFixedRepeatedBytes[i] = canonicalizeSlice(s.CustomFixedRepeatedBytes[i])
 	}
+	if s.Pointer != nil && s.Pointer.Int32 == 0 {
+		s.Pointer = nil
+	}
+	s.RepeatedPointer = canonicalizeSlice(s.RepeatedPointer)
+	for i := range s.RepeatedPointer {
+		if s.RepeatedPointer[i] != nil && s.RepeatedPointer[i].Int32 == 0 {
+			s.RepeatedPointer[i] = nil
+		}
+	}
+	for i := range s.FixedRepeatedPointer {
+		if s.FixedRepeatedPointer[i] != nil && s.FixedRepeatedPointer[i].Int32 == 0 {
+			s.FixedRepeatedPointer[i] = nil
+		}
+	}
 	s.canotoData = canotoData_Scalars{}
 	s.OneOf.canotoData = canotoData_OneOf{}
 	return s
@@ -143,6 +157,33 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 				B2: b,
 			}
 		}
+	}
+
+	var pointer *pb.LargestFieldNumber
+	if v := s.Pointer.GetInt32(); v != 0 {
+		pointer = &pb.LargestFieldNumber{
+			Int32: v,
+		}
+	}
+	repeatedPointers := make([]*pb.LargestFieldNumber, 0, len(s.RepeatedPointer))
+	for _, v := range s.RepeatedPointer {
+		var ptr *pb.LargestFieldNumber
+		if v := v.GetInt32(); v != 0 {
+			ptr = &pb.LargestFieldNumber{
+				Int32: v,
+			}
+		}
+		repeatedPointers = append(repeatedPointers, ptr)
+	}
+	fixedRepeatedPointers := make([]*pb.LargestFieldNumber, 0, len(s.FixedRepeatedPointer))
+	for _, v := range s.FixedRepeatedPointer {
+		var ptr *pb.LargestFieldNumber
+		if v := v.GetInt32(); v != 0 {
+			ptr = &pb.LargestFieldNumber{
+				Int32: v,
+			}
+		}
+		fixedRepeatedPointers = append(fixedRepeatedPointers, ptr)
 	}
 	return &pb.Scalars{
 		Int8:               s.Int8,
@@ -222,7 +263,10 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 		CustomFixedRepeatedBytes:      canonicalizeSlice(customFixedRepeatedBytes),
 		CustomFixedRepeatedFixedBytes: s.CustomFixedRepeatedFixedBytes,
 
-		OneOf: oneOf,
+		OneOf:                oneOf,
+		Pointer:              pointer,
+		RepeatedPointer:      canonicalizeSlice(repeatedPointers),
+		FixedRepeatedPointer: canonicalizeSlice(fixedRepeatedPointers),
 	}
 }
 
@@ -435,6 +479,39 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 	if !canoto.IsZero(s.CustomFixedRepeatedFixedBytes) {
 		for _, v := range s.CustomFixedRepeatedFixedBytes {
 			pbs.CustomFixedRepeatedFixedBytes = append(pbs.CustomFixedRepeatedFixedBytes, slices.Clone(v[:]))
+		}
+	}
+	if s.Pointer != nil && s.Pointer.Int32 != 0 {
+		pbs.Pointer = &pb.LargestFieldNumber{
+			Int32: uint64(s.Pointer.Int32),
+		}
+	}
+	if len(s.RepeatedPointer) != 0 {
+		for _, v := range s.RepeatedPointer {
+			var ptr *pb.LargestFieldNumber
+			if v != nil && v.Int32 != 0 {
+				ptr = &pb.LargestFieldNumber{
+					Int32: uint64(v.Int32),
+				}
+			}
+			pbs.RepeatedPointer = append(pbs.RepeatedPointer, ptr)
+		}
+	}
+	{
+		isZero := true
+		for _, v := range s.FixedRepeatedPointer {
+			isZero = isZero && (v == nil || v.Int32 == 0)
+		}
+		if !isZero {
+			for _, v := range s.FixedRepeatedPointer {
+				var ptr *pb.LargestFieldNumber
+				if v != nil && v.Int32 != 0 {
+					ptr = &pb.LargestFieldNumber{
+						Int32: uint64(v.Int32),
+					}
+				}
+				pbs.FixedRepeatedPointer = append(pbs.FixedRepeatedPointer, ptr)
+			}
 		}
 	}
 	return &pbs

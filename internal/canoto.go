@@ -133,9 +133,9 @@ type Scalars struct {
 	CustomFixedRepeatedBytes        customFixedRepeatedBytes       `canoto:"fixed repeated bytes,72"`
 	CustomFixedRepeatedFixedBytes   customFixedRepeatedFixedBytes  `canoto:"fixed repeated fixed bytes,73"`
 	OneOf                           OneOf                          `canoto:"value,74"`
-	Pointer                         *OneOf                         `canoto:"pointer,75"`
-	RepeatedPointer                 []*OneOf                       `canoto:"repeated pointer,76"`
-	FixedRepeatedPointer            [3]*OneOf                      `canoto:"fixed repeated pointer,77"`
+	Pointer                         *LargestFieldNumber[uint32]    `canoto:"pointer,75"`
+	RepeatedPointer                 []*LargestFieldNumber[uint32]  `canoto:"repeated pointer,76"`
+	FixedRepeatedPointer            [3]*LargestFieldNumber[uint32] `canoto:"fixed repeated pointer,77"`
 
 	canotoData canotoData_Scalars
 }
