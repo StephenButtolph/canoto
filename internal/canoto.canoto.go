@@ -2947,7 +2947,6 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 					return err
 				}
 				if len(msgBytes) == 0 {
-					c.RepeatedPointer[1+i] = nil
 					continue
 				}
 
@@ -2974,6 +2973,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				return err
 			}
 
+			c.FixedRepeatedPointer[0] = nil
 			isZero := len(msgBytes) == 0
 			if !isZero {
 				remainingBytes := r.B

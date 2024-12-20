@@ -854,7 +854,6 @@ func makeUnmarshal(m message) string {
 					return err
 				}
 				if len(msgBytes) == 0 {
-					c.${fieldName}[1+i] = nil
 					continue
 				}
 
@@ -882,6 +881,7 @@ func makeUnmarshal(m message) string {
 				return err
 			}
 
+			c.${fieldName}[0] = nil
 			isZero := len(msgBytes) == 0
 			if !isZero {
 				remainingBytes := r.B
