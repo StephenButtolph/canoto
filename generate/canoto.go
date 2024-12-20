@@ -703,11 +703,13 @@ func makeUnmarshal(m message) string {
 			}
 
 			c.${fieldName} = canoto.MakeSlice(c.${fieldName}, 1+count)
-			r.B = msgBytes
-			err = ${genericTypeCast}(&c.${fieldName}[0]).UnmarshalCanotoFrom(r)
-			r.B = remainingBytes
-			if err != nil {
-				return err
+			if len(msgBytes) != 0 {
+				r.B = msgBytes
+				err = ${genericTypeCast}(&c.${fieldName}[0]).UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
 			}
 
 			for i := range count {
@@ -719,12 +721,14 @@ func makeUnmarshal(m message) string {
 					return err
 				}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				err = ${genericTypeCast}(&c.${fieldName}[1+i]).UnmarshalCanotoFrom(r)
-				r.B = remainingBytes
-				if err != nil {
-					return err
+				if len(msgBytes) != 0 {
+					remainingBytes := r.B
+					r.B = msgBytes
+					err = ${genericTypeCast}(&c.${fieldName}[1+i]).UnmarshalCanotoFrom(r)
+					r.B = remainingBytes
+					if err != nil {
+						return err
+					}
 				}
 			}
 `,
@@ -742,15 +746,17 @@ func makeUnmarshal(m message) string {
 				return err
 			}
 
-			remainingBytes := r.B
-			r.B = msgBytes
-			err = ${genericTypeCast}(&c.${fieldName}[0]).UnmarshalCanotoFrom(r)
-			r.B = remainingBytes
-			if err != nil {
-				return err
+			isZero := len(msgBytes) == 0
+			if !isZero {
+				remainingBytes := r.B
+				r.B = msgBytes
+				err = ${genericTypeCast}(&c.${fieldName}[0]).UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
 			}
 
-			isZero := len(msgBytes) == 0
 			const numToRead = uint(len(c.${fieldName}) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
@@ -763,6 +769,9 @@ func makeUnmarshal(m message) string {
 				if err != nil {
 					return err
 				}
+				if len(msgBytes) == 0 {
+					continue
+				}
 
 				remainingBytes := r.B
 				r.B = msgBytes
@@ -771,7 +780,7 @@ func makeUnmarshal(m message) string {
 				if err != nil {
 					return err
 				}
-				isZero = isZero && len(msgBytes) == 0
+				isZero = false
 			}
 			if isZero {
 				return canoto.ErrZeroValue
@@ -826,12 +835,14 @@ func makeUnmarshal(m message) string {
 			}
 
 			c.${fieldName} = canoto.MakeSlice(c.${fieldName}, 1+count)
-			r.B = msgBytes
-			c.${fieldName}[0] = canoto.MakePointer(c.${fieldName}[0])
-			err = c.${fieldName}[0].UnmarshalCanotoFrom(r)
-			r.B = remainingBytes
-			if err != nil {
-				return err
+			if len(msgBytes) != 0 {
+				r.B = msgBytes
+				c.${fieldName}[0] = canoto.MakePointer(c.${fieldName}[0])
+				err = c.${fieldName}[0].UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
 			}
 
 			for i := range count {
@@ -841,6 +852,9 @@ func makeUnmarshal(m message) string {
 				r.Unsafe = originalUnsafe
 				if err != nil {
 					return err
+				}
+				if len(msgBytes) == 0 {
+					continue
 				}
 
 				remainingBytes := r.B
@@ -867,16 +881,18 @@ func makeUnmarshal(m message) string {
 				return err
 			}
 
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.${fieldName}[0] = canoto.MakePointer(c.${fieldName}[0])
-			err = c.${fieldName}[0].UnmarshalCanotoFrom(r)
-			r.B = remainingBytes
-			if err != nil {
-				return err
+			isZero := len(msgBytes) == 0
+			if !isZero {
+				remainingBytes := r.B
+				r.B = msgBytes
+				c.${fieldName}[0] = canoto.MakePointer(c.${fieldName}[0])
+				err = c.${fieldName}[0].UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
 			}
 
-			isZero := len(msgBytes) == 0
 			const numToRead = uint(len(c.${fieldName}) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
@@ -889,6 +905,9 @@ func makeUnmarshal(m message) string {
 				if err != nil {
 					return err
 				}
+				if len(msgBytes) == 0 {
+					continue
+				}
 
 				remainingBytes := r.B
 				r.B = msgBytes
@@ -898,7 +917,7 @@ func makeUnmarshal(m message) string {
 				if err != nil {
 					return err
 				}
-				isZero = isZero && len(msgBytes) == 0
+				isZero = false
 			}
 			if isZero {
 				return canoto.ErrZeroValue
@@ -1450,6 +1469,51 @@ func makeMarshal(m message) string {
 				canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 				canoto.AppendInt(w, int64(${genericTypeCast}(&c.${fieldName}[i]).CachedCanotoSize()))
 				${genericTypeCast}(&c.${fieldName}[i]).MarshalCanotoInto(w)
+			}
+		}
+	}
+`,
+		},
+		pointers: typeTemplate{
+			single: `	if c.${fieldName} != nil {
+		if fieldSize := c.${fieldName}.CachedCanotoSize(); fieldSize != 0 {
+			canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+			canoto.AppendInt(w, int64(fieldSize))
+			c.${fieldName}.MarshalCanotoInto(w)
+		}
+	}
+`,
+			repeated: `	for i := range c.${fieldName} {
+		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		var fieldSize int
+		if c.${fieldName}[i] != nil {
+			fieldSize = c.${fieldName}[i].CachedCanotoSize()
+		}
+		canoto.AppendInt(w, int64(fieldSize))
+		if fieldSize != 0 {
+			c.${fieldName}[i].MarshalCanotoInto(w)
+		}
+	}
+`,
+			fixedRepeated: `	{
+		isZero := true
+		for i := range c.${fieldName} {
+			if c.${fieldName}[i] != nil && c.${fieldName}[i].CachedCanotoSize() != 0 {
+				isZero = false
+				break
+			}
+		}
+		if !isZero {
+			for i := range c.${fieldName} {
+				canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+				var fieldSize int
+				if c.${fieldName}[i] != nil {
+					fieldSize = c.${fieldName}[i].CachedCanotoSize()
+				}
+				canoto.AppendInt(w, int64(fieldSize))
+				if fieldSize != 0 {
+					c.${fieldName}[i].MarshalCanotoInto(w)
+				}
 			}
 		}
 	}

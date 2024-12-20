@@ -1758,11 +1758,13 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			}
 
 			c.RepeatedLargestFieldNumber = canoto.MakeSlice(c.RepeatedLargestFieldNumber, 1+count)
-			r.B = msgBytes
-			err = (&c.RepeatedLargestFieldNumber[0]).UnmarshalCanotoFrom(r)
-			r.B = remainingBytes
-			if err != nil {
-				return err
+			if len(msgBytes) != 0 {
+				r.B = msgBytes
+				err = (&c.RepeatedLargestFieldNumber[0]).UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
 			}
 
 			for i := range count {
@@ -1774,12 +1776,14 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 					return err
 				}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				err = (&c.RepeatedLargestFieldNumber[1+i]).UnmarshalCanotoFrom(r)
-				r.B = remainingBytes
-				if err != nil {
-					return err
+				if len(msgBytes) != 0 {
+					remainingBytes := r.B
+					r.B = msgBytes
+					err = (&c.RepeatedLargestFieldNumber[1+i]).UnmarshalCanotoFrom(r)
+					r.B = remainingBytes
+					if err != nil {
+						return err
+					}
 				}
 			}
 		case 41:
@@ -2471,15 +2475,17 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				return err
 			}
 
-			remainingBytes := r.B
-			r.B = msgBytes
-			err = (&c.FixedRepeatedLargestFieldNumber[0]).UnmarshalCanotoFrom(r)
-			r.B = remainingBytes
-			if err != nil {
-				return err
+			isZero := len(msgBytes) == 0
+			if !isZero {
+				remainingBytes := r.B
+				r.B = msgBytes
+				err = (&c.FixedRepeatedLargestFieldNumber[0]).UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
 			}
 
-			isZero := len(msgBytes) == 0
 			const numToRead = uint(len(c.FixedRepeatedLargestFieldNumber) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__Scalars__FixedRepeatedLargestFieldNumber__tag) {
@@ -2492,6 +2498,9 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				if err != nil {
 					return err
 				}
+				if len(msgBytes) == 0 {
+					continue
+				}
 
 				remainingBytes := r.B
 				r.B = msgBytes
@@ -2500,7 +2509,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				if err != nil {
 					return err
 				}
-				isZero = isZero && len(msgBytes) == 0
+				isZero = false
 			}
 			if isZero {
 				return canoto.ErrZeroValue
@@ -3747,5 +3756,12 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		canoto.Append(w, canoto__Scalars__OneOf__tag)
 		canoto.AppendInt(w, int64(fieldSize))
 		(&c.OneOf).MarshalCanotoInto(w)
+	}
+	if c.Pointer != nil {
+		if fieldSize := c.Pointer.CachedCanotoSize(); fieldSize != 0 {
+			canoto.Append(w, canoto__Scalars__Pointer__tag)
+			canoto.AppendInt(w, int64(fieldSize))
+			c.Pointer.MarshalCanotoInto(w)
+		}
 	}
 }
