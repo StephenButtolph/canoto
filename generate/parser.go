@@ -80,8 +80,8 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 			typesToIndex := make(map[string]int)
 			for _, field := range ts.TypeParams.List {
 				for _, name := range field.Names {
-					typesToIndex[name.Name] = message.numGenerics
-					message.numGenerics++
+					typesToIndex[name.Name] = message.numTypes
+					message.numTypes++
 				}
 			}
 

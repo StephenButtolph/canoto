@@ -9,7 +9,7 @@ import (
 type message struct {
 	name              string
 	canonicalizedName string
-	numGenerics       int
+	numTypes          int
 	fields            []field
 }
 
