@@ -219,6 +219,9 @@ func parseField(
 		case *ast.IndexExpr:
 			t = tt.X
 			continue
+		case *ast.IndexListExpr:
+			t = tt.X
+			continue
 		default:
 			return field{}, false, fmt.Errorf("%w %T at %s",
 				errInvalidGoType,

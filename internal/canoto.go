@@ -50,6 +50,12 @@ type GenericField[T any, _ canoto.FieldPointer[T]] struct {
 	canotoData canotoData_GenericField
 }
 
+type NestedGenericField[T any, TP canoto.FieldPointer[T]] struct {
+	Field GenericField[T, TP] `canoto:"field,1"`
+
+	canotoData canotoData_GenericField
+}
+
 type Scalars struct {
 	Int8                            int8                           `canoto:"int,1"`
 	Int16                           int16                          `canoto:"int,2"`
