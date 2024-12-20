@@ -3255,6 +3255,12 @@ func (c *Scalars) CalculateCanotoCache() {
 	if fieldSize := (&c.OneOf).CachedCanotoSize(); fieldSize != 0 {
 		c.canotoData.size += len(canoto__Scalars__OneOf__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
+	if c.Pointer != nil {
+		c.Pointer.CalculateCanotoCache()
+		if fieldSize := c.Pointer.CachedCanotoSize(); fieldSize != 0 {
+			c.canotoData.size += len(canoto__Scalars__Pointer__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		}
+	}
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto

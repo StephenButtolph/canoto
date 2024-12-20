@@ -1241,6 +1241,43 @@ func makeSize(m message) string {
 	}
 `,
 		},
+		pointers: typeTemplate{
+			single: `	if c.${fieldName} != nil {
+		c.${fieldName}.CalculateCanotoCache()
+		if fieldSize := c.${fieldName}.CachedCanotoSize(); fieldSize != 0 {
+			c.canotoData.size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize${sizeOneOf}
+		}
+	}
+`,
+			repeated: `	for i := range c.${fieldName} {
+		var fieldSize int
+		if c.${fieldName}[i] != nil {
+			c.${fieldName}[i].CalculateCanotoCache()
+			fieldSize = c.${fieldName}[i].CachedCanotoSize()
+		}
+		c.canotoData.size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize${sizeOneOf}
+	}
+`,
+			fixedRepeated: `	{
+		var (
+			fieldSizeSum int
+			totalSize    int
+		)
+		for i := range c.${fieldName} {
+			var fieldSize int
+			if c.${fieldName}[i] != nil {
+				c.${fieldName}[i].CalculateCanotoCache()
+				fieldSize = c.${fieldName}[i].CachedCanotoSize()
+				fieldSizeSum += fieldSize
+			}
+			totalSize += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		}
+		if fieldSizeSum != 0 {
+			c.canotoData.size += totalSize${sizeOneOfIndent}
+		}
+	}
+`,
+		},
 	})
 }
 
