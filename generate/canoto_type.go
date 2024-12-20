@@ -16,7 +16,7 @@ const (
 	canotoString     canotoType = "string"
 	canotoBytes      canotoType = "bytes"
 	canotoFixedBytes canotoType = "fixed bytes"
-	canotoField      canotoType = "field"
+	canotoValue      canotoType = "value"
 	canotoPointer    canotoType = "pointer"
 
 	canotoRepeatedInt        = "repeated " + canotoInt
@@ -27,7 +27,7 @@ const (
 	canotoRepeatedString     = "repeated " + canotoString
 	canotoRepeatedBytes      = "repeated " + canotoBytes
 	canotoRepeatedFixedBytes = "repeated " + canotoFixedBytes
-	canotoRepeatedField      = "repeated " + canotoField
+	canotoRepeatedValue      = "repeated " + canotoValue
 	canotoRepeatedPointer    = "repeated " + canotoPointer
 
 	canotoFixedRepeatedInt        = "fixed " + canotoRepeatedInt
@@ -38,7 +38,7 @@ const (
 	canotoFixedRepeatedString     = "fixed " + canotoRepeatedString
 	canotoFixedRepeatedBytes      = "fixed " + canotoRepeatedBytes
 	canotoFixedRepeatedFixedBytes = "fixed " + canotoRepeatedFixedBytes
-	canotoFixedRepeatedField      = "fixed " + canotoRepeatedField
+	canotoFixedRepeatedValue      = "fixed " + canotoRepeatedValue
 	canotoFixedRepeatedPointer    = "fixed " + canotoRepeatedPointer
 )
 
@@ -52,7 +52,7 @@ var (
 		canotoString,
 		canotoBytes,
 		canotoFixedBytes,
-		canotoField,
+		canotoValue,
 		canotoPointer,
 
 		canotoRepeatedInt,
@@ -63,7 +63,7 @@ var (
 		canotoRepeatedString,
 		canotoRepeatedBytes,
 		canotoRepeatedFixedBytes,
-		canotoRepeatedField,
+		canotoRepeatedValue,
 		canotoRepeatedPointer,
 
 		canotoFixedRepeatedInt,
@@ -74,7 +74,7 @@ var (
 		canotoFixedRepeatedString,
 		canotoFixedRepeatedBytes,
 		canotoFixedRepeatedFixedBytes,
-		canotoFixedRepeatedField,
+		canotoFixedRepeatedValue,
 		canotoFixedRepeatedPointer,
 	}
 	canotoVarintTypes = []canotoType{
@@ -96,7 +96,7 @@ var (
 		canotoRepeatedString,
 		canotoRepeatedBytes,
 		canotoRepeatedFixedBytes,
-		canotoRepeatedField,
+		canotoRepeatedValue,
 		canotoRepeatedPointer,
 
 		canotoFixedRepeatedInt,
@@ -107,7 +107,7 @@ var (
 		canotoFixedRepeatedString,
 		canotoFixedRepeatedBytes,
 		canotoFixedRepeatedFixedBytes,
-		canotoFixedRepeatedField,
+		canotoFixedRepeatedValue,
 		canotoFixedRepeatedPointer,
 	}
 	canotoFixedRepeatedTypes = []canotoType{
@@ -119,7 +119,7 @@ var (
 		canotoFixedRepeatedString,
 		canotoFixedRepeatedBytes,
 		canotoFixedRepeatedFixedBytes,
-		canotoFixedRepeatedField,
+		canotoFixedRepeatedValue,
 		canotoFixedRepeatedPointer,
 	}
 
@@ -202,7 +202,7 @@ func (c canotoType) ProtoType(goType string) string {
 
 func (c canotoType) ProtoTypePrefix() string {
 	switch c {
-	case canotoInt, canotoSint, canotoFint32, canotoFint64, canotoBool, canotoString, canotoBytes, canotoFixedBytes, canotoField, canotoPointer:
+	case canotoInt, canotoSint, canotoFint32, canotoFint64, canotoBool, canotoString, canotoBytes, canotoFixedBytes, canotoValue, canotoPointer:
 		return ""
 	default:
 		return "repeated "
