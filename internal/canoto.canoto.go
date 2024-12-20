@@ -2788,30 +2788,30 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 		return err
 	}
 		case 75:
-	if wireType != canoto.Len {
-		return canoto.ErrUnexpectedWireType
-	}
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
 
-	originalUnsafe := r.Unsafe
-	r.Unsafe = true
-	var msgBytes []byte
-	err := canoto.ReadBytes(r, &msgBytes)
-	r.Unsafe = originalUnsafe
-	if err != nil {
-		return err
-	}
-	if len(msgBytes) == 0 {
-		return canoto.ErrZeroValue
-	}
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			err := canoto.ReadBytes(r, &msgBytes)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return canoto.ErrZeroValue
+			}
 
-	remainingBytes := r.B
-	r.B = msgBytes
-	c.Pointer = canoto.MakePointer(c.Pointer)
-	err = c.Pointer.UnmarshalCanotoFrom(r)
-	r.B = remainingBytes
-	if err != nil {
-		return err
-	}
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.Pointer = canoto.MakePointer(c.Pointer)
+			err = c.Pointer.UnmarshalCanotoFrom(r)
+			r.B = remainingBytes
+			if err != nil {
+				return err
+			}
 		default:
 			return canoto.ErrUnknownField
 		}
