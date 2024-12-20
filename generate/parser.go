@@ -213,6 +213,9 @@ func parseField(
 		case *ast.Ident:
 			goType = tt.Name
 		case *ast.SelectorExpr:
+		case *ast.StarExpr:
+			t = tt.X
+			continue
 		case *ast.ArrayType:
 			t = tt.Elt
 			continue

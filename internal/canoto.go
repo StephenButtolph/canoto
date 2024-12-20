@@ -131,6 +131,7 @@ type Scalars struct {
 	CustomFixedRepeatedBytes        customFixedRepeatedBytes       `canoto:"fixed repeated bytes,72"`
 	CustomFixedRepeatedFixedBytes   customFixedRepeatedFixedBytes  `canoto:"fixed repeated fixed bytes,73"`
 	OneOf                           OneOf                          `canoto:"field,74"`
+	Pointer                         *OneOf                         `canoto:"pointer,75"`
 
 	canotoData canotoData_Scalars
 }

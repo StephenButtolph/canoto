@@ -656,126 +656,253 @@ func makeUnmarshal(m message) string {
 				return canoto.ErrZeroValue
 			}
 `,
-		customs: typeTemplate{
+		fields: typeTemplate{
 			single: `		case ${fieldNumber}:
-			if wireType != canoto.Len {
-				return canoto.ErrUnexpectedWireType
-			}${unmarshalOneOf}
+	if wireType != canoto.Len {
+		return canoto.ErrUnexpectedWireType
+	}${unmarshalOneOf}
 
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
-			r.Unsafe = originalUnsafe
-			if err != nil {
-				return err
-			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
-			}
+	originalUnsafe := r.Unsafe
+	r.Unsafe = true
+	var msgBytes []byte
+	err := canoto.ReadBytes(r, &msgBytes)
+	r.Unsafe = originalUnsafe
+	if err != nil {
+		return err
+	}
+	if len(msgBytes) == 0 {
+		return canoto.ErrZeroValue
+	}
 
-			remainingBytes := r.B
-			r.B = msgBytes
-			err = ${genericTypeCast}(&c.${fieldName}).UnmarshalCanotoFrom(r)
-			r.B = remainingBytes
-			if err != nil {
-				return err
-			}
+	remainingBytes := r.B
+	r.B = msgBytes
+	err = ${genericTypeCast}(&c.${fieldName}).UnmarshalCanotoFrom(r)
+	r.B = remainingBytes
+	if err != nil {
+		return err
+	}
 `,
 			repeated: `		case ${fieldNumber}:
-			if wireType != canoto.Len {
-				return canoto.ErrUnexpectedWireType
-			}${unmarshalOneOf}
+	if wireType != canoto.Len {
+		return canoto.ErrUnexpectedWireType
+	}${unmarshalOneOf}
 
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
-			r.Unsafe = originalUnsafe
-			if err != nil {
-				return err
-			}
+	originalUnsafe := r.Unsafe
+	r.Unsafe = true
+	var msgBytes []byte
+	err := canoto.ReadBytes(r, &msgBytes)
+	r.Unsafe = originalUnsafe
+	if err != nil {
+		return err
+	}
 
-			remainingBytes := r.B
-			count, err := canoto.CountBytes(remainingBytes, canoto__${escapedStructName}__${escapedFieldName}__tag)
-			if err != nil {
-				return err
-			}
+	remainingBytes := r.B
+	count, err := canoto.CountBytes(remainingBytes, canoto__${escapedStructName}__${escapedFieldName}__tag)
+	if err != nil {
+		return err
+	}
 
-			c.${fieldName} = canoto.MakeSlice(c.${fieldName}, 1+count)
-			r.B = msgBytes
-			err = ${genericTypeCast}(&c.${fieldName}[0]).UnmarshalCanotoFrom(r)
-			r.B = remainingBytes
-			if err != nil {
-				return err
-			}
+	c.${fieldName} = canoto.MakeSlice(c.${fieldName}, 1+count)
+	r.B = msgBytes
+	err = ${genericTypeCast}(&c.${fieldName}[0]).UnmarshalCanotoFrom(r)
+	r.B = remainingBytes
+	if err != nil {
+		return err
+	}
 
-			for i := range count {
-				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
-				r.Unsafe = true
-				err := canoto.ReadBytes(r, &msgBytes)
-				r.Unsafe = originalUnsafe
-				if err != nil {
-					return err
-				}
+	for i := range count {
+		r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
+		r.Unsafe = true
+		err := canoto.ReadBytes(r, &msgBytes)
+		r.Unsafe = originalUnsafe
+		if err != nil {
+			return err
+		}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				err = ${genericTypeCast}(&c.${fieldName}[1+i]).UnmarshalCanotoFrom(r)
-				r.B = remainingBytes
-				if err != nil {
-					return err
-				}
-			}
+		remainingBytes := r.B
+		r.B = msgBytes
+		err = ${genericTypeCast}(&c.${fieldName}[1+i]).UnmarshalCanotoFrom(r)
+		r.B = remainingBytes
+		if err != nil {
+			return err
+		}
+	}
 `,
 			fixedRepeated: `		case ${fieldNumber}:
-			if wireType != canoto.Len {
-				return canoto.ErrUnexpectedWireType
-			}${unmarshalOneOf}
+	if wireType != canoto.Len {
+		return canoto.ErrUnexpectedWireType
+	}${unmarshalOneOf}
 
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
-			r.Unsafe = originalUnsafe
-			if err != nil {
-				return err
-			}
+	originalUnsafe := r.Unsafe
+	r.Unsafe = true
+	var msgBytes []byte
+	err := canoto.ReadBytes(r, &msgBytes)
+	r.Unsafe = originalUnsafe
+	if err != nil {
+		return err
+	}
 
-			remainingBytes := r.B
-			r.B = msgBytes
-			err = ${genericTypeCast}(&c.${fieldName}[0]).UnmarshalCanotoFrom(r)
-			r.B = remainingBytes
-			if err != nil {
-				return err
-			}
+	remainingBytes := r.B
+	r.B = msgBytes
+	err = ${genericTypeCast}(&c.${fieldName}[0]).UnmarshalCanotoFrom(r)
+	r.B = remainingBytes
+	if err != nil {
+		return err
+	}
 
-			isZero := len(msgBytes) == 0
-			const numToRead = uint(len(c.${fieldName}) - 1)
-			for i := range numToRead {
-				if !canoto.HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
-					return canoto.ErrUnknownField
-				}
-				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
-				r.Unsafe = true
-				err := canoto.ReadBytes(r, &msgBytes)
-				r.Unsafe = originalUnsafe
-				if err != nil {
-					return err
-				}
+	isZero := len(msgBytes) == 0
+	const numToRead = uint(len(c.${fieldName}) - 1)
+	for i := range numToRead {
+		if !canoto.HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
+			return canoto.ErrUnknownField
+		}
+		r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
+		r.Unsafe = true
+		err := canoto.ReadBytes(r, &msgBytes)
+		r.Unsafe = originalUnsafe
+		if err != nil {
+			return err
+		}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				err = ${genericTypeCast}(&c.${fieldName}[1+i]).UnmarshalCanotoFrom(r)
-				r.B = remainingBytes
-				if err != nil {
-					return err
-				}
-				isZero = isZero && len(msgBytes) == 0
-			}
-			if isZero {
-				return canoto.ErrZeroValue
-			}
+		remainingBytes := r.B
+		r.B = msgBytes
+		err = ${genericTypeCast}(&c.${fieldName}[1+i]).UnmarshalCanotoFrom(r)
+		r.B = remainingBytes
+		if err != nil {
+			return err
+		}
+		isZero = isZero && len(msgBytes) == 0
+	}
+	if isZero {
+		return canoto.ErrZeroValue
+	}
+`,
+		},
+		pointers: typeTemplate{
+			single: `		case ${fieldNumber}:
+	if wireType != canoto.Len {
+		return canoto.ErrUnexpectedWireType
+	}${unmarshalOneOf}
+
+	originalUnsafe := r.Unsafe
+	r.Unsafe = true
+	var msgBytes []byte
+	err := canoto.ReadBytes(r, &msgBytes)
+	r.Unsafe = originalUnsafe
+	if err != nil {
+		return err
+	}
+	if len(msgBytes) == 0 {
+		return canoto.ErrZeroValue
+	}
+
+	remainingBytes := r.B
+	r.B = msgBytes
+	c.${fieldName} = canoto.MakePointer(c.${fieldName})
+	err = c.${fieldName}.UnmarshalCanotoFrom(r)
+	r.B = remainingBytes
+	if err != nil {
+		return err
+	}
+`,
+			repeated: `		case ${fieldNumber}:
+	if wireType != canoto.Len {
+		return canoto.ErrUnexpectedWireType
+	}${unmarshalOneOf}
+
+	originalUnsafe := r.Unsafe
+	r.Unsafe = true
+	var msgBytes []byte
+	err := canoto.ReadBytes(r, &msgBytes)
+	r.Unsafe = originalUnsafe
+	if err != nil {
+		return err
+	}
+
+	remainingBytes := r.B
+	count, err := canoto.CountBytes(remainingBytes, canoto__${escapedStructName}__${escapedFieldName}__tag)
+	if err != nil {
+		return err
+	}
+
+	c.${fieldName} = canoto.MakeSlice(c.${fieldName}, 1+count)
+	r.B = msgBytes
+	c.${fieldName}[0] = canoto.MakePointer(c.${fieldName}[0])
+	err = c.${fieldName}[0].UnmarshalCanotoFrom(r)
+	r.B = remainingBytes
+	if err != nil {
+		return err
+	}
+
+	for i := range count {
+		r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
+		r.Unsafe = true
+		err := canoto.ReadBytes(r, &msgBytes)
+		r.Unsafe = originalUnsafe
+		if err != nil {
+			return err
+		}
+
+		remainingBytes := r.B
+		r.B = msgBytes
+		c.${fieldName}[1+i] = canoto.MakePointer(c.${fieldName}[1+i])
+		err = c.${fieldName}[1+i].UnmarshalCanotoFrom(r)
+		r.B = remainingBytes
+		if err != nil {
+			return err
+		}
+	}
+`,
+			fixedRepeated: `		case ${fieldNumber}:
+	if wireType != canoto.Len {
+		return canoto.ErrUnexpectedWireType
+	}${unmarshalOneOf}
+
+	originalUnsafe := r.Unsafe
+	r.Unsafe = true
+	var msgBytes []byte
+	err := canoto.ReadBytes(r, &msgBytes)
+	r.Unsafe = originalUnsafe
+	if err != nil {
+		return err
+	}
+
+	remainingBytes := r.B
+	r.B = msgBytes
+	c.${fieldName}[0] = canoto.MakePointer(c.${fieldName}[0])
+	err = c.${fieldName}[0].UnmarshalCanotoFrom(r)
+	r.B = remainingBytes
+	if err != nil {
+		return err
+	}
+
+	isZero := len(msgBytes) == 0
+	const numToRead = uint(len(c.${fieldName}) - 1)
+	for i := range numToRead {
+		if !canoto.HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
+			return canoto.ErrUnknownField
+		}
+		r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
+		r.Unsafe = true
+		err := canoto.ReadBytes(r, &msgBytes)
+		r.Unsafe = originalUnsafe
+		if err != nil {
+			return err
+		}
+
+		remainingBytes := r.B
+		r.B = msgBytes
+		c.${fieldName}[1+i] = canoto.MakePointer(c.${fieldName}[1+i])
+		err = ${genericTypeCast}(&c.${fieldName}[1+i]).UnmarshalCanotoFrom(r)
+		r.B = remainingBytes
+		if err != nil {
+			return err
+		}
+		isZero = isZero && len(msgBytes) == 0
+	}
+	if isZero {
+		return canoto.ErrZeroValue
+	}
 `,
 		},
 	})
@@ -853,7 +980,7 @@ func makeValidOneOf(m message) string {
 `,
 			fixedRepeatedFixedBytesTemplate: functionTemplate,
 
-			customs: typeTemplate{
+			fields: typeTemplate{
 				single: `	if ${genericTypeCast}(&c.${fieldName}).CalculateCanotoCache(); ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize() != 0 {
 		if ${oneOf}OneOf != 0 {
 			return false
@@ -921,7 +1048,7 @@ func makeValid(m message) string {
 			repeated:      repeatedStringTemplate,
 			fixedRepeated: repeatedStringTemplate,
 		},
-		customs: typeTemplate{
+		fields: typeTemplate{
 			single:        fieldTemplate,
 			repeated:      repeatedFieldTemplate,
 			fixedRepeated: repeatedFieldTemplate,
@@ -1037,7 +1164,7 @@ func makeSize(m message) string {
 		}${sizeOneOf}
 	}
 `,
-		customs: typeTemplate{
+		fields: typeTemplate{
 			single: `	${genericTypeCast}(&c.${fieldName}).CalculateCanotoCache()
 	if fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
 		c.canotoData.size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize${sizeOneOf}
@@ -1212,7 +1339,7 @@ func makeMarshal(m message) string {
 		}
 	}
 `,
-		customs: typeTemplate{
+		fields: typeTemplate{
 			single: `	if fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
 		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		canoto.AppendInt(w, int64(fieldSize))
@@ -1259,7 +1386,8 @@ type messageTemplate struct {
 	fixedRepeatedBytesTemplate      string
 	fixedRepeatedFixedBytesTemplate string
 
-	customs typeTemplate
+	fields   typeTemplate
+	pointers typeTemplate
 }
 
 type typeTemplate struct {
@@ -1316,11 +1444,17 @@ func writeField(w io.Writer, f field, t messageTemplate) error {
 	case canotoFixedRepeatedFixedBytes:
 		template = t.fixedRepeatedFixedBytesTemplate
 	case canotoField:
-		template = t.customs.single
+		template = t.fields.single
 	case canotoRepeatedField:
-		template = t.customs.repeated
+		template = t.fields.repeated
+	case canotoFixedRepeatedField:
+		template = t.fields.fixedRepeated
+	case canotoPointer:
+		template = t.pointers.single
+	case canotoRepeatedPointer:
+		template = t.pointers.repeated
 	default:
-		template = t.customs.fixedRepeated
+		template = t.pointers.fixedRepeated
 	}
 	return writeTemplate(w, template, f.templateArgs)
 }

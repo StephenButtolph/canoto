@@ -512,29 +512,29 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r *canoto.Reader) error {
 
 		switch field {
 		case 1:
-			if wireType != canoto.Len {
-				return canoto.ErrUnexpectedWireType
-			}
+	if wireType != canoto.Len {
+		return canoto.ErrUnexpectedWireType
+	}
 
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
-			r.Unsafe = originalUnsafe
-			if err != nil {
-				return err
-			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
-			}
+	originalUnsafe := r.Unsafe
+	r.Unsafe = true
+	var msgBytes []byte
+	err := canoto.ReadBytes(r, &msgBytes)
+	r.Unsafe = originalUnsafe
+	if err != nil {
+		return err
+	}
+	if len(msgBytes) == 0 {
+		return canoto.ErrZeroValue
+	}
 
-			remainingBytes := r.B
-			r.B = msgBytes
-			err = T2(&c.Field).UnmarshalCanotoFrom(r)
-			r.B = remainingBytes
-			if err != nil {
-				return err
-			}
+	remainingBytes := r.B
+	r.B = msgBytes
+	err = T2(&c.Field).UnmarshalCanotoFrom(r)
+	r.B = remainingBytes
+	if err != nil {
+		return err
+	}
 		default:
 			return canoto.ErrUnknownField
 		}
@@ -663,29 +663,29 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r *canoto.Reader) error
 
 		switch field {
 		case 1:
-			if wireType != canoto.Len {
-				return canoto.ErrUnexpectedWireType
-			}
+	if wireType != canoto.Len {
+		return canoto.ErrUnexpectedWireType
+	}
 
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
-			r.Unsafe = originalUnsafe
-			if err != nil {
-				return err
-			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
-			}
+	originalUnsafe := r.Unsafe
+	r.Unsafe = true
+	var msgBytes []byte
+	err := canoto.ReadBytes(r, &msgBytes)
+	r.Unsafe = originalUnsafe
+	if err != nil {
+		return err
+	}
+	if len(msgBytes) == 0 {
+		return canoto.ErrZeroValue
+	}
 
-			remainingBytes := r.B
-			r.B = msgBytes
-			err = (&c.Field).UnmarshalCanotoFrom(r)
-			r.B = remainingBytes
-			if err != nil {
-				return err
-			}
+	remainingBytes := r.B
+	r.B = msgBytes
+	err = (&c.Field).UnmarshalCanotoFrom(r)
+	r.B = remainingBytes
+	if err != nil {
+		return err
+	}
 		default:
 			return canoto.ErrUnknownField
 		}
@@ -838,6 +838,7 @@ const (
 	canoto__Scalars__CustomFixedRepeatedBytes__tag        = "\xc2\x04" // canoto.Tag(72, canoto.Len)
 	canoto__Scalars__CustomFixedRepeatedFixedBytes__tag   = "\xca\x04" // canoto.Tag(73, canoto.Len)
 	canoto__Scalars__OneOf__tag                           = "\xd2\x04" // canoto.Tag(74, canoto.Len)
+	canoto__Scalars__Pointer__tag                         = "\xda\x04" // canoto.Tag(75, canoto.Len)
 )
 
 type canotoData_Scalars struct {
@@ -1121,29 +1122,29 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 		case 20:
-			if wireType != canoto.Len {
-				return canoto.ErrUnexpectedWireType
-			}
+	if wireType != canoto.Len {
+		return canoto.ErrUnexpectedWireType
+	}
 
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
-			r.Unsafe = originalUnsafe
-			if err != nil {
-				return err
-			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
-			}
+	originalUnsafe := r.Unsafe
+	r.Unsafe = true
+	var msgBytes []byte
+	err := canoto.ReadBytes(r, &msgBytes)
+	r.Unsafe = originalUnsafe
+	if err != nil {
+		return err
+	}
+	if len(msgBytes) == 0 {
+		return canoto.ErrZeroValue
+	}
 
-			remainingBytes := r.B
-			r.B = msgBytes
-			err = (&c.LargestFieldNumber).UnmarshalCanotoFrom(r)
-			r.B = remainingBytes
-			if err != nil {
-				return err
-			}
+	remainingBytes := r.B
+	r.B = msgBytes
+	err = (&c.LargestFieldNumber).UnmarshalCanotoFrom(r)
+	r.B = remainingBytes
+	if err != nil {
+		return err
+	}
 		case 21:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -1737,50 +1738,50 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				}
 			}
 		case 40:
-			if wireType != canoto.Len {
-				return canoto.ErrUnexpectedWireType
-			}
+	if wireType != canoto.Len {
+		return canoto.ErrUnexpectedWireType
+	}
 
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
-			r.Unsafe = originalUnsafe
-			if err != nil {
-				return err
-			}
+	originalUnsafe := r.Unsafe
+	r.Unsafe = true
+	var msgBytes []byte
+	err := canoto.ReadBytes(r, &msgBytes)
+	r.Unsafe = originalUnsafe
+	if err != nil {
+		return err
+	}
 
-			remainingBytes := r.B
-			count, err := canoto.CountBytes(remainingBytes, canoto__Scalars__RepeatedLargestFieldNumber__tag)
-			if err != nil {
-				return err
-			}
+	remainingBytes := r.B
+	count, err := canoto.CountBytes(remainingBytes, canoto__Scalars__RepeatedLargestFieldNumber__tag)
+	if err != nil {
+		return err
+	}
 
-			c.RepeatedLargestFieldNumber = canoto.MakeSlice(c.RepeatedLargestFieldNumber, 1+count)
-			r.B = msgBytes
-			err = (&c.RepeatedLargestFieldNumber[0]).UnmarshalCanotoFrom(r)
-			r.B = remainingBytes
-			if err != nil {
-				return err
-			}
+	c.RepeatedLargestFieldNumber = canoto.MakeSlice(c.RepeatedLargestFieldNumber, 1+count)
+	r.B = msgBytes
+	err = (&c.RepeatedLargestFieldNumber[0]).UnmarshalCanotoFrom(r)
+	r.B = remainingBytes
+	if err != nil {
+		return err
+	}
 
-			for i := range count {
-				r.B = r.B[len(canoto__Scalars__RepeatedLargestFieldNumber__tag):]
-				r.Unsafe = true
-				err := canoto.ReadBytes(r, &msgBytes)
-				r.Unsafe = originalUnsafe
-				if err != nil {
-					return err
-				}
+	for i := range count {
+		r.B = r.B[len(canoto__Scalars__RepeatedLargestFieldNumber__tag):]
+		r.Unsafe = true
+		err := canoto.ReadBytes(r, &msgBytes)
+		r.Unsafe = originalUnsafe
+		if err != nil {
+			return err
+		}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				err = (&c.RepeatedLargestFieldNumber[1+i]).UnmarshalCanotoFrom(r)
-				r.B = remainingBytes
-				if err != nil {
-					return err
-				}
-			}
+		remainingBytes := r.B
+		r.B = msgBytes
+		err = (&c.RepeatedLargestFieldNumber[1+i]).UnmarshalCanotoFrom(r)
+		r.B = remainingBytes
+		if err != nil {
+			return err
+		}
+	}
 		case 41:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -2457,53 +2458,53 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 		case 63:
-			if wireType != canoto.Len {
-				return canoto.ErrUnexpectedWireType
-			}
+	if wireType != canoto.Len {
+		return canoto.ErrUnexpectedWireType
+	}
 
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
-			r.Unsafe = originalUnsafe
-			if err != nil {
-				return err
-			}
+	originalUnsafe := r.Unsafe
+	r.Unsafe = true
+	var msgBytes []byte
+	err := canoto.ReadBytes(r, &msgBytes)
+	r.Unsafe = originalUnsafe
+	if err != nil {
+		return err
+	}
 
-			remainingBytes := r.B
-			r.B = msgBytes
-			err = (&c.FixedRepeatedLargestFieldNumber[0]).UnmarshalCanotoFrom(r)
-			r.B = remainingBytes
-			if err != nil {
-				return err
-			}
+	remainingBytes := r.B
+	r.B = msgBytes
+	err = (&c.FixedRepeatedLargestFieldNumber[0]).UnmarshalCanotoFrom(r)
+	r.B = remainingBytes
+	if err != nil {
+		return err
+	}
 
-			isZero := len(msgBytes) == 0
-			const numToRead = uint(len(c.FixedRepeatedLargestFieldNumber) - 1)
-			for i := range numToRead {
-				if !canoto.HasPrefix(r.B, canoto__Scalars__FixedRepeatedLargestFieldNumber__tag) {
-					return canoto.ErrUnknownField
-				}
-				r.B = r.B[len(canoto__Scalars__FixedRepeatedLargestFieldNumber__tag):]
-				r.Unsafe = true
-				err := canoto.ReadBytes(r, &msgBytes)
-				r.Unsafe = originalUnsafe
-				if err != nil {
-					return err
-				}
+	isZero := len(msgBytes) == 0
+	const numToRead = uint(len(c.FixedRepeatedLargestFieldNumber) - 1)
+	for i := range numToRead {
+		if !canoto.HasPrefix(r.B, canoto__Scalars__FixedRepeatedLargestFieldNumber__tag) {
+			return canoto.ErrUnknownField
+		}
+		r.B = r.B[len(canoto__Scalars__FixedRepeatedLargestFieldNumber__tag):]
+		r.Unsafe = true
+		err := canoto.ReadBytes(r, &msgBytes)
+		r.Unsafe = originalUnsafe
+		if err != nil {
+			return err
+		}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				err = (&c.FixedRepeatedLargestFieldNumber[1+i]).UnmarshalCanotoFrom(r)
-				r.B = remainingBytes
-				if err != nil {
-					return err
-				}
-				isZero = isZero && len(msgBytes) == 0
-			}
-			if isZero {
-				return canoto.ErrZeroValue
-			}
+		remainingBytes := r.B
+		r.B = msgBytes
+		err = (&c.FixedRepeatedLargestFieldNumber[1+i]).UnmarshalCanotoFrom(r)
+		r.B = remainingBytes
+		if err != nil {
+			return err
+		}
+		isZero = isZero && len(msgBytes) == 0
+	}
+	if isZero {
+		return canoto.ErrZeroValue
+	}
 		case 64:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -2535,29 +2536,29 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 		case 65:
-			if wireType != canoto.Len {
-				return canoto.ErrUnexpectedWireType
-			}
+	if wireType != canoto.Len {
+		return canoto.ErrUnexpectedWireType
+	}
 
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
-			r.Unsafe = originalUnsafe
-			if err != nil {
-				return err
-			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
-			}
+	originalUnsafe := r.Unsafe
+	r.Unsafe = true
+	var msgBytes []byte
+	err := canoto.ReadBytes(r, &msgBytes)
+	r.Unsafe = originalUnsafe
+	if err != nil {
+		return err
+	}
+	if len(msgBytes) == 0 {
+		return canoto.ErrZeroValue
+	}
 
-			remainingBytes := r.B
-			r.B = msgBytes
-			err = (&c.CustomType).UnmarshalCanotoFrom(r)
-			r.B = remainingBytes
-			if err != nil {
-				return err
-			}
+	remainingBytes := r.B
+	r.B = msgBytes
+	err = (&c.CustomType).UnmarshalCanotoFrom(r)
+	r.B = remainingBytes
+	if err != nil {
+		return err
+	}
 		case 66:
 			if wireType != canoto.I32 {
 				return canoto.ErrUnexpectedWireType
@@ -2763,29 +2764,54 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 		case 74:
-			if wireType != canoto.Len {
-				return canoto.ErrUnexpectedWireType
-			}
+	if wireType != canoto.Len {
+		return canoto.ErrUnexpectedWireType
+	}
 
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
-			r.Unsafe = originalUnsafe
-			if err != nil {
-				return err
-			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
-			}
+	originalUnsafe := r.Unsafe
+	r.Unsafe = true
+	var msgBytes []byte
+	err := canoto.ReadBytes(r, &msgBytes)
+	r.Unsafe = originalUnsafe
+	if err != nil {
+		return err
+	}
+	if len(msgBytes) == 0 {
+		return canoto.ErrZeroValue
+	}
 
-			remainingBytes := r.B
-			r.B = msgBytes
-			err = (&c.OneOf).UnmarshalCanotoFrom(r)
-			r.B = remainingBytes
-			if err != nil {
-				return err
-			}
+	remainingBytes := r.B
+	r.B = msgBytes
+	err = (&c.OneOf).UnmarshalCanotoFrom(r)
+	r.B = remainingBytes
+	if err != nil {
+		return err
+	}
+		case 75:
+	if wireType != canoto.Len {
+		return canoto.ErrUnexpectedWireType
+	}
+
+	originalUnsafe := r.Unsafe
+	r.Unsafe = true
+	var msgBytes []byte
+	err := canoto.ReadBytes(r, &msgBytes)
+	r.Unsafe = originalUnsafe
+	if err != nil {
+		return err
+	}
+	if len(msgBytes) == 0 {
+		return canoto.ErrZeroValue
+	}
+
+	remainingBytes := r.B
+	r.B = msgBytes
+	c.Pointer = canoto.MakePointer(c.Pointer)
+	err = c.Pointer.UnmarshalCanotoFrom(r)
+	r.B = remainingBytes
+	if err != nil {
+		return err
+	}
 		default:
 			return canoto.ErrUnknownField
 		}

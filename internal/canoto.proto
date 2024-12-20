@@ -107,4 +107,5 @@ message Scalars {
   repeated bytes CustomFixedRepeatedBytes = 72;
   repeated bytes CustomFixedRepeatedFixedBytes = 73;
   OneOf OneOf = 74;
+  OneOf Pointer = 75;
 }

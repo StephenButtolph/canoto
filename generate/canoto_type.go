@@ -17,6 +17,7 @@ const (
 	canotoBytes      canotoType = "bytes"
 	canotoFixedBytes canotoType = "fixed bytes"
 	canotoField      canotoType = "field"
+	canotoPointer    canotoType = "pointer"
 
 	canotoRepeatedInt        = "repeated " + canotoInt
 	canotoRepeatedSint       = "repeated " + canotoSint
@@ -27,6 +28,7 @@ const (
 	canotoRepeatedBytes      = "repeated " + canotoBytes
 	canotoRepeatedFixedBytes = "repeated " + canotoFixedBytes
 	canotoRepeatedField      = "repeated " + canotoField
+	canotoRepeatedPointer    = "repeated " + canotoPointer
 
 	canotoFixedRepeatedInt        = "fixed " + canotoRepeatedInt
 	canotoFixedRepeatedSint       = "fixed " + canotoRepeatedSint
@@ -37,6 +39,7 @@ const (
 	canotoFixedRepeatedBytes      = "fixed " + canotoRepeatedBytes
 	canotoFixedRepeatedFixedBytes = "fixed " + canotoRepeatedFixedBytes
 	canotoFixedRepeatedField      = "fixed " + canotoRepeatedField
+	canotoFixedRepeatedPointer    = "fixed " + canotoRepeatedPointer
 )
 
 var (
@@ -50,6 +53,7 @@ var (
 		canotoBytes,
 		canotoFixedBytes,
 		canotoField,
+		canotoPointer,
 
 		canotoRepeatedInt,
 		canotoRepeatedSint,
@@ -60,6 +64,7 @@ var (
 		canotoRepeatedBytes,
 		canotoRepeatedFixedBytes,
 		canotoRepeatedField,
+		canotoRepeatedPointer,
 
 		canotoFixedRepeatedInt,
 		canotoFixedRepeatedSint,
@@ -70,6 +75,7 @@ var (
 		canotoFixedRepeatedBytes,
 		canotoFixedRepeatedFixedBytes,
 		canotoFixedRepeatedField,
+		canotoFixedRepeatedPointer,
 	}
 	canotoVarintTypes = []canotoType{
 		canotoInt,
@@ -91,6 +97,7 @@ var (
 		canotoRepeatedBytes,
 		canotoRepeatedFixedBytes,
 		canotoRepeatedField,
+		canotoRepeatedPointer,
 
 		canotoFixedRepeatedInt,
 		canotoFixedRepeatedSint,
@@ -101,6 +108,7 @@ var (
 		canotoFixedRepeatedBytes,
 		canotoFixedRepeatedFixedBytes,
 		canotoFixedRepeatedField,
+		canotoFixedRepeatedPointer,
 	}
 	canotoFixedRepeatedTypes = []canotoType{
 		canotoFixedRepeatedInt,
@@ -112,6 +120,7 @@ var (
 		canotoFixedRepeatedBytes,
 		canotoFixedRepeatedFixedBytes,
 		canotoFixedRepeatedField,
+		canotoFixedRepeatedPointer,
 	}
 
 	goIntToProtoInt = map[string]string{
@@ -193,7 +202,7 @@ func (c canotoType) ProtoType(goType string) string {
 
 func (c canotoType) ProtoTypePrefix() string {
 	switch c {
-	case canotoInt, canotoSint, canotoFint32, canotoFint64, canotoBool, canotoString, canotoBytes, canotoFixedBytes, canotoField:
+	case canotoInt, canotoSint, canotoFint32, canotoFint64, canotoBool, canotoString, canotoBytes, canotoFixedBytes, canotoField, canotoPointer:
 		return ""
 	default:
 		return "repeated "

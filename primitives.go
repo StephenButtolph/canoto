@@ -343,6 +343,16 @@ func AppendBytes[T Bytes](w *Writer, v T) {
 	w.B = append(w.B, v...)
 }
 
+// MakePointer creates a new pointer. It is equivalent to `new(T)`.
+//
+// This function is useful to use in auto-generated code, when the type of a
+// variable is unknown. For example, if we have a variable `v` which we know to
+// be a pointer, but we do not know the type of the pointer, we can use this
+// function to leverage golang's type inference to create the new pointer.
+func MakePointer[T any](_ *T) *T {
+	return new(T)
+}
+
 // MakeSlice creates a new slice with the given length. It is equivalent to
 // `make([]T, length)`.
 //
