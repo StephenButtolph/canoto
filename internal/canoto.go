@@ -12,6 +12,7 @@ const constRepeatedUint64Len = 3
 var (
 	_ canoto.Message = (*LargestFieldNumber[int32])(nil)
 	_ canoto.Message = (*OneOf)(nil)
+	_ canoto.Message = (*GenericField[OneOf, *OneOf])(nil)
 	_ canoto.Message = (*Scalars)(nil)
 )
 
@@ -41,6 +42,12 @@ type OneOf struct {
 	D  int64 `canoto:"int,6"`
 
 	canotoData canotoData_OneOf
+}
+
+type GenericField[T any, _ canoto.FieldPointer[T]] struct {
+	Field T `canoto:"field,1"`
+
+	canotoData canotoData_GenericField
 }
 
 type Scalars struct {

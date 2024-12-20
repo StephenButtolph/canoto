@@ -14,8 +14,10 @@ import (
 )
 
 const (
-	canotoTag = "canoto"
-	goBytes   = "[]byte"
+	canotoImport          = `"github.com/StephenButtolph/canoto"`
+	defaultCanotoSelector = "canoto"
+	canotoTag             = "canoto"
+	goBytes               = "[]byte"
 )
 
 var (
@@ -30,9 +32,10 @@ var (
 
 func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 	var (
-		packageName string
-		messages    []message
-		err         error
+		canotoImportName string
+		packageName      string
+		messages         []message
+		err              error
 	)
 	ast.Inspect(f, func(n ast.Node) bool {
 		if err != nil {
@@ -42,6 +45,18 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 		if f, ok := n.(*ast.File); ok {
 			packageName = f.Name.Name
 			return true
+		}
+
+		if f, ok := n.(*ast.ImportSpec); ok {
+			if f.Path.Value != canotoImport {
+				return false
+			}
+			if f.Name == nil {
+				canotoImportName = defaultCanotoSelector
+				return false
+			}
+			canotoImportName = f.Name.Name
+			return false
 		}
 
 		ts, ok := n.(*ast.TypeSpec)
@@ -60,14 +75,68 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 			canonicalizedName: canonicalizeName(name),
 		}
 		if ts.TypeParams != nil {
-			message.numTypes = len(ts.TypeParams.List)
+			typesToIndex := make(map[string]int)
+			for _, field := range ts.TypeParams.List {
+				for _, name := range field.Names {
+					typesToIndex[name.Name] = len(message.generics)
+					message.generics = append(message.generics, name.Name)
+				}
+			}
+
+			var currentTypeNumber int
+			message.genericPointers = make(map[string]int)
+			for _, field := range ts.TypeParams.List {
+				currentTypeNumber += len(field.Names)
+
+				t, ok := field.Type.(*ast.IndexExpr)
+				if !ok {
+					continue
+				}
+
+				var typeName string
+				if canotoImportName == "." {
+					x, ok := t.X.(*ast.Ident)
+					if !ok {
+						continue
+					}
+					typeName = x.Name
+				} else {
+					x, ok := t.X.(*ast.SelectorExpr)
+					if !ok {
+						continue
+					}
+					if ident, ok := x.X.(*ast.Ident); !ok || ident.Name != canotoImportName {
+						continue
+					}
+					typeName = x.Sel.Name
+				}
+				if typeName != "FieldPointer" {
+					continue
+				}
+
+				ident, ok := t.Index.(*ast.Ident)
+				if !ok {
+					continue
+				}
+				// Make sure the type is generic
+				if _, ok := typesToIndex[ident.Name]; !ok {
+					continue
+				}
+
+				message.genericPointers[ident.Name] = currentTypeNumber
+			}
 		}
 		for _, sf := range st.Fields.List {
 			var (
 				field  field
 				hasTag bool
 			)
-			field, hasTag, err = parseField(fs, message.canonicalizedName, sf)
+			field, hasTag, err = parseField(
+				fs,
+				message.canonicalizedName,
+				message.genericPointers,
+				sf,
+			)
 			if err != nil {
 				return false
 			}
@@ -95,7 +164,12 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 	return packageName, messages, err
 }
 
-func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field) (field, bool, error) {
+func parseField(
+	fs *token.FileSet,
+	canonicalizedStructName string,
+	genericTypes map[string]int,
+	af *ast.Field,
+) (field, bool, error) {
 	canotoType, fieldNumber, oneOfName, hasTag, err := parseFieldTag(fs, af)
 	if err != nil || !hasTag {
 		return field{}, false, err
@@ -154,6 +228,12 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 		break
 	}
 
+	var genericTypeCast string
+	genericType, ok := genericTypes[goType]
+	if ok {
+		genericTypeCast = fmt.Sprintf("T%d", genericType)
+	}
+
 	name := af.Names[0].Name
 	canonicalizedName := canonicalizeName(name)
 	protoType := canotoType.ProtoType(goType)
@@ -170,6 +250,7 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 			"fieldNumber":       strconv.FormatUint(uint64(fieldNumber), 10),
 			"wireType":          canotoType.WireType().String(),
 			"goType":            goType,
+			"genericTypeCast":   genericTypeCast,
 			"protoType":         protoType,
 			"protoTypePrefix":   canotoType.ProtoTypePrefix(),
 			"protoTypeSuffix":   canotoType.ProtoTypeSuffix(),

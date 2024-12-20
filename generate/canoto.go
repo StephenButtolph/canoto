@@ -225,17 +225,17 @@ ${marshal}}
 }
 
 func makeGenerics(m message) string {
-	if m.numTypes == 0 {
+	if len(m.generics) == 0 {
 		return ""
 	}
 
 	var s strings.Builder
 	_, _ = s.WriteString("[")
-	for i := range m.numTypes {
+	for i := range len(m.generics) {
 		if i != 0 {
 			_, _ = s.WriteString(", ")
 		}
-		_, _ = s.WriteString("_")
+		_, _ = s.WriteString(fmt.Sprintf("T%d", i+1))
 	}
 	_, _ = s.WriteString("]")
 	return s.String()
@@ -676,7 +676,7 @@ func makeUnmarshal(m message) string {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			err = (&c.${fieldName}).UnmarshalCanotoFrom(r)
+			err = ${genericTypeCast}(&c.${fieldName}).UnmarshalCanotoFrom(r)
 			r.B = remainingBytes
 			if err != nil {
 				return err
@@ -704,7 +704,7 @@ func makeUnmarshal(m message) string {
 
 			c.${fieldName} = canoto.MakeSlice(c.${fieldName}, 1+count)
 			r.B = msgBytes
-			err = (&c.${fieldName}[0]).UnmarshalCanotoFrom(r)
+			err = ${genericTypeCast}(&c.${fieldName}[0]).UnmarshalCanotoFrom(r)
 			r.B = remainingBytes
 			if err != nil {
 				return err
@@ -721,7 +721,7 @@ func makeUnmarshal(m message) string {
 
 				remainingBytes := r.B
 				r.B = msgBytes
-				err = (&c.${fieldName}[1+i]).UnmarshalCanotoFrom(r)
+				err = ${genericTypeCast}(&c.${fieldName}[1+i]).UnmarshalCanotoFrom(r)
 				r.B = remainingBytes
 				if err != nil {
 					return err
@@ -744,7 +744,7 @@ func makeUnmarshal(m message) string {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			err = (&c.${fieldName}[0]).UnmarshalCanotoFrom(r)
+			err = ${genericTypeCast}(&c.${fieldName}[0]).UnmarshalCanotoFrom(r)
 			r.B = remainingBytes
 			if err != nil {
 				return err
@@ -766,7 +766,7 @@ func makeUnmarshal(m message) string {
 
 				remainingBytes := r.B
 				r.B = msgBytes
-				err = (&c.${fieldName}[1+i]).UnmarshalCanotoFrom(r)
+				err = ${genericTypeCast}(&c.${fieldName}[1+i]).UnmarshalCanotoFrom(r)
 				r.B = remainingBytes
 				if err != nil {
 					return err
@@ -854,7 +854,7 @@ func makeValidOneOf(m message) string {
 			fixedRepeatedFixedBytesTemplate: functionTemplate,
 
 			customs: typeTemplate{
-				single: `	if (&c.${fieldName}).CalculateCanotoCache(); (&c.${fieldName}).CachedCanotoSize() != 0 {
+				single: `	if ${genericTypeCast}(&c.${fieldName}).CalculateCanotoCache(); ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize() != 0 {
 		if ${oneOf}OneOf != 0 {
 			return false
 		}
@@ -865,7 +865,7 @@ func makeValidOneOf(m message) string {
 				fixedRepeated: `	{
 		isZero := true
 		for i := range c.${fieldName} {
-			if (&c.${fieldName}[i]).CalculateCanotoCache(); (&c.${fieldName}[i]).CachedCanotoSize() != 0 {
+			if ${genericTypeCast}(&c.${fieldName}[i]).CalculateCanotoCache(); ${genericTypeCast}(&c.${fieldName}[i]).CachedCanotoSize() != 0 {
 				isZero = false
 				break
 			}
@@ -904,12 +904,12 @@ func makeValid(m message) string {
 		}
 	}
 `
-		fieldTemplate = `	if !(&c.${fieldName}).ValidCanoto() {
+		fieldTemplate = `	if !${genericTypeCast}(&c.${fieldName}).ValidCanoto() {
 		return false
 	}
 `
 		repeatedFieldTemplate = `	for i := range c.${fieldName} {
-		if !(&c.${fieldName}[i]).ValidCanoto() {
+		if !${genericTypeCast}(&c.${fieldName}[i]).ValidCanoto() {
 			return false
 		}
 	}
@@ -1038,14 +1038,14 @@ func makeSize(m message) string {
 	}
 `,
 		customs: typeTemplate{
-			single: `	(&c.${fieldName}).CalculateCanotoCache()
-	if fieldSize := (&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
+			single: `	${genericTypeCast}(&c.${fieldName}).CalculateCanotoCache()
+	if fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
 		c.canotoData.size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize${sizeOneOf}
 	}
 `,
 			repeated: `	for i := range c.${fieldName} {
-		(&c.${fieldName}[i]).CalculateCanotoCache()
-		fieldSize := (&c.${fieldName}[i]).CachedCanotoSize()
+		${genericTypeCast}(&c.${fieldName}[i]).CalculateCanotoCache()
+		fieldSize := ${genericTypeCast}(&c.${fieldName}[i]).CachedCanotoSize()
 		c.canotoData.size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize${sizeOneOf}
 	}
 `,
@@ -1055,8 +1055,8 @@ func makeSize(m message) string {
 			totalSize    int
 		)
 		for i := range c.${fieldName} {
-			(&c.${fieldName}[i]).CalculateCanotoCache()
-			fieldSize := (&c.${fieldName}[i]).CachedCanotoSize()
+			${genericTypeCast}(&c.${fieldName}[i]).CalculateCanotoCache()
+			fieldSize := ${genericTypeCast}(&c.${fieldName}[i]).CachedCanotoSize()
 			fieldSizeSum += fieldSize
 			totalSize += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 		}
@@ -1213,22 +1213,22 @@ func makeMarshal(m message) string {
 	}
 `,
 		customs: typeTemplate{
-			single: `	if fieldSize := (&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
+			single: `	if fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
 		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		canoto.AppendInt(w, int64(fieldSize))
-		(&c.${fieldName}).MarshalCanotoInto(w)
+		${genericTypeCast}(&c.${fieldName}).MarshalCanotoInto(w)
 	}
 `,
 			repeated: `	for i := range c.${fieldName} {
 		canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		canoto.AppendInt(w, int64((&c.${fieldName}[i]).CachedCanotoSize()))
-		(&c.${fieldName}[i]).MarshalCanotoInto(w)
+		canoto.AppendInt(w, int64(${genericTypeCast}(&c.${fieldName}[i]).CachedCanotoSize()))
+		${genericTypeCast}(&c.${fieldName}[i]).MarshalCanotoInto(w)
 	}
 `,
 			fixedRepeated: `	{
 		isZero := true
 		for i := range c.${fieldName} {
-			if (&c.${fieldName}[i]).CachedCanotoSize() != 0 {
+			if ${genericTypeCast}(&c.${fieldName}[i]).CachedCanotoSize() != 0 {
 				isZero = false
 				break
 			}
@@ -1236,8 +1236,8 @@ func makeMarshal(m message) string {
 		if !isZero {
 			for i := range c.${fieldName} {
 				canoto.Append(w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-				canoto.AppendInt(w, int64((&c.${fieldName}[i]).CachedCanotoSize()))
-				(&c.${fieldName}[i]).MarshalCanotoInto(w)
+				canoto.AppendInt(w, int64(${genericTypeCast}(&c.${fieldName}[i]).CachedCanotoSize()))
+				${genericTypeCast}(&c.${fieldName}[i]).MarshalCanotoInto(w)
 			}
 		}
 	}

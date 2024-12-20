@@ -24,6 +24,10 @@ message OneOf {
   int64 D = 6;
 }
 
+message GenericField {
+  bytes Field = 1;
+}
+
 message Scalars {
   int32 Int8 = 1;
   int32 Int16 = 2;

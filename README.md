@@ -131,6 +131,16 @@ Additionally, while fully supported in the `canoto` output, type aliases and gen
 
 If type aliases are needed, it may make sense to modify the generated proto file to specify the most specific proto type possible.
 
+To implement a struct with a generic field `T`, the struct must include a type parameter of `canoto.FieldPointer[T]`. Such as:
+
+```golang
+type GenericField[T any, _ canoto.FieldPointer[T]] struct {
+	Field T `canoto:"field,1"`
+
+	canotoData canotoData_GenericField
+}
+```
+
 ## Supported Types
 
 | go type        | canoto type                  | proto type          | wire type |

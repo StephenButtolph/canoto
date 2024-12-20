@@ -36,3 +36,11 @@ type Field interface {
 	// Canoto format.
 	ValidCanoto() bool
 }
+
+// FieldPointer is a pointer to a concrete Field value T
+//
+// This type must be used when implementing a generic Field type.
+type FieldPointer[T any] interface {
+	Field
+	*T
+}
