@@ -9,8 +9,7 @@ import (
 type message struct {
 	name              string
 	canonicalizedName string
-	generics          []string
-	genericPointers   map[string]int
+	numGenerics       int
 	fields            []field
 }
 

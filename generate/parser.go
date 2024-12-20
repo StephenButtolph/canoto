@@ -74,17 +74,18 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 			name:              name,
 			canonicalizedName: canonicalizeName(name),
 		}
+
+		genericPointers := make(map[string]int)
 		if ts.TypeParams != nil {
 			typesToIndex := make(map[string]int)
 			for _, field := range ts.TypeParams.List {
 				for _, name := range field.Names {
-					typesToIndex[name.Name] = len(message.generics)
-					message.generics = append(message.generics, name.Name)
+					typesToIndex[name.Name] = message.numGenerics
+					message.numGenerics++
 				}
 			}
 
 			var currentTypeNumber int
-			message.genericPointers = make(map[string]int)
 			for _, field := range ts.TypeParams.List {
 				currentTypeNumber += len(field.Names)
 
@@ -123,7 +124,7 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 					continue
 				}
 
-				message.genericPointers[ident.Name] = currentTypeNumber
+				genericPointers[ident.Name] = currentTypeNumber
 			}
 		}
 		for _, sf := range st.Fields.List {
@@ -134,7 +135,7 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 			field, hasTag, err = parseField(
 				fs,
 				message.canonicalizedName,
-				message.genericPointers,
+				genericPointers,
 				sf,
 			)
 			if err != nil {

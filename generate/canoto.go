@@ -225,13 +225,13 @@ ${marshal}}
 }
 
 func makeGenerics(m message) string {
-	if len(m.generics) == 0 {
+	if m.numGenerics == 0 {
 		return ""
 	}
 
 	var s strings.Builder
 	_, _ = s.WriteString("[")
-	for i := range len(m.generics) {
+	for i := range m.numGenerics {
 		if i != 0 {
 			_, _ = s.WriteString(", ")
 		}
