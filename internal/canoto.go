@@ -45,15 +45,23 @@ type OneOf struct {
 }
 
 type GenericField[T any, _ canoto.FieldPointer[T]] struct {
-	Value   T  `canoto:"value,1"`
-	Pointer *T `canoto:"pointer,2"`
+	Value                T     `canoto:"value,1"`
+	RepeatedValue        []T   `canoto:"repeated value,2"`
+	FixedRepeatedValue   [3]T  `canoto:"fixed repeated value,3"`
+	Pointer              *T    `canoto:"pointer,4"`
+	RepeatedPointer      []*T  `canoto:"repeated pointer,5"`
+	FixedRepeatedPointer [3]*T `canoto:"fixed repeated pointer,6"`
 
 	canotoData canotoData_GenericField
 }
 
 type NestedGenericField[T any, TP canoto.FieldPointer[T]] struct {
-	Field   GenericField[T, TP]  `canoto:"value,1"`
-	Pointer *GenericField[T, TP] `canoto:"pointer,2"`
+	Value                GenericField[T, TP]     `canoto:"value,1"`
+	RepeatedValue        []GenericField[T, TP]   `canoto:"repeated value,2"`
+	FixedRepeatedValue   [3]GenericField[T, TP]  `canoto:"fixed repeated value,3"`
+	Pointer              *GenericField[T, TP]    `canoto:"pointer,4"`
+	RepeatedPointer      []*GenericField[T, TP]  `canoto:"repeated pointer,5"`
+	FixedRepeatedPointer [3]*GenericField[T, TP] `canoto:"fixed repeated pointer,6"`
 
 	canotoData canotoData_NestedGenericField
 }
