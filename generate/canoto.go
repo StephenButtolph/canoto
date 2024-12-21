@@ -8,7 +8,6 @@ import (
 	"go/token"
 	"io"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/StephenButtolph/canoto"
@@ -17,15 +16,23 @@ import (
 const (
 	goExtension     = ".go"
 	canotoExtension = ".canoto.go"
+
+	goTestExtension     = "_test.go"
+	canotoTestExtension = ".canoto_test.go"
 )
 
 var errNonGoExtension = errors.New("file must be a go file")
 
 // Canoto generates the canoto serialization logic for the provided file.
 func Canoto(inputFilePath string) error {
-	extension := filepath.Ext(inputFilePath)
-	if extension != goExtension {
-		return fmt.Errorf("%w not %q", errNonGoExtension, extension)
+	var outputFilePath string
+	switch {
+	case strings.HasSuffix(inputFilePath, goTestExtension):
+		outputFilePath = inputFilePath[:len(inputFilePath)-len(goTestExtension)] + canotoTestExtension
+	case strings.HasSuffix(inputFilePath, goExtension):
+		outputFilePath = inputFilePath[:len(inputFilePath)-len(goExtension)] + canotoExtension
+	default:
+		return errNonGoExtension
 	}
 
 	// Create a new parser
@@ -43,7 +50,6 @@ func Canoto(inputFilePath string) error {
 		return nil
 	}
 
-	outputFilePath := inputFilePath[:len(inputFilePath)-len(goExtension)] + canotoExtension
 	outputFile, err := os.Create(outputFilePath)
 	if err != nil {
 		return err
