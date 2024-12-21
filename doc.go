@@ -2,4 +2,4 @@
 // canoto format.
 package canoto
 
-const Version = "v0.5.0"
+const Version = "v0.5.1"
