@@ -176,15 +176,6 @@ func parseField(
 		return field{}, false, err
 	}
 
-	if len(af.Names) != 1 {
-		return field{}, false, fmt.Errorf("%w wanted %d got %d at %s",
-			errUnexpectedNumberOfIdentifiers,
-			1,
-			len(af.Names),
-			fs.Position(af.Pos()),
-		)
-	}
-
 	var (
 		unmarshalOneOf  string
 		sizeOneOf       string
@@ -235,12 +226,25 @@ func parseField(
 		break
 	}
 
+	var name string
+	switch len(af.Names) {
+	case 0:
+		name = goType
+	case 1:
+		name = af.Names[0].Name
+	default:
+		return field{}, false, fmt.Errorf("%w wanted <= 1 but got %d at %s",
+			errUnexpectedNumberOfIdentifiers,
+			len(af.Names),
+			fs.Position(af.Pos()),
+		)
+	}
+
 	var genericTypeCast string
 	if genericType, ok := genericTypes[goType]; ok {
 		genericTypeCast = fmt.Sprintf("T%d", genericType)
 	}
 
-	name := af.Names[0].Name
 	canonicalizedName := canonicalizeName(name)
 	protoType := canotoType.ProtoType(goType)
 	return field{
