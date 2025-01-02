@@ -48,6 +48,12 @@ message NestedGenericField {
   repeated GenericField FixedRepeatedField = 9;
 }
 
+message Embedded {
+  OneOf OneOf = 1;
+  LargestFieldNumber LargestFieldNumber = 2;
+  GenericField GenericField = 3;
+}
+
 message Scalars {
   int32 Int8 = 1;
   int32 Int16 = 2;

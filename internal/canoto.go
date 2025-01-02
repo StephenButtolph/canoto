@@ -77,6 +77,14 @@ type NestedGenericField[V any, P canoto.FieldPointer[V], T canoto.FieldMaker[T]]
 	canotoData canotoData_NestedGenericField
 }
 
+type Embedded struct {
+	OneOf                                `canoto:"value,1"`
+	*LargestFieldNumber[int32]           `canoto:"pointer,2"`
+	*GenericField[OneOf, *OneOf, *OneOf] `canoto:"field,3"`
+
+	canotoData canotoData_Embedded
+}
+
 type Scalars struct {
 	Int8                            int8                           `canoto:"int,1"`
 	Int16                           int16                          `canoto:"int,2"`

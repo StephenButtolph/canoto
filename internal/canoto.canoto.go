@@ -1998,6 +1998,254 @@ func (c *NestedGenericField[T1, T2, T3]) MarshalCanotoInto(w *canoto.Writer) {
 }
 
 const (
+	canoto__Embedded__OneOf__tag              = "\x0a" // canoto.Tag(1, canoto.Len)
+	canoto__Embedded__LargestFieldNumber__tag = "\x12" // canoto.Tag(2, canoto.Len)
+	canoto__Embedded__GenericField__tag       = "\x1a" // canoto.Tag(3, canoto.Len)
+)
+
+type canotoData_Embedded struct {
+	// Enforce noCopy before atomic usage.
+	// See https://github.com/StephenButtolph/canoto/pull/32
+	_ atomic.Int64
+
+	size int
+}
+
+// MakeCanoto creates a new empty value.
+func (*Embedded) MakeCanoto() *Embedded {
+	return new(Embedded)
+}
+
+// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// OneOf fields are cached during the unmarshaling process.
+//
+// The struct is not cleared before unmarshaling, any fields not present in the
+// bytes will retain their previous values. If a OneOf field was previously
+// cached as being set, attempting to unmarshal that OneOf again will return
+// canoto.ErrDuplicateOneOf.
+func (c *Embedded) UnmarshalCanoto(bytes []byte) error {
+	r := canoto.Reader{
+		B: bytes,
+	}
+	return c.UnmarshalCanotoFrom(&r)
+}
+
+// UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
+// should just use UnmarshalCanoto.
+//
+// OneOf fields are cached during the unmarshaling process.
+//
+// The struct is not cleared before unmarshaling, any fields not present in the
+// bytes will retain their previous values. If a OneOf field was previously
+// cached as being set, attempting to unmarshal that OneOf again will return
+// canoto.ErrDuplicateOneOf.
+//
+// This function enables configuration of reader options.
+func (c *Embedded) UnmarshalCanotoFrom(r *canoto.Reader) error {
+	var minField uint32
+	for canoto.HasNext(r) {
+		field, wireType, err := canoto.ReadTag(r)
+		if err != nil {
+			return err
+		}
+		if field < minField {
+			return canoto.ErrInvalidFieldOrder
+		}
+
+		switch field {
+		case 1:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			err := canoto.ReadBytes(r, &msgBytes)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return canoto.ErrZeroValue
+			}
+
+			remainingBytes := r.B
+			r.B = msgBytes
+			err = (&c.OneOf).UnmarshalCanotoFrom(r)
+			r.B = remainingBytes
+			if err != nil {
+				return err
+			}
+		case 2:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			err := canoto.ReadBytes(r, &msgBytes)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return canoto.ErrZeroValue
+			}
+
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.LargestFieldNumber = canoto.MakePointer(c.LargestFieldNumber)
+			err = (c.LargestFieldNumber).UnmarshalCanotoFrom(r)
+			r.B = remainingBytes
+			if err != nil {
+				return err
+			}
+		case 3:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			err := canoto.ReadBytes(r, &msgBytes)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return canoto.ErrZeroValue
+			}
+
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.GenericField = c.GenericField.MakeCanoto()
+			err = c.GenericField.UnmarshalCanotoFrom(r)
+			r.B = remainingBytes
+			if err != nil {
+				return err
+			}
+		default:
+			return canoto.ErrUnknownField
+		}
+
+		minField = field + 1
+	}
+	return nil
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// Specifically, ValidCanoto ensures:
+// 1. All OneOfs are specified at most once.
+// 2. All strings are valid utf-8.
+// 3. All custom fields are ValidCanoto.
+func (c *Embedded) ValidCanoto() bool {
+	if c == nil {
+		return true
+	}
+	if !(&c.OneOf).ValidCanoto() {
+		return false
+	}
+	if c.LargestFieldNumber != nil && !(c.LargestFieldNumber).ValidCanoto() {
+		return false
+	}
+	if !c.GenericField.ValidCanoto() {
+		return false
+	}
+	return true
+}
+
+// CalculateCanotoCache populates size and OneOf caches based on the current
+// values in the struct.
+//
+// It is not safe to call this function concurrently.
+func (c *Embedded) CalculateCanotoCache() {
+	if c == nil {
+		return
+	}
+	c.canotoData.size = 0
+	(&c.OneOf).CalculateCanotoCache()
+	if fieldSize := (&c.OneOf).CachedCanotoSize(); fieldSize != 0 {
+		c.canotoData.size += len(canoto__Embedded__OneOf__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+	}
+	if c.LargestFieldNumber != nil {
+		(c.LargestFieldNumber).CalculateCanotoCache()
+		if fieldSize := (c.LargestFieldNumber).CachedCanotoSize(); fieldSize != 0 {
+			c.canotoData.size += len(canoto__Embedded__LargestFieldNumber__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		}
+	}
+	c.GenericField.CalculateCanotoCache()
+	if fieldSize := c.GenericField.CachedCanotoSize(); fieldSize != 0 {
+		c.canotoData.size += len(canoto__Embedded__GenericField__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+	}
+}
+
+// CachedCanotoSize returns the previously calculated size of the Canoto
+// representation from CalculateCanotoCache.
+//
+// If CalculateCanotoCache has not yet been called, it will return 0.
+//
+// If the struct has been modified since the last call to CalculateCanotoCache,
+// the returned size may be incorrect.
+func (c *Embedded) CachedCanotoSize() int {
+	if c == nil {
+		return 0
+	}
+	return c.canotoData.size
+}
+
+// MarshalCanoto returns the Canoto representation of this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
+func (c *Embedded) MarshalCanoto() []byte {
+	c.CalculateCanotoCache()
+	w := canoto.Writer{
+		B: make([]byte, 0, c.CachedCanotoSize()),
+	}
+	c.MarshalCanotoInto(&w)
+	return w.B
+}
+
+// MarshalCanotoInto writes the struct into a canoto.Writer. Most users should
+// just use MarshalCanoto.
+//
+// It is assumed that CalculateCanotoCache has been called since the last
+// modification to this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
+func (c *Embedded) MarshalCanotoInto(w *canoto.Writer) {
+	if c == nil {
+		return
+	}
+	if fieldSize := (&c.OneOf).CachedCanotoSize(); fieldSize != 0 {
+		canoto.Append(w, canoto__Embedded__OneOf__tag)
+		canoto.AppendInt(w, int64(fieldSize))
+		(&c.OneOf).MarshalCanotoInto(w)
+	}
+	if c.LargestFieldNumber != nil {
+		if fieldSize := (c.LargestFieldNumber).CachedCanotoSize(); fieldSize != 0 {
+			canoto.Append(w, canoto__Embedded__LargestFieldNumber__tag)
+			canoto.AppendInt(w, int64(fieldSize))
+			(c.LargestFieldNumber).MarshalCanotoInto(w)
+		}
+	}
+	if fieldSize := c.GenericField.CachedCanotoSize(); fieldSize != 0 {
+		canoto.Append(w, canoto__Embedded__GenericField__tag)
+		canoto.AppendInt(w, int64(fieldSize))
+		c.GenericField.MarshalCanotoInto(w)
+	}
+}
+
+const (
 	canoto__Scalars__Int8__tag                            = "\x08"     // canoto.Tag(1, canoto.Varint)
 	canoto__Scalars__Int16__tag                           = "\x10"     // canoto.Tag(2, canoto.Varint)
 	canoto__Scalars__Int32__tag                           = "\x18"     // canoto.Tag(3, canoto.Varint)
