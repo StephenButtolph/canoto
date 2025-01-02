@@ -14,6 +14,11 @@ var (
 	_ canoto.Message = (*OneOf)(nil)
 	_ canoto.Message = (*GenericField[OneOf, *OneOf, *OneOf])(nil)
 	_ canoto.Message = (*Scalars)(nil)
+
+	_ canoto.FieldMaker[*LargestFieldNumber[int32]]           = (*LargestFieldNumber[int32])(nil)
+	_ canoto.FieldMaker[*OneOf]                               = (*OneOf)(nil)
+	_ canoto.FieldMaker[*GenericField[OneOf, *OneOf, *OneOf]] = (*GenericField[OneOf, *OneOf, *OneOf])(nil)
+	_ canoto.FieldMaker[*Scalars]                             = (*Scalars)(nil)
 )
 
 type (

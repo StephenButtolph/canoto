@@ -6,10 +6,17 @@ import (
 	"github.com/StephenButtolph/canoto"
 )
 
-var _ canoto.Field = (*Int)(nil)
+var (
+	_ canoto.Field            = (*Int)(nil)
+	_ canoto.FieldMaker[*Int] = (*Int)(nil)
+)
 
 type Int struct {
 	Int *big.Int
+}
+
+func (*Int) MakeCanoto() *Int {
+	return new(Int)
 }
 
 func (i *Int) UnmarshalCanotoFrom(r *canoto.Reader) error {
@@ -27,14 +34,14 @@ func (*Int) ValidCanoto() bool     { return true }
 func (*Int) CalculateCanotoCache() {}
 
 func (i *Int) CachedCanotoSize() int {
-	if i.Int == nil {
+	if i == nil || i.Int == nil {
 		return 0
 	}
 	return (i.Int.BitLen() + 7) / 8
 }
 
 func (i *Int) MarshalCanotoInto(w *canoto.Writer) {
-	if i.Int == nil {
+	if i == nil || i.Int == nil {
 		return
 	}
 	startIndex := len(w.B)
