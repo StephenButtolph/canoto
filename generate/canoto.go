@@ -1224,7 +1224,7 @@ func makeValidOneOf(m message) string {
 			},
 			fields: typeTemplate{
 				single: `	c.${fieldName}.CalculateCanotoCache()
-	if ${genericTypeCast}(c.${fieldName}).CachedCanotoSize() != 0 {
+	if c.${fieldName}.CachedCanotoSize() != 0 {
 		if ${oneOf}OneOf != 0 {
 			return false
 		}
@@ -1236,7 +1236,7 @@ func makeValidOneOf(m message) string {
 		isZero := true
 		for i := range c.${fieldName} {
 			c.${fieldName}[i].CalculateCanotoCache()
-			if ${genericTypeCast}(c.${fieldName}[i]).CachedCanotoSize() != 0 {
+			if c.${fieldName}[i].CachedCanotoSize() != 0 {
 				isZero = false
 				break
 			}
@@ -1512,7 +1512,7 @@ func makeSize(m message) string {
 `,
 			repeated: `	for i := range c.${fieldName} {
 		c.${fieldName}[i].CalculateCanotoCache()
-		fieldSize := ${genericTypeCast}(c.${fieldName}[i]).CachedCanotoSize()
+		fieldSize := c.${fieldName}[i].CachedCanotoSize()
 		c.canotoData.size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize${sizeOneOf}
 	}
 `,

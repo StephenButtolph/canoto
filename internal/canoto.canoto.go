@@ -1085,7 +1085,7 @@ func (c *GenericField[T1, T2, T3]) CalculateCanotoCache() {
 	}
 	for i := range c.RepeatedField {
 		c.RepeatedField[i].CalculateCanotoCache()
-		fieldSize := (c.RepeatedField[i]).CachedCanotoSize()
+		fieldSize := c.RepeatedField[i].CachedCanotoSize()
 		c.canotoData.size += len(canoto__GenericField__RepeatedField__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 	{
@@ -1836,7 +1836,7 @@ func (c *NestedGenericField[T1, T2, T3]) CalculateCanotoCache() {
 	}
 	for i := range c.RepeatedField {
 		c.RepeatedField[i].CalculateCanotoCache()
-		fieldSize := (c.RepeatedField[i]).CachedCanotoSize()
+		fieldSize := c.RepeatedField[i].CachedCanotoSize()
 		c.canotoData.size += len(canoto__NestedGenericField__RepeatedField__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 	{
@@ -4818,7 +4818,7 @@ func (c *Scalars) CalculateCanotoCache() {
 	}
 	for i := range c.RepeatedField {
 		c.RepeatedField[i].CalculateCanotoCache()
-		fieldSize := (c.RepeatedField[i]).CachedCanotoSize()
+		fieldSize := c.RepeatedField[i].CachedCanotoSize()
 		c.canotoData.size += len(canoto__Scalars__RepeatedField__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
 	{
