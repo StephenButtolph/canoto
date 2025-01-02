@@ -31,6 +31,9 @@ message GenericField {
   bytes Pointer = 4;
   repeated bytes RepeatedPointer = 5;
   repeated bytes FixedRepeatedPointer = 6;
+  bytes Field = 7;
+  repeated bytes RepeatedField = 8;
+  repeated bytes FixedRepeatedField = 9;
 }
 
 message NestedGenericField {
@@ -40,6 +43,9 @@ message NestedGenericField {
   GenericField Pointer = 4;
   repeated GenericField RepeatedPointer = 5;
   repeated GenericField FixedRepeatedPointer = 6;
+  GenericField Field = 7;
+  repeated GenericField RepeatedField = 8;
+  repeated GenericField FixedRepeatedField = 9;
 }
 
 message Scalars {
@@ -120,4 +126,7 @@ message Scalars {
   LargestFieldNumber Pointer = 75;
   repeated LargestFieldNumber RepeatedPointer = 76;
   repeated LargestFieldNumber FixedRepeatedPointer = 77;
+  LargestFieldNumber Field = 78;
+  repeated LargestFieldNumber RepeatedField = 79;
+  repeated LargestFieldNumber FixedRepeatedField = 80;
 }

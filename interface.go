@@ -37,10 +37,21 @@ type Field interface {
 	ValidCanoto() bool
 }
 
-// FieldPointer is a pointer to a concrete Field value T
+// FieldPointer is a pointer to a concrete Field value T.
 //
-// This type must be used when implementing a generic Field type.
+// This type must be used when implementing a value for a generic Field.
 type FieldPointer[T any] interface {
 	Field
 	*T
+}
+
+// FieldMaker is a Field that can create a new value of type T.
+//
+// The returned value must be able to be unmarshaled into.
+//
+// This type can be used when implementing a generic Field. However, if T is an
+// interface, it is possible for generated code to compile and panic at runtime.
+type FieldMaker[T any] interface {
+	Field
+	MakeCanoto() T
 }

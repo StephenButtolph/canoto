@@ -31,6 +31,11 @@ type canotoData_LargestFieldNumber struct {
 	size int
 }
 
+// MakeCanoto creates a new empty values.
+func (*LargestFieldNumber[T1]) MakeCanoto() *LargestFieldNumber[T1] {
+	return new(LargestFieldNumber[T1])
+}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // OneOf fields are cached during the unmarshaling process.
@@ -97,6 +102,9 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r *canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *LargestFieldNumber[T1]) ValidCanoto() bool {
+	if c == nil {
+		return true
+	}
 	return true
 }
 
@@ -105,6 +113,9 @@ func (c *LargestFieldNumber[T1]) ValidCanoto() bool {
 //
 // It is not safe to call this function concurrently.
 func (c *LargestFieldNumber[T1]) CalculateCanotoCache() {
+	if c == nil {
+		return
+	}
 	c.canotoData.size = 0
 	if !canoto.IsZero(c.Int32) {
 		c.canotoData.size += len(canoto__LargestFieldNumber__Int32__tag) + canoto.SizeInt(c.Int32)
@@ -119,6 +130,9 @@ func (c *LargestFieldNumber[T1]) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *LargestFieldNumber[T1]) CachedCanotoSize() int {
+	if c == nil {
+		return 0
+	}
 	return c.canotoData.size
 }
 
@@ -146,6 +160,9 @@ func (c *LargestFieldNumber[T1]) MarshalCanoto() []byte {
 //
 // It is not safe to call this function concurrently.
 func (c *LargestFieldNumber[T1]) MarshalCanotoInto(w *canoto.Writer) {
+	if c == nil {
+		return
+	}
 	if !canoto.IsZero(c.Int32) {
 		canoto.Append(w, canoto__LargestFieldNumber__Int32__tag)
 		canoto.AppendInt(w, c.Int32)
@@ -170,6 +187,11 @@ type canotoData_OneOf struct {
 
 	AOneOf uint32
 	BOneOf uint32
+}
+
+// MakeCanoto creates a new empty values.
+func (*OneOf) MakeCanoto() *OneOf {
+	return new(OneOf)
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -309,6 +331,9 @@ func (c *OneOf) UnmarshalCanotoFrom(r *canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *OneOf) ValidCanoto() bool {
+	if c == nil {
+		return true
+	}
 	var (
 		AOneOf uint32
 		BOneOf uint32
@@ -345,6 +370,9 @@ func (c *OneOf) ValidCanoto() bool {
 //
 // It is not safe to call this function concurrently.
 func (c *OneOf) CalculateCanotoCache() {
+	if c == nil {
+		return
+	}
 	c.canotoData.AOneOf = 0
 	c.canotoData.BOneOf = 0
 	c.canotoData.size = 0
@@ -380,6 +408,9 @@ func (c *OneOf) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *OneOf) CachedCanotoSize() int {
+	if c == nil {
+		return 0
+	}
 	return c.canotoData.size
 }
 
@@ -435,6 +466,9 @@ func (c *OneOf) MarshalCanoto() []byte {
 //
 // It is not safe to call this function concurrently.
 func (c *OneOf) MarshalCanotoInto(w *canoto.Writer) {
+	if c == nil {
+		return
+	}
 	if !canoto.IsZero(c.A1) {
 		canoto.Append(w, canoto__OneOf__A1__tag)
 		canoto.AppendInt(w, c.A1)
@@ -468,6 +502,9 @@ const (
 	canoto__GenericField__Pointer__tag              = "\x22" // canoto.Tag(4, canoto.Len)
 	canoto__GenericField__RepeatedPointer__tag      = "\x2a" // canoto.Tag(5, canoto.Len)
 	canoto__GenericField__FixedRepeatedPointer__tag = "\x32" // canoto.Tag(6, canoto.Len)
+	canoto__GenericField__Field__tag                = "\x3a" // canoto.Tag(7, canoto.Len)
+	canoto__GenericField__RepeatedField__tag        = "\x42" // canoto.Tag(8, canoto.Len)
+	canoto__GenericField__FixedRepeatedField__tag   = "\x4a" // canoto.Tag(9, canoto.Len)
 )
 
 type canotoData_GenericField struct {
@@ -478,6 +515,11 @@ type canotoData_GenericField struct {
 	size int
 }
 
+// MakeCanoto creates a new empty values.
+func (*GenericField[T1, T2, T3]) MakeCanoto() *GenericField[T1, T2, T3] {
+	return new(GenericField[T1, T2, T3])
+}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // OneOf fields are cached during the unmarshaling process.
@@ -486,7 +528,7 @@ type canotoData_GenericField struct {
 // bytes will retain their previous values. If a OneOf field was previously
 // cached as being set, attempting to unmarshal that OneOf again will return
 // canoto.ErrDuplicateOneOf.
-func (c *GenericField[T1, T2]) UnmarshalCanoto(bytes []byte) error {
+func (c *GenericField[T1, T2, T3]) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
 	}
@@ -504,7 +546,7 @@ func (c *GenericField[T1, T2]) UnmarshalCanoto(bytes []byte) error {
 // canoto.ErrDuplicateOneOf.
 //
 // This function enables configuration of reader options.
-func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r *canoto.Reader) error {
+func (c *GenericField[T1, T2, T3]) UnmarshalCanotoFrom(r *canoto.Reader) error {
 	var minField uint32
 	for canoto.HasNext(r) {
 		field, wireType, err := canoto.ReadTag(r)
@@ -776,6 +818,140 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if isZero {
 				return canoto.ErrZeroValue
 			}
+		case 7:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			err := canoto.ReadBytes(r, &msgBytes)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return canoto.ErrZeroValue
+			}
+
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.Field = c.Field.MakeCanoto()
+			err = c.Field.UnmarshalCanotoFrom(r)
+			r.B = remainingBytes
+			if err != nil {
+				return err
+			}
+		case 8:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			err := canoto.ReadBytes(r, &msgBytes)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+
+			remainingBytes := r.B
+			count, err := canoto.CountBytes(remainingBytes, canoto__GenericField__RepeatedField__tag)
+			if err != nil {
+				return err
+			}
+
+			c.RepeatedField = canoto.MakeSlice(c.RepeatedField, 1+count)
+			if len(msgBytes) != 0 {
+				r.B = msgBytes
+				c.RepeatedField[0] = c.RepeatedField[0].MakeCanoto()
+				err = c.RepeatedField[0].UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
+			}
+
+			for i := range count {
+				r.B = r.B[len(canoto__GenericField__RepeatedField__tag):]
+				r.Unsafe = true
+				err := canoto.ReadBytes(r, &msgBytes)
+				r.Unsafe = originalUnsafe
+				if err != nil {
+					return err
+				}
+				if len(msgBytes) == 0 {
+					continue
+				}
+
+				remainingBytes := r.B
+				r.B = msgBytes
+				c.RepeatedField[1+i] = c.RepeatedField[1+i].MakeCanoto()
+				err = c.RepeatedField[1+i].UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
+			}
+		case 9:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			err := canoto.ReadBytes(r, &msgBytes)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+
+			c.FixedRepeatedField[0] = canoto.Zero(c.FixedRepeatedField[0])
+			isZero := len(msgBytes) == 0
+			if !isZero {
+				remainingBytes := r.B
+				r.B = msgBytes
+				c.FixedRepeatedField[0] = c.FixedRepeatedField[0].MakeCanoto()
+				err = c.FixedRepeatedField[0].UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
+			}
+
+			const numToRead = uint(len(c.FixedRepeatedField) - 1)
+			for i := range numToRead {
+				if !canoto.HasPrefix(r.B, canoto__GenericField__FixedRepeatedField__tag) {
+					return canoto.ErrUnknownField
+				}
+				r.B = r.B[len(canoto__GenericField__FixedRepeatedField__tag):]
+				r.Unsafe = true
+				err := canoto.ReadBytes(r, &msgBytes)
+				r.Unsafe = originalUnsafe
+				if err != nil {
+					return err
+				}
+				if len(msgBytes) == 0 {
+					c.FixedRepeatedField[1+i] = canoto.Zero(c.FixedRepeatedField[1+i])
+					continue
+				}
+
+				remainingBytes := r.B
+				r.B = msgBytes
+				c.FixedRepeatedField[1+i] = c.FixedRepeatedField[1+i].MakeCanoto()
+				err = c.FixedRepeatedField[1+i].UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
+				isZero = false
+			}
+			if isZero {
+				return canoto.ErrZeroValue
+			}
 		default:
 			return canoto.ErrUnknownField
 		}
@@ -792,7 +968,10 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r *canoto.Reader) error {
 // 1. All OneOfs are specified at most once.
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
-func (c *GenericField[T1, T2]) ValidCanoto() bool {
+func (c *GenericField[T1, T2, T3]) ValidCanoto() bool {
+	if c == nil {
+		return true
+	}
 	if !T2(&c.Value).ValidCanoto() {
 		return false
 	}
@@ -819,6 +998,19 @@ func (c *GenericField[T1, T2]) ValidCanoto() bool {
 			return false
 		}
 	}
+	if !c.Field.ValidCanoto() {
+		return false
+	}
+	for i := range c.RepeatedField {
+		if !c.RepeatedField[i].ValidCanoto() {
+			return false
+		}
+	}
+	for i := range c.FixedRepeatedField {
+		if !c.FixedRepeatedField[i].ValidCanoto() {
+			return false
+		}
+	}
 	return true
 }
 
@@ -826,7 +1018,10 @@ func (c *GenericField[T1, T2]) ValidCanoto() bool {
 // values in the struct.
 //
 // It is not safe to call this function concurrently.
-func (c *GenericField[T1, T2]) CalculateCanotoCache() {
+func (c *GenericField[T1, T2, T3]) CalculateCanotoCache() {
+	if c == nil {
+		return
+	}
 	c.canotoData.size = 0
 	T2(&c.Value).CalculateCanotoCache()
 	if fieldSize := T2(&c.Value).CachedCanotoSize(); fieldSize != 0 {
@@ -884,6 +1079,30 @@ func (c *GenericField[T1, T2]) CalculateCanotoCache() {
 			c.canotoData.size += totalSize
 		}
 	}
+	c.Field.CalculateCanotoCache()
+	if fieldSize := c.Field.CachedCanotoSize(); fieldSize != 0 {
+		c.canotoData.size += len(canoto__GenericField__Field__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+	}
+	for i := range c.RepeatedField {
+		c.RepeatedField[i].CalculateCanotoCache()
+		fieldSize := (c.RepeatedField[i]).CachedCanotoSize()
+		c.canotoData.size += len(canoto__GenericField__RepeatedField__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+	}
+	{
+		var (
+			fieldSizeSum int
+			totalSize    int
+		)
+		for i := range c.FixedRepeatedField {
+			c.FixedRepeatedField[i].CalculateCanotoCache()
+			fieldSize := c.FixedRepeatedField[i].CachedCanotoSize()
+			fieldSizeSum += fieldSize
+			totalSize += len(canoto__GenericField__FixedRepeatedField__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		}
+		if fieldSizeSum != 0 {
+			c.canotoData.size += totalSize
+		}
+	}
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -893,7 +1112,10 @@ func (c *GenericField[T1, T2]) CalculateCanotoCache() {
 //
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
-func (c *GenericField[T1, T2]) CachedCanotoSize() int {
+func (c *GenericField[T1, T2, T3]) CachedCanotoSize() int {
+	if c == nil {
+		return 0
+	}
 	return c.canotoData.size
 }
 
@@ -902,7 +1124,7 @@ func (c *GenericField[T1, T2]) CachedCanotoSize() int {
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to call this function concurrently.
-func (c *GenericField[T1, T2]) MarshalCanoto() []byte {
+func (c *GenericField[T1, T2, T3]) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := canoto.Writer{
 		B: make([]byte, 0, c.CachedCanotoSize()),
@@ -920,7 +1142,10 @@ func (c *GenericField[T1, T2]) MarshalCanoto() []byte {
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to call this function concurrently.
-func (c *GenericField[T1, T2]) MarshalCanotoInto(w *canoto.Writer) {
+func (c *GenericField[T1, T2, T3]) MarshalCanotoInto(w *canoto.Writer) {
+	if c == nil {
+		return
+	}
 	if fieldSize := T2(&c.Value).CachedCanotoSize(); fieldSize != 0 {
 		canoto.Append(w, canoto__GenericField__Value__tag)
 		canoto.AppendInt(w, int64(fieldSize))
@@ -987,6 +1212,38 @@ func (c *GenericField[T1, T2]) MarshalCanotoInto(w *canoto.Writer) {
 			}
 		}
 	}
+	if fieldSize := c.Field.CachedCanotoSize(); fieldSize != 0 {
+		canoto.Append(w, canoto__GenericField__Field__tag)
+		canoto.AppendInt(w, int64(fieldSize))
+		c.Field.MarshalCanotoInto(w)
+	}
+	for i := range c.RepeatedField {
+		canoto.Append(w, canoto__GenericField__RepeatedField__tag)
+		fieldSize := c.RepeatedField[i].CachedCanotoSize()
+		canoto.AppendInt(w, int64(fieldSize))
+		if fieldSize != 0 {
+			c.RepeatedField[i].MarshalCanotoInto(w)
+		}
+	}
+	{
+		isZero := true
+		for i := range c.FixedRepeatedField {
+			if c.FixedRepeatedField[i].CachedCanotoSize() != 0 {
+				isZero = false
+				break
+			}
+		}
+		if !isZero {
+			for i := range c.FixedRepeatedField {
+				canoto.Append(w, canoto__GenericField__FixedRepeatedField__tag)
+				fieldSize := c.FixedRepeatedField[i].CachedCanotoSize()
+				canoto.AppendInt(w, int64(fieldSize))
+				if fieldSize != 0 {
+					c.FixedRepeatedField[i].MarshalCanotoInto(w)
+				}
+			}
+		}
+	}
 }
 
 const (
@@ -996,6 +1253,9 @@ const (
 	canoto__NestedGenericField__Pointer__tag              = "\x22" // canoto.Tag(4, canoto.Len)
 	canoto__NestedGenericField__RepeatedPointer__tag      = "\x2a" // canoto.Tag(5, canoto.Len)
 	canoto__NestedGenericField__FixedRepeatedPointer__tag = "\x32" // canoto.Tag(6, canoto.Len)
+	canoto__NestedGenericField__Field__tag                = "\x3a" // canoto.Tag(7, canoto.Len)
+	canoto__NestedGenericField__RepeatedField__tag        = "\x42" // canoto.Tag(8, canoto.Len)
+	canoto__NestedGenericField__FixedRepeatedField__tag   = "\x4a" // canoto.Tag(9, canoto.Len)
 )
 
 type canotoData_NestedGenericField struct {
@@ -1006,6 +1266,11 @@ type canotoData_NestedGenericField struct {
 	size int
 }
 
+// MakeCanoto creates a new empty values.
+func (*NestedGenericField[T1, T2, T3]) MakeCanoto() *NestedGenericField[T1, T2, T3] {
+	return new(NestedGenericField[T1, T2, T3])
+}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // OneOf fields are cached during the unmarshaling process.
@@ -1014,7 +1279,7 @@ type canotoData_NestedGenericField struct {
 // bytes will retain their previous values. If a OneOf field was previously
 // cached as being set, attempting to unmarshal that OneOf again will return
 // canoto.ErrDuplicateOneOf.
-func (c *NestedGenericField[T1, T2]) UnmarshalCanoto(bytes []byte) error {
+func (c *NestedGenericField[T1, T2, T3]) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
 	}
@@ -1032,7 +1297,7 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanoto(bytes []byte) error {
 // canoto.ErrDuplicateOneOf.
 //
 // This function enables configuration of reader options.
-func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r *canoto.Reader) error {
+func (c *NestedGenericField[T1, T2, T3]) UnmarshalCanotoFrom(r *canoto.Reader) error {
 	var minField uint32
 	for canoto.HasNext(r) {
 		field, wireType, err := canoto.ReadTag(r)
@@ -1304,6 +1569,140 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r *canoto.Reader) error
 			if isZero {
 				return canoto.ErrZeroValue
 			}
+		case 7:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			err := canoto.ReadBytes(r, &msgBytes)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return canoto.ErrZeroValue
+			}
+
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.Field = c.Field.MakeCanoto()
+			err = c.Field.UnmarshalCanotoFrom(r)
+			r.B = remainingBytes
+			if err != nil {
+				return err
+			}
+		case 8:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			err := canoto.ReadBytes(r, &msgBytes)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+
+			remainingBytes := r.B
+			count, err := canoto.CountBytes(remainingBytes, canoto__NestedGenericField__RepeatedField__tag)
+			if err != nil {
+				return err
+			}
+
+			c.RepeatedField = canoto.MakeSlice(c.RepeatedField, 1+count)
+			if len(msgBytes) != 0 {
+				r.B = msgBytes
+				c.RepeatedField[0] = c.RepeatedField[0].MakeCanoto()
+				err = c.RepeatedField[0].UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
+			}
+
+			for i := range count {
+				r.B = r.B[len(canoto__NestedGenericField__RepeatedField__tag):]
+				r.Unsafe = true
+				err := canoto.ReadBytes(r, &msgBytes)
+				r.Unsafe = originalUnsafe
+				if err != nil {
+					return err
+				}
+				if len(msgBytes) == 0 {
+					continue
+				}
+
+				remainingBytes := r.B
+				r.B = msgBytes
+				c.RepeatedField[1+i] = c.RepeatedField[1+i].MakeCanoto()
+				err = c.RepeatedField[1+i].UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
+			}
+		case 9:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			err := canoto.ReadBytes(r, &msgBytes)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+
+			c.FixedRepeatedField[0] = canoto.Zero(c.FixedRepeatedField[0])
+			isZero := len(msgBytes) == 0
+			if !isZero {
+				remainingBytes := r.B
+				r.B = msgBytes
+				c.FixedRepeatedField[0] = c.FixedRepeatedField[0].MakeCanoto()
+				err = c.FixedRepeatedField[0].UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
+			}
+
+			const numToRead = uint(len(c.FixedRepeatedField) - 1)
+			for i := range numToRead {
+				if !canoto.HasPrefix(r.B, canoto__NestedGenericField__FixedRepeatedField__tag) {
+					return canoto.ErrUnknownField
+				}
+				r.B = r.B[len(canoto__NestedGenericField__FixedRepeatedField__tag):]
+				r.Unsafe = true
+				err := canoto.ReadBytes(r, &msgBytes)
+				r.Unsafe = originalUnsafe
+				if err != nil {
+					return err
+				}
+				if len(msgBytes) == 0 {
+					c.FixedRepeatedField[1+i] = canoto.Zero(c.FixedRepeatedField[1+i])
+					continue
+				}
+
+				remainingBytes := r.B
+				r.B = msgBytes
+				c.FixedRepeatedField[1+i] = c.FixedRepeatedField[1+i].MakeCanoto()
+				err = c.FixedRepeatedField[1+i].UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
+				isZero = false
+			}
+			if isZero {
+				return canoto.ErrZeroValue
+			}
 		default:
 			return canoto.ErrUnknownField
 		}
@@ -1320,7 +1719,10 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r *canoto.Reader) error
 // 1. All OneOfs are specified at most once.
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
-func (c *NestedGenericField[T1, T2]) ValidCanoto() bool {
+func (c *NestedGenericField[T1, T2, T3]) ValidCanoto() bool {
+	if c == nil {
+		return true
+	}
 	if !(&c.Value).ValidCanoto() {
 		return false
 	}
@@ -1347,6 +1749,19 @@ func (c *NestedGenericField[T1, T2]) ValidCanoto() bool {
 			return false
 		}
 	}
+	if !c.Field.ValidCanoto() {
+		return false
+	}
+	for i := range c.RepeatedField {
+		if !c.RepeatedField[i].ValidCanoto() {
+			return false
+		}
+	}
+	for i := range c.FixedRepeatedField {
+		if !c.FixedRepeatedField[i].ValidCanoto() {
+			return false
+		}
+	}
 	return true
 }
 
@@ -1354,7 +1769,10 @@ func (c *NestedGenericField[T1, T2]) ValidCanoto() bool {
 // values in the struct.
 //
 // It is not safe to call this function concurrently.
-func (c *NestedGenericField[T1, T2]) CalculateCanotoCache() {
+func (c *NestedGenericField[T1, T2, T3]) CalculateCanotoCache() {
+	if c == nil {
+		return
+	}
 	c.canotoData.size = 0
 	(&c.Value).CalculateCanotoCache()
 	if fieldSize := (&c.Value).CachedCanotoSize(); fieldSize != 0 {
@@ -1412,6 +1830,30 @@ func (c *NestedGenericField[T1, T2]) CalculateCanotoCache() {
 			c.canotoData.size += totalSize
 		}
 	}
+	c.Field.CalculateCanotoCache()
+	if fieldSize := c.Field.CachedCanotoSize(); fieldSize != 0 {
+		c.canotoData.size += len(canoto__NestedGenericField__Field__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+	}
+	for i := range c.RepeatedField {
+		c.RepeatedField[i].CalculateCanotoCache()
+		fieldSize := (c.RepeatedField[i]).CachedCanotoSize()
+		c.canotoData.size += len(canoto__NestedGenericField__RepeatedField__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+	}
+	{
+		var (
+			fieldSizeSum int
+			totalSize    int
+		)
+		for i := range c.FixedRepeatedField {
+			c.FixedRepeatedField[i].CalculateCanotoCache()
+			fieldSize := c.FixedRepeatedField[i].CachedCanotoSize()
+			fieldSizeSum += fieldSize
+			totalSize += len(canoto__NestedGenericField__FixedRepeatedField__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		}
+		if fieldSizeSum != 0 {
+			c.canotoData.size += totalSize
+		}
+	}
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -1421,7 +1863,10 @@ func (c *NestedGenericField[T1, T2]) CalculateCanotoCache() {
 //
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
-func (c *NestedGenericField[T1, T2]) CachedCanotoSize() int {
+func (c *NestedGenericField[T1, T2, T3]) CachedCanotoSize() int {
+	if c == nil {
+		return 0
+	}
 	return c.canotoData.size
 }
 
@@ -1430,7 +1875,7 @@ func (c *NestedGenericField[T1, T2]) CachedCanotoSize() int {
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to call this function concurrently.
-func (c *NestedGenericField[T1, T2]) MarshalCanoto() []byte {
+func (c *NestedGenericField[T1, T2, T3]) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := canoto.Writer{
 		B: make([]byte, 0, c.CachedCanotoSize()),
@@ -1448,7 +1893,10 @@ func (c *NestedGenericField[T1, T2]) MarshalCanoto() []byte {
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to call this function concurrently.
-func (c *NestedGenericField[T1, T2]) MarshalCanotoInto(w *canoto.Writer) {
+func (c *NestedGenericField[T1, T2, T3]) MarshalCanotoInto(w *canoto.Writer) {
+	if c == nil {
+		return
+	}
 	if fieldSize := (&c.Value).CachedCanotoSize(); fieldSize != 0 {
 		canoto.Append(w, canoto__NestedGenericField__Value__tag)
 		canoto.AppendInt(w, int64(fieldSize))
@@ -1511,6 +1959,38 @@ func (c *NestedGenericField[T1, T2]) MarshalCanotoInto(w *canoto.Writer) {
 				canoto.AppendInt(w, int64(fieldSize))
 				if fieldSize != 0 {
 					(c.FixedRepeatedPointer[i]).MarshalCanotoInto(w)
+				}
+			}
+		}
+	}
+	if fieldSize := c.Field.CachedCanotoSize(); fieldSize != 0 {
+		canoto.Append(w, canoto__NestedGenericField__Field__tag)
+		canoto.AppendInt(w, int64(fieldSize))
+		c.Field.MarshalCanotoInto(w)
+	}
+	for i := range c.RepeatedField {
+		canoto.Append(w, canoto__NestedGenericField__RepeatedField__tag)
+		fieldSize := c.RepeatedField[i].CachedCanotoSize()
+		canoto.AppendInt(w, int64(fieldSize))
+		if fieldSize != 0 {
+			c.RepeatedField[i].MarshalCanotoInto(w)
+		}
+	}
+	{
+		isZero := true
+		for i := range c.FixedRepeatedField {
+			if c.FixedRepeatedField[i].CachedCanotoSize() != 0 {
+				isZero = false
+				break
+			}
+		}
+		if !isZero {
+			for i := range c.FixedRepeatedField {
+				canoto.Append(w, canoto__NestedGenericField__FixedRepeatedField__tag)
+				fieldSize := c.FixedRepeatedField[i].CachedCanotoSize()
+				canoto.AppendInt(w, int64(fieldSize))
+				if fieldSize != 0 {
+					c.FixedRepeatedField[i].MarshalCanotoInto(w)
 				}
 			}
 		}
@@ -1595,6 +2075,9 @@ const (
 	canoto__Scalars__Pointer__tag                         = "\xda\x04" // canoto.Tag(75, canoto.Len)
 	canoto__Scalars__RepeatedPointer__tag                 = "\xe2\x04" // canoto.Tag(76, canoto.Len)
 	canoto__Scalars__FixedRepeatedPointer__tag            = "\xea\x04" // canoto.Tag(77, canoto.Len)
+	canoto__Scalars__Field__tag                           = "\xf2\x04" // canoto.Tag(78, canoto.Len)
+	canoto__Scalars__RepeatedField__tag                   = "\xfa\x04" // canoto.Tag(79, canoto.Len)
+	canoto__Scalars__FixedRepeatedField__tag              = "\x82\x05" // canoto.Tag(80, canoto.Len)
 )
 
 type canotoData_Scalars struct {
@@ -1628,6 +2111,11 @@ type canotoData_Scalars struct {
 	FixedRepeatedSint32Size int
 	FixedRepeatedSint64Size int
 	ConstRepeatedUint64Size int
+}
+
+// MakeCanoto creates a new empty values.
+func (*Scalars) MakeCanoto() *Scalars {
+	return new(Scalars)
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -3686,6 +4174,140 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 			if isZero {
 				return canoto.ErrZeroValue
 			}
+		case 78:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			err := canoto.ReadBytes(r, &msgBytes)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return canoto.ErrZeroValue
+			}
+
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.Field = c.Field.MakeCanoto()
+			err = c.Field.UnmarshalCanotoFrom(r)
+			r.B = remainingBytes
+			if err != nil {
+				return err
+			}
+		case 79:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			err := canoto.ReadBytes(r, &msgBytes)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+
+			remainingBytes := r.B
+			count, err := canoto.CountBytes(remainingBytes, canoto__Scalars__RepeatedField__tag)
+			if err != nil {
+				return err
+			}
+
+			c.RepeatedField = canoto.MakeSlice(c.RepeatedField, 1+count)
+			if len(msgBytes) != 0 {
+				r.B = msgBytes
+				c.RepeatedField[0] = c.RepeatedField[0].MakeCanoto()
+				err = c.RepeatedField[0].UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
+			}
+
+			for i := range count {
+				r.B = r.B[len(canoto__Scalars__RepeatedField__tag):]
+				r.Unsafe = true
+				err := canoto.ReadBytes(r, &msgBytes)
+				r.Unsafe = originalUnsafe
+				if err != nil {
+					return err
+				}
+				if len(msgBytes) == 0 {
+					continue
+				}
+
+				remainingBytes := r.B
+				r.B = msgBytes
+				c.RepeatedField[1+i] = c.RepeatedField[1+i].MakeCanoto()
+				err = c.RepeatedField[1+i].UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
+			}
+		case 80:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			err := canoto.ReadBytes(r, &msgBytes)
+			r.Unsafe = originalUnsafe
+			if err != nil {
+				return err
+			}
+
+			c.FixedRepeatedField[0] = canoto.Zero(c.FixedRepeatedField[0])
+			isZero := len(msgBytes) == 0
+			if !isZero {
+				remainingBytes := r.B
+				r.B = msgBytes
+				c.FixedRepeatedField[0] = c.FixedRepeatedField[0].MakeCanoto()
+				err = c.FixedRepeatedField[0].UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
+			}
+
+			const numToRead = uint(len(c.FixedRepeatedField) - 1)
+			for i := range numToRead {
+				if !canoto.HasPrefix(r.B, canoto__Scalars__FixedRepeatedField__tag) {
+					return canoto.ErrUnknownField
+				}
+				r.B = r.B[len(canoto__Scalars__FixedRepeatedField__tag):]
+				r.Unsafe = true
+				err := canoto.ReadBytes(r, &msgBytes)
+				r.Unsafe = originalUnsafe
+				if err != nil {
+					return err
+				}
+				if len(msgBytes) == 0 {
+					c.FixedRepeatedField[1+i] = canoto.Zero(c.FixedRepeatedField[1+i])
+					continue
+				}
+
+				remainingBytes := r.B
+				r.B = msgBytes
+				c.FixedRepeatedField[1+i] = c.FixedRepeatedField[1+i].MakeCanoto()
+				err = c.FixedRepeatedField[1+i].UnmarshalCanotoFrom(r)
+				r.B = remainingBytes
+				if err != nil {
+					return err
+				}
+				isZero = false
+			}
+			if isZero {
+				return canoto.ErrZeroValue
+			}
 		default:
 			return canoto.ErrUnknownField
 		}
@@ -3703,6 +4325,9 @@ func (c *Scalars) UnmarshalCanotoFrom(r *canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *Scalars) ValidCanoto() bool {
+	if c == nil {
+		return true
+	}
 	if !utf8.ValidString(string(c.String)) {
 		return false
 	}
@@ -3751,6 +4376,19 @@ func (c *Scalars) ValidCanoto() bool {
 			return false
 		}
 	}
+	if !c.Field.ValidCanoto() {
+		return false
+	}
+	for i := range c.RepeatedField {
+		if !c.RepeatedField[i].ValidCanoto() {
+			return false
+		}
+	}
+	for i := range c.FixedRepeatedField {
+		if !c.FixedRepeatedField[i].ValidCanoto() {
+			return false
+		}
+	}
 	return true
 }
 
@@ -3759,6 +4397,9 @@ func (c *Scalars) ValidCanoto() bool {
 //
 // It is not safe to call this function concurrently.
 func (c *Scalars) CalculateCanotoCache() {
+	if c == nil {
+		return
+	}
 	c.canotoData.size = 0
 	if !canoto.IsZero(c.Int8) {
 		c.canotoData.size += len(canoto__Scalars__Int8__tag) + canoto.SizeInt(c.Int8)
@@ -4171,6 +4812,30 @@ func (c *Scalars) CalculateCanotoCache() {
 			c.canotoData.size += totalSize
 		}
 	}
+	c.Field.CalculateCanotoCache()
+	if fieldSize := c.Field.CachedCanotoSize(); fieldSize != 0 {
+		c.canotoData.size += len(canoto__Scalars__Field__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+	}
+	for i := range c.RepeatedField {
+		c.RepeatedField[i].CalculateCanotoCache()
+		fieldSize := (c.RepeatedField[i]).CachedCanotoSize()
+		c.canotoData.size += len(canoto__Scalars__RepeatedField__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+	}
+	{
+		var (
+			fieldSizeSum int
+			totalSize    int
+		)
+		for i := range c.FixedRepeatedField {
+			c.FixedRepeatedField[i].CalculateCanotoCache()
+			fieldSize := c.FixedRepeatedField[i].CachedCanotoSize()
+			fieldSizeSum += fieldSize
+			totalSize += len(canoto__Scalars__FixedRepeatedField__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+		}
+		if fieldSizeSum != 0 {
+			c.canotoData.size += totalSize
+		}
+	}
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -4181,6 +4846,9 @@ func (c *Scalars) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *Scalars) CachedCanotoSize() int {
+	if c == nil {
+		return 0
+	}
 	return c.canotoData.size
 }
 
@@ -4208,6 +4876,9 @@ func (c *Scalars) MarshalCanoto() []byte {
 //
 // It is not safe to call this function concurrently.
 func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
+	if c == nil {
+		return
+	}
 	if !canoto.IsZero(c.Int8) {
 		canoto.Append(w, canoto__Scalars__Int8__tag)
 		canoto.AppendInt(w, c.Int8)
@@ -4694,6 +5365,38 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 				canoto.AppendInt(w, int64(fieldSize))
 				if fieldSize != 0 {
 					(c.FixedRepeatedPointer[i]).MarshalCanotoInto(w)
+				}
+			}
+		}
+	}
+	if fieldSize := c.Field.CachedCanotoSize(); fieldSize != 0 {
+		canoto.Append(w, canoto__Scalars__Field__tag)
+		canoto.AppendInt(w, int64(fieldSize))
+		c.Field.MarshalCanotoInto(w)
+	}
+	for i := range c.RepeatedField {
+		canoto.Append(w, canoto__Scalars__RepeatedField__tag)
+		fieldSize := c.RepeatedField[i].CachedCanotoSize()
+		canoto.AppendInt(w, int64(fieldSize))
+		if fieldSize != 0 {
+			c.RepeatedField[i].MarshalCanotoInto(w)
+		}
+	}
+	{
+		isZero := true
+		for i := range c.FixedRepeatedField {
+			if c.FixedRepeatedField[i].CachedCanotoSize() != 0 {
+				isZero = false
+				break
+			}
+		}
+		if !isZero {
+			for i := range c.FixedRepeatedField {
+				canoto.Append(w, canoto__Scalars__FixedRepeatedField__tag)
+				fieldSize := c.FixedRepeatedField[i].CachedCanotoSize()
+				canoto.AppendInt(w, int64(fieldSize))
+				if fieldSize != 0 {
+					c.FixedRepeatedField[i].MarshalCanotoInto(w)
 				}
 			}
 		}
