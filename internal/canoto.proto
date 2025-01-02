@@ -54,6 +54,14 @@ message Embedded {
   GenericField GenericField = 3;
 }
 
+message A {
+  int32 B__C = 1;
+}
+
+message A__B {
+  int32 C = 1;
+}
+
 message Scalars {
   int32 Int8 = 1;
   int32 Int16 = 2;

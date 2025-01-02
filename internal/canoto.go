@@ -85,6 +85,23 @@ type Embedded struct {
 	canotoData canotoData_Embedded
 }
 
+// Check for name collisions. Because we use "__" as a separator, the unescaped
+// name would conflict as canoto__A__B__C__tag.
+//
+//nolint:stylecheck // This is checking for name collisions.
+type A struct {
+	B__C int32 `canoto:"int,1"`
+
+	canotoData canotoData_A
+}
+
+//nolint:stylecheck // This is checking for name collisions.
+type A__B struct {
+	C int32 `canoto:"int,1"`
+
+	canotoData canotoData_A__B
+}
+
 type Scalars struct {
 	Int8                            int8                           `canoto:"int,1"`
 	Int16                           int16                          `canoto:"int,2"`

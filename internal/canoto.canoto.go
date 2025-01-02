@@ -2246,6 +2246,306 @@ func (c *Embedded) MarshalCanotoInto(w *canoto.Writer) {
 }
 
 const (
+	canoto__A__B_1_1C__tag = "\x08" // canoto.Tag(1, canoto.Varint)
+)
+
+type canotoData_A struct {
+	// Enforce noCopy before atomic usage.
+	// See https://github.com/StephenButtolph/canoto/pull/32
+	_ atomic.Int64
+
+	size int
+}
+
+// MakeCanoto creates a new empty value.
+func (*A) MakeCanoto() *A {
+	return new(A)
+}
+
+// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// OneOf fields are cached during the unmarshaling process.
+//
+// The struct is not cleared before unmarshaling, any fields not present in the
+// bytes will retain their previous values. If a OneOf field was previously
+// cached as being set, attempting to unmarshal that OneOf again will return
+// canoto.ErrDuplicateOneOf.
+func (c *A) UnmarshalCanoto(bytes []byte) error {
+	r := canoto.Reader{
+		B: bytes,
+	}
+	return c.UnmarshalCanotoFrom(&r)
+}
+
+// UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
+// should just use UnmarshalCanoto.
+//
+// OneOf fields are cached during the unmarshaling process.
+//
+// The struct is not cleared before unmarshaling, any fields not present in the
+// bytes will retain their previous values. If a OneOf field was previously
+// cached as being set, attempting to unmarshal that OneOf again will return
+// canoto.ErrDuplicateOneOf.
+//
+// This function enables configuration of reader options.
+func (c *A) UnmarshalCanotoFrom(r *canoto.Reader) error {
+	var minField uint32
+	for canoto.HasNext(r) {
+		field, wireType, err := canoto.ReadTag(r)
+		if err != nil {
+			return err
+		}
+		if field < minField {
+			return canoto.ErrInvalidFieldOrder
+		}
+
+		switch field {
+		case 1:
+			if wireType != canoto.Varint {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			if err := canoto.ReadInt(r, &c.B__C); err != nil {
+				return err
+			}
+			if canoto.IsZero(c.B__C) {
+				return canoto.ErrZeroValue
+			}
+		default:
+			return canoto.ErrUnknownField
+		}
+
+		minField = field + 1
+	}
+	return nil
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// Specifically, ValidCanoto ensures:
+// 1. All OneOfs are specified at most once.
+// 2. All strings are valid utf-8.
+// 3. All custom fields are ValidCanoto.
+func (c *A) ValidCanoto() bool {
+	if c == nil {
+		return true
+	}
+	return true
+}
+
+// CalculateCanotoCache populates size and OneOf caches based on the current
+// values in the struct.
+//
+// It is not safe to call this function concurrently.
+func (c *A) CalculateCanotoCache() {
+	if c == nil {
+		return
+	}
+	c.canotoData.size = 0
+	if !canoto.IsZero(c.B__C) {
+		c.canotoData.size += len(canoto__A__B_1_1C__tag) + canoto.SizeInt(c.B__C)
+	}
+}
+
+// CachedCanotoSize returns the previously calculated size of the Canoto
+// representation from CalculateCanotoCache.
+//
+// If CalculateCanotoCache has not yet been called, it will return 0.
+//
+// If the struct has been modified since the last call to CalculateCanotoCache,
+// the returned size may be incorrect.
+func (c *A) CachedCanotoSize() int {
+	if c == nil {
+		return 0
+	}
+	return c.canotoData.size
+}
+
+// MarshalCanoto returns the Canoto representation of this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
+func (c *A) MarshalCanoto() []byte {
+	c.CalculateCanotoCache()
+	w := canoto.Writer{
+		B: make([]byte, 0, c.CachedCanotoSize()),
+	}
+	c.MarshalCanotoInto(&w)
+	return w.B
+}
+
+// MarshalCanotoInto writes the struct into a canoto.Writer. Most users should
+// just use MarshalCanoto.
+//
+// It is assumed that CalculateCanotoCache has been called since the last
+// modification to this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
+func (c *A) MarshalCanotoInto(w *canoto.Writer) {
+	if c == nil {
+		return
+	}
+	if !canoto.IsZero(c.B__C) {
+		canoto.Append(w, canoto__A__B_1_1C__tag)
+		canoto.AppendInt(w, c.B__C)
+	}
+}
+
+const (
+	canoto__A_1_1B__C__tag = "\x08" // canoto.Tag(1, canoto.Varint)
+)
+
+type canotoData_A__B struct {
+	// Enforce noCopy before atomic usage.
+	// See https://github.com/StephenButtolph/canoto/pull/32
+	_ atomic.Int64
+
+	size int
+}
+
+// MakeCanoto creates a new empty value.
+func (*A__B) MakeCanoto() *A__B {
+	return new(A__B)
+}
+
+// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// OneOf fields are cached during the unmarshaling process.
+//
+// The struct is not cleared before unmarshaling, any fields not present in the
+// bytes will retain their previous values. If a OneOf field was previously
+// cached as being set, attempting to unmarshal that OneOf again will return
+// canoto.ErrDuplicateOneOf.
+func (c *A__B) UnmarshalCanoto(bytes []byte) error {
+	r := canoto.Reader{
+		B: bytes,
+	}
+	return c.UnmarshalCanotoFrom(&r)
+}
+
+// UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
+// should just use UnmarshalCanoto.
+//
+// OneOf fields are cached during the unmarshaling process.
+//
+// The struct is not cleared before unmarshaling, any fields not present in the
+// bytes will retain their previous values. If a OneOf field was previously
+// cached as being set, attempting to unmarshal that OneOf again will return
+// canoto.ErrDuplicateOneOf.
+//
+// This function enables configuration of reader options.
+func (c *A__B) UnmarshalCanotoFrom(r *canoto.Reader) error {
+	var minField uint32
+	for canoto.HasNext(r) {
+		field, wireType, err := canoto.ReadTag(r)
+		if err != nil {
+			return err
+		}
+		if field < minField {
+			return canoto.ErrInvalidFieldOrder
+		}
+
+		switch field {
+		case 1:
+			if wireType != canoto.Varint {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			if err := canoto.ReadInt(r, &c.C); err != nil {
+				return err
+			}
+			if canoto.IsZero(c.C) {
+				return canoto.ErrZeroValue
+			}
+		default:
+			return canoto.ErrUnknownField
+		}
+
+		minField = field + 1
+	}
+	return nil
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// Specifically, ValidCanoto ensures:
+// 1. All OneOfs are specified at most once.
+// 2. All strings are valid utf-8.
+// 3. All custom fields are ValidCanoto.
+func (c *A__B) ValidCanoto() bool {
+	if c == nil {
+		return true
+	}
+	return true
+}
+
+// CalculateCanotoCache populates size and OneOf caches based on the current
+// values in the struct.
+//
+// It is not safe to call this function concurrently.
+func (c *A__B) CalculateCanotoCache() {
+	if c == nil {
+		return
+	}
+	c.canotoData.size = 0
+	if !canoto.IsZero(c.C) {
+		c.canotoData.size += len(canoto__A_1_1B__C__tag) + canoto.SizeInt(c.C)
+	}
+}
+
+// CachedCanotoSize returns the previously calculated size of the Canoto
+// representation from CalculateCanotoCache.
+//
+// If CalculateCanotoCache has not yet been called, it will return 0.
+//
+// If the struct has been modified since the last call to CalculateCanotoCache,
+// the returned size may be incorrect.
+func (c *A__B) CachedCanotoSize() int {
+	if c == nil {
+		return 0
+	}
+	return c.canotoData.size
+}
+
+// MarshalCanoto returns the Canoto representation of this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
+func (c *A__B) MarshalCanoto() []byte {
+	c.CalculateCanotoCache()
+	w := canoto.Writer{
+		B: make([]byte, 0, c.CachedCanotoSize()),
+	}
+	c.MarshalCanotoInto(&w)
+	return w.B
+}
+
+// MarshalCanotoInto writes the struct into a canoto.Writer. Most users should
+// just use MarshalCanoto.
+//
+// It is assumed that CalculateCanotoCache has been called since the last
+// modification to this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
+func (c *A__B) MarshalCanotoInto(w *canoto.Writer) {
+	if c == nil {
+		return
+	}
+	if !canoto.IsZero(c.C) {
+		canoto.Append(w, canoto__A_1_1B__C__tag)
+		canoto.AppendInt(w, c.C)
+	}
+}
+
+const (
 	canoto__Scalars__Int8__tag                            = "\x08"     // canoto.Tag(1, canoto.Varint)
 	canoto__Scalars__Int16__tag                           = "\x10"     // canoto.Tag(2, canoto.Varint)
 	canoto__Scalars__Int32__tag                           = "\x18"     // canoto.Tag(3, canoto.Varint)
