@@ -110,7 +110,7 @@ type canotoData_${structName} struct {
 
 ${sizeCache}${oneOfCache}}
 
-// MakeCanoto creates a new empty values.
+// MakeCanoto creates a new empty value.
 func (*${structName}${generics}) MakeCanoto() *${structName}${generics} {
 	return new(${structName}${generics})
 }

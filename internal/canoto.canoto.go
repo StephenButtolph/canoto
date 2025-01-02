@@ -31,7 +31,7 @@ type canotoData_LargestFieldNumber struct {
 	size int
 }
 
-// MakeCanoto creates a new empty values.
+// MakeCanoto creates a new empty value.
 func (*LargestFieldNumber[T1]) MakeCanoto() *LargestFieldNumber[T1] {
 	return new(LargestFieldNumber[T1])
 }
@@ -189,7 +189,7 @@ type canotoData_OneOf struct {
 	BOneOf uint32
 }
 
-// MakeCanoto creates a new empty values.
+// MakeCanoto creates a new empty value.
 func (*OneOf) MakeCanoto() *OneOf {
 	return new(OneOf)
 }
@@ -515,7 +515,7 @@ type canotoData_GenericField struct {
 	size int
 }
 
-// MakeCanoto creates a new empty values.
+// MakeCanoto creates a new empty value.
 func (*GenericField[T1, T2, T3]) MakeCanoto() *GenericField[T1, T2, T3] {
 	return new(GenericField[T1, T2, T3])
 }
@@ -1266,7 +1266,7 @@ type canotoData_NestedGenericField struct {
 	size int
 }
 
-// MakeCanoto creates a new empty values.
+// MakeCanoto creates a new empty value.
 func (*NestedGenericField[T1, T2, T3]) MakeCanoto() *NestedGenericField[T1, T2, T3] {
 	return new(NestedGenericField[T1, T2, T3])
 }
@@ -2113,7 +2113,7 @@ type canotoData_Scalars struct {
 	ConstRepeatedUint64Size int
 }
 
-// MakeCanoto creates a new empty values.
+// MakeCanoto creates a new empty value.
 func (*Scalars) MakeCanoto() *Scalars {
 	return new(Scalars)
 }
