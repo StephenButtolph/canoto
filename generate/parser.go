@@ -30,7 +30,7 @@ var (
 	errStructContainsDuplicateFieldNumbers = errors.New("struct contains duplicate field numbers")
 )
 
-func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
+func parse(fs *token.FileSet, f ast.Node, useAtomic bool) (string, []message, error) {
 	var (
 		canotoImportName string
 		packageName      string
@@ -73,6 +73,7 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 		message := message{
 			name:              name,
 			canonicalizedName: canonicalizeName(name),
+			useAtomic:         useAtomic,
 		}
 
 		genericPointers := make(map[string]int)

@@ -1,4 +1,4 @@
-//go:generate canoto --proto $GOFILE
+//go:generate canoto --proto --concurrent=false $GOFILE
 
 package examples
 

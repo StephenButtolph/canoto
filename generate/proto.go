@@ -28,7 +28,7 @@ func Proto(inputFilePath string) error {
 		return err
 	}
 
-	packageName, messages, err := parse(fs, f)
+	packageName, messages, err := parse(fs, f, false /*=useAtomic*/)
 	if err != nil {
 		return err
 	}

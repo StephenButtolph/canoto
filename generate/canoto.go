@@ -24,7 +24,7 @@ const (
 var errNonGoExtension = errors.New("file must be a go file")
 
 // Canoto generates the canoto serialization logic for the provided file.
-func Canoto(inputFilePath string) error {
+func Canoto(inputFilePath string, useAtomic bool) error {
 	var outputFilePath string
 	switch {
 	case strings.HasSuffix(inputFilePath, goTestExtension):
@@ -42,7 +42,7 @@ func Canoto(inputFilePath string) error {
 		return err
 	}
 
-	packageName, messages, err := parse(fs, f)
+	packageName, messages, err := parse(fs, f, useAtomic)
 	if err != nil {
 		return err
 	}
@@ -77,6 +77,8 @@ import (
 
 // Ensure that unused imports do not error
 var (
+	_ atomic.Int64
+
 	_ = io.ErrUnexpectedEOF
 	_ = utf8.ValidString
 )
@@ -104,10 +106,6 @@ const (
 ${tagConstants})
 
 type canotoData_${structName} struct {
-	// Enforce noCopy before atomic usage.
-	// See https://github.com/StephenButtolph/canoto/pull/32
-	_ atomic.Int64
-
 ${sizeCache}${oneOfCache}}
 
 // MakeCanoto creates a new empty value.
@@ -306,6 +304,16 @@ func makeTagConstants(m message) string {
 }
 
 func makeSizeCache(m message) string {
+	const atomicHeader = `	// Enforce noCopy before atomic usage.
+	// See https://github.com/StephenButtolph/canoto/pull/32
+	_ atomic.Int64
+
+`
+	var s strings.Builder
+	if m.useAtomic {
+		_, _ = s.WriteString(atomicHeader)
+	}
+
 	const (
 		sizeVar    = "size"
 		sizeSuffix = "Size"
@@ -319,10 +327,7 @@ func makeSizeCache(m message) string {
 		largestNameSize = max(largestNameSize, len(f.name)+len(sizeSuffix))
 	}
 
-	var (
-		template = fmt.Sprintf("\t%%-%ds int\n", largestNameSize)
-		s        strings.Builder
-	)
+	template := fmt.Sprintf("\t%%-%ds int\n", largestNameSize)
 	_, _ = fmt.Fprintf(&s, template, sizeVar)
 	for _, f := range m.fields {
 		if !f.canotoType.IsRepeated() || !f.canotoType.IsVarint() {

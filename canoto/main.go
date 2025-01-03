@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	canotoFlag  = "canoto"
-	protoFlag   = "proto"
-	versionFlag = "version"
+	canotoFlag     = "canoto"
+	protoFlag      = "proto"
+	versionFlag    = "version"
+	concurrentFlag = "concurrent"
 )
 
 func init() {
@@ -45,9 +46,14 @@ func main() {
 				return fmt.Errorf("failed to get proto flag: %w", err)
 			}
 
+			useAtomic, err := flags.GetBool(concurrentFlag)
+			if err != nil {
+				return fmt.Errorf("failed to get proto flag: %w", err)
+			}
+
 			for _, arg := range args {
 				if canoto {
-					if err := generate.Canoto(arg); err != nil {
+					if err := generate.Canoto(arg, useAtomic); err != nil {
 						return fmt.Errorf("failed to generate canoto for %q: %w", arg, err)
 					}
 				}
@@ -65,6 +71,7 @@ func main() {
 	flags.Bool(versionFlag, false, "Display the version and exit")
 	flags.Bool(canotoFlag, true, "Generate canoto file")
 	flags.Bool(protoFlag, false, "Generate proto file")
+	flags.Bool(concurrentFlag, true, "Generate canoto serialization that is safe for concurrent access")
 
 	if err := cmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "command failed %v\n", err)
