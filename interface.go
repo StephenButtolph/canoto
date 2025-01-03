@@ -31,7 +31,7 @@ type Field interface {
 	// may be incorrect.
 	CachedCanotoSize() int
 	// UnmarshalCanotoFrom populates the field from a canoto.Reader.
-	UnmarshalCanotoFrom(r *Reader) error
+	UnmarshalCanotoFrom(r Reader) error
 	// ValidCanoto validates that the field can be correctly marshaled into the
 	// Canoto format.
 	ValidCanoto() bool

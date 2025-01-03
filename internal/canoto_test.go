@@ -953,7 +953,7 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 							Unsafe: unsafe,
 						}
 					)
-					_ = s.UnmarshalCanotoFrom(&reader)
+					_ = s.UnmarshalCanotoFrom(reader)
 				}
 			})
 		}

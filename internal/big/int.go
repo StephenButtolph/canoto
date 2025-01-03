@@ -19,7 +19,7 @@ func (*Int) MakeCanoto() *Int {
 	return new(Int)
 }
 
-func (i *Int) UnmarshalCanotoFrom(r *canoto.Reader) error {
+func (i *Int) UnmarshalCanotoFrom(r canoto.Reader) error {
 	if i.Int == nil {
 		i.Int = new(big.Int)
 	}

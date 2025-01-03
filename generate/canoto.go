@@ -125,7 +125,7 @@ func (c *${structName}${generics}) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
 	}
-	return c.UnmarshalCanotoFrom(&r)
+	return c.UnmarshalCanotoFrom(r)
 }
 
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
@@ -139,10 +139,10 @@ func (c *${structName}${generics}) UnmarshalCanoto(bytes []byte) error {
 // canoto.ErrDuplicateOneOf.
 //
 // This function enables configuration of reader options.
-func (c *${structName}${generics}) UnmarshalCanotoFrom(r *canoto.Reader) error {
+func (c *${structName}${generics}) UnmarshalCanotoFrom(r canoto.Reader) error {
 	var minField uint32
-	for canoto.HasNext(r) {
-		field, wireType, err := canoto.ReadTag(r)
+	for canoto.HasNext(&r) {
+		field, wireType, err := canoto.ReadTag(&r)
 		if err != nil {
 			return err
 		}
@@ -370,7 +370,7 @@ func makeUnmarshal(m message) string {
 				return canoto.ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			if err := canoto.Read${suffix}(r, &c.${fieldName}); err != nil {
+			if err := canoto.Read${suffix}(&r, &c.${fieldName}); err != nil {
 				return err
 			}
 			if canoto.IsZero(c.${fieldName}) {
@@ -385,7 +385,7 @@ func makeUnmarshal(m message) string {
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
 			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
+			err := canoto.ReadBytes(&r, &msgBytes)
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
@@ -394,12 +394,12 @@ func makeUnmarshal(m message) string {
 			remainingBytes := r.B
 			r.B = msgBytes
 			for i := range c.${fieldName} {
-				if err := canoto.Read${suffix}(r, &c.${fieldName}[i]); err != nil {
+				if err := canoto.Read${suffix}(&r, &c.${fieldName}[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
 			}
-			hasNext := canoto.HasNext(r)
+			hasNext := canoto.HasNext(&r)
 			r.B = remainingBytes
 			if hasNext {
 				return io.ErrUnexpectedEOF
@@ -416,7 +416,7 @@ func makeUnmarshal(m message) string {
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
 			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
+			err := canoto.ReadBytes(&r, &msgBytes)
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
@@ -434,7 +434,7 @@ func makeUnmarshal(m message) string {
 			r.B = msgBytes
 			c.${fieldName} = canoto.MakeSlice(c.${fieldName}, int(numMsgBytes/canoto.Size${suffix}))
 			for i := range c.${fieldName} {
-				if err := canoto.Read${suffix}(r, &c.${fieldName}[i]); err != nil {
+				if err := canoto.Read${suffix}(&r, &c.${fieldName}[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -446,7 +446,7 @@ func makeUnmarshal(m message) string {
 				return canoto.ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			if err := canoto.Read${suffix}(r, &c.${fieldName}); err != nil {
+			if err := canoto.Read${suffix}(&r, &c.${fieldName}); err != nil {
 				return err
 			}
 			if len(c.${fieldName}) == 0 {
@@ -461,7 +461,7 @@ func makeUnmarshal(m message) string {
 			remainingBytes := r.B
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
-			err := canoto.ReadBytes(r, new([]byte))
+			err := canoto.ReadBytes(&r, new([]byte))
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
@@ -474,12 +474,12 @@ func makeUnmarshal(m message) string {
 			c.${fieldName} = canoto.MakeSlice(c.${fieldName}, 1+count)
 
 			r.B = remainingBytes
-			if err := canoto.Read${suffix}(r, &c.${fieldName}[0]); err != nil {
+			if err := canoto.Read${suffix}(&r, &c.${fieldName}[0]); err != nil {
 				return err
 			}
 			for i := range count {
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
-				if err := canoto.Read${suffix}(r, &c.${fieldName}[1+i]); err != nil {
+				if err := canoto.Read${suffix}(&r, &c.${fieldName}[1+i]); err != nil {
 					return err
 				}
 			}
@@ -489,7 +489,7 @@ func makeUnmarshal(m message) string {
 				return canoto.ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			if err := canoto.Read${suffix}(r, &c.${fieldName}[0]); err != nil {
+			if err := canoto.Read${suffix}(&r, &c.${fieldName}[0]); err != nil {
 				return err
 			}
 
@@ -500,7 +500,7 @@ func makeUnmarshal(m message) string {
 					return canoto.ErrUnknownField
 				}
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
-				if err := canoto.Read${suffix}(r, &c.${fieldName}[1+i]); err != nil {
+				if err := canoto.Read${suffix}(&r, &c.${fieldName}[1+i]); err != nil {
 					return err
 				}
 				isZero = isZero && len(c.${fieldName}[1+i]) == 0
@@ -521,7 +521,7 @@ func makeUnmarshal(m message) string {
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
 			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
+			err := canoto.ReadBytes(&r, &msgBytes)
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
@@ -534,12 +534,12 @@ func makeUnmarshal(m message) string {
 			r.B = msgBytes
 			c.${fieldName} = canoto.MakeSlice(c.${fieldName}, canoto.CountInts(msgBytes))
 			for i := range c.${fieldName} {
-				if err := canoto.Read${suffix}(r, &c.${fieldName}[i]); err != nil {
+				if err := canoto.Read${suffix}(&r, &c.${fieldName}[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
 			}
-			hasNext := canoto.HasNext(r)
+			hasNext := canoto.HasNext(&r)
 			r.B = remainingBytes
 			if hasNext {
 				return canoto.ErrInvalidLength
@@ -570,7 +570,7 @@ func makeUnmarshal(m message) string {
 			}${unmarshalOneOf}
 
 			var length int64
-			if err := canoto.ReadInt(r, &length); err != nil {
+			if err := canoto.ReadInt(&r, &length); err != nil {
 				return err
 			}
 
@@ -597,7 +597,7 @@ func makeUnmarshal(m message) string {
 			}${unmarshalOneOf}
 
 			var length int64
-			if err := canoto.ReadInt(r, &length); err != nil {
+			if err := canoto.ReadInt(&r, &length); err != nil {
 				return err
 			}
 
@@ -623,7 +623,7 @@ func makeUnmarshal(m message) string {
 			copy(c.${fieldName}[0][:], firstEntry)
 			for i := range count {
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
-				if err := canoto.ReadInt(r, &length); err != nil {
+				if err := canoto.ReadInt(&r, &length); err != nil {
 					return err
 				}
 				if length != expectedLengthInt64 {
@@ -644,7 +644,7 @@ func makeUnmarshal(m message) string {
 			}${unmarshalOneOf}
 
 			var length int64
-			if err := canoto.ReadInt(r, &length); err != nil {
+			if err := canoto.ReadInt(&r, &length); err != nil {
 				return err
 			}
 
@@ -668,7 +668,7 @@ func makeUnmarshal(m message) string {
 				}
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 
-				if err := canoto.ReadInt(r, &length); err != nil {
+				if err := canoto.ReadInt(&r, &length); err != nil {
 					return err
 				}
 				if length != expectedLengthInt64 {
@@ -694,7 +694,7 @@ func makeUnmarshal(m message) string {
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
 			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
+			err := canoto.ReadBytes(&r, &msgBytes)
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
@@ -719,7 +719,7 @@ func makeUnmarshal(m message) string {
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
 			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
+			err := canoto.ReadBytes(&r, &msgBytes)
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
@@ -744,7 +744,7 @@ func makeUnmarshal(m message) string {
 			for i := range count {
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 				r.Unsafe = true
-				err := canoto.ReadBytes(r, &msgBytes)
+				err := canoto.ReadBytes(&r, &msgBytes)
 				r.Unsafe = originalUnsafe
 				if err != nil {
 					return err
@@ -769,7 +769,7 @@ func makeUnmarshal(m message) string {
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
 			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
+			err := canoto.ReadBytes(&r, &msgBytes)
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
@@ -793,7 +793,7 @@ func makeUnmarshal(m message) string {
 				}
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 				r.Unsafe = true
-				err := canoto.ReadBytes(r, &msgBytes)
+				err := canoto.ReadBytes(&r, &msgBytes)
 				r.Unsafe = originalUnsafe
 				if err != nil {
 					return err
@@ -825,7 +825,7 @@ func makeUnmarshal(m message) string {
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
 			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
+			err := canoto.ReadBytes(&r, &msgBytes)
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
@@ -851,7 +851,7 @@ func makeUnmarshal(m message) string {
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
 			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
+			err := canoto.ReadBytes(&r, &msgBytes)
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
@@ -877,7 +877,7 @@ func makeUnmarshal(m message) string {
 			for i := range count {
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 				r.Unsafe = true
-				err := canoto.ReadBytes(r, &msgBytes)
+				err := canoto.ReadBytes(&r, &msgBytes)
 				r.Unsafe = originalUnsafe
 				if err != nil {
 					return err
@@ -904,7 +904,7 @@ func makeUnmarshal(m message) string {
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
 			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
+			err := canoto.ReadBytes(&r, &msgBytes)
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
@@ -930,7 +930,7 @@ func makeUnmarshal(m message) string {
 				}
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 				r.Unsafe = true
-				err := canoto.ReadBytes(r, &msgBytes)
+				err := canoto.ReadBytes(&r, &msgBytes)
 				r.Unsafe = originalUnsafe
 				if err != nil {
 					return err
@@ -964,7 +964,7 @@ func makeUnmarshal(m message) string {
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
 			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
+			err := canoto.ReadBytes(&r, &msgBytes)
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
@@ -990,7 +990,7 @@ func makeUnmarshal(m message) string {
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
 			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
+			err := canoto.ReadBytes(&r, &msgBytes)
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
@@ -1016,7 +1016,7 @@ func makeUnmarshal(m message) string {
 			for i := range count {
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 				r.Unsafe = true
-				err := canoto.ReadBytes(r, &msgBytes)
+				err := canoto.ReadBytes(&r, &msgBytes)
 				r.Unsafe = originalUnsafe
 				if err != nil {
 					return err
@@ -1043,7 +1043,7 @@ func makeUnmarshal(m message) string {
 			originalUnsafe := r.Unsafe
 			r.Unsafe = true
 			var msgBytes []byte
-			err := canoto.ReadBytes(r, &msgBytes)
+			err := canoto.ReadBytes(&r, &msgBytes)
 			r.Unsafe = originalUnsafe
 			if err != nil {
 				return err
@@ -1069,7 +1069,7 @@ func makeUnmarshal(m message) string {
 				}
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 				r.Unsafe = true
-				err := canoto.ReadBytes(r, &msgBytes)
+				err := canoto.ReadBytes(&r, &msgBytes)
 				r.Unsafe = originalUnsafe
 				if err != nil {
 					return err
