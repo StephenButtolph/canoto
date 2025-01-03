@@ -63,13 +63,14 @@ type Message interface {
 
 // Field defines a type that can be included inside of a Canoto message.
 type Field interface {
-	// MarshalCanotoInto writes the field into a canoto.Writer.
+	// MarshalCanotoInto writes the field into a canoto.Writer and returns the
+	// resulting canoto.Writer.
 	//
 	// It is assumed that CalculateCanotoCache has been called since the last
 	// modification to this field.
 	//
 	// It is assumed that this field is ValidCanoto.
-	MarshalCanotoInto(w *Writer)
+	MarshalCanotoInto(w Writer) Writer
 	// CalculateCanotoCache populates internal caches based on the current
 	// values in the struct.
 	CalculateCanotoCache()
@@ -81,7 +82,7 @@ type Field interface {
 	// may be incorrect.
 	CachedCanotoSize() int
 	// UnmarshalCanotoFrom populates the field from a canoto.Reader.
-	UnmarshalCanotoFrom(r *Reader) error
+	UnmarshalCanotoFrom(r Reader) error
 	// ValidCanoto validates that the field can be correctly marshaled into the
 	// Canoto format.
 	ValidCanoto() bool

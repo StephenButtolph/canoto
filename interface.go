@@ -13,7 +13,8 @@ type Message interface {
 
 // Field defines a type that can be included inside of a Canoto message.
 type Field interface {
-	// MarshalCanotoInto writes the field into a canoto.Writer.
+	// MarshalCanotoInto writes the field into a canoto.Writer and returns the
+	// resulting canoto.Writer.
 	//
 	// It is assumed that CalculateCanotoCache has been called since the last
 	// modification to this field.
