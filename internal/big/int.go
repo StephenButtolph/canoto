@@ -40,11 +40,12 @@ func (i *Int) CachedCanotoSize() int {
 	return (i.Int.BitLen() + 7) / 8
 }
 
-func (i *Int) MarshalCanotoInto(w *canoto.Writer) {
+func (i *Int) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if i == nil || i.Int == nil {
-		return
+		return w
 	}
 	startIndex := len(w.B)
 	w.B = append(w.B, make([]byte, i.CachedCanotoSize())...)
 	i.Int.FillBytes(w.B[startIndex:])
+	return w
 }

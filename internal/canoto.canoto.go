@@ -144,12 +144,12 @@ func (c *LargestFieldNumber[T1]) MarshalCanoto() []byte {
 	w := canoto.Writer{
 		B: make([]byte, 0, c.CachedCanotoSize()),
 	}
-	c.MarshalCanotoInto(&w)
+	w = c.MarshalCanotoInto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a canoto.Writer. Most users should
-// just use MarshalCanoto.
+// MarshalCanotoInto writes the struct into a canoto.Writer and returns the
+// resulting canoto.Writer. Most users should just use MarshalCanoto.
 //
 // It is assumed that CalculateCanotoCache has been called since the last
 // modification to this struct.
@@ -157,14 +157,15 @@ func (c *LargestFieldNumber[T1]) MarshalCanoto() []byte {
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to call this function concurrently.
-func (c *LargestFieldNumber[T1]) MarshalCanotoInto(w *canoto.Writer) {
+func (c *LargestFieldNumber[T1]) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
-		return
+		return w
 	}
 	if !canoto.IsZero(c.Int32) {
-		canoto.Append(w, canoto__LargestFieldNumber__Int32__tag)
-		canoto.AppendInt(w, c.Int32)
+		canoto.Append(&w, canoto__LargestFieldNumber__Int32__tag)
+		canoto.AppendInt(&w, c.Int32)
 	}
+	return w
 }
 
 const (
@@ -446,12 +447,12 @@ func (c *OneOf) MarshalCanoto() []byte {
 	w := canoto.Writer{
 		B: make([]byte, 0, c.CachedCanotoSize()),
 	}
-	c.MarshalCanotoInto(&w)
+	w = c.MarshalCanotoInto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a canoto.Writer. Most users should
-// just use MarshalCanoto.
+// MarshalCanotoInto writes the struct into a canoto.Writer and returns the
+// resulting canoto.Writer. Most users should just use MarshalCanoto.
 //
 // It is assumed that CalculateCanotoCache has been called since the last
 // modification to this struct.
@@ -459,34 +460,35 @@ func (c *OneOf) MarshalCanoto() []byte {
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to call this function concurrently.
-func (c *OneOf) MarshalCanotoInto(w *canoto.Writer) {
+func (c *OneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
-		return
+		return w
 	}
 	if !canoto.IsZero(c.A1) {
-		canoto.Append(w, canoto__OneOf__A1__tag)
-		canoto.AppendInt(w, c.A1)
+		canoto.Append(&w, canoto__OneOf__A1__tag)
+		canoto.AppendInt(&w, c.A1)
 	}
 	if !canoto.IsZero(c.B1) {
-		canoto.Append(w, canoto__OneOf__B1__tag)
-		canoto.AppendInt(w, c.B1)
+		canoto.Append(&w, canoto__OneOf__B1__tag)
+		canoto.AppendInt(&w, c.B1)
 	}
 	if !canoto.IsZero(c.B2) {
-		canoto.Append(w, canoto__OneOf__B2__tag)
-		canoto.AppendInt(w, c.B2)
+		canoto.Append(&w, canoto__OneOf__B2__tag)
+		canoto.AppendInt(&w, c.B2)
 	}
 	if !canoto.IsZero(c.C) {
-		canoto.Append(w, canoto__OneOf__C__tag)
-		canoto.AppendInt(w, c.C)
+		canoto.Append(&w, canoto__OneOf__C__tag)
+		canoto.AppendInt(&w, c.C)
 	}
 	if !canoto.IsZero(c.D) {
-		canoto.Append(w, canoto__OneOf__D__tag)
-		canoto.AppendInt(w, c.D)
+		canoto.Append(&w, canoto__OneOf__D__tag)
+		canoto.AppendInt(&w, c.D)
 	}
 	if !canoto.IsZero(c.A2) {
-		canoto.Append(w, canoto__OneOf__A2__tag)
-		canoto.AppendInt(w, c.A2)
+		canoto.Append(&w, canoto__OneOf__A2__tag)
+		canoto.AppendInt(&w, c.A2)
 	}
+	return w
 }
 
 const (
@@ -1119,12 +1121,12 @@ func (c *GenericField[T1, T2, T3]) MarshalCanoto() []byte {
 	w := canoto.Writer{
 		B: make([]byte, 0, c.CachedCanotoSize()),
 	}
-	c.MarshalCanotoInto(&w)
+	w = c.MarshalCanotoInto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a canoto.Writer. Most users should
-// just use MarshalCanoto.
+// MarshalCanotoInto writes the struct into a canoto.Writer and returns the
+// resulting canoto.Writer. Most users should just use MarshalCanoto.
 //
 // It is assumed that CalculateCanotoCache has been called since the last
 // modification to this struct.
@@ -1132,19 +1134,19 @@ func (c *GenericField[T1, T2, T3]) MarshalCanoto() []byte {
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to call this function concurrently.
-func (c *GenericField[T1, T2, T3]) MarshalCanotoInto(w *canoto.Writer) {
+func (c *GenericField[T1, T2, T3]) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
-		return
+		return w
 	}
 	if fieldSize := T2(&c.Value).CachedCanotoSize(); fieldSize != 0 {
-		canoto.Append(w, canoto__GenericField__Value__tag)
-		canoto.AppendInt(w, int64(fieldSize))
-		T2(&c.Value).MarshalCanotoInto(w)
+		canoto.Append(&w, canoto__GenericField__Value__tag)
+		canoto.AppendInt(&w, int64(fieldSize))
+		w = T2(&c.Value).MarshalCanotoInto(w)
 	}
 	for i := range c.RepeatedValue {
-		canoto.Append(w, canoto__GenericField__RepeatedValue__tag)
-		canoto.AppendInt(w, int64(T2(&c.RepeatedValue[i]).CachedCanotoSize()))
-		T2(&c.RepeatedValue[i]).MarshalCanotoInto(w)
+		canoto.Append(&w, canoto__GenericField__RepeatedValue__tag)
+		canoto.AppendInt(&w, int64(T2(&c.RepeatedValue[i]).CachedCanotoSize()))
+		w = T2(&c.RepeatedValue[i]).MarshalCanotoInto(w)
 	}
 	{
 		isZero := true
@@ -1156,28 +1158,28 @@ func (c *GenericField[T1, T2, T3]) MarshalCanotoInto(w *canoto.Writer) {
 		}
 		if !isZero {
 			for i := range c.FixedRepeatedValue {
-				canoto.Append(w, canoto__GenericField__FixedRepeatedValue__tag)
-				canoto.AppendInt(w, int64(T2(&c.FixedRepeatedValue[i]).CachedCanotoSize()))
-				T2(&c.FixedRepeatedValue[i]).MarshalCanotoInto(w)
+				canoto.Append(&w, canoto__GenericField__FixedRepeatedValue__tag)
+				canoto.AppendInt(&w, int64(T2(&c.FixedRepeatedValue[i]).CachedCanotoSize()))
+				w = T2(&c.FixedRepeatedValue[i]).MarshalCanotoInto(w)
 			}
 		}
 	}
 	if c.Pointer != nil {
 		if fieldSize := T2(c.Pointer).CachedCanotoSize(); fieldSize != 0 {
-			canoto.Append(w, canoto__GenericField__Pointer__tag)
-			canoto.AppendInt(w, int64(fieldSize))
-			T2(c.Pointer).MarshalCanotoInto(w)
+			canoto.Append(&w, canoto__GenericField__Pointer__tag)
+			canoto.AppendInt(&w, int64(fieldSize))
+			w = T2(c.Pointer).MarshalCanotoInto(w)
 		}
 	}
 	for i := range c.RepeatedPointer {
-		canoto.Append(w, canoto__GenericField__RepeatedPointer__tag)
+		canoto.Append(&w, canoto__GenericField__RepeatedPointer__tag)
 		var fieldSize int
 		if c.RepeatedPointer[i] != nil {
 			fieldSize = T2(c.RepeatedPointer[i]).CachedCanotoSize()
 		}
-		canoto.AppendInt(w, int64(fieldSize))
+		canoto.AppendInt(&w, int64(fieldSize))
 		if fieldSize != 0 {
-			T2(c.RepeatedPointer[i]).MarshalCanotoInto(w)
+			w = T2(c.RepeatedPointer[i]).MarshalCanotoInto(w)
 		}
 	}
 	{
@@ -1190,29 +1192,29 @@ func (c *GenericField[T1, T2, T3]) MarshalCanotoInto(w *canoto.Writer) {
 		}
 		if !isZero {
 			for i := range c.FixedRepeatedPointer {
-				canoto.Append(w, canoto__GenericField__FixedRepeatedPointer__tag)
+				canoto.Append(&w, canoto__GenericField__FixedRepeatedPointer__tag)
 				var fieldSize int
 				if c.FixedRepeatedPointer[i] != nil {
 					fieldSize = T2(c.FixedRepeatedPointer[i]).CachedCanotoSize()
 				}
-				canoto.AppendInt(w, int64(fieldSize))
+				canoto.AppendInt(&w, int64(fieldSize))
 				if fieldSize != 0 {
-					T2(c.FixedRepeatedPointer[i]).MarshalCanotoInto(w)
+					w = T2(c.FixedRepeatedPointer[i]).MarshalCanotoInto(w)
 				}
 			}
 		}
 	}
 	if fieldSize := c.Field.CachedCanotoSize(); fieldSize != 0 {
-		canoto.Append(w, canoto__GenericField__Field__tag)
-		canoto.AppendInt(w, int64(fieldSize))
-		c.Field.MarshalCanotoInto(w)
+		canoto.Append(&w, canoto__GenericField__Field__tag)
+		canoto.AppendInt(&w, int64(fieldSize))
+		w = c.Field.MarshalCanotoInto(w)
 	}
 	for i := range c.RepeatedField {
-		canoto.Append(w, canoto__GenericField__RepeatedField__tag)
+		canoto.Append(&w, canoto__GenericField__RepeatedField__tag)
 		fieldSize := c.RepeatedField[i].CachedCanotoSize()
-		canoto.AppendInt(w, int64(fieldSize))
+		canoto.AppendInt(&w, int64(fieldSize))
 		if fieldSize != 0 {
-			c.RepeatedField[i].MarshalCanotoInto(w)
+			w = c.RepeatedField[i].MarshalCanotoInto(w)
 		}
 	}
 	{
@@ -1225,15 +1227,16 @@ func (c *GenericField[T1, T2, T3]) MarshalCanotoInto(w *canoto.Writer) {
 		}
 		if !isZero {
 			for i := range c.FixedRepeatedField {
-				canoto.Append(w, canoto__GenericField__FixedRepeatedField__tag)
+				canoto.Append(&w, canoto__GenericField__FixedRepeatedField__tag)
 				fieldSize := c.FixedRepeatedField[i].CachedCanotoSize()
-				canoto.AppendInt(w, int64(fieldSize))
+				canoto.AppendInt(&w, int64(fieldSize))
 				if fieldSize != 0 {
-					c.FixedRepeatedField[i].MarshalCanotoInto(w)
+					w = c.FixedRepeatedField[i].MarshalCanotoInto(w)
 				}
 			}
 		}
 	}
+	return w
 }
 
 const (
@@ -1866,12 +1869,12 @@ func (c *NestedGenericField[T1, T2, T3]) MarshalCanoto() []byte {
 	w := canoto.Writer{
 		B: make([]byte, 0, c.CachedCanotoSize()),
 	}
-	c.MarshalCanotoInto(&w)
+	w = c.MarshalCanotoInto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a canoto.Writer. Most users should
-// just use MarshalCanoto.
+// MarshalCanotoInto writes the struct into a canoto.Writer and returns the
+// resulting canoto.Writer. Most users should just use MarshalCanoto.
 //
 // It is assumed that CalculateCanotoCache has been called since the last
 // modification to this struct.
@@ -1879,19 +1882,19 @@ func (c *NestedGenericField[T1, T2, T3]) MarshalCanoto() []byte {
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to call this function concurrently.
-func (c *NestedGenericField[T1, T2, T3]) MarshalCanotoInto(w *canoto.Writer) {
+func (c *NestedGenericField[T1, T2, T3]) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
-		return
+		return w
 	}
 	if fieldSize := (&c.Value).CachedCanotoSize(); fieldSize != 0 {
-		canoto.Append(w, canoto__NestedGenericField__Value__tag)
-		canoto.AppendInt(w, int64(fieldSize))
-		(&c.Value).MarshalCanotoInto(w)
+		canoto.Append(&w, canoto__NestedGenericField__Value__tag)
+		canoto.AppendInt(&w, int64(fieldSize))
+		w = (&c.Value).MarshalCanotoInto(w)
 	}
 	for i := range c.RepeatedValue {
-		canoto.Append(w, canoto__NestedGenericField__RepeatedValue__tag)
-		canoto.AppendInt(w, int64((&c.RepeatedValue[i]).CachedCanotoSize()))
-		(&c.RepeatedValue[i]).MarshalCanotoInto(w)
+		canoto.Append(&w, canoto__NestedGenericField__RepeatedValue__tag)
+		canoto.AppendInt(&w, int64((&c.RepeatedValue[i]).CachedCanotoSize()))
+		w = (&c.RepeatedValue[i]).MarshalCanotoInto(w)
 	}
 	{
 		isZero := true
@@ -1903,28 +1906,28 @@ func (c *NestedGenericField[T1, T2, T3]) MarshalCanotoInto(w *canoto.Writer) {
 		}
 		if !isZero {
 			for i := range c.FixedRepeatedValue {
-				canoto.Append(w, canoto__NestedGenericField__FixedRepeatedValue__tag)
-				canoto.AppendInt(w, int64((&c.FixedRepeatedValue[i]).CachedCanotoSize()))
-				(&c.FixedRepeatedValue[i]).MarshalCanotoInto(w)
+				canoto.Append(&w, canoto__NestedGenericField__FixedRepeatedValue__tag)
+				canoto.AppendInt(&w, int64((&c.FixedRepeatedValue[i]).CachedCanotoSize()))
+				w = (&c.FixedRepeatedValue[i]).MarshalCanotoInto(w)
 			}
 		}
 	}
 	if c.Pointer != nil {
 		if fieldSize := (c.Pointer).CachedCanotoSize(); fieldSize != 0 {
-			canoto.Append(w, canoto__NestedGenericField__Pointer__tag)
-			canoto.AppendInt(w, int64(fieldSize))
-			(c.Pointer).MarshalCanotoInto(w)
+			canoto.Append(&w, canoto__NestedGenericField__Pointer__tag)
+			canoto.AppendInt(&w, int64(fieldSize))
+			w = (c.Pointer).MarshalCanotoInto(w)
 		}
 	}
 	for i := range c.RepeatedPointer {
-		canoto.Append(w, canoto__NestedGenericField__RepeatedPointer__tag)
+		canoto.Append(&w, canoto__NestedGenericField__RepeatedPointer__tag)
 		var fieldSize int
 		if c.RepeatedPointer[i] != nil {
 			fieldSize = (c.RepeatedPointer[i]).CachedCanotoSize()
 		}
-		canoto.AppendInt(w, int64(fieldSize))
+		canoto.AppendInt(&w, int64(fieldSize))
 		if fieldSize != 0 {
-			(c.RepeatedPointer[i]).MarshalCanotoInto(w)
+			w = (c.RepeatedPointer[i]).MarshalCanotoInto(w)
 		}
 	}
 	{
@@ -1937,29 +1940,29 @@ func (c *NestedGenericField[T1, T2, T3]) MarshalCanotoInto(w *canoto.Writer) {
 		}
 		if !isZero {
 			for i := range c.FixedRepeatedPointer {
-				canoto.Append(w, canoto__NestedGenericField__FixedRepeatedPointer__tag)
+				canoto.Append(&w, canoto__NestedGenericField__FixedRepeatedPointer__tag)
 				var fieldSize int
 				if c.FixedRepeatedPointer[i] != nil {
 					fieldSize = (c.FixedRepeatedPointer[i]).CachedCanotoSize()
 				}
-				canoto.AppendInt(w, int64(fieldSize))
+				canoto.AppendInt(&w, int64(fieldSize))
 				if fieldSize != 0 {
-					(c.FixedRepeatedPointer[i]).MarshalCanotoInto(w)
+					w = (c.FixedRepeatedPointer[i]).MarshalCanotoInto(w)
 				}
 			}
 		}
 	}
 	if fieldSize := c.Field.CachedCanotoSize(); fieldSize != 0 {
-		canoto.Append(w, canoto__NestedGenericField__Field__tag)
-		canoto.AppendInt(w, int64(fieldSize))
-		c.Field.MarshalCanotoInto(w)
+		canoto.Append(&w, canoto__NestedGenericField__Field__tag)
+		canoto.AppendInt(&w, int64(fieldSize))
+		w = c.Field.MarshalCanotoInto(w)
 	}
 	for i := range c.RepeatedField {
-		canoto.Append(w, canoto__NestedGenericField__RepeatedField__tag)
+		canoto.Append(&w, canoto__NestedGenericField__RepeatedField__tag)
 		fieldSize := c.RepeatedField[i].CachedCanotoSize()
-		canoto.AppendInt(w, int64(fieldSize))
+		canoto.AppendInt(&w, int64(fieldSize))
 		if fieldSize != 0 {
-			c.RepeatedField[i].MarshalCanotoInto(w)
+			w = c.RepeatedField[i].MarshalCanotoInto(w)
 		}
 	}
 	{
@@ -1972,15 +1975,16 @@ func (c *NestedGenericField[T1, T2, T3]) MarshalCanotoInto(w *canoto.Writer) {
 		}
 		if !isZero {
 			for i := range c.FixedRepeatedField {
-				canoto.Append(w, canoto__NestedGenericField__FixedRepeatedField__tag)
+				canoto.Append(&w, canoto__NestedGenericField__FixedRepeatedField__tag)
 				fieldSize := c.FixedRepeatedField[i].CachedCanotoSize()
-				canoto.AppendInt(w, int64(fieldSize))
+				canoto.AppendInt(&w, int64(fieldSize))
 				if fieldSize != 0 {
-					c.FixedRepeatedField[i].MarshalCanotoInto(w)
+					w = c.FixedRepeatedField[i].MarshalCanotoInto(w)
 				}
 			}
 		}
 	}
+	return w
 }
 
 const (
@@ -2191,12 +2195,12 @@ func (c *Embedded) MarshalCanoto() []byte {
 	w := canoto.Writer{
 		B: make([]byte, 0, c.CachedCanotoSize()),
 	}
-	c.MarshalCanotoInto(&w)
+	w = c.MarshalCanotoInto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a canoto.Writer. Most users should
-// just use MarshalCanoto.
+// MarshalCanotoInto writes the struct into a canoto.Writer and returns the
+// resulting canoto.Writer. Most users should just use MarshalCanoto.
 //
 // It is assumed that CalculateCanotoCache has been called since the last
 // modification to this struct.
@@ -2204,27 +2208,28 @@ func (c *Embedded) MarshalCanoto() []byte {
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to call this function concurrently.
-func (c *Embedded) MarshalCanotoInto(w *canoto.Writer) {
+func (c *Embedded) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
-		return
+		return w
 	}
 	if fieldSize := (&c.OneOf).CachedCanotoSize(); fieldSize != 0 {
-		canoto.Append(w, canoto__Embedded__OneOf__tag)
-		canoto.AppendInt(w, int64(fieldSize))
-		(&c.OneOf).MarshalCanotoInto(w)
+		canoto.Append(&w, canoto__Embedded__OneOf__tag)
+		canoto.AppendInt(&w, int64(fieldSize))
+		w = (&c.OneOf).MarshalCanotoInto(w)
 	}
 	if c.LargestFieldNumber != nil {
 		if fieldSize := (c.LargestFieldNumber).CachedCanotoSize(); fieldSize != 0 {
-			canoto.Append(w, canoto__Embedded__LargestFieldNumber__tag)
-			canoto.AppendInt(w, int64(fieldSize))
-			(c.LargestFieldNumber).MarshalCanotoInto(w)
+			canoto.Append(&w, canoto__Embedded__LargestFieldNumber__tag)
+			canoto.AppendInt(&w, int64(fieldSize))
+			w = (c.LargestFieldNumber).MarshalCanotoInto(w)
 		}
 	}
 	if fieldSize := c.GenericField.CachedCanotoSize(); fieldSize != 0 {
-		canoto.Append(w, canoto__Embedded__GenericField__tag)
-		canoto.AppendInt(w, int64(fieldSize))
-		c.GenericField.MarshalCanotoInto(w)
+		canoto.Append(&w, canoto__Embedded__GenericField__tag)
+		canoto.AppendInt(&w, int64(fieldSize))
+		w = c.GenericField.MarshalCanotoInto(w)
 	}
+	return w
 }
 
 const (
@@ -2350,12 +2355,12 @@ func (c *A) MarshalCanoto() []byte {
 	w := canoto.Writer{
 		B: make([]byte, 0, c.CachedCanotoSize()),
 	}
-	c.MarshalCanotoInto(&w)
+	w = c.MarshalCanotoInto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a canoto.Writer. Most users should
-// just use MarshalCanoto.
+// MarshalCanotoInto writes the struct into a canoto.Writer and returns the
+// resulting canoto.Writer. Most users should just use MarshalCanoto.
 //
 // It is assumed that CalculateCanotoCache has been called since the last
 // modification to this struct.
@@ -2363,14 +2368,15 @@ func (c *A) MarshalCanoto() []byte {
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to call this function concurrently.
-func (c *A) MarshalCanotoInto(w *canoto.Writer) {
+func (c *A) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
-		return
+		return w
 	}
 	if !canoto.IsZero(c.B__C) {
-		canoto.Append(w, canoto__A__B_1_1C__tag)
-		canoto.AppendInt(w, c.B__C)
+		canoto.Append(&w, canoto__A__B_1_1C__tag)
+		canoto.AppendInt(&w, c.B__C)
 	}
+	return w
 }
 
 const (
@@ -2496,12 +2502,12 @@ func (c *A__B) MarshalCanoto() []byte {
 	w := canoto.Writer{
 		B: make([]byte, 0, c.CachedCanotoSize()),
 	}
-	c.MarshalCanotoInto(&w)
+	w = c.MarshalCanotoInto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a canoto.Writer. Most users should
-// just use MarshalCanoto.
+// MarshalCanotoInto writes the struct into a canoto.Writer and returns the
+// resulting canoto.Writer. Most users should just use MarshalCanoto.
 //
 // It is assumed that CalculateCanotoCache has been called since the last
 // modification to this struct.
@@ -2509,14 +2515,15 @@ func (c *A__B) MarshalCanoto() []byte {
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to call this function concurrently.
-func (c *A__B) MarshalCanotoInto(w *canoto.Writer) {
+func (c *A__B) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
-		return
+		return w
 	}
 	if !canoto.IsZero(c.C) {
-		canoto.Append(w, canoto__A_1_1B__C__tag)
-		canoto.AppendInt(w, c.C)
+		canoto.Append(&w, canoto__A_1_1B__C__tag)
+		canoto.AppendInt(&w, c.C)
 	}
+	return w
 }
 
 const (
@@ -5380,12 +5387,12 @@ func (c *Scalars) MarshalCanoto() []byte {
 	w := canoto.Writer{
 		B: make([]byte, 0, c.CachedCanotoSize()),
 	}
-	c.MarshalCanotoInto(&w)
+	w = c.MarshalCanotoInto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a canoto.Writer. Most users should
-// just use MarshalCanoto.
+// MarshalCanotoInto writes the struct into a canoto.Writer and returns the
+// resulting canoto.Writer. Most users should just use MarshalCanoto.
 //
 // It is assumed that CalculateCanotoCache has been called since the last
 // modification to this struct.
@@ -5393,360 +5400,360 @@ func (c *Scalars) MarshalCanoto() []byte {
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to call this function concurrently.
-func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
+func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
-		return
+		return w
 	}
 	if !canoto.IsZero(c.Int8) {
-		canoto.Append(w, canoto__Scalars__Int8__tag)
-		canoto.AppendInt(w, c.Int8)
+		canoto.Append(&w, canoto__Scalars__Int8__tag)
+		canoto.AppendInt(&w, c.Int8)
 	}
 	if !canoto.IsZero(c.Int16) {
-		canoto.Append(w, canoto__Scalars__Int16__tag)
-		canoto.AppendInt(w, c.Int16)
+		canoto.Append(&w, canoto__Scalars__Int16__tag)
+		canoto.AppendInt(&w, c.Int16)
 	}
 	if !canoto.IsZero(c.Int32) {
-		canoto.Append(w, canoto__Scalars__Int32__tag)
-		canoto.AppendInt(w, c.Int32)
+		canoto.Append(&w, canoto__Scalars__Int32__tag)
+		canoto.AppendInt(&w, c.Int32)
 	}
 	if !canoto.IsZero(c.Int64) {
-		canoto.Append(w, canoto__Scalars__Int64__tag)
-		canoto.AppendInt(w, c.Int64)
+		canoto.Append(&w, canoto__Scalars__Int64__tag)
+		canoto.AppendInt(&w, c.Int64)
 	}
 	if !canoto.IsZero(c.Uint8) {
-		canoto.Append(w, canoto__Scalars__Uint8__tag)
-		canoto.AppendInt(w, c.Uint8)
+		canoto.Append(&w, canoto__Scalars__Uint8__tag)
+		canoto.AppendInt(&w, c.Uint8)
 	}
 	if !canoto.IsZero(c.Uint16) {
-		canoto.Append(w, canoto__Scalars__Uint16__tag)
-		canoto.AppendInt(w, c.Uint16)
+		canoto.Append(&w, canoto__Scalars__Uint16__tag)
+		canoto.AppendInt(&w, c.Uint16)
 	}
 	if !canoto.IsZero(c.Uint32) {
-		canoto.Append(w, canoto__Scalars__Uint32__tag)
-		canoto.AppendInt(w, c.Uint32)
+		canoto.Append(&w, canoto__Scalars__Uint32__tag)
+		canoto.AppendInt(&w, c.Uint32)
 	}
 	if !canoto.IsZero(c.Uint64) {
-		canoto.Append(w, canoto__Scalars__Uint64__tag)
-		canoto.AppendInt(w, c.Uint64)
+		canoto.Append(&w, canoto__Scalars__Uint64__tag)
+		canoto.AppendInt(&w, c.Uint64)
 	}
 	if !canoto.IsZero(c.Sint8) {
-		canoto.Append(w, canoto__Scalars__Sint8__tag)
-		canoto.AppendSint(w, c.Sint8)
+		canoto.Append(&w, canoto__Scalars__Sint8__tag)
+		canoto.AppendSint(&w, c.Sint8)
 	}
 	if !canoto.IsZero(c.Sint16) {
-		canoto.Append(w, canoto__Scalars__Sint16__tag)
-		canoto.AppendSint(w, c.Sint16)
+		canoto.Append(&w, canoto__Scalars__Sint16__tag)
+		canoto.AppendSint(&w, c.Sint16)
 	}
 	if !canoto.IsZero(c.Sint32) {
-		canoto.Append(w, canoto__Scalars__Sint32__tag)
-		canoto.AppendSint(w, c.Sint32)
+		canoto.Append(&w, canoto__Scalars__Sint32__tag)
+		canoto.AppendSint(&w, c.Sint32)
 	}
 	if !canoto.IsZero(c.Sint64) {
-		canoto.Append(w, canoto__Scalars__Sint64__tag)
-		canoto.AppendSint(w, c.Sint64)
+		canoto.Append(&w, canoto__Scalars__Sint64__tag)
+		canoto.AppendSint(&w, c.Sint64)
 	}
 	if !canoto.IsZero(c.Fixed32) {
-		canoto.Append(w, canoto__Scalars__Fixed32__tag)
-		canoto.AppendFint32(w, c.Fixed32)
+		canoto.Append(&w, canoto__Scalars__Fixed32__tag)
+		canoto.AppendFint32(&w, c.Fixed32)
 	}
 	if !canoto.IsZero(c.Fixed64) {
-		canoto.Append(w, canoto__Scalars__Fixed64__tag)
-		canoto.AppendFint64(w, c.Fixed64)
+		canoto.Append(&w, canoto__Scalars__Fixed64__tag)
+		canoto.AppendFint64(&w, c.Fixed64)
 	}
 	if !canoto.IsZero(c.Sfixed32) {
-		canoto.Append(w, canoto__Scalars__Sfixed32__tag)
-		canoto.AppendFint32(w, c.Sfixed32)
+		canoto.Append(&w, canoto__Scalars__Sfixed32__tag)
+		canoto.AppendFint32(&w, c.Sfixed32)
 	}
 	if !canoto.IsZero(c.Sfixed64) {
-		canoto.Append(w, canoto__Scalars__Sfixed64__tag)
-		canoto.AppendFint64(w, c.Sfixed64)
+		canoto.Append(&w, canoto__Scalars__Sfixed64__tag)
+		canoto.AppendFint64(&w, c.Sfixed64)
 	}
 	if !canoto.IsZero(c.Bool) {
-		canoto.Append(w, canoto__Scalars__Bool__tag)
-		canoto.AppendBool(w, true)
+		canoto.Append(&w, canoto__Scalars__Bool__tag)
+		canoto.AppendBool(&w, true)
 	}
 	if len(c.String) != 0 {
-		canoto.Append(w, canoto__Scalars__String__tag)
-		canoto.AppendBytes(w, c.String)
+		canoto.Append(&w, canoto__Scalars__String__tag)
+		canoto.AppendBytes(&w, c.String)
 	}
 	if len(c.Bytes) != 0 {
-		canoto.Append(w, canoto__Scalars__Bytes__tag)
-		canoto.AppendBytes(w, c.Bytes)
+		canoto.Append(&w, canoto__Scalars__Bytes__tag)
+		canoto.AppendBytes(&w, c.Bytes)
 	}
 	if fieldSize := (&c.LargestFieldNumber).CachedCanotoSize(); fieldSize != 0 {
-		canoto.Append(w, canoto__Scalars__LargestFieldNumber__tag)
-		canoto.AppendInt(w, int64(fieldSize))
-		(&c.LargestFieldNumber).MarshalCanotoInto(w)
+		canoto.Append(&w, canoto__Scalars__LargestFieldNumber__tag)
+		canoto.AppendInt(&w, int64(fieldSize))
+		w = (&c.LargestFieldNumber).MarshalCanotoInto(w)
 	}
 	if len(c.RepeatedInt8) != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedInt8__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedInt8Size))
+		canoto.Append(&w, canoto__Scalars__RepeatedInt8__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedInt8Size))
 		for _, v := range c.RepeatedInt8 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedInt16) != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedInt16__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedInt16Size))
+		canoto.Append(&w, canoto__Scalars__RepeatedInt16__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedInt16Size))
 		for _, v := range c.RepeatedInt16 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedInt32) != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedInt32__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedInt32Size))
+		canoto.Append(&w, canoto__Scalars__RepeatedInt32__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedInt32Size))
 		for _, v := range c.RepeatedInt32 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedInt64) != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedInt64__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedInt64Size))
+		canoto.Append(&w, canoto__Scalars__RepeatedInt64__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedInt64Size))
 		for _, v := range c.RepeatedInt64 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedUint8) != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedUint8__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedUint8Size))
+		canoto.Append(&w, canoto__Scalars__RepeatedUint8__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedUint8Size))
 		for _, v := range c.RepeatedUint8 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedUint16) != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedUint16__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedUint16Size))
+		canoto.Append(&w, canoto__Scalars__RepeatedUint16__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedUint16Size))
 		for _, v := range c.RepeatedUint16 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedUint32) != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedUint32__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedUint32Size))
+		canoto.Append(&w, canoto__Scalars__RepeatedUint32__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedUint32Size))
 		for _, v := range c.RepeatedUint32 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedUint64) != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedUint64__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedUint64Size))
+		canoto.Append(&w, canoto__Scalars__RepeatedUint64__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedUint64Size))
 		for _, v := range c.RepeatedUint64 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedSint8) != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedSint8__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedSint8Size))
+		canoto.Append(&w, canoto__Scalars__RepeatedSint8__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedSint8Size))
 		for _, v := range c.RepeatedSint8 {
-			canoto.AppendSint(w, v)
+			canoto.AppendSint(&w, v)
 		}
 	}
 	if len(c.RepeatedSint16) != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedSint16__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedSint16Size))
+		canoto.Append(&w, canoto__Scalars__RepeatedSint16__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedSint16Size))
 		for _, v := range c.RepeatedSint16 {
-			canoto.AppendSint(w, v)
+			canoto.AppendSint(&w, v)
 		}
 	}
 	if len(c.RepeatedSint32) != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedSint32__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedSint32Size))
+		canoto.Append(&w, canoto__Scalars__RepeatedSint32__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedSint32Size))
 		for _, v := range c.RepeatedSint32 {
-			canoto.AppendSint(w, v)
+			canoto.AppendSint(&w, v)
 		}
 	}
 	if len(c.RepeatedSint64) != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedSint64__tag)
-		canoto.AppendInt(w, int64(c.canotoData.RepeatedSint64Size))
+		canoto.Append(&w, canoto__Scalars__RepeatedSint64__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedSint64Size))
 		for _, v := range c.RepeatedSint64 {
-			canoto.AppendSint(w, v)
+			canoto.AppendSint(&w, v)
 		}
 	}
 	if num := len(c.RepeatedFixed32); num != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedFixed32__tag)
-		canoto.AppendInt(w, int64(num*canoto.SizeFint32))
+		canoto.Append(&w, canoto__Scalars__RepeatedFixed32__tag)
+		canoto.AppendInt(&w, int64(num*canoto.SizeFint32))
 		for _, v := range c.RepeatedFixed32 {
-			canoto.AppendFint32(w, v)
+			canoto.AppendFint32(&w, v)
 		}
 	}
 	if num := len(c.RepeatedFixed64); num != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedFixed64__tag)
-		canoto.AppendInt(w, int64(num*canoto.SizeFint64))
+		canoto.Append(&w, canoto__Scalars__RepeatedFixed64__tag)
+		canoto.AppendInt(&w, int64(num*canoto.SizeFint64))
 		for _, v := range c.RepeatedFixed64 {
-			canoto.AppendFint64(w, v)
+			canoto.AppendFint64(&w, v)
 		}
 	}
 	if num := len(c.RepeatedSfixed32); num != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedSfixed32__tag)
-		canoto.AppendInt(w, int64(num*canoto.SizeFint32))
+		canoto.Append(&w, canoto__Scalars__RepeatedSfixed32__tag)
+		canoto.AppendInt(&w, int64(num*canoto.SizeFint32))
 		for _, v := range c.RepeatedSfixed32 {
-			canoto.AppendFint32(w, v)
+			canoto.AppendFint32(&w, v)
 		}
 	}
 	if num := len(c.RepeatedSfixed64); num != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedSfixed64__tag)
-		canoto.AppendInt(w, int64(num*canoto.SizeFint64))
+		canoto.Append(&w, canoto__Scalars__RepeatedSfixed64__tag)
+		canoto.AppendInt(&w, int64(num*canoto.SizeFint64))
 		for _, v := range c.RepeatedSfixed64 {
-			canoto.AppendFint64(w, v)
+			canoto.AppendFint64(&w, v)
 		}
 	}
 	if num := len(c.RepeatedBool); num != 0 {
-		canoto.Append(w, canoto__Scalars__RepeatedBool__tag)
-		canoto.AppendInt(w, int64(num*canoto.SizeBool))
+		canoto.Append(&w, canoto__Scalars__RepeatedBool__tag)
+		canoto.AppendInt(&w, int64(num*canoto.SizeBool))
 		for _, v := range c.RepeatedBool {
-			canoto.AppendBool(w, v)
+			canoto.AppendBool(&w, v)
 		}
 	}
 	for _, v := range c.RepeatedString {
-		canoto.Append(w, canoto__Scalars__RepeatedString__tag)
-		canoto.AppendBytes(w, v)
+		canoto.Append(&w, canoto__Scalars__RepeatedString__tag)
+		canoto.AppendBytes(&w, v)
 	}
 	for _, v := range c.RepeatedBytes {
-		canoto.Append(w, canoto__Scalars__RepeatedBytes__tag)
-		canoto.AppendBytes(w, v)
+		canoto.Append(&w, canoto__Scalars__RepeatedBytes__tag)
+		canoto.AppendBytes(&w, v)
 	}
 	for i := range c.RepeatedLargestFieldNumber {
-		canoto.Append(w, canoto__Scalars__RepeatedLargestFieldNumber__tag)
-		canoto.AppendInt(w, int64((&c.RepeatedLargestFieldNumber[i]).CachedCanotoSize()))
-		(&c.RepeatedLargestFieldNumber[i]).MarshalCanotoInto(w)
+		canoto.Append(&w, canoto__Scalars__RepeatedLargestFieldNumber__tag)
+		canoto.AppendInt(&w, int64((&c.RepeatedLargestFieldNumber[i]).CachedCanotoSize()))
+		w = (&c.RepeatedLargestFieldNumber[i]).MarshalCanotoInto(w)
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt8) {
-		canoto.Append(w, canoto__Scalars__FixedRepeatedInt8__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedInt8Size))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedInt8__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedInt8Size))
 		for _, v := range c.FixedRepeatedInt8 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt16) {
-		canoto.Append(w, canoto__Scalars__FixedRepeatedInt16__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedInt16Size))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedInt16__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedInt16Size))
 		for _, v := range c.FixedRepeatedInt16 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt32) {
-		canoto.Append(w, canoto__Scalars__FixedRepeatedInt32__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedInt32Size))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedInt32__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedInt32Size))
 		for _, v := range c.FixedRepeatedInt32 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt64) {
-		canoto.Append(w, canoto__Scalars__FixedRepeatedInt64__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedInt64Size))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedInt64__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedInt64Size))
 		for _, v := range c.FixedRepeatedInt64 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint8) {
-		canoto.Append(w, canoto__Scalars__FixedRepeatedUint8__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedUint8Size))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedUint8__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedUint8Size))
 		for _, v := range c.FixedRepeatedUint8 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint16) {
-		canoto.Append(w, canoto__Scalars__FixedRepeatedUint16__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedUint16Size))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedUint16__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedUint16Size))
 		for _, v := range c.FixedRepeatedUint16 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint32) {
-		canoto.Append(w, canoto__Scalars__FixedRepeatedUint32__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedUint32Size))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedUint32__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedUint32Size))
 		for _, v := range c.FixedRepeatedUint32 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint64) {
-		canoto.Append(w, canoto__Scalars__FixedRepeatedUint64__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedUint64Size))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedUint64__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedUint64Size))
 		for _, v := range c.FixedRepeatedUint64 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint8) {
-		canoto.Append(w, canoto__Scalars__FixedRepeatedSint8__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedSint8Size))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedSint8__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedSint8Size))
 		for _, v := range c.FixedRepeatedSint8 {
-			canoto.AppendSint(w, v)
+			canoto.AppendSint(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint16) {
-		canoto.Append(w, canoto__Scalars__FixedRepeatedSint16__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedSint16Size))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedSint16__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedSint16Size))
 		for _, v := range c.FixedRepeatedSint16 {
-			canoto.AppendSint(w, v)
+			canoto.AppendSint(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint32) {
-		canoto.Append(w, canoto__Scalars__FixedRepeatedSint32__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedSint32Size))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedSint32__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedSint32Size))
 		for _, v := range c.FixedRepeatedSint32 {
-			canoto.AppendSint(w, v)
+			canoto.AppendSint(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint64) {
-		canoto.Append(w, canoto__Scalars__FixedRepeatedSint64__tag)
-		canoto.AppendInt(w, int64(c.canotoData.FixedRepeatedSint64Size))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedSint64__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedSint64Size))
 		for _, v := range c.FixedRepeatedSint64 {
-			canoto.AppendSint(w, v)
+			canoto.AppendSint(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedFixed32) {
 		const fieldSize = len(c.FixedRepeatedFixed32) * canoto.SizeFint32
-		canoto.Append(w, canoto__Scalars__FixedRepeatedFixed32__tag)
-		canoto.AppendInt(w, int64(fieldSize))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedFixed32__tag)
+		canoto.AppendInt(&w, int64(fieldSize))
 		for _, v := range c.FixedRepeatedFixed32 {
-			canoto.AppendFint32(w, v)
+			canoto.AppendFint32(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedFixed64) {
 		const fieldSize = len(c.FixedRepeatedFixed64) * canoto.SizeFint64
-		canoto.Append(w, canoto__Scalars__FixedRepeatedFixed64__tag)
-		canoto.AppendInt(w, int64(fieldSize))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedFixed64__tag)
+		canoto.AppendInt(&w, int64(fieldSize))
 		for _, v := range c.FixedRepeatedFixed64 {
-			canoto.AppendFint64(w, v)
+			canoto.AppendFint64(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSfixed32) {
 		const fieldSize = len(c.FixedRepeatedSfixed32) * canoto.SizeFint32
-		canoto.Append(w, canoto__Scalars__FixedRepeatedSfixed32__tag)
-		canoto.AppendInt(w, int64(fieldSize))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedSfixed32__tag)
+		canoto.AppendInt(&w, int64(fieldSize))
 		for _, v := range c.FixedRepeatedSfixed32 {
-			canoto.AppendFint32(w, v)
+			canoto.AppendFint32(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSfixed64) {
 		const fieldSize = len(c.FixedRepeatedSfixed64) * canoto.SizeFint64
-		canoto.Append(w, canoto__Scalars__FixedRepeatedSfixed64__tag)
-		canoto.AppendInt(w, int64(fieldSize))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedSfixed64__tag)
+		canoto.AppendInt(&w, int64(fieldSize))
 		for _, v := range c.FixedRepeatedSfixed64 {
-			canoto.AppendFint64(w, v)
+			canoto.AppendFint64(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedBool) {
 		const fieldSize = len(c.FixedRepeatedBool) * canoto.SizeBool
-		canoto.Append(w, canoto__Scalars__FixedRepeatedBool__tag)
-		canoto.AppendInt(w, int64(fieldSize))
+		canoto.Append(&w, canoto__Scalars__FixedRepeatedBool__tag)
+		canoto.AppendInt(&w, int64(fieldSize))
 		for _, v := range c.FixedRepeatedBool {
-			canoto.AppendBool(w, v)
+			canoto.AppendBool(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedString) {
 		for _, v := range c.FixedRepeatedString {
-			canoto.Append(w, canoto__Scalars__FixedRepeatedString__tag)
-			canoto.AppendBytes(w, v)
+			canoto.Append(&w, canoto__Scalars__FixedRepeatedString__tag)
+			canoto.AppendBytes(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedBytes) {
-		canoto.Append(w, canoto__Scalars__FixedBytes__tag)
-		canoto.AppendBytes(w, c.FixedBytes[:])
+		canoto.Append(&w, canoto__Scalars__FixedBytes__tag)
+		canoto.AppendBytes(&w, c.FixedBytes[:])
 	}
 	for i := range c.RepeatedFixedBytes {
-		canoto.Append(w, canoto__Scalars__RepeatedFixedBytes__tag)
-		canoto.AppendBytes(w, c.RepeatedFixedBytes[i][:])
+		canoto.Append(&w, canoto__Scalars__RepeatedFixedBytes__tag)
+		canoto.AppendBytes(&w, c.RepeatedFixedBytes[i][:])
 	}
 	{
 		isZero := true
@@ -5758,15 +5765,15 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		}
 		if !isZero {
 			for _, v := range c.FixedRepeatedBytes {
-				canoto.Append(w, canoto__Scalars__FixedRepeatedBytes__tag)
-				canoto.AppendBytes(w, v)
+				canoto.Append(&w, canoto__Scalars__FixedRepeatedBytes__tag)
+				canoto.AppendBytes(&w, v)
 			}
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedFixedBytes) {
 		for i := range c.FixedRepeatedFixedBytes {
-			canoto.Append(w, canoto__Scalars__FixedRepeatedFixedBytes__tag)
-			canoto.AppendBytes(w, c.FixedRepeatedFixedBytes[i][:])
+			canoto.Append(&w, canoto__Scalars__FixedRepeatedFixedBytes__tag)
+			canoto.AppendBytes(&w, c.FixedRepeatedFixedBytes[i][:])
 		}
 	}
 	{
@@ -5779,47 +5786,47 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		}
 		if !isZero {
 			for i := range c.FixedRepeatedLargestFieldNumber {
-				canoto.Append(w, canoto__Scalars__FixedRepeatedLargestFieldNumber__tag)
-				canoto.AppendInt(w, int64((&c.FixedRepeatedLargestFieldNumber[i]).CachedCanotoSize()))
-				(&c.FixedRepeatedLargestFieldNumber[i]).MarshalCanotoInto(w)
+				canoto.Append(&w, canoto__Scalars__FixedRepeatedLargestFieldNumber__tag)
+				canoto.AppendInt(&w, int64((&c.FixedRepeatedLargestFieldNumber[i]).CachedCanotoSize()))
+				w = (&c.FixedRepeatedLargestFieldNumber[i]).MarshalCanotoInto(w)
 			}
 		}
 	}
 	if !canoto.IsZero(c.ConstRepeatedUint64) {
-		canoto.Append(w, canoto__Scalars__ConstRepeatedUint64__tag)
-		canoto.AppendInt(w, int64(c.canotoData.ConstRepeatedUint64Size))
+		canoto.Append(&w, canoto__Scalars__ConstRepeatedUint64__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.ConstRepeatedUint64Size))
 		for _, v := range c.ConstRepeatedUint64 {
-			canoto.AppendInt(w, v)
+			canoto.AppendInt(&w, v)
 		}
 	}
 	if fieldSize := (&c.CustomType).CachedCanotoSize(); fieldSize != 0 {
-		canoto.Append(w, canoto__Scalars__CustomType__tag)
-		canoto.AppendInt(w, int64(fieldSize))
-		(&c.CustomType).MarshalCanotoInto(w)
+		canoto.Append(&w, canoto__Scalars__CustomType__tag)
+		canoto.AppendInt(&w, int64(fieldSize))
+		w = (&c.CustomType).MarshalCanotoInto(w)
 	}
 	if !canoto.IsZero(c.CustomUint32) {
-		canoto.Append(w, canoto__Scalars__CustomUint32__tag)
-		canoto.AppendFint32(w, c.CustomUint32)
+		canoto.Append(&w, canoto__Scalars__CustomUint32__tag)
+		canoto.AppendFint32(&w, c.CustomUint32)
 	}
 	if len(c.CustomString) != 0 {
-		canoto.Append(w, canoto__Scalars__CustomString__tag)
-		canoto.AppendBytes(w, c.CustomString)
+		canoto.Append(&w, canoto__Scalars__CustomString__tag)
+		canoto.AppendBytes(&w, c.CustomString)
 	}
 	if len(c.CustomBytes) != 0 {
-		canoto.Append(w, canoto__Scalars__CustomBytes__tag)
-		canoto.AppendBytes(w, c.CustomBytes)
+		canoto.Append(&w, canoto__Scalars__CustomBytes__tag)
+		canoto.AppendBytes(&w, c.CustomBytes)
 	}
 	if !canoto.IsZero(c.CustomFixedBytes) {
-		canoto.Append(w, canoto__Scalars__CustomFixedBytes__tag)
-		canoto.AppendBytes(w, c.CustomFixedBytes[:])
+		canoto.Append(&w, canoto__Scalars__CustomFixedBytes__tag)
+		canoto.AppendBytes(&w, c.CustomFixedBytes[:])
 	}
 	for _, v := range c.CustomRepeatedBytes {
-		canoto.Append(w, canoto__Scalars__CustomRepeatedBytes__tag)
-		canoto.AppendBytes(w, v)
+		canoto.Append(&w, canoto__Scalars__CustomRepeatedBytes__tag)
+		canoto.AppendBytes(&w, v)
 	}
 	for i := range c.CustomRepeatedFixedBytes {
-		canoto.Append(w, canoto__Scalars__CustomRepeatedFixedBytes__tag)
-		canoto.AppendBytes(w, c.CustomRepeatedFixedBytes[i][:])
+		canoto.Append(&w, canoto__Scalars__CustomRepeatedFixedBytes__tag)
+		canoto.AppendBytes(&w, c.CustomRepeatedFixedBytes[i][:])
 	}
 	{
 		isZero := true
@@ -5831,38 +5838,38 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		}
 		if !isZero {
 			for _, v := range c.CustomFixedRepeatedBytes {
-				canoto.Append(w, canoto__Scalars__CustomFixedRepeatedBytes__tag)
-				canoto.AppendBytes(w, v)
+				canoto.Append(&w, canoto__Scalars__CustomFixedRepeatedBytes__tag)
+				canoto.AppendBytes(&w, v)
 			}
 		}
 	}
 	if !canoto.IsZero(c.CustomFixedRepeatedFixedBytes) {
 		for i := range c.CustomFixedRepeatedFixedBytes {
-			canoto.Append(w, canoto__Scalars__CustomFixedRepeatedFixedBytes__tag)
-			canoto.AppendBytes(w, c.CustomFixedRepeatedFixedBytes[i][:])
+			canoto.Append(&w, canoto__Scalars__CustomFixedRepeatedFixedBytes__tag)
+			canoto.AppendBytes(&w, c.CustomFixedRepeatedFixedBytes[i][:])
 		}
 	}
 	if fieldSize := (&c.OneOf).CachedCanotoSize(); fieldSize != 0 {
-		canoto.Append(w, canoto__Scalars__OneOf__tag)
-		canoto.AppendInt(w, int64(fieldSize))
-		(&c.OneOf).MarshalCanotoInto(w)
+		canoto.Append(&w, canoto__Scalars__OneOf__tag)
+		canoto.AppendInt(&w, int64(fieldSize))
+		w = (&c.OneOf).MarshalCanotoInto(w)
 	}
 	if c.Pointer != nil {
 		if fieldSize := (c.Pointer).CachedCanotoSize(); fieldSize != 0 {
-			canoto.Append(w, canoto__Scalars__Pointer__tag)
-			canoto.AppendInt(w, int64(fieldSize))
-			(c.Pointer).MarshalCanotoInto(w)
+			canoto.Append(&w, canoto__Scalars__Pointer__tag)
+			canoto.AppendInt(&w, int64(fieldSize))
+			w = (c.Pointer).MarshalCanotoInto(w)
 		}
 	}
 	for i := range c.RepeatedPointer {
-		canoto.Append(w, canoto__Scalars__RepeatedPointer__tag)
+		canoto.Append(&w, canoto__Scalars__RepeatedPointer__tag)
 		var fieldSize int
 		if c.RepeatedPointer[i] != nil {
 			fieldSize = (c.RepeatedPointer[i]).CachedCanotoSize()
 		}
-		canoto.AppendInt(w, int64(fieldSize))
+		canoto.AppendInt(&w, int64(fieldSize))
 		if fieldSize != 0 {
-			(c.RepeatedPointer[i]).MarshalCanotoInto(w)
+			w = (c.RepeatedPointer[i]).MarshalCanotoInto(w)
 		}
 	}
 	{
@@ -5875,29 +5882,29 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		}
 		if !isZero {
 			for i := range c.FixedRepeatedPointer {
-				canoto.Append(w, canoto__Scalars__FixedRepeatedPointer__tag)
+				canoto.Append(&w, canoto__Scalars__FixedRepeatedPointer__tag)
 				var fieldSize int
 				if c.FixedRepeatedPointer[i] != nil {
 					fieldSize = (c.FixedRepeatedPointer[i]).CachedCanotoSize()
 				}
-				canoto.AppendInt(w, int64(fieldSize))
+				canoto.AppendInt(&w, int64(fieldSize))
 				if fieldSize != 0 {
-					(c.FixedRepeatedPointer[i]).MarshalCanotoInto(w)
+					w = (c.FixedRepeatedPointer[i]).MarshalCanotoInto(w)
 				}
 			}
 		}
 	}
 	if fieldSize := c.Field.CachedCanotoSize(); fieldSize != 0 {
-		canoto.Append(w, canoto__Scalars__Field__tag)
-		canoto.AppendInt(w, int64(fieldSize))
-		c.Field.MarshalCanotoInto(w)
+		canoto.Append(&w, canoto__Scalars__Field__tag)
+		canoto.AppendInt(&w, int64(fieldSize))
+		w = c.Field.MarshalCanotoInto(w)
 	}
 	for i := range c.RepeatedField {
-		canoto.Append(w, canoto__Scalars__RepeatedField__tag)
+		canoto.Append(&w, canoto__Scalars__RepeatedField__tag)
 		fieldSize := c.RepeatedField[i].CachedCanotoSize()
-		canoto.AppendInt(w, int64(fieldSize))
+		canoto.AppendInt(&w, int64(fieldSize))
 		if fieldSize != 0 {
-			c.RepeatedField[i].MarshalCanotoInto(w)
+			w = c.RepeatedField[i].MarshalCanotoInto(w)
 		}
 	}
 	{
@@ -5910,13 +5917,14 @@ func (c *Scalars) MarshalCanotoInto(w *canoto.Writer) {
 		}
 		if !isZero {
 			for i := range c.FixedRepeatedField {
-				canoto.Append(w, canoto__Scalars__FixedRepeatedField__tag)
+				canoto.Append(&w, canoto__Scalars__FixedRepeatedField__tag)
 				fieldSize := c.FixedRepeatedField[i].CachedCanotoSize()
-				canoto.AppendInt(w, int64(fieldSize))
+				canoto.AppendInt(&w, int64(fieldSize))
 				if fieldSize != 0 {
-					c.FixedRepeatedField[i].MarshalCanotoInto(w)
+					w = c.FixedRepeatedField[i].MarshalCanotoInto(w)
 				}
 			}
 		}
 	}
+	return w
 }

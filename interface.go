@@ -19,7 +19,7 @@ type Field interface {
 	// modification to this field.
 	//
 	// It is assumed that this field is ValidCanoto.
-	MarshalCanotoInto(w *Writer)
+	MarshalCanotoInto(w Writer) Writer
 	// CalculateCanotoCache populates internal caches based on the current
 	// values in the struct.
 	CalculateCanotoCache()

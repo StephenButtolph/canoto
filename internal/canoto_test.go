@@ -643,7 +643,7 @@ func FuzzScalars_MarshalCanoto(f *testing.F) {
 		w := canoto.Writer{
 			B: make([]byte, 0, size),
 		}
-		canotoScalars.MarshalCanotoInto(&w)
+		w = canotoScalars.MarshalCanotoInto(w)
 		require.Len(w.B, size)
 
 		var pbScalars pb.Scalars
@@ -672,7 +672,7 @@ func FuzzScalars_Canonical(f *testing.F) {
 		w := canoto.Writer{
 			B: make([]byte, 0, size),
 		}
-		scalars.MarshalCanotoInto(&w)
+		w = scalars.MarshalCanotoInto(w)
 		require.Equal(b, w.B)
 	})
 }
