@@ -44,7 +44,7 @@ const (
 )
 
 var (
-	// Code is the actual golang code for the canoto library.
+	// Code is the actual golang code for this library.
 	//
 	// If this variable is not used by a project depending on this library, the
 	// compiler is smart enough to omit this value from the binary; at least at
