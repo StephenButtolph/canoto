@@ -72,7 +72,7 @@ import (
 	"sync/atomic"
 	"unicode/utf8"
 
-	"github.com/StephenButtolph/canoto"
+	${canotoImport}
 )
 
 // Ensure that unused imports do not error
@@ -84,9 +84,10 @@ var (
 )
 `
 	err := writeTemplate(w, fileTemplate, map[string]string{
-		"version": canoto.Version,
-		"source":  source,
-		"package": packageName,
+		"version":      canoto.Version,
+		"source":       source,
+		"package":      packageName,
+		"canotoImport": canotoImport,
 	})
 	if err != nil {
 		return err

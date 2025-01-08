@@ -14,8 +14,10 @@ import (
 )
 
 const (
-	canotoImport          = `"github.com/StephenButtolph/canoto"`
+	canotoOwner           = "github.com/StephenButtolph"
 	defaultCanotoSelector = "canoto"
+	canotoPackage         = canotoOwner + "/" + defaultCanotoSelector
+	canotoImport          = `"` + canotoPackage + `"`
 	canotoTag             = "canoto"
 	goBytes               = "[]byte"
 )

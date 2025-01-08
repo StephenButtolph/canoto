@@ -1,3 +1,5 @@
+// Canoto provides common functionality required for reading and writing the
+// canoto format.
 package canoto
 
 import (
@@ -8,9 +10,18 @@ import (
 	"slices"
 	"unicode/utf8"
 	"unsafe"
+
+	_ "embed"
 )
 
 const (
+	Varint WireType = iota
+	I64
+	Len
+	_ // SGROUP is deprecated and not supported
+	_ // EGROUP is deprecated and not supported
+	I32
+
 	// SizeFint32 is the size of a 32-bit fixed size integer in bytes.
 	SizeFint32 = 4
 	// SizeFint64 is the size of a 64-bit fixed size integer in bytes.
@@ -18,12 +29,30 @@ const (
 	// SizeBool is the size of a boolean in bytes.
 	SizeBool = 1
 
+	// MaxFieldNumber is the maximum field number allowed to be used in a Tag.
+	MaxFieldNumber = 1<<29 - 1
+
+	// Version is the current version of the canoto library.
+	Version = "v0.9.1"
+
+	wireTypeLength = 3
+	wireTypeMask   = 0x07
+
 	falseByte        = 0
 	trueByte         = 1
 	continuationMask = 0x80
 )
 
 var (
+	// Code is the actual golang code for the canoto library.
+	//
+	// If this variable is not used by a project depending on this library, the
+	// compiler is smart enough to omit this value from the binary; at least at
+	// the time of writing.
+	//
+	//go:embed canoto.go
+	Code string
+
 	ErrInvalidFieldOrder  = errors.New("invalid field order")
 	ErrUnexpectedWireType = errors.New("unexpected wire type")
 	ErrDuplicateOneOf     = errors.New("duplicate oneof field")
@@ -50,6 +79,69 @@ type (
 	Int64 interface{ ~int64 | ~uint64 }
 	Bytes interface{ ~string | ~[]byte }
 
+	// Message defines a type that can be a stand-alone Canoto message.
+	Message interface {
+		Field
+		// MarshalCanoto returns the Canoto representation of this message.
+		//
+		// It is assumed that this message is ValidCanoto.
+		MarshalCanoto() []byte
+		// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the message.
+		UnmarshalCanoto(bytes []byte) error
+	}
+
+	// Field defines a type that can be included inside of a Canoto message.
+	Field interface {
+		// MarshalCanotoInto writes the field into a canoto.Writer and returns
+		// the resulting canoto.Writer.
+		//
+		// It is assumed that CalculateCanotoCache has been called since the
+		// last modification to this field.
+		//
+		// It is assumed that this field is ValidCanoto.
+		MarshalCanotoInto(w Writer) Writer
+		// CalculateCanotoCache populates internal caches based on the current
+		// values in the struct.
+		CalculateCanotoCache()
+		// CachedCanotoSize returns the previously calculated size of the Canoto
+		// representation from CalculateCanotoCache.
+		//
+		// If CalculateCanotoCache has not yet been called, or the field has
+		// been modified since the last call to CalculateCanotoCache, the
+		// returned size may be incorrect.
+		CachedCanotoSize() int
+		// UnmarshalCanotoFrom populates the field from a canoto.Reader.
+		UnmarshalCanotoFrom(r Reader) error
+		// ValidCanoto validates that the field can be correctly marshaled into
+		// the Canoto format.
+		ValidCanoto() bool
+	}
+
+	// FieldPointer is a pointer to a concrete Field value T.
+	//
+	// This type must be used when implementing a value for a generic Field.
+	FieldPointer[T any] interface {
+		Field
+		*T
+	}
+
+	// FieldMaker is a Field that can create a new value of type T.
+	//
+	// The returned value must be able to be unmarshaled into.
+	//
+	// This type can be used when implementing a generic Field. However, if T is
+	// an interface, it is possible for generated code to compile and panic at
+	// runtime.
+	FieldMaker[T any] interface {
+		Field
+		MakeCanoto() T
+	}
+
+	// WireType represents the Proto wire description of a field. Within Proto
+	// it is used to provide forwards compatibility. For Canoto, it exists to
+	// provide compatibility with Proto.
+	WireType byte
+
 	// Reader contains all the state needed to unmarshal a Canoto type.
 	//
 	// The functions in this package are not methods on the Reader type to
@@ -67,6 +159,30 @@ type (
 		B []byte
 	}
 )
+
+func (w WireType) IsValid() bool {
+	switch w {
+	case Varint, I64, Len, I32:
+		return true
+	default:
+		return false
+	}
+}
+
+func (w WireType) String() string {
+	switch w {
+	case Varint:
+		return "Varint"
+	case I64:
+		return "I64"
+	case Len:
+		return "Len"
+	case I32:
+		return "I32"
+	default:
+		return "Invalid"
+	}
+}
 
 // HasNext returns true if there are more bytes to read.
 func HasNext(r *Reader) bool {
