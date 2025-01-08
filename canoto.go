@@ -46,9 +46,9 @@ const (
 var (
 	// Code is the actual golang code for this library; including this comment.
 	//
-	// If this variable is not used by a project depending on this library, the
-	// compiler is smart enough to omit this value from the binary; at least at
-	// the time of writing.
+	// This variable is not used internally, so the compiler is smart enough to
+	// omit this value from the binary if the user of this library does not
+	// utilize this variable; at least at the time of writing.
 	//
 	//go:embed canoto.go
 	Code string
