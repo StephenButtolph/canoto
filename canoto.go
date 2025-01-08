@@ -44,7 +44,7 @@ const (
 )
 
 var (
-	// Code is the actual golang code for this library.
+	// Code is the actual golang code for this library; including this comment.
 	//
 	// If this variable is not used by a project depending on this library, the
 	// compiler is smart enough to omit this value from the binary; at least at
