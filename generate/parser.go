@@ -14,12 +14,8 @@ import (
 )
 
 const (
-	canotoOwner           = "github.com/StephenButtolph"
-	defaultCanotoSelector = "canoto"
-	canotoPackage         = canotoOwner + "/" + defaultCanotoSelector
-	canotoImport          = `"` + canotoPackage + `"`
-	canotoTag             = "canoto"
-	goBytes               = "[]byte"
+	canotoTag = "canoto"
+	goBytes   = "[]byte"
 )
 
 var (
@@ -32,7 +28,12 @@ var (
 	errStructContainsDuplicateFieldNumbers = errors.New("struct contains duplicate field numbers")
 )
 
-func parse(fs *token.FileSet, f ast.Node, useAtomic bool) (string, []message, error) {
+func parse(
+	fs *token.FileSet,
+	f ast.Node,
+	useAtomic bool,
+	canotoImport string,
+) (string, []message, error) {
 	var (
 		canotoImportName string
 		packageName      string
