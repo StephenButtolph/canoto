@@ -15,7 +15,12 @@ const (
 	readWriteExecute      os.FileMode = 0o750
 )
 
-// Canoto generates the canoto serialization logic for the provided file.
+// Library generates the canoto serialization primitives package in the provided
+// folder.
+//
+// Specifically, if "./internal" is provided, this will generate the package
+// "./internal/canoto" with the serialization primitives included in
+// "./internal/canoto/canoto.go".
 func Library(parentDir string) error {
 	library := filepath.Join(parentDir, defaultCanotoSelector)
 	if err := os.MkdirAll(library, readWriteExecute); err != nil {
