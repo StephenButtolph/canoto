@@ -193,6 +193,23 @@ var _ canoto.Message = (*GenericField[BadUsage])(nil)
 
 Because `BadUsage` is an interface, it does not have a useful zero value and will panic when `GenericField` attempts to call its methods.
 
+### Standalone Implementations
+
+In some instances, it may be desirable for the generated code to avoid introducing the dependency on this repo into the `go.mod` file. As an example, if the user must support having multiple versions of canoto utilized in the same application.
+
+There are two CLI flags that enable using canoto without impacting the `go.mod`.
+
+1. `--library` when specified generates the canoto library in the provided folder. For example `--library="./internal"` generates the `canoto` library in the `./internal/canoto` package.
+2. `--import` specifies the canoto library to depend on in any generated code.
+
+For example:
+
+```sh
+canoto --library="./internal" --import="github.com/StephenButtolph/canoto/internal/canoto" ./canoto.go
+```
+
+Will generate the canoto library in `./internal/canoto` and will generate `./canoto.canoto.go` to import from `"github.com/StephenButtolph/canoto/internal/canoto"` rather than the default `"github.com/StephenButtolph/canoto"`.
+
 ## Supported Types
 
 | go type           | canoto type                  | proto type          | wire type |
