@@ -208,7 +208,7 @@ For example:
 canoto --library="./internal" --import="github.com/StephenButtolph/canoto/internal/canoto" ./canoto.go
 ```
 
-Will generate the canoto library in `./internal/canoto` and will generate `./canoto.canoto.go` to import from `"github.com/StephenButtolph/canoto/internal/canoto"` rather than the default `"github.com/StephenButtolph/canoto"`.
+Will generate the canoto library in `./internal/canoto` and will import `"github.com/StephenButtolph/canoto/internal/canoto"` rather than the default `"github.com/StephenButtolph/canoto"` when generating `./canoto.canoto.go`.
 
 ## Supported Types
 
