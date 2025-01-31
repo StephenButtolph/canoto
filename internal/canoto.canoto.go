@@ -972,8 +972,8 @@ func (c *GenericField[T1, T2, T3]) ValidCanoto() bool {
 			return false
 		}
 	}
-	for i := range c.FixedRepeatedValue {
-		if !T2(&c.FixedRepeatedValue[i]).ValidCanoto() {
+	for i := range &c.FixedRepeatedValue {
+		if !T2(&(&c.FixedRepeatedValue)[i]).ValidCanoto() {
 			return false
 		}
 	}
@@ -985,8 +985,8 @@ func (c *GenericField[T1, T2, T3]) ValidCanoto() bool {
 			return false
 		}
 	}
-	for i := range c.FixedRepeatedPointer {
-		if c.FixedRepeatedPointer[i] != nil && !T2(c.FixedRepeatedPointer[i]).ValidCanoto() {
+	for i := range &c.FixedRepeatedPointer {
+		if (&c.FixedRepeatedPointer)[i] != nil && !T2((&c.FixedRepeatedPointer)[i]).ValidCanoto() {
 			return false
 		}
 	}
@@ -998,8 +998,8 @@ func (c *GenericField[T1, T2, T3]) ValidCanoto() bool {
 			return false
 		}
 	}
-	for i := range c.FixedRepeatedField {
-		if !c.FixedRepeatedField[i].ValidCanoto() {
+	for i := range &c.FixedRepeatedField {
+		if !(&c.FixedRepeatedField)[i].ValidCanoto() {
 			return false
 		}
 	}
@@ -1720,8 +1720,8 @@ func (c *NestedGenericField[T1, T2, T3]) ValidCanoto() bool {
 			return false
 		}
 	}
-	for i := range c.FixedRepeatedValue {
-		if !(&c.FixedRepeatedValue[i]).ValidCanoto() {
+	for i := range &c.FixedRepeatedValue {
+		if !(&(&c.FixedRepeatedValue)[i]).ValidCanoto() {
 			return false
 		}
 	}
@@ -1733,8 +1733,8 @@ func (c *NestedGenericField[T1, T2, T3]) ValidCanoto() bool {
 			return false
 		}
 	}
-	for i := range c.FixedRepeatedPointer {
-		if c.FixedRepeatedPointer[i] != nil && !(c.FixedRepeatedPointer[i]).ValidCanoto() {
+	for i := range &c.FixedRepeatedPointer {
+		if (&c.FixedRepeatedPointer)[i] != nil && !((&c.FixedRepeatedPointer)[i]).ValidCanoto() {
 			return false
 		}
 	}
@@ -1746,8 +1746,8 @@ func (c *NestedGenericField[T1, T2, T3]) ValidCanoto() bool {
 			return false
 		}
 	}
-	for i := range c.FixedRepeatedField {
-		if !c.FixedRepeatedField[i].ValidCanoto() {
+	for i := range &c.FixedRepeatedField {
+		if !(&c.FixedRepeatedField)[i].ValidCanoto() {
 			return false
 		}
 	}
@@ -3571,8 +3571,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedInt8 {
-				if err := canoto.ReadInt(&r, &c.FixedRepeatedInt8[i]); err != nil {
+			for i := range &c.FixedRepeatedInt8 {
+				if err := canoto.ReadInt(&r, &(&c.FixedRepeatedInt8)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -3601,8 +3601,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedInt16 {
-				if err := canoto.ReadInt(&r, &c.FixedRepeatedInt16[i]); err != nil {
+			for i := range &c.FixedRepeatedInt16 {
+				if err := canoto.ReadInt(&r, &(&c.FixedRepeatedInt16)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -3631,8 +3631,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedInt32 {
-				if err := canoto.ReadInt(&r, &c.FixedRepeatedInt32[i]); err != nil {
+			for i := range &c.FixedRepeatedInt32 {
+				if err := canoto.ReadInt(&r, &(&c.FixedRepeatedInt32)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -3661,8 +3661,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedInt64 {
-				if err := canoto.ReadInt(&r, &c.FixedRepeatedInt64[i]); err != nil {
+			for i := range &c.FixedRepeatedInt64 {
+				if err := canoto.ReadInt(&r, &(&c.FixedRepeatedInt64)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -3691,8 +3691,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedUint8 {
-				if err := canoto.ReadInt(&r, &c.FixedRepeatedUint8[i]); err != nil {
+			for i := range &c.FixedRepeatedUint8 {
+				if err := canoto.ReadInt(&r, &(&c.FixedRepeatedUint8)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -3721,8 +3721,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedUint16 {
-				if err := canoto.ReadInt(&r, &c.FixedRepeatedUint16[i]); err != nil {
+			for i := range &c.FixedRepeatedUint16 {
+				if err := canoto.ReadInt(&r, &(&c.FixedRepeatedUint16)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -3751,8 +3751,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedUint32 {
-				if err := canoto.ReadInt(&r, &c.FixedRepeatedUint32[i]); err != nil {
+			for i := range &c.FixedRepeatedUint32 {
+				if err := canoto.ReadInt(&r, &(&c.FixedRepeatedUint32)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -3781,8 +3781,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedUint64 {
-				if err := canoto.ReadInt(&r, &c.FixedRepeatedUint64[i]); err != nil {
+			for i := range &c.FixedRepeatedUint64 {
+				if err := canoto.ReadInt(&r, &(&c.FixedRepeatedUint64)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -3811,8 +3811,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedSint8 {
-				if err := canoto.ReadSint(&r, &c.FixedRepeatedSint8[i]); err != nil {
+			for i := range &c.FixedRepeatedSint8 {
+				if err := canoto.ReadSint(&r, &(&c.FixedRepeatedSint8)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -3841,8 +3841,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedSint16 {
-				if err := canoto.ReadSint(&r, &c.FixedRepeatedSint16[i]); err != nil {
+			for i := range &c.FixedRepeatedSint16 {
+				if err := canoto.ReadSint(&r, &(&c.FixedRepeatedSint16)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -3871,8 +3871,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedSint32 {
-				if err := canoto.ReadSint(&r, &c.FixedRepeatedSint32[i]); err != nil {
+			for i := range &c.FixedRepeatedSint32 {
+				if err := canoto.ReadSint(&r, &(&c.FixedRepeatedSint32)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -3901,8 +3901,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedSint64 {
-				if err := canoto.ReadSint(&r, &c.FixedRepeatedSint64[i]); err != nil {
+			for i := range &c.FixedRepeatedSint64 {
+				if err := canoto.ReadSint(&r, &(&c.FixedRepeatedSint64)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -3931,8 +3931,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedFixed32 {
-				if err := canoto.ReadFint32(&r, &c.FixedRepeatedFixed32[i]); err != nil {
+			for i := range &c.FixedRepeatedFixed32 {
+				if err := canoto.ReadFint32(&r, &(&c.FixedRepeatedFixed32)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -3961,8 +3961,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedFixed64 {
-				if err := canoto.ReadFint64(&r, &c.FixedRepeatedFixed64[i]); err != nil {
+			for i := range &c.FixedRepeatedFixed64 {
+				if err := canoto.ReadFint64(&r, &(&c.FixedRepeatedFixed64)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -3991,8 +3991,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedSfixed32 {
-				if err := canoto.ReadFint32(&r, &c.FixedRepeatedSfixed32[i]); err != nil {
+			for i := range &c.FixedRepeatedSfixed32 {
+				if err := canoto.ReadFint32(&r, &(&c.FixedRepeatedSfixed32)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -4021,8 +4021,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedSfixed64 {
-				if err := canoto.ReadFint64(&r, &c.FixedRepeatedSfixed64[i]); err != nil {
+			for i := range &c.FixedRepeatedSfixed64 {
+				if err := canoto.ReadFint64(&r, &(&c.FixedRepeatedSfixed64)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -4051,8 +4051,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.FixedRepeatedBool {
-				if err := canoto.ReadBool(&r, &c.FixedRepeatedBool[i]); err != nil {
+			for i := range &c.FixedRepeatedBool {
+				if err := canoto.ReadBool(&r, &(&c.FixedRepeatedBool)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -4070,21 +4070,21 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.ReadString(&r, &c.FixedRepeatedString[0]); err != nil {
+			if err := canoto.ReadString(&r, &(&c.FixedRepeatedString)[0]); err != nil {
 				return err
 			}
 
-			isZero := len(c.FixedRepeatedString[0]) == 0
+			isZero := len((&c.FixedRepeatedString)[0]) == 0
 			const numToRead = uint(len(c.FixedRepeatedString) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__Scalars__FixedRepeatedString__tag) {
 					return canoto.ErrUnknownField
 				}
 				r.B = r.B[len(canoto__Scalars__FixedRepeatedString__tag):]
-				if err := canoto.ReadString(&r, &c.FixedRepeatedString[1+i]); err != nil {
+				if err := canoto.ReadString(&r, &(&c.FixedRepeatedString)[1+i]); err != nil {
 					return err
 				}
-				isZero = isZero && len(c.FixedRepeatedString[1+i]) == 0
+				isZero = isZero && len((&c.FixedRepeatedString)[1+i]) == 0
 			}
 			if isZero {
 				return canoto.ErrZeroValue
@@ -4110,7 +4110,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return io.ErrUnexpectedEOF
 			}
 
-			copy(c.FixedBytes[:], r.B)
+			copy((&c.FixedBytes)[:], r.B)
 			if canoto.IsZero(c.FixedBytes) {
 				return canoto.ErrZeroValue
 			}
@@ -4144,7 +4144,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			}
 
 			c.RepeatedFixedBytes = canoto.MakeSlice(c.RepeatedFixedBytes, 1+count)
-			copy(c.RepeatedFixedBytes[0][:], firstEntry)
+			copy((&c.RepeatedFixedBytes[0])[:], firstEntry)
 			for i := range count {
 				r.B = r.B[len(canoto__Scalars__RepeatedFixedBytes__tag):]
 				if err := canoto.ReadInt(&r, &length); err != nil {
@@ -4157,7 +4157,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 					return io.ErrUnexpectedEOF
 				}
 
-				copy(c.RepeatedFixedBytes[1+i][:], r.B)
+				copy((&c.RepeatedFixedBytes[1+i])[:], r.B)
 				r.B = r.B[expectedLength:]
 			}
 		case 61:
@@ -4165,21 +4165,21 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.ReadBytes(&r, &c.FixedRepeatedBytes[0]); err != nil {
+			if err := canoto.ReadBytes(&r, &(&c.FixedRepeatedBytes)[0]); err != nil {
 				return err
 			}
 
-			isZero := len(c.FixedRepeatedBytes[0]) == 0
+			isZero := len((&c.FixedRepeatedBytes)[0]) == 0
 			const numToRead = uint(len(c.FixedRepeatedBytes) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__Scalars__FixedRepeatedBytes__tag) {
 					return canoto.ErrUnknownField
 				}
 				r.B = r.B[len(canoto__Scalars__FixedRepeatedBytes__tag):]
-				if err := canoto.ReadBytes(&r, &c.FixedRepeatedBytes[1+i]); err != nil {
+				if err := canoto.ReadBytes(&r, &(&c.FixedRepeatedBytes)[1+i]); err != nil {
 					return err
 				}
-				isZero = isZero && len(c.FixedRepeatedBytes[1+i]) == 0
+				isZero = isZero && len((&c.FixedRepeatedBytes)[1+i]) == 0
 			}
 			if isZero {
 				return canoto.ErrZeroValue
@@ -4205,7 +4205,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return io.ErrUnexpectedEOF
 			}
 
-			copy(c.FixedRepeatedFixedBytes[0][:], r.B)
+			copy((&(&c.FixedRepeatedFixedBytes)[0])[:], r.B)
 			r.B = r.B[expectedLength:]
 			const numToRead = uint(len(c.FixedRepeatedFixedBytes) - 1)
 			for i := range numToRead {
@@ -4224,7 +4224,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 					return io.ErrUnexpectedEOF
 				}
 
-				copy(c.FixedRepeatedFixedBytes[1+i][:], r.B)
+				copy((&(&c.FixedRepeatedFixedBytes)[1+i])[:], r.B)
 				r.B = r.B[expectedLength:]
 			}
 			if canoto.IsZero(c.FixedRepeatedFixedBytes) {
@@ -4299,8 +4299,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			remainingBytes := r.B
 			r.B = msgBytes
-			for i := range c.ConstRepeatedUint64 {
-				if err := canoto.ReadInt(&r, &c.ConstRepeatedUint64[i]); err != nil {
+			for i := range &c.ConstRepeatedUint64 {
+				if err := canoto.ReadInt(&r, &(&c.ConstRepeatedUint64)[i]); err != nil {
 					r.B = remainingBytes
 					return err
 				}
@@ -4391,7 +4391,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return io.ErrUnexpectedEOF
 			}
 
-			copy(c.CustomFixedBytes[:], r.B)
+			copy((&c.CustomFixedBytes)[:], r.B)
 			if canoto.IsZero(c.CustomFixedBytes) {
 				return canoto.ErrZeroValue
 			}
@@ -4455,7 +4455,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			}
 
 			c.CustomRepeatedFixedBytes = canoto.MakeSlice(c.CustomRepeatedFixedBytes, 1+count)
-			copy(c.CustomRepeatedFixedBytes[0][:], firstEntry)
+			copy((&c.CustomRepeatedFixedBytes[0])[:], firstEntry)
 			for i := range count {
 				r.B = r.B[len(canoto__Scalars__CustomRepeatedFixedBytes__tag):]
 				if err := canoto.ReadInt(&r, &length); err != nil {
@@ -4468,7 +4468,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 					return io.ErrUnexpectedEOF
 				}
 
-				copy(c.CustomRepeatedFixedBytes[1+i][:], r.B)
+				copy((&c.CustomRepeatedFixedBytes[1+i])[:], r.B)
 				r.B = r.B[expectedLength:]
 			}
 		case 72:
@@ -4476,21 +4476,21 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.ReadBytes(&r, &c.CustomFixedRepeatedBytes[0]); err != nil {
+			if err := canoto.ReadBytes(&r, &(&c.CustomFixedRepeatedBytes)[0]); err != nil {
 				return err
 			}
 
-			isZero := len(c.CustomFixedRepeatedBytes[0]) == 0
+			isZero := len((&c.CustomFixedRepeatedBytes)[0]) == 0
 			const numToRead = uint(len(c.CustomFixedRepeatedBytes) - 1)
 			for i := range numToRead {
 				if !canoto.HasPrefix(r.B, canoto__Scalars__CustomFixedRepeatedBytes__tag) {
 					return canoto.ErrUnknownField
 				}
 				r.B = r.B[len(canoto__Scalars__CustomFixedRepeatedBytes__tag):]
-				if err := canoto.ReadBytes(&r, &c.CustomFixedRepeatedBytes[1+i]); err != nil {
+				if err := canoto.ReadBytes(&r, &(&c.CustomFixedRepeatedBytes)[1+i]); err != nil {
 					return err
 				}
-				isZero = isZero && len(c.CustomFixedRepeatedBytes[1+i]) == 0
+				isZero = isZero && len((&c.CustomFixedRepeatedBytes)[1+i]) == 0
 			}
 			if isZero {
 				return canoto.ErrZeroValue
@@ -4516,7 +4516,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return io.ErrUnexpectedEOF
 			}
 
-			copy(c.CustomFixedRepeatedFixedBytes[0][:], r.B)
+			copy((&(&c.CustomFixedRepeatedFixedBytes)[0])[:], r.B)
 			r.B = r.B[expectedLength:]
 			const numToRead = uint(len(c.CustomFixedRepeatedFixedBytes) - 1)
 			for i := range numToRead {
@@ -4535,7 +4535,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 					return io.ErrUnexpectedEOF
 				}
 
-				copy(c.CustomFixedRepeatedFixedBytes[1+i][:], r.B)
+				copy((&(&c.CustomFixedRepeatedFixedBytes)[1+i])[:], r.B)
 				r.B = r.B[expectedLength:]
 			}
 			if canoto.IsZero(c.CustomFixedRepeatedFixedBytes) {
@@ -4869,13 +4869,13 @@ func (c *Scalars) ValidCanoto() bool {
 			return false
 		}
 	}
-	for _, v := range c.FixedRepeatedString {
+	for _, v := range &c.FixedRepeatedString {
 		if !utf8.ValidString(string(v)) {
 			return false
 		}
 	}
-	for i := range c.FixedRepeatedLargestFieldNumber {
-		if !(&c.FixedRepeatedLargestFieldNumber[i]).ValidCanoto() {
+	for i := range &c.FixedRepeatedLargestFieldNumber {
+		if !(&(&c.FixedRepeatedLargestFieldNumber)[i]).ValidCanoto() {
 			return false
 		}
 	}
@@ -4896,8 +4896,8 @@ func (c *Scalars) ValidCanoto() bool {
 			return false
 		}
 	}
-	for i := range c.FixedRepeatedPointer {
-		if c.FixedRepeatedPointer[i] != nil && !(c.FixedRepeatedPointer[i]).ValidCanoto() {
+	for i := range &c.FixedRepeatedPointer {
+		if (&c.FixedRepeatedPointer)[i] != nil && !((&c.FixedRepeatedPointer)[i]).ValidCanoto() {
 			return false
 		}
 	}
@@ -4909,8 +4909,8 @@ func (c *Scalars) ValidCanoto() bool {
 			return false
 		}
 	}
-	for i := range c.FixedRepeatedField {
-		if !c.FixedRepeatedField[i].ValidCanoto() {
+	for i := range &c.FixedRepeatedField {
+		if !(&c.FixedRepeatedField)[i].ValidCanoto() {
 			return false
 		}
 	}
@@ -5104,84 +5104,84 @@ func (c *Scalars) CalculateCanotoCache() {
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt8) {
 		c.canotoData.FixedRepeatedInt8Size = 0
-		for _, v := range c.FixedRepeatedInt8 {
+		for _, v := range &c.FixedRepeatedInt8 {
 			c.canotoData.FixedRepeatedInt8Size += canoto.SizeInt(v)
 		}
 		c.canotoData.size += len(canoto__Scalars__FixedRepeatedInt8__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedInt8Size)) + c.canotoData.FixedRepeatedInt8Size
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt16) {
 		c.canotoData.FixedRepeatedInt16Size = 0
-		for _, v := range c.FixedRepeatedInt16 {
+		for _, v := range &c.FixedRepeatedInt16 {
 			c.canotoData.FixedRepeatedInt16Size += canoto.SizeInt(v)
 		}
 		c.canotoData.size += len(canoto__Scalars__FixedRepeatedInt16__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedInt16Size)) + c.canotoData.FixedRepeatedInt16Size
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt32) {
 		c.canotoData.FixedRepeatedInt32Size = 0
-		for _, v := range c.FixedRepeatedInt32 {
+		for _, v := range &c.FixedRepeatedInt32 {
 			c.canotoData.FixedRepeatedInt32Size += canoto.SizeInt(v)
 		}
 		c.canotoData.size += len(canoto__Scalars__FixedRepeatedInt32__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedInt32Size)) + c.canotoData.FixedRepeatedInt32Size
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt64) {
 		c.canotoData.FixedRepeatedInt64Size = 0
-		for _, v := range c.FixedRepeatedInt64 {
+		for _, v := range &c.FixedRepeatedInt64 {
 			c.canotoData.FixedRepeatedInt64Size += canoto.SizeInt(v)
 		}
 		c.canotoData.size += len(canoto__Scalars__FixedRepeatedInt64__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedInt64Size)) + c.canotoData.FixedRepeatedInt64Size
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint8) {
 		c.canotoData.FixedRepeatedUint8Size = 0
-		for _, v := range c.FixedRepeatedUint8 {
+		for _, v := range &c.FixedRepeatedUint8 {
 			c.canotoData.FixedRepeatedUint8Size += canoto.SizeInt(v)
 		}
 		c.canotoData.size += len(canoto__Scalars__FixedRepeatedUint8__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedUint8Size)) + c.canotoData.FixedRepeatedUint8Size
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint16) {
 		c.canotoData.FixedRepeatedUint16Size = 0
-		for _, v := range c.FixedRepeatedUint16 {
+		for _, v := range &c.FixedRepeatedUint16 {
 			c.canotoData.FixedRepeatedUint16Size += canoto.SizeInt(v)
 		}
 		c.canotoData.size += len(canoto__Scalars__FixedRepeatedUint16__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedUint16Size)) + c.canotoData.FixedRepeatedUint16Size
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint32) {
 		c.canotoData.FixedRepeatedUint32Size = 0
-		for _, v := range c.FixedRepeatedUint32 {
+		for _, v := range &c.FixedRepeatedUint32 {
 			c.canotoData.FixedRepeatedUint32Size += canoto.SizeInt(v)
 		}
 		c.canotoData.size += len(canoto__Scalars__FixedRepeatedUint32__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedUint32Size)) + c.canotoData.FixedRepeatedUint32Size
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint64) {
 		c.canotoData.FixedRepeatedUint64Size = 0
-		for _, v := range c.FixedRepeatedUint64 {
+		for _, v := range &c.FixedRepeatedUint64 {
 			c.canotoData.FixedRepeatedUint64Size += canoto.SizeInt(v)
 		}
 		c.canotoData.size += len(canoto__Scalars__FixedRepeatedUint64__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedUint64Size)) + c.canotoData.FixedRepeatedUint64Size
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint8) {
 		c.canotoData.FixedRepeatedSint8Size = 0
-		for _, v := range c.FixedRepeatedSint8 {
+		for _, v := range &c.FixedRepeatedSint8 {
 			c.canotoData.FixedRepeatedSint8Size += canoto.SizeSint(v)
 		}
 		c.canotoData.size += len(canoto__Scalars__FixedRepeatedSint8__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedSint8Size)) + c.canotoData.FixedRepeatedSint8Size
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint16) {
 		c.canotoData.FixedRepeatedSint16Size = 0
-		for _, v := range c.FixedRepeatedSint16 {
+		for _, v := range &c.FixedRepeatedSint16 {
 			c.canotoData.FixedRepeatedSint16Size += canoto.SizeSint(v)
 		}
 		c.canotoData.size += len(canoto__Scalars__FixedRepeatedSint16__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedSint16Size)) + c.canotoData.FixedRepeatedSint16Size
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint32) {
 		c.canotoData.FixedRepeatedSint32Size = 0
-		for _, v := range c.FixedRepeatedSint32 {
+		for _, v := range &c.FixedRepeatedSint32 {
 			c.canotoData.FixedRepeatedSint32Size += canoto.SizeSint(v)
 		}
 		c.canotoData.size += len(canoto__Scalars__FixedRepeatedSint32__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedSint32Size)) + c.canotoData.FixedRepeatedSint32Size
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint64) {
 		c.canotoData.FixedRepeatedSint64Size = 0
-		for _, v := range c.FixedRepeatedSint64 {
+		for _, v := range &c.FixedRepeatedSint64 {
 			c.canotoData.FixedRepeatedSint64Size += canoto.SizeSint(v)
 		}
 		c.canotoData.size += len(canoto__Scalars__FixedRepeatedSint64__tag) + canoto.SizeInt(int64(c.canotoData.FixedRepeatedSint64Size)) + c.canotoData.FixedRepeatedSint64Size
@@ -5207,15 +5207,15 @@ func (c *Scalars) CalculateCanotoCache() {
 		c.canotoData.size += len(canoto__Scalars__FixedRepeatedBool__tag) + fieldSize + canoto.SizeInt(int64(fieldSize))
 	}
 	if !canoto.IsZero(c.FixedRepeatedString) {
-		for _, v := range c.FixedRepeatedString {
+		for _, v := range &c.FixedRepeatedString {
 			c.canotoData.size += len(canoto__Scalars__FixedRepeatedString__tag) + canoto.SizeBytes(v)
 		}
 	}
 	if !canoto.IsZero(c.FixedBytes) {
-		c.canotoData.size += len(canoto__Scalars__FixedBytes__tag) + canoto.SizeBytes(c.FixedBytes[:])
+		c.canotoData.size += len(canoto__Scalars__FixedBytes__tag) + canoto.SizeBytes((&c.FixedBytes)[:])
 	}
 	if num := len(c.RepeatedFixedBytes); num != 0 {
-		fieldSize := len(canoto__Scalars__RepeatedFixedBytes__tag) + canoto.SizeBytes(c.RepeatedFixedBytes[0][:])
+		fieldSize := len(canoto__Scalars__RepeatedFixedBytes__tag) + canoto.SizeBytes((&c.RepeatedFixedBytes[0])[:])
 		c.canotoData.size += num * fieldSize
 	}
 	{
@@ -5234,7 +5234,7 @@ func (c *Scalars) CalculateCanotoCache() {
 	}
 	if !canoto.IsZero(c.FixedRepeatedFixedBytes) {
 		for i := range c.FixedRepeatedFixedBytes {
-			c.canotoData.size += len(canoto__Scalars__FixedRepeatedFixedBytes__tag) + canoto.SizeBytes(c.FixedRepeatedFixedBytes[i][:])
+			c.canotoData.size += len(canoto__Scalars__FixedRepeatedFixedBytes__tag) + canoto.SizeBytes((&(&c.FixedRepeatedFixedBytes)[i])[:])
 		}
 	}
 	{
@@ -5254,7 +5254,7 @@ func (c *Scalars) CalculateCanotoCache() {
 	}
 	if !canoto.IsZero(c.ConstRepeatedUint64) {
 		c.canotoData.ConstRepeatedUint64Size = 0
-		for _, v := range c.ConstRepeatedUint64 {
+		for _, v := range &c.ConstRepeatedUint64 {
 			c.canotoData.ConstRepeatedUint64Size += canoto.SizeInt(v)
 		}
 		c.canotoData.size += len(canoto__Scalars__ConstRepeatedUint64__tag) + canoto.SizeInt(int64(c.canotoData.ConstRepeatedUint64Size)) + c.canotoData.ConstRepeatedUint64Size
@@ -5273,13 +5273,13 @@ func (c *Scalars) CalculateCanotoCache() {
 		c.canotoData.size += len(canoto__Scalars__CustomBytes__tag) + canoto.SizeBytes(c.CustomBytes)
 	}
 	if !canoto.IsZero(c.CustomFixedBytes) {
-		c.canotoData.size += len(canoto__Scalars__CustomFixedBytes__tag) + canoto.SizeBytes(c.CustomFixedBytes[:])
+		c.canotoData.size += len(canoto__Scalars__CustomFixedBytes__tag) + canoto.SizeBytes((&c.CustomFixedBytes)[:])
 	}
 	for _, v := range c.CustomRepeatedBytes {
 		c.canotoData.size += len(canoto__Scalars__CustomRepeatedBytes__tag) + canoto.SizeBytes(v)
 	}
 	if num := len(c.CustomRepeatedFixedBytes); num != 0 {
-		fieldSize := len(canoto__Scalars__CustomRepeatedFixedBytes__tag) + canoto.SizeBytes(c.CustomRepeatedFixedBytes[0][:])
+		fieldSize := len(canoto__Scalars__CustomRepeatedFixedBytes__tag) + canoto.SizeBytes((&c.CustomRepeatedFixedBytes[0])[:])
 		c.canotoData.size += num * fieldSize
 	}
 	{
@@ -5298,7 +5298,7 @@ func (c *Scalars) CalculateCanotoCache() {
 	}
 	if !canoto.IsZero(c.CustomFixedRepeatedFixedBytes) {
 		for i := range c.CustomFixedRepeatedFixedBytes {
-			c.canotoData.size += len(canoto__Scalars__CustomFixedRepeatedFixedBytes__tag) + canoto.SizeBytes(c.CustomFixedRepeatedFixedBytes[i][:])
+			c.canotoData.size += len(canoto__Scalars__CustomFixedRepeatedFixedBytes__tag) + canoto.SizeBytes((&(&c.CustomFixedRepeatedFixedBytes)[i])[:])
 		}
 	}
 	(&c.OneOf).CalculateCanotoCache()
@@ -5620,84 +5620,84 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.FixedRepeatedInt8) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedInt8__tag)
 		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedInt8Size))
-		for _, v := range c.FixedRepeatedInt8 {
+		for _, v := range &c.FixedRepeatedInt8 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt16) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedInt16__tag)
 		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedInt16Size))
-		for _, v := range c.FixedRepeatedInt16 {
+		for _, v := range &c.FixedRepeatedInt16 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt32) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedInt32__tag)
 		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedInt32Size))
-		for _, v := range c.FixedRepeatedInt32 {
+		for _, v := range &c.FixedRepeatedInt32 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt64) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedInt64__tag)
 		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedInt64Size))
-		for _, v := range c.FixedRepeatedInt64 {
+		for _, v := range &c.FixedRepeatedInt64 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint8) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedUint8__tag)
 		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedUint8Size))
-		for _, v := range c.FixedRepeatedUint8 {
+		for _, v := range &c.FixedRepeatedUint8 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint16) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedUint16__tag)
 		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedUint16Size))
-		for _, v := range c.FixedRepeatedUint16 {
+		for _, v := range &c.FixedRepeatedUint16 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint32) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedUint32__tag)
 		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedUint32Size))
-		for _, v := range c.FixedRepeatedUint32 {
+		for _, v := range &c.FixedRepeatedUint32 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint64) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedUint64__tag)
 		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedUint64Size))
-		for _, v := range c.FixedRepeatedUint64 {
+		for _, v := range &c.FixedRepeatedUint64 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint8) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedSint8__tag)
 		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedSint8Size))
-		for _, v := range c.FixedRepeatedSint8 {
+		for _, v := range &c.FixedRepeatedSint8 {
 			canoto.AppendSint(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint16) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedSint16__tag)
 		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedSint16Size))
-		for _, v := range c.FixedRepeatedSint16 {
+		for _, v := range &c.FixedRepeatedSint16 {
 			canoto.AppendSint(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint32) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedSint32__tag)
 		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedSint32Size))
-		for _, v := range c.FixedRepeatedSint32 {
+		for _, v := range &c.FixedRepeatedSint32 {
 			canoto.AppendSint(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint64) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedSint64__tag)
 		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedSint64Size))
-		for _, v := range c.FixedRepeatedSint64 {
+		for _, v := range &c.FixedRepeatedSint64 {
 			canoto.AppendSint(&w, v)
 		}
 	}
@@ -5705,7 +5705,7 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		const fieldSize = len(c.FixedRepeatedFixed32) * canoto.SizeFint32
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedFixed32__tag)
 		canoto.AppendInt(&w, int64(fieldSize))
-		for _, v := range c.FixedRepeatedFixed32 {
+		for _, v := range &c.FixedRepeatedFixed32 {
 			canoto.AppendFint32(&w, v)
 		}
 	}
@@ -5713,7 +5713,7 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		const fieldSize = len(c.FixedRepeatedFixed64) * canoto.SizeFint64
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedFixed64__tag)
 		canoto.AppendInt(&w, int64(fieldSize))
-		for _, v := range c.FixedRepeatedFixed64 {
+		for _, v := range &c.FixedRepeatedFixed64 {
 			canoto.AppendFint64(&w, v)
 		}
 	}
@@ -5721,7 +5721,7 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		const fieldSize = len(c.FixedRepeatedSfixed32) * canoto.SizeFint32
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedSfixed32__tag)
 		canoto.AppendInt(&w, int64(fieldSize))
-		for _, v := range c.FixedRepeatedSfixed32 {
+		for _, v := range &c.FixedRepeatedSfixed32 {
 			canoto.AppendFint32(&w, v)
 		}
 	}
@@ -5729,7 +5729,7 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		const fieldSize = len(c.FixedRepeatedSfixed64) * canoto.SizeFint64
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedSfixed64__tag)
 		canoto.AppendInt(&w, int64(fieldSize))
-		for _, v := range c.FixedRepeatedSfixed64 {
+		for _, v := range &c.FixedRepeatedSfixed64 {
 			canoto.AppendFint64(&w, v)
 		}
 	}
@@ -5737,23 +5737,23 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		const fieldSize = len(c.FixedRepeatedBool) * canoto.SizeBool
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedBool__tag)
 		canoto.AppendInt(&w, int64(fieldSize))
-		for _, v := range c.FixedRepeatedBool {
+		for _, v := range &c.FixedRepeatedBool {
 			canoto.AppendBool(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedString) {
-		for _, v := range c.FixedRepeatedString {
+		for _, v := range &c.FixedRepeatedString {
 			canoto.Append(&w, canoto__Scalars__FixedRepeatedString__tag)
 			canoto.AppendBytes(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedBytes) {
 		canoto.Append(&w, canoto__Scalars__FixedBytes__tag)
-		canoto.AppendBytes(&w, c.FixedBytes[:])
+		canoto.AppendBytes(&w, (&c.FixedBytes)[:])
 	}
 	for i := range c.RepeatedFixedBytes {
 		canoto.Append(&w, canoto__Scalars__RepeatedFixedBytes__tag)
-		canoto.AppendBytes(&w, c.RepeatedFixedBytes[i][:])
+		canoto.AppendBytes(&w, (&c.RepeatedFixedBytes[i])[:])
 	}
 	{
 		isZero := true
@@ -5773,7 +5773,7 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.FixedRepeatedFixedBytes) {
 		for i := range c.FixedRepeatedFixedBytes {
 			canoto.Append(&w, canoto__Scalars__FixedRepeatedFixedBytes__tag)
-			canoto.AppendBytes(&w, c.FixedRepeatedFixedBytes[i][:])
+			canoto.AppendBytes(&w, (&(&c.FixedRepeatedFixedBytes)[i])[:])
 		}
 	}
 	{
@@ -5795,7 +5795,7 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.ConstRepeatedUint64) {
 		canoto.Append(&w, canoto__Scalars__ConstRepeatedUint64__tag)
 		canoto.AppendInt(&w, int64(c.canotoData.ConstRepeatedUint64Size))
-		for _, v := range c.ConstRepeatedUint64 {
+		for _, v := range &c.ConstRepeatedUint64 {
 			canoto.AppendInt(&w, v)
 		}
 	}
@@ -5818,7 +5818,7 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	}
 	if !canoto.IsZero(c.CustomFixedBytes) {
 		canoto.Append(&w, canoto__Scalars__CustomFixedBytes__tag)
-		canoto.AppendBytes(&w, c.CustomFixedBytes[:])
+		canoto.AppendBytes(&w, (&c.CustomFixedBytes)[:])
 	}
 	for _, v := range c.CustomRepeatedBytes {
 		canoto.Append(&w, canoto__Scalars__CustomRepeatedBytes__tag)
@@ -5826,7 +5826,7 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	}
 	for i := range c.CustomRepeatedFixedBytes {
 		canoto.Append(&w, canoto__Scalars__CustomRepeatedFixedBytes__tag)
-		canoto.AppendBytes(&w, c.CustomRepeatedFixedBytes[i][:])
+		canoto.AppendBytes(&w, (&c.CustomRepeatedFixedBytes[i])[:])
 	}
 	{
 		isZero := true
@@ -5846,7 +5846,7 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.CustomFixedRepeatedFixedBytes) {
 		for i := range c.CustomFixedRepeatedFixedBytes {
 			canoto.Append(&w, canoto__Scalars__CustomFixedRepeatedFixedBytes__tag)
-			canoto.AppendBytes(&w, c.CustomFixedRepeatedFixedBytes[i][:])
+			canoto.AppendBytes(&w, (&(&c.CustomFixedRepeatedFixedBytes)[i])[:])
 		}
 	}
 	if fieldSize := (&c.OneOf).CachedCanotoSize(); fieldSize != 0 {
