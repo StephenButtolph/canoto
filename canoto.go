@@ -162,9 +162,6 @@ type (
 	// enable the usage of generics.
 	Writer struct {
 		B []byte
-		// Context is a user-defined value that can be used to pass additional
-		// state during the marshaling process.
-		Context any
 	}
 )
 
