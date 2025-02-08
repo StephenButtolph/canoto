@@ -33,7 +33,7 @@ const (
 	MaxFieldNumber = 1<<29 - 1
 
 	// Version is the current version of the canoto library.
-	Version = "v0.11.0"
+	Version = "v0.11.1"
 
 	wireTypeLength = 3
 	wireTypeMask   = 0x07
