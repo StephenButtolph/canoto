@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/StephenButtolph/canoto"
 	"github.com/fatih/structtag"
 )
 
@@ -24,6 +25,7 @@ var (
 	errUnexpectedNumberOfIdentifiers       = errors.New("unexpected number of identifiers")
 	errInvalidGoType                       = errors.New("invalid Go type")
 	errMalformedTag                        = errors.New(`expected "type,fieldNumber[,oneof]" got`)
+	errInvalidFieldNumber                  = errors.New("invalid field number")
 	errRepeatedOneOf                       = errors.New("oneof must not be repeated")
 	errInvalidOneOfName                    = errors.New("invalid oneof name")
 	errStructContainsDuplicateFieldNumbers = errors.New("struct contains duplicate field numbers")
@@ -331,6 +333,14 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (
 	if err != nil {
 		return "", 0, "", false, fmt.Errorf("%w at %s",
 			err,
+			fs.Position(field.Pos()),
+		)
+	}
+	if fieldNumber > canoto.MaxFieldNumber {
+		return "", 0, "", false, fmt.Errorf("%w %d exceeds maximum value of %d at %s",
+			errInvalidFieldNumber,
+			fieldNumber,
+			canoto.MaxFieldNumber,
 			fs.Position(field.Pos()),
 		)
 	}
