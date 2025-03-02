@@ -19,6 +19,14 @@ const (
 )
 
 var (
+	// oneOfRegex is used to match a string that consists only of letters (both
+	// uppercase and lowercase), digits, and underscores from start to end.
+	//
+	// \A asserts the position at the start of the string.
+	// [a-zA-Z0-9_] matches any letter (both uppercase and lowercase), digit, or
+	// underscore.
+	// + matches one or more of the preceding token.
+	// \z asserts the position at the end of the string.
 	oneOfRegex = regexp.MustCompile(`\A[a-zA-Z0-9_]+\z`)
 
 	errUnexpectedNumberOfIdentifiers       = errors.New("unexpected number of identifiers")
