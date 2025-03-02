@@ -10,8 +10,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StephenButtolph/canoto"
 	"github.com/fatih/structtag"
+
+	"github.com/StephenButtolph/canoto"
 )
 
 const (
