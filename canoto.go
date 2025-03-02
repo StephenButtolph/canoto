@@ -458,6 +458,16 @@ func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 	return nil
 }
 
+// ReadUnsafeBytes reads a byte slice from the reader without copying the slice.
+func ReadUnsafeBytes(r *Reader) ([]byte, error) {
+	originalUnsafe := r.Unsafe
+	r.Unsafe = true
+	var msgBytes []byte
+	err := ReadBytes(r, &msgBytes)
+	r.Unsafe = originalUnsafe
+	return msgBytes, err
+}
+
 // AppendBytes writes a length-prefixed byte slice to the writer.
 func AppendBytes[T Bytes](w *Writer, v T) {
 	AppendInt(w, int64(len(v)))
