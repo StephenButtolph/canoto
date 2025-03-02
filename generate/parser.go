@@ -336,6 +336,12 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (
 			fs.Position(field.Pos()),
 		)
 	}
+	if fieldNumber == 0 {
+		return "", 0, "", false, fmt.Errorf("%w 0 at %s",
+			errInvalidFieldNumber,
+			fs.Position(field.Pos()),
+		)
+	}
 	if fieldNumber > canoto.MaxFieldNumber {
 		return "", 0, "", false, fmt.Errorf("%w %d exceeds maximum value of %d at %s",
 			errInvalidFieldNumber,

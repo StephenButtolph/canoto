@@ -27,6 +27,12 @@ func TestParse(t *testing.T) {
 			wantErr:         errStructContainsDuplicateFieldNumbers,
 		},
 		{
+			name:            "field number 0",
+			filePath:        "testdata/field_number_0.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidFieldNumber,
+		},
+		{
 			name:            "field number too large",
 			filePath:        "testdata/field_number_too_large.go",
 			wantPackageName: "testdata",
