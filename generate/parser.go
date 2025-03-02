@@ -23,7 +23,8 @@ var (
 
 	errUnexpectedNumberOfIdentifiers       = errors.New("unexpected number of identifiers")
 	errInvalidGoType                       = errors.New("invalid Go type")
-	errMalformedTag                        = errors.New("expected type,fieldNumber[,oneof] got")
+	errMalformedTag                        = errors.New(`expected "type,fieldNumber[,oneof]" got`)
+	errRepeatedOneOf                       = errors.New("oneof must not be repeated")
 	errInvalidOneOfName                    = errors.New("invalid oneof name")
 	errStructContainsDuplicateFieldNumbers = errors.New("struct contains duplicate field numbers")
 )
@@ -336,6 +337,13 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (
 
 	var oneof string
 	if len(tag.Options) == 2 {
+		if fieldType.IsRepeated() {
+			return "", 0, "", false, fmt.Errorf("%w at %s",
+				errRepeatedOneOf,
+				fs.Position(field.Pos()),
+			)
+		}
+
 		oneof = tag.Options[1]
 		if !oneOfRegex.MatchString(oneof) {
 			return "", 0, "", false, fmt.Errorf("%w %q at %s",
