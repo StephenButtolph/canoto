@@ -612,15 +612,16 @@ func (c *GenericField[T1, T2, T3]) UnmarshalCanotoFrom(r canoto.Reader) error {
 					return err
 				}
 				r.Unsafe = originalUnsafe
-
-				if len(msgBytes) != 0 {
-					remainingBytes := r.B
-					r.B = msgBytes
-					if err := T2(&c.RepeatedValue[1+i]).UnmarshalCanotoFrom(r); err != nil {
-						return err
-					}
-					r.B = remainingBytes
+				if len(msgBytes) == 0 {
+					continue
 				}
+
+				remainingBytes := r.B
+				r.B = msgBytes
+				if err := T2(&c.RepeatedValue[1+i]).UnmarshalCanotoFrom(r); err != nil {
+					return err
+				}
+				r.B = remainingBytes
 			}
 		case 3:
 			if wireType != canoto.Len {
@@ -1354,15 +1355,16 @@ func (c *NestedGenericField[T1, T2, T3]) UnmarshalCanotoFrom(r canoto.Reader) er
 					return err
 				}
 				r.Unsafe = originalUnsafe
-
-				if len(msgBytes) != 0 {
-					remainingBytes := r.B
-					r.B = msgBytes
-					if err := (&c.RepeatedValue[1+i]).UnmarshalCanotoFrom(r); err != nil {
-						return err
-					}
-					r.B = remainingBytes
+				if len(msgBytes) == 0 {
+					continue
 				}
+
+				remainingBytes := r.B
+				r.B = msgBytes
+				if err := (&c.RepeatedValue[1+i]).UnmarshalCanotoFrom(r); err != nil {
+					return err
+				}
+				r.B = remainingBytes
 			}
 		case 3:
 			if wireType != canoto.Len {
@@ -3535,15 +3537,16 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 					return err
 				}
 				r.Unsafe = originalUnsafe
-
-				if len(msgBytes) != 0 {
-					remainingBytes := r.B
-					r.B = msgBytes
-					if err := (&c.RepeatedLargestFieldNumber[1+i]).UnmarshalCanotoFrom(r); err != nil {
-						return err
-					}
-					r.B = remainingBytes
+				if len(msgBytes) == 0 {
+					continue
 				}
+
+				remainingBytes := r.B
+				r.B = msgBytes
+				if err := (&c.RepeatedLargestFieldNumber[1+i]).UnmarshalCanotoFrom(r); err != nil {
+					return err
+				}
+				r.B = remainingBytes
 			}
 		case 41:
 			if wireType != canoto.Len {

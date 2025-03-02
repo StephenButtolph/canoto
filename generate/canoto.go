@@ -774,15 +774,16 @@ func makeUnmarshal(m message) string {
 					return err
 				}
 				r.Unsafe = originalUnsafe
-
-				if len(msgBytes) != 0 {
-					remainingBytes := r.B
-					r.B = msgBytes
-					if err := ${genericTypeCast}(&c.${fieldName}[1+i]).UnmarshalCanotoFrom(r); err != nil {
-						return err
-					}
-					r.B = remainingBytes
+				if len(msgBytes) == 0 {
+					continue
 				}
+
+				remainingBytes := r.B
+				r.B = msgBytes
+				if err := ${genericTypeCast}(&c.${fieldName}[1+i]).UnmarshalCanotoFrom(r); err != nil {
+					return err
+				}
+				r.B = remainingBytes
 			}
 `,
 			fixedRepeated: `		case ${fieldNumber}:
