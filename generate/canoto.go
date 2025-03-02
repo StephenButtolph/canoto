@@ -633,6 +633,8 @@ func makeUnmarshal(m message) string {
 
 			firstEntry := r.B[:expectedLength]
 			r.B = r.B[expectedLength:]
+
+			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag)
 			if err != nil {
 				return err
@@ -751,6 +753,7 @@ func makeUnmarshal(m message) string {
 			}
 			r.Unsafe = originalUnsafe
 
+			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag)
 			if err != nil {
 				return err
@@ -882,6 +885,7 @@ func makeUnmarshal(m message) string {
 			}
 			r.Unsafe = originalUnsafe
 
+			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag)
 			if err != nil {
 				return err
@@ -1019,6 +1023,7 @@ func makeUnmarshal(m message) string {
 			}
 			r.Unsafe = originalUnsafe
 
+			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag)
 			if err != nil {
 				return err

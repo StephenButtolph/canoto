@@ -589,6 +589,7 @@ func (c *GenericField[T1, T2, T3]) UnmarshalCanotoFrom(r canoto.Reader) error {
 			}
 			r.Unsafe = originalUnsafe
 
+			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__GenericField__RepeatedValue__tag)
 			if err != nil {
 				return err
@@ -715,6 +716,7 @@ func (c *GenericField[T1, T2, T3]) UnmarshalCanotoFrom(r canoto.Reader) error {
 			}
 			r.Unsafe = originalUnsafe
 
+			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__GenericField__RepeatedPointer__tag)
 			if err != nil {
 				return err
@@ -847,6 +849,7 @@ func (c *GenericField[T1, T2, T3]) UnmarshalCanotoFrom(r canoto.Reader) error {
 			}
 			r.Unsafe = originalUnsafe
 
+			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__GenericField__RepeatedField__tag)
 			if err != nil {
 				return err
@@ -1332,6 +1335,7 @@ func (c *NestedGenericField[T1, T2, T3]) UnmarshalCanotoFrom(r canoto.Reader) er
 			}
 			r.Unsafe = originalUnsafe
 
+			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__NestedGenericField__RepeatedValue__tag)
 			if err != nil {
 				return err
@@ -1458,6 +1462,7 @@ func (c *NestedGenericField[T1, T2, T3]) UnmarshalCanotoFrom(r canoto.Reader) er
 			}
 			r.Unsafe = originalUnsafe
 
+			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__NestedGenericField__RepeatedPointer__tag)
 			if err != nil {
 				return err
@@ -1590,6 +1595,7 @@ func (c *NestedGenericField[T1, T2, T3]) UnmarshalCanotoFrom(r canoto.Reader) er
 			}
 			r.Unsafe = originalUnsafe
 
+			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__NestedGenericField__RepeatedField__tag)
 			if err != nil {
 				return err
@@ -3514,6 +3520,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			}
 			r.Unsafe = originalUnsafe
 
+			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__Scalars__RepeatedLargestFieldNumber__tag)
 			if err != nil {
 				return err
@@ -4118,6 +4125,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			firstEntry := r.B[:expectedLength]
 			r.B = r.B[expectedLength:]
+
+			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__Scalars__RepeatedFixedBytes__tag)
 			if err != nil {
 				return err
@@ -4442,6 +4451,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			firstEntry := r.B[:expectedLength]
 			r.B = r.B[expectedLength:]
+
+			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__Scalars__CustomRepeatedFixedBytes__tag)
 			if err != nil {
 				return err
@@ -4607,6 +4618,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			}
 			r.Unsafe = originalUnsafe
 
+			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__Scalars__RepeatedPointer__tag)
 			if err != nil {
 				return err
@@ -4739,6 +4751,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			}
 			r.Unsafe = originalUnsafe
 
+			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__Scalars__RepeatedField__tag)
 			if err != nil {
 				return err
