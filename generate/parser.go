@@ -11,6 +11,8 @@ import (
 	"strings"
 
 	"github.com/fatih/structtag"
+
+	"github.com/StephenButtolph/canoto"
 )
 
 const (
@@ -31,7 +33,9 @@ var (
 
 	errUnexpectedNumberOfIdentifiers       = errors.New("unexpected number of identifiers")
 	errInvalidGoType                       = errors.New("invalid Go type")
-	errMalformedTag                        = errors.New("expected type,fieldNumber[,oneof] got")
+	errMalformedTag                        = errors.New(`expected "type,fieldNumber[,oneof]" got`)
+	errInvalidFieldNumber                  = errors.New("invalid field number")
+	errRepeatedOneOf                       = errors.New("oneof must not be repeated")
 	errInvalidOneOfName                    = errors.New("invalid oneof name")
 	errStructContainsDuplicateFieldNumbers = errors.New("struct contains duplicate field numbers")
 )
@@ -341,9 +345,30 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (
 			fs.Position(field.Pos()),
 		)
 	}
+	if fieldNumber == 0 {
+		return "", 0, "", false, fmt.Errorf("%w 0 at %s",
+			errInvalidFieldNumber,
+			fs.Position(field.Pos()),
+		)
+	}
+	if fieldNumber > canoto.MaxFieldNumber {
+		return "", 0, "", false, fmt.Errorf("%w %d exceeds maximum value of %d at %s",
+			errInvalidFieldNumber,
+			fieldNumber,
+			canoto.MaxFieldNumber,
+			fs.Position(field.Pos()),
+		)
+	}
 
 	var oneof string
 	if len(tag.Options) == 2 {
+		if fieldType.IsRepeated() {
+			return "", 0, "", false, fmt.Errorf("%w at %s",
+				errRepeatedOneOf,
+				fs.Position(field.Pos()),
+			)
+		}
+
 		oneof = tag.Options[1]
 		if !oneOfRegex.MatchString(oneof) {
 			return "", 0, "", false, fmt.Errorf("%w %q at %s",
