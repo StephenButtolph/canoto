@@ -35,13 +35,6 @@ func (*LargestFieldNumber[T1]) MakeCanoto() *LargestFieldNumber[T1] {
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
-//
-// OneOf fields are cached during the unmarshaling process.
-//
-// The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values. If a OneOf field was previously
-// cached as being set, attempting to unmarshal that OneOf again will return
-// canoto.ErrDuplicateOneOf.
 func (c *LargestFieldNumber[T1]) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -52,15 +45,11 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
-// OneOf fields are cached during the unmarshaling process.
-//
-// The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values. If a OneOf field was previously
-// cached as being set, attempting to unmarshal that OneOf again will return
-// canoto.ErrDuplicateOneOf.
-//
 // This function enables configuration of reader options.
 func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r canoto.Reader) error {
+	// Zero the struct before unmarshaling.
+	*c = LargestFieldNumber[T1]{}
+
 	var minField uint32
 	for canoto.HasNext(&r) {
 		field, wireType, err := canoto.ReadTag(&r)
@@ -190,13 +179,6 @@ func (*OneOf) MakeCanoto() *OneOf {
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
-//
-// OneOf fields are cached during the unmarshaling process.
-//
-// The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values. If a OneOf field was previously
-// cached as being set, attempting to unmarshal that OneOf again will return
-// canoto.ErrDuplicateOneOf.
 func (c *OneOf) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -207,15 +189,11 @@ func (c *OneOf) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
-// OneOf fields are cached during the unmarshaling process.
-//
-// The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values. If a OneOf field was previously
-// cached as being set, attempting to unmarshal that OneOf again will return
-// canoto.ErrDuplicateOneOf.
-//
 // This function enables configuration of reader options.
 func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
+	// Zero the struct before unmarshaling.
+	*c = OneOf{}
+
 	var minField uint32
 	for canoto.HasNext(&r) {
 		field, wireType, err := canoto.ReadTag(&r)
@@ -513,13 +491,6 @@ func (*GenericField[T1, T2, T3]) MakeCanoto() *GenericField[T1, T2, T3] {
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
-//
-// OneOf fields are cached during the unmarshaling process.
-//
-// The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values. If a OneOf field was previously
-// cached as being set, attempting to unmarshal that OneOf again will return
-// canoto.ErrDuplicateOneOf.
 func (c *GenericField[T1, T2, T3]) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -530,15 +501,11 @@ func (c *GenericField[T1, T2, T3]) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
-// OneOf fields are cached during the unmarshaling process.
-//
-// The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values. If a OneOf field was previously
-// cached as being set, attempting to unmarshal that OneOf again will return
-// canoto.ErrDuplicateOneOf.
-//
 // This function enables configuration of reader options.
 func (c *GenericField[T1, T2, T3]) UnmarshalCanotoFrom(r canoto.Reader) error {
+	// Zero the struct before unmarshaling.
+	*c = GenericField[T1, T2, T3]{}
+
 	var minField uint32
 	for canoto.HasNext(&r) {
 		field, wireType, err := canoto.ReadTag(&r)
@@ -1259,13 +1226,6 @@ func (*NestedGenericField[T1, T2, T3]) MakeCanoto() *NestedGenericField[T1, T2, 
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
-//
-// OneOf fields are cached during the unmarshaling process.
-//
-// The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values. If a OneOf field was previously
-// cached as being set, attempting to unmarshal that OneOf again will return
-// canoto.ErrDuplicateOneOf.
 func (c *NestedGenericField[T1, T2, T3]) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -1276,15 +1236,11 @@ func (c *NestedGenericField[T1, T2, T3]) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
-// OneOf fields are cached during the unmarshaling process.
-//
-// The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values. If a OneOf field was previously
-// cached as being set, attempting to unmarshal that OneOf again will return
-// canoto.ErrDuplicateOneOf.
-//
 // This function enables configuration of reader options.
 func (c *NestedGenericField[T1, T2, T3]) UnmarshalCanotoFrom(r canoto.Reader) error {
+	// Zero the struct before unmarshaling.
+	*c = NestedGenericField[T1, T2, T3]{}
+
 	var minField uint32
 	for canoto.HasNext(&r) {
 		field, wireType, err := canoto.ReadTag(&r)
@@ -1999,13 +1955,6 @@ func (*Embedded) MakeCanoto() *Embedded {
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
-//
-// OneOf fields are cached during the unmarshaling process.
-//
-// The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values. If a OneOf field was previously
-// cached as being set, attempting to unmarshal that OneOf again will return
-// canoto.ErrDuplicateOneOf.
 func (c *Embedded) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -2016,15 +1965,11 @@ func (c *Embedded) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
-// OneOf fields are cached during the unmarshaling process.
-//
-// The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values. If a OneOf field was previously
-// cached as being set, attempting to unmarshal that OneOf again will return
-// canoto.ErrDuplicateOneOf.
-//
 // This function enables configuration of reader options.
 func (c *Embedded) UnmarshalCanotoFrom(r canoto.Reader) error {
+	// Zero the struct before unmarshaling.
+	*c = Embedded{}
+
 	var minField uint32
 	for canoto.HasNext(&r) {
 		field, wireType, err := canoto.ReadTag(&r)
@@ -2242,13 +2187,6 @@ func (*A) MakeCanoto() *A {
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
-//
-// OneOf fields are cached during the unmarshaling process.
-//
-// The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values. If a OneOf field was previously
-// cached as being set, attempting to unmarshal that OneOf again will return
-// canoto.ErrDuplicateOneOf.
 func (c *A) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -2259,15 +2197,11 @@ func (c *A) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
-// OneOf fields are cached during the unmarshaling process.
-//
-// The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values. If a OneOf field was previously
-// cached as being set, attempting to unmarshal that OneOf again will return
-// canoto.ErrDuplicateOneOf.
-//
 // This function enables configuration of reader options.
 func (c *A) UnmarshalCanotoFrom(r canoto.Reader) error {
+	// Zero the struct before unmarshaling.
+	*c = A{}
+
 	var minField uint32
 	for canoto.HasNext(&r) {
 		field, wireType, err := canoto.ReadTag(&r)
@@ -2389,13 +2323,6 @@ func (*A__B) MakeCanoto() *A__B {
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
-//
-// OneOf fields are cached during the unmarshaling process.
-//
-// The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values. If a OneOf field was previously
-// cached as being set, attempting to unmarshal that OneOf again will return
-// canoto.ErrDuplicateOneOf.
 func (c *A__B) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -2406,15 +2333,11 @@ func (c *A__B) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
-// OneOf fields are cached during the unmarshaling process.
-//
-// The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values. If a OneOf field was previously
-// cached as being set, attempting to unmarshal that OneOf again will return
-// canoto.ErrDuplicateOneOf.
-//
 // This function enables configuration of reader options.
 func (c *A__B) UnmarshalCanotoFrom(r canoto.Reader) error {
+	// Zero the struct before unmarshaling.
+	*c = A__B{}
+
 	var minField uint32
 	for canoto.HasNext(&r) {
 		field, wireType, err := canoto.ReadTag(&r)
@@ -2640,13 +2563,6 @@ func (*Scalars) MakeCanoto() *Scalars {
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
-//
-// OneOf fields are cached during the unmarshaling process.
-//
-// The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values. If a OneOf field was previously
-// cached as being set, attempting to unmarshal that OneOf again will return
-// canoto.ErrDuplicateOneOf.
 func (c *Scalars) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -2657,15 +2573,11 @@ func (c *Scalars) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
-// OneOf fields are cached during the unmarshaling process.
-//
-// The struct is not cleared before unmarshaling, any fields not present in the
-// bytes will retain their previous values. If a OneOf field was previously
-// cached as being set, attempting to unmarshal that OneOf again will return
-// canoto.ErrDuplicateOneOf.
-//
 // This function enables configuration of reader options.
 func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
+	// Zero the struct before unmarshaling.
+	*c = Scalars{}
+
 	var minField uint32
 	for canoto.HasNext(&r) {
 		field, wireType, err := canoto.ReadTag(&r)
