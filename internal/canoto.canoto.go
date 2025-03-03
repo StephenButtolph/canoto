@@ -35,6 +35,8 @@ func (*LargestFieldNumber[T1]) MakeCanoto() *LargestFieldNumber[T1] {
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
 func (c *LargestFieldNumber[T1]) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -45,10 +47,13 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
+// During parsing, the canoto cache is saved.
+//
 // This function enables configuration of reader options.
 func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = LargestFieldNumber[T1]{}
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -179,6 +184,8 @@ func (*OneOf) MakeCanoto() *OneOf {
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
 func (c *OneOf) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -189,10 +196,13 @@ func (c *OneOf) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
+// During parsing, the canoto cache is saved.
+//
 // This function enables configuration of reader options.
 func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = OneOf{}
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -491,6 +501,8 @@ func (*GenericField[T1, T2, T3]) MakeCanoto() *GenericField[T1, T2, T3] {
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
 func (c *GenericField[T1, T2, T3]) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -501,10 +513,13 @@ func (c *GenericField[T1, T2, T3]) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
+// During parsing, the canoto cache is saved.
+//
 // This function enables configuration of reader options.
 func (c *GenericField[T1, T2, T3]) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = GenericField[T1, T2, T3]{}
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -1226,6 +1241,8 @@ func (*NestedGenericField[T1, T2, T3]) MakeCanoto() *NestedGenericField[T1, T2, 
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
 func (c *NestedGenericField[T1, T2, T3]) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -1236,10 +1253,13 @@ func (c *NestedGenericField[T1, T2, T3]) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
+// During parsing, the canoto cache is saved.
+//
 // This function enables configuration of reader options.
 func (c *NestedGenericField[T1, T2, T3]) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = NestedGenericField[T1, T2, T3]{}
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -1955,6 +1975,8 @@ func (*Embedded) MakeCanoto() *Embedded {
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
 func (c *Embedded) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -1965,10 +1987,13 @@ func (c *Embedded) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
+// During parsing, the canoto cache is saved.
+//
 // This function enables configuration of reader options.
 func (c *Embedded) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = Embedded{}
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -2187,6 +2212,8 @@ func (*A) MakeCanoto() *A {
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
 func (c *A) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -2197,10 +2224,13 @@ func (c *A) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
+// During parsing, the canoto cache is saved.
+//
 // This function enables configuration of reader options.
 func (c *A) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = A{}
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -2323,6 +2353,8 @@ func (*A__B) MakeCanoto() *A__B {
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
 func (c *A__B) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -2333,10 +2365,13 @@ func (c *A__B) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
+// During parsing, the canoto cache is saved.
+//
 // This function enables configuration of reader options.
 func (c *A__B) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = A__B{}
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -2563,6 +2598,8 @@ func (*Scalars) MakeCanoto() *Scalars {
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
 func (c *Scalars) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -2573,10 +2610,13 @@ func (c *Scalars) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
+// During parsing, the canoto cache is saved.
+//
 // This function enables configuration of reader options.
 func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = Scalars{}
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -2852,6 +2892,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
+			c.canotoData.RepeatedInt8Size = len(msgBytes)
 		case 22:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -2882,6 +2923,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
+			c.canotoData.RepeatedInt16Size = len(msgBytes)
 		case 23:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -2912,6 +2954,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
+			c.canotoData.RepeatedInt32Size = len(msgBytes)
 		case 24:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -2942,6 +2985,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
+			c.canotoData.RepeatedInt64Size = len(msgBytes)
 		case 25:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -2972,6 +3016,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
+			c.canotoData.RepeatedUint8Size = len(msgBytes)
 		case 26:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3002,6 +3047,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
+			c.canotoData.RepeatedUint16Size = len(msgBytes)
 		case 27:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3032,6 +3078,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
+			c.canotoData.RepeatedUint32Size = len(msgBytes)
 		case 28:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3062,6 +3109,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
+			c.canotoData.RepeatedUint64Size = len(msgBytes)
 		case 29:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3092,6 +3140,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
+			c.canotoData.RepeatedSint8Size = len(msgBytes)
 		case 30:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3122,6 +3171,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
+			c.canotoData.RepeatedSint16Size = len(msgBytes)
 		case 31:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3152,6 +3202,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
+			c.canotoData.RepeatedSint32Size = len(msgBytes)
 		case 32:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3182,6 +3233,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
+			c.canotoData.RepeatedSint64Size = len(msgBytes)
 		case 33:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3496,6 +3548,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
+			c.canotoData.FixedRepeatedInt8Size = len(msgBytes)
 		case 42:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3525,6 +3578,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
+			c.canotoData.FixedRepeatedInt16Size = len(msgBytes)
 		case 43:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3554,6 +3608,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
+			c.canotoData.FixedRepeatedInt32Size = len(msgBytes)
 		case 44:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3583,6 +3638,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
+			c.canotoData.FixedRepeatedInt64Size = len(msgBytes)
 		case 45:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3612,6 +3668,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
+			c.canotoData.FixedRepeatedUint8Size = len(msgBytes)
 		case 46:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3641,6 +3698,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
+			c.canotoData.FixedRepeatedUint16Size = len(msgBytes)
 		case 47:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3670,6 +3728,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
+			c.canotoData.FixedRepeatedUint32Size = len(msgBytes)
 		case 48:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3699,6 +3758,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
+			c.canotoData.FixedRepeatedUint64Size = len(msgBytes)
 		case 49:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3728,6 +3788,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
+			c.canotoData.FixedRepeatedSint8Size = len(msgBytes)
 		case 50:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3757,6 +3818,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
+			c.canotoData.FixedRepeatedSint16Size = len(msgBytes)
 		case 51:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3786,6 +3848,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
+			c.canotoData.FixedRepeatedSint32Size = len(msgBytes)
 		case 52:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3815,6 +3878,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
+			c.canotoData.FixedRepeatedSint64Size = len(msgBytes)
 		case 53:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -4221,6 +4285,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
+			c.canotoData.ConstRepeatedUint64Size = len(msgBytes)
 		case 65:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -5847,6 +5912,175 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 					w = c.FixedRepeatedField[i].MarshalCanotoInto(w)
 				}
 			}
+		}
+	}
+	return w
+}
+
+const (
+	canoto__SmallScalars__RepeatedInt8__tag = "\xaa\x01" // canoto.Tag(21, canoto.Len)
+)
+
+type canotoData_SmallScalars struct {
+	size             int
+	RepeatedInt8Size int
+}
+
+// MakeCanoto creates a new empty value.
+func (*SmallScalars) MakeCanoto() *SmallScalars {
+	return new(SmallScalars)
+}
+
+// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
+func (c *SmallScalars) UnmarshalCanoto(bytes []byte) error {
+	r := canoto.Reader{
+		B: bytes,
+	}
+	return c.UnmarshalCanotoFrom(r)
+}
+
+// UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
+// should just use UnmarshalCanoto.
+//
+// During parsing, the canoto cache is saved.
+//
+// This function enables configuration of reader options.
+func (c *SmallScalars) UnmarshalCanotoFrom(r canoto.Reader) error {
+	// Zero the struct before unmarshaling.
+	*c = SmallScalars{}
+	c.canotoData.size = len(r.B)
+
+	var minField uint32
+	for canoto.HasNext(&r) {
+		field, wireType, err := canoto.ReadTag(&r)
+		if err != nil {
+			return err
+		}
+		if field < minField {
+			return canoto.ErrInvalidFieldOrder
+		}
+
+		switch field {
+		case 21:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			// Read the packed field bytes.
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return canoto.ErrZeroValue
+			}
+			r.Unsafe = originalUnsafe
+
+			// Read each value from the packed field bytes into the array.
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.RepeatedInt8 = canoto.MakeSlice(c.RepeatedInt8, canoto.CountInts(msgBytes))
+			for i := range c.RepeatedInt8 {
+				if err := canoto.ReadInt(&r, &c.RepeatedInt8[i]); err != nil {
+					return err
+				}
+			}
+			if canoto.HasNext(&r) {
+				return canoto.ErrInvalidLength
+			}
+			r.B = remainingBytes
+			c.canotoData.RepeatedInt8Size = len(msgBytes)
+		default:
+			return canoto.ErrUnknownField
+		}
+
+		minField = field + 1
+	}
+	return nil
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// Specifically, ValidCanoto ensures:
+// 1. All OneOfs are specified at most once.
+// 2. All strings are valid utf-8.
+// 3. All custom fields are ValidCanoto.
+func (c *SmallScalars) ValidCanoto() bool {
+	if c == nil {
+		return true
+	}
+	return true
+}
+
+// CalculateCanotoCache populates size and OneOf caches based on the current
+// values in the struct.
+//
+// It is not safe to call this function concurrently.
+func (c *SmallScalars) CalculateCanotoCache() {
+	if c == nil {
+		return
+	}
+	c.canotoData.size = 0
+	if len(c.RepeatedInt8) != 0 {
+		c.canotoData.RepeatedInt8Size = 0
+		for _, v := range c.RepeatedInt8 {
+			c.canotoData.RepeatedInt8Size += canoto.SizeInt(v)
+		}
+		c.canotoData.size += len(canoto__SmallScalars__RepeatedInt8__tag) + canoto.SizeInt(int64(c.canotoData.RepeatedInt8Size)) + c.canotoData.RepeatedInt8Size
+	}
+}
+
+// CachedCanotoSize returns the previously calculated size of the Canoto
+// representation from CalculateCanotoCache.
+//
+// If CalculateCanotoCache has not yet been called, it will return 0.
+//
+// If the struct has been modified since the last call to CalculateCanotoCache,
+// the returned size may be incorrect.
+func (c *SmallScalars) CachedCanotoSize() int {
+	if c == nil {
+		return 0
+	}
+	return c.canotoData.size
+}
+
+// MarshalCanoto returns the Canoto representation of this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
+func (c *SmallScalars) MarshalCanoto() []byte {
+	c.CalculateCanotoCache()
+	w := canoto.Writer{
+		B: make([]byte, 0, c.CachedCanotoSize()),
+	}
+	w = c.MarshalCanotoInto(w)
+	return w.B
+}
+
+// MarshalCanotoInto writes the struct into a canoto.Writer and returns the
+// resulting canoto.Writer. Most users should just use MarshalCanoto.
+//
+// It is assumed that CalculateCanotoCache has been called since the last
+// modification to this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
+func (c *SmallScalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+	if c == nil {
+		return w
+	}
+	if len(c.RepeatedInt8) != 0 {
+		canoto.Append(&w, canoto__SmallScalars__RepeatedInt8__tag)
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedInt8Size))
+		for _, v := range c.RepeatedInt8 {
+			canoto.AppendInt(&w, v)
 		}
 	}
 	return w

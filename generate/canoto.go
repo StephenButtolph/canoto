@@ -125,6 +125,8 @@ func (*${structName}${generics}) MakeCanoto() *${structName}${generics} {
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
 func (c *${structName}${generics}) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
@@ -135,10 +137,13 @@ func (c *${structName}${generics}) UnmarshalCanoto(bytes []byte) error {
 // UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
 // should just use UnmarshalCanoto.
 //
+// During parsing, the canoto cache is saved.
+//
 // This function enables configuration of reader options.
 func (c *${structName}${generics}) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = ${structName}${generics}{}
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -377,36 +382,6 @@ func makeUnmarshal(m message) string {
 				return canoto.ErrZeroValue
 			}
 `
-		fixedRepeatedIntTemplate = `		case ${fieldNumber}:
-			if wireType != canoto.Len {
-				return canoto.ErrUnexpectedWireType
-			}${unmarshalOneOf}
-
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
-				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			for i := range &c.${fieldName} {
-				if err := canoto.Read${suffix}(&r, &(&c.${fieldName})[i]); err != nil {
-					return err
-				}
-			}
-			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
-			}
-			if canoto.IsZero(c.${fieldName}) {
-				return canoto.ErrZeroValue
-			}
-			r.B = remainingBytes
-`
 		repeatedFixedSizeTemplate = `		case ${fieldNumber}:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -438,6 +413,36 @@ func makeUnmarshal(m message) string {
 				if err := canoto.Read${suffix}(&r, &c.${fieldName}[i]); err != nil {
 					return err
 				}
+			}
+			r.B = remainingBytes
+`
+		fixedRepeatedFixedSizeTemplate = `		case ${fieldNumber}:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}${unmarshalOneOf}
+
+			// Read the packed field bytes.
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				return err
+			}
+			r.Unsafe = originalUnsafe
+
+			// Read each value from the packed field bytes into the array.
+			remainingBytes := r.B
+			r.B = msgBytes
+			for i := range &c.${fieldName} {
+				if err := canoto.Read${suffix}(&r, &(&c.${fieldName})[i]); err != nil {
+					return err
+				}
+			}
+			if canoto.HasNext(&r) {
+				return io.ErrUnexpectedEOF
+			}
+			if canoto.IsZero(c.${fieldName}) {
+				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
 `
@@ -551,18 +556,49 @@ func makeUnmarshal(m message) string {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
+			c.canotoData.${fieldName}Size = len(msgBytes)
 `,
-			fixedRepeated: fixedRepeatedIntTemplate,
+			fixedRepeated: `		case ${fieldNumber}:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}${unmarshalOneOf}
+
+			// Read the packed field bytes.
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				return err
+			}
+			r.Unsafe = originalUnsafe
+
+			// Read each value from the packed field bytes into the array.
+			remainingBytes := r.B
+			r.B = msgBytes
+			for i := range &c.${fieldName} {
+				if err := canoto.Read${suffix}(&r, &(&c.${fieldName})[i]); err != nil {
+					return err
+				}
+			}
+			if canoto.HasNext(&r) {
+				return io.ErrUnexpectedEOF
+			}
+			if canoto.IsZero(c.${fieldName}) {
+				return canoto.ErrZeroValue
+			}
+			r.B = remainingBytes
+			c.canotoData.${fieldName}Size = len(msgBytes)
+`,
 		},
 		fints: typeTemplate{
 			single:        intTemplate,
 			repeated:      repeatedFixedSizeTemplate,
-			fixedRepeated: fixedRepeatedIntTemplate,
+			fixedRepeated: fixedRepeatedFixedSizeTemplate,
 		},
 		bools: typeTemplate{
 			single:        intTemplate,
 			repeated:      repeatedFixedSizeTemplate,
-			fixedRepeated: fixedRepeatedIntTemplate,
+			fixedRepeated: fixedRepeatedFixedSizeTemplate,
 		},
 		strings: typeTemplate{
 			single:        bytesTemplate,

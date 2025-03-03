@@ -106,8 +106,6 @@ func canonicalizeCanotoScalars(s *Scalars) *Scalars {
 			s.FixedRepeatedField[i] = nil
 		}
 	}
-	s.canotoData = canotoData_Scalars{}
-	s.OneOf.canotoData = canotoData_OneOf{}
 	return s
 }
 
@@ -605,6 +603,7 @@ func FuzzScalars_UnmarshalCanoto(f *testing.F) {
 		}
 
 		canotoScalars = canonicalizeCanotoScalars(canotoScalars)
+		canotoScalars.CalculateCanotoCache()
 
 		pbScalars := canotoScalarsToProto(canotoScalars)
 		pbScalarsBytes, err := proto.Marshal(pbScalars)
@@ -674,6 +673,23 @@ func FuzzScalars_Canonical(f *testing.F) {
 		}
 		w = scalars.MarshalCanotoInto(w)
 		require.Equal(b, w.B)
+	})
+}
+
+func FuzzScalars_UnmarshalEquals(f *testing.F) {
+	f.Fuzz(func(t *testing.T, b []byte) {
+		require := require.New(t)
+
+		var (
+			scalars             Scalars
+			scalarsRecalculated Scalars
+		)
+		if err := scalars.UnmarshalCanoto(b); err != nil {
+			return
+		}
+		require.NoError(scalarsRecalculated.UnmarshalCanoto(b))
+		scalarsRecalculated.CalculateCanotoCache()
+		require.Equal(scalarsRecalculated, scalars)
 	})
 }
 

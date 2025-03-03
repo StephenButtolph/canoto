@@ -144,3 +144,7 @@ message Scalars {
   repeated LargestFieldNumber RepeatedField = 79;
   repeated LargestFieldNumber FixedRepeatedField = 80;
 }
+
+message SmallScalars {
+  repeated int32 RepeatedInt8 = 21;
+}

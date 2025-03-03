@@ -186,3 +186,9 @@ type Scalars struct {
 
 	canotoData canotoData_Scalars
 }
+
+type SmallScalars struct {
+	RepeatedInt8 []int8 `canoto:"repeated int,21"`
+
+	canotoData canotoData_SmallScalars
+}
