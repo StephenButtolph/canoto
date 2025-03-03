@@ -185,7 +185,9 @@ func (c *${structName}${generics}) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-${sizeVars}${size}${assignSizeVars}}
+	var (
+${sizeVars}	)
+${size}${assignSizeVars}}
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
 // representation from CalculateCanotoCache.
@@ -1427,12 +1429,10 @@ func makeSizeVars(m message) string {
 		oneOfTemplate = fmt.Sprintf("\t\t%%-%ds uint32\n", largestNameSize)
 		s             strings.Builder
 	)
-	_, _ = s.WriteString("\tvar (\n")
 	_, _ = fmt.Fprintf(&s, sizeTemplate, sizeName)
 	for _, oneOf := range oneOfs {
 		_, _ = fmt.Fprintf(&s, oneOfTemplate, oneOf+oneOfSuffix)
 	}
-	_, _ = s.WriteString("\t)\n")
 	return s.String()
 }
 
