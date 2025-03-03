@@ -780,15 +780,26 @@ func TestScalars_Concurrent_MarshalCanoto(t *testing.T) {
 		},
 	}
 
-	expected := s.MarshalCanoto()
-	actual := make(chan []byte, 100)
-	for range cap(actual) {
+	const numRoutines = 100
+	var (
+		expectedBytes  = s.MarshalCanoto()
+		expectedOneOfA = s.OneOf.CachedWhichOneOfA()
+		expectedOneOfB = s.OneOf.CachedWhichOneOfB()
+		actualBytes    = make(chan []byte, numRoutines)
+		actualOneOfA   = make(chan uint32, numRoutines)
+		actualOneOfB   = make(chan uint32, numRoutines)
+	)
+	for range numRoutines {
 		go func() {
-			actual <- s.MarshalCanoto()
+			actualBytes <- s.MarshalCanoto()
+			actualOneOfA <- s.OneOf.CachedWhichOneOfA()
+			actualOneOfB <- s.OneOf.CachedWhichOneOfB()
 		}()
 	}
-	for range cap(actual) {
-		require.Equal(t, expected, <-actual)
+	for range numRoutines {
+		require.Equal(t, expectedBytes, <-actualBytes)
+		require.Equal(t, expectedOneOfA, <-actualOneOfA)
+		require.Equal(t, expectedOneOfB, <-actualOneOfB)
 	}
 }
 
