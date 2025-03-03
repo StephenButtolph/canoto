@@ -57,6 +57,7 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           recreate: true
+          header: min-version
           message: |
             ```
             ${{ env.RESULT }}
@@ -106,6 +107,7 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           recreate: true
+          header: latest-version
           message: |
             ```
             ${{ env.RESULT }}
