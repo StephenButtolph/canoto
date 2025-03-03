@@ -56,8 +56,9 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          recreate: true
           header: min-version
+          hide: true
+          hide_classify: "OUTDATED"
           message: |
             ```
             ${{ env.RESULT }}
@@ -106,8 +107,9 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          recreate: true
           header: latest-version
+          hide: true
+          hide_classify: "OUTDATED"
           message: |
             ```
             ${{ env.RESULT }}
