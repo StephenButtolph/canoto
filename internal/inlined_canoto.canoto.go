@@ -26,7 +26,7 @@ const (
 )
 
 type canotoData_justAnInt struct {
-	size atomic.Int64
+	size int
 }
 
 // MakeCanoto creates a new empty value.
@@ -53,7 +53,7 @@ func (c *justAnInt) UnmarshalCanoto(bytes []byte) error {
 func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = justAnInt{}
-	c.canotoData.size.Store(int64(len(r.B)))
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -102,6 +102,8 @@ func (c *justAnInt) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
+//
+// It is not safe to call this function concurrently.
 func (c *justAnInt) CalculateCanotoCache() {
 	if c == nil {
 		return
@@ -112,7 +114,7 @@ func (c *justAnInt) CalculateCanotoCache() {
 	if !canoto.IsZero(c.Int8) {
 		size += len(canoto__justAnInt__Int8__tag) + canoto.SizeInt(c.Int8)
 	}
-	c.canotoData.size.Store(int64(size))
+	c.canotoData.size = size
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -126,12 +128,14 @@ func (c *justAnInt) CachedCanotoSize() int {
 	if c == nil {
 		return 0
 	}
-	return int(c.canotoData.size.Load())
+	return int(c.canotoData.size)
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *justAnInt) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := canoto.Writer{
@@ -148,6 +152,8 @@ func (c *justAnInt) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *justAnInt) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
