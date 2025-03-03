@@ -222,8 +222,6 @@ func (c *${structName}${generics}) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *${structName}${generics}) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w

@@ -146,8 +146,6 @@ func (c *LargestFieldNumber[T1]) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *LargestFieldNumber[T1]) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
@@ -440,8 +438,6 @@ func (c *OneOf) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *OneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
@@ -1103,8 +1099,6 @@ func (c *GenericField[T1, T2, T3]) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *GenericField[T1, T2, T3]) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
@@ -1840,8 +1834,6 @@ func (c *NestedGenericField[T1, T2, T3]) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *NestedGenericField[T1, T2, T3]) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
@@ -2157,8 +2149,6 @@ func (c *Embedded) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *Embedded) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
@@ -2308,8 +2298,6 @@ func (c *A) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *A) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
@@ -2446,8 +2434,6 @@ func (c *A__B) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *A__B) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
@@ -5387,8 +5373,6 @@ func (c *Scalars) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to call this function concurrently.
 func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
