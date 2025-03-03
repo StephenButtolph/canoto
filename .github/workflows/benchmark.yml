@@ -57,7 +57,7 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           header: min-version
-          hide: true
+          hide_and_recreate: true
           hide_classify: "OUTDATED"
           message: |
             ```
@@ -108,7 +108,7 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           header: latest-version
-          hide: true
+          hide_and_recreate: true
           hide_classify: "OUTDATED"
           message: |
             ```
