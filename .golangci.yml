@@ -139,7 +139,7 @@ linters-settings:
         - ["t.Logf[0]", "/.*%.*/", "no format directive, use t.Log instead"]
       # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#struct-tag
       - name: struct-tag
-        disabled: false
+        disabled: true
       # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#unexported-naming
       - name: unexported-naming
         disabled: false

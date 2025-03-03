@@ -13,7 +13,6 @@ func TestParse(t *testing.T) {
 		name string
 
 		filePath     string
-		useAtomic    bool
 		canotoImport string
 
 		wantPackageName string
@@ -61,7 +60,7 @@ func TestParse(t *testing.T) {
 			f, err := parser.ParseFile(fs, test.filePath, nil, parser.ParseComments)
 			require.NoError(err)
 
-			packageName, messages, err := parse(fs, f, test.useAtomic, test.canotoImport)
+			packageName, messages, err := parse(fs, f, test.canotoImport)
 			require.ErrorIs(err, test.wantErr)
 			require.Equal(test.wantPackageName, packageName)
 			require.Equal(test.wantMessages, messages)

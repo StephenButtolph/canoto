@@ -12,12 +12,11 @@ import (
 )
 
 const (
-	canotoFlag     = "canoto"
-	libraryFlag    = "library"
-	protoFlag      = "proto"
-	versionFlag    = "version"
-	concurrentFlag = "concurrent"
-	importFlag     = "import"
+	canotoFlag  = "canoto"
+	libraryFlag = "library"
+	protoFlag   = "proto"
+	versionFlag = "version"
+	importFlag  = "import"
 )
 
 func init() {
@@ -58,11 +57,6 @@ func main() {
 				return fmt.Errorf("failed to get proto flag: %w", err)
 			}
 
-			useAtomic, err := flags.GetBool(concurrentFlag)
-			if err != nil {
-				return fmt.Errorf("failed to get proto flag: %w", err)
-			}
-
 			canotoImport, err := flags.GetString(importFlag)
 			if err != nil {
 				return fmt.Errorf("failed to get import flag: %w", err)
@@ -71,7 +65,7 @@ func main() {
 
 			for _, arg := range args {
 				if canoto {
-					if err := generate.Canoto(arg, useAtomic, canotoImport); err != nil {
+					if err := generate.Canoto(arg, canotoImport); err != nil {
 						return fmt.Errorf("failed to generate canoto for %q: %w", arg, err)
 					}
 				}
@@ -90,7 +84,6 @@ func main() {
 	flags.Bool(canotoFlag, true, "Generate canoto file")
 	flags.String(libraryFlag, "", "Generate the canoto library in the specified directory")
 	flags.Bool(protoFlag, false, "Generate proto file")
-	flags.Bool(concurrentFlag, true, "Generate canoto serialization that is safe for concurrent access")
 	flags.String(importFlag, "github.com/StephenButtolph/canoto", "Package to depend on for canoto serialization primitives")
 
 	if err := cmd.Execute(); err != nil {

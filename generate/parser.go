@@ -18,6 +18,9 @@ import (
 const (
 	canotoTag = "canoto"
 	goBytes   = "[]byte"
+
+	// By default, enable concurrent serialization
+	defaultConcurrent = true
 )
 
 var (
@@ -33,6 +36,7 @@ var (
 
 	errUnexpectedNumberOfIdentifiers       = errors.New("unexpected number of identifiers")
 	errInvalidGoType                       = errors.New("invalid Go type")
+	errMalformedCanotoDataTag              = errors.New(`expected "noatomic" got`)
 	errMalformedTag                        = errors.New(`expected "type,fieldNumber[,oneof]" got`)
 	errInvalidFieldNumber                  = errors.New("invalid field number")
 	errRepeatedOneOf                       = errors.New("oneof must not be repeated")
@@ -43,7 +47,6 @@ var (
 func parse(
 	fs *token.FileSet,
 	f ast.Node,
-	useAtomic bool,
 	canotoImport string,
 ) (string, []message, error) {
 	var (
@@ -88,7 +91,6 @@ func parse(
 		message := message{
 			name:              name,
 			canonicalizedName: canonicalizeName(name),
-			useAtomic:         useAtomic,
 		}
 
 		genericPointers := make(map[string]int)
@@ -143,7 +145,18 @@ func parse(
 				genericPointers[ident.Name] = currentTypeNumber
 			}
 		}
+		var useAtomic bool
+		useAtomic, err = parseCanotoData(fs, st.Fields)
+		if err != nil {
+			return false
+		}
+		message.useAtomic = useAtomic
+
 		for _, sf := range st.Fields.List {
+			if len(sf.Names) >= 1 && sf.Names[0].Name == "canotoData" {
+				continue
+			}
+
 			var (
 				field  field
 				hasTag bool
@@ -151,7 +164,7 @@ func parse(
 			field, hasTag, err = parseField(
 				fs,
 				message.canonicalizedName,
-				message.useAtomic,
+				useAtomic,
 				genericPointers,
 				sf,
 			)
@@ -180,6 +193,44 @@ func parse(
 		return false
 	})
 	return packageName, messages, err
+}
+
+func parseCanotoData(
+	fs *token.FileSet,
+	afl *ast.FieldList,
+) (bool, error) {
+	for _, sf := range afl.List {
+		if len(sf.Names) != 1 {
+			continue
+		}
+		if sf.Names[0].Name != "canotoData" {
+			continue
+		}
+
+		if sf.Tag == nil {
+			return defaultConcurrent, nil
+		}
+
+		rawTag := strings.Trim(sf.Tag.Value, "`")
+		tags, err := structtag.Parse(rawTag)
+		if err != nil {
+			return false, err
+		}
+
+		tag, err := tags.Get(canotoTag)
+		if err != nil {
+			return defaultConcurrent, nil //nolint: nilerr // errors imply the tag was not found
+		}
+		if tag.Name != "noatomic" || len(tag.Options) != 0 {
+			return false, fmt.Errorf("%w %q at %s",
+				errMalformedCanotoDataTag,
+				tag.Value(),
+				fs.Position(sf.Pos()),
+			)
+		}
+		return false, nil
+	}
+	return defaultConcurrent, nil
 }
 
 func parseField(

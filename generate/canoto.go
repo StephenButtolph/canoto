@@ -26,7 +26,6 @@ var errNonGoExtension = errors.New("file must be a go file")
 // Canoto generates the canoto serialization logic for the provided file.
 func Canoto(
 	inputFilePath string,
-	useAtomic bool,
 	canotoImport string,
 ) error {
 	var outputFilePath string
@@ -46,7 +45,7 @@ func Canoto(
 		return err
 	}
 
-	packageName, messages, err := parse(fs, f, useAtomic, canotoImport)
+	packageName, messages, err := parse(fs, f, canotoImport)
 	if err != nil {
 		return err
 	}

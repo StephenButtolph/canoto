@@ -31,7 +31,7 @@ func Proto(
 		return err
 	}
 
-	packageName, messages, err := parse(fs, f, false /*=useAtomic*/, canotoImport)
+	packageName, messages, err := parse(fs, f, canotoImport)
 	if err != nil {
 		return err
 	}

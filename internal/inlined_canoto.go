@@ -1,4 +1,4 @@
-//go:generate canoto --concurrent=false --library=./ --import=github.com/StephenButtolph/canoto/internal/canoto $GOFILE
+//go:generate canoto --library=./ --import=github.com/StephenButtolph/canoto/internal/canoto $GOFILE
 
 package examples
 
@@ -14,5 +14,5 @@ var (
 type justAnInt struct {
 	Int8 int8 `canoto:"int,1"`
 
-	canotoData canotoData_justAnInt
+	canotoData canotoData_justAnInt `canoto:"noatomic"`
 }
