@@ -214,10 +214,9 @@ func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.AOneOf.Load() != 0 {
+			if c.canotoData.AOneOf.Swap(1) != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
-			c.canotoData.AOneOf.Store(1)
 
 			if err := canoto.ReadInt(&r, &c.A1); err != nil {
 				return err
@@ -229,10 +228,9 @@ func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.BOneOf.Load() != 0 {
+			if c.canotoData.BOneOf.Swap(3) != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
-			c.canotoData.BOneOf.Store(3)
 
 			if err := canoto.ReadInt(&r, &c.B1); err != nil {
 				return err
@@ -244,10 +242,9 @@ func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.BOneOf.Load() != 0 {
+			if c.canotoData.BOneOf.Swap(4) != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
-			c.canotoData.BOneOf.Store(4)
 
 			if err := canoto.ReadInt(&r, &c.B2); err != nil {
 				return err
@@ -281,10 +278,9 @@ func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.AOneOf.Load() != 0 {
+			if c.canotoData.AOneOf.Swap(7) != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
-			c.canotoData.AOneOf.Store(7)
 
 			if err := canoto.ReadInt(&r, &c.A2); err != nil {
 				return err
