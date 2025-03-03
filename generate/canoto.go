@@ -185,7 +185,7 @@ func (c *${structName}${generics}) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-${zeroOneOfCache}	var size int
+${sizeVars}
 ${size}	c.canotoData.size.Store(int64(size))
 }
 
@@ -239,7 +239,7 @@ ${marshal}	return w
 		"unmarshal":           makeUnmarshal(m),
 		"validOneOf":          makeValidOneOf(m),
 		"valid":               makeValid(m),
-		"zeroOneOfCache":      makeZeroOneOfCache(m),
+		"sizeVars":            makeSizeVars(m),
 		"size":                makeSize(m),
 		"oneOfCacheAccessors": makeOneOfCacheAccessors(m),
 		"marshal":             makeMarshal(m),
@@ -1391,11 +1391,28 @@ func makeValid(m message) string {
 	})
 }
 
-func makeZeroOneOfCache(m message) string {
-	var s strings.Builder
-	for _, oneOf := range m.OneOfs() {
-		_, _ = fmt.Fprintf(&s, "\tc.canotoData.%sOneOf.Store(0)\n", oneOf)
+func makeSizeVars(m message) string {
+	oneOfs := m.OneOfs()
+	const (
+		sizeName    = "size"
+		oneOfSuffix = "OneOf"
+	)
+	largestNameSize := len(sizeName)
+	for _, oneOf := range oneOfs {
+		largestNameSize = max(largestNameSize, len(oneOf)+len(oneOfSuffix))
 	}
+
+	var (
+		sizeTemplate  = fmt.Sprintf("\t\t%%-%ds int\n", largestNameSize)
+		oneOfTemplate = fmt.Sprintf("\t\t%%-%ds uint32\n", largestNameSize)
+		s             strings.Builder
+	)
+	_, _ = s.WriteString("\tvar (\n")
+	_, _ = fmt.Fprintf(&s, sizeTemplate, sizeName)
+	for _, oneOf := range oneOfs {
+		_, _ = fmt.Fprintf(&s, oneOfTemplate, oneOf+oneOfSuffix)
+	}
+	_, _ = s.WriteString("\t)")
 	return s.String()
 }
 

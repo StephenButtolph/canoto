@@ -110,7 +110,9 @@ func (c *justAnInt) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var size int
+	var (
+		size int
+	)
 	if !canoto.IsZero(c.Int8) {
 		size += len(canoto__justAnInt__Int8__tag) + canoto.SizeInt(c.Int8)
 	}
