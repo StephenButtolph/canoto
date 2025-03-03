@@ -92,7 +92,8 @@ type (
 		//
 		// It is assumed that this message is ValidCanoto.
 		MarshalCanoto() []byte
-		// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the message.
+		// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the
+		// message.
 		UnmarshalCanoto(bytes []byte) error
 	}
 
