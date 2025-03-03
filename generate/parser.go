@@ -205,7 +205,7 @@ func parseField(
 			oneOfName,
 			fieldNumber,
 		)
-		assignOneOf := fmt.Sprintf("c.canotoData.%sOneOf.Store(%d)", oneOfName, fieldNumber)
+		assignOneOf := fmt.Sprintf("%sOneOf = %d", oneOfName, fieldNumber)
 		sizeOneOf = "\n\t\t" + assignOneOf
 		sizeOneOfIndent = "\n\t\t\t" + assignOneOf
 	}

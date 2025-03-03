@@ -185,9 +185,7 @@ func (c *${structName}${generics}) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-${sizeVars}
-${size}	c.canotoData.size.Store(int64(size))
-}
+${sizeVars}${size}${assignSizeVars}}
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
 // representation from CalculateCanotoCache.
@@ -241,6 +239,7 @@ ${marshal}	return w
 		"valid":               makeValid(m),
 		"sizeVars":            makeSizeVars(m),
 		"size":                makeSize(m),
+		"assignSizeVars":      makeAssignSizeVars(m),
 		"oneOfCacheAccessors": makeOneOfCacheAccessors(m),
 		"marshal":             makeMarshal(m),
 	})
@@ -1412,7 +1411,7 @@ func makeSizeVars(m message) string {
 	for _, oneOf := range oneOfs {
 		_, _ = fmt.Fprintf(&s, oneOfTemplate, oneOf+oneOfSuffix)
 	}
-	_, _ = s.WriteString("\t)")
+	_, _ = s.WriteString("\t)\n")
 	return s.String()
 }
 
@@ -1614,6 +1613,15 @@ func makeSize(m message) string {
 `,
 		},
 	})
+}
+
+func makeAssignSizeVars(m message) string {
+	var s strings.Builder
+	s.WriteString("\tc.canotoData.size.Store(int64(size))\n")
+	for _, oneOf := range m.OneOfs() {
+		_, _ = fmt.Fprintf(&s, "\tc.canotoData.%sOneOf.Store(%sOneOf)\n", oneOf, oneOf)
+	}
+	return s.String()
 }
 
 func makeOneOfCacheAccessors(m message) string {

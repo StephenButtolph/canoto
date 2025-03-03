@@ -354,15 +354,15 @@ func (c *OneOf) CalculateCanotoCache() {
 	)
 	if !canoto.IsZero(c.A1) {
 		size += len(canoto__OneOf__A1__tag) + canoto.SizeInt(c.A1)
-		c.canotoData.AOneOf.Store(1)
+		AOneOf = 1
 	}
 	if !canoto.IsZero(c.B1) {
 		size += len(canoto__OneOf__B1__tag) + canoto.SizeInt(c.B1)
-		c.canotoData.BOneOf.Store(3)
+		BOneOf = 3
 	}
 	if !canoto.IsZero(c.B2) {
 		size += len(canoto__OneOf__B2__tag) + canoto.SizeInt(c.B2)
-		c.canotoData.BOneOf.Store(4)
+		BOneOf = 4
 	}
 	if !canoto.IsZero(c.C) {
 		size += len(canoto__OneOf__C__tag) + canoto.SizeInt(c.C)
@@ -372,9 +372,11 @@ func (c *OneOf) CalculateCanotoCache() {
 	}
 	if !canoto.IsZero(c.A2) {
 		size += len(canoto__OneOf__A2__tag) + canoto.SizeInt(c.A2)
-		c.canotoData.AOneOf.Store(7)
+		AOneOf = 7
 	}
 	c.canotoData.size.Store(int64(size))
+	c.canotoData.AOneOf.Store(AOneOf)
+	c.canotoData.BOneOf.Store(BOneOf)
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
