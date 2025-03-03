@@ -102,6 +102,8 @@ func (c *LargestFieldNumber[T1]) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
+//
+// It is not safe to call this function concurrently.
 func (c *LargestFieldNumber[T1]) CalculateCanotoCache() {
 	if c == nil {
 		return
@@ -132,6 +134,8 @@ func (c *LargestFieldNumber[T1]) CachedCanotoSize() int {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *LargestFieldNumber[T1]) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := canoto.Writer{
@@ -148,6 +152,8 @@ func (c *LargestFieldNumber[T1]) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *LargestFieldNumber[T1]) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
@@ -347,6 +353,8 @@ func (c *OneOf) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
+//
+// It is not safe to call this function concurrently.
 func (c *OneOf) CalculateCanotoCache() {
 	if c == nil {
 		return
@@ -428,6 +436,8 @@ func (c *OneOf) CachedWhichOneOfB() uint32 {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *OneOf) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := canoto.Writer{
@@ -444,6 +454,8 @@ func (c *OneOf) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *OneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
@@ -984,6 +996,8 @@ func (c *GenericField[T1, T2, T3]) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
+//
+// It is not safe to call this function concurrently.
 func (c *GenericField[T1, T2, T3]) CalculateCanotoCache() {
 	if c == nil {
 		return
@@ -1091,6 +1105,8 @@ func (c *GenericField[T1, T2, T3]) CachedCanotoSize() int {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *GenericField[T1, T2, T3]) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := canoto.Writer{
@@ -1107,6 +1123,8 @@ func (c *GenericField[T1, T2, T3]) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *GenericField[T1, T2, T3]) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
@@ -1721,6 +1739,8 @@ func (c *NestedGenericField[T1, T2, T3]) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
+//
+// It is not safe to call this function concurrently.
 func (c *NestedGenericField[T1, T2, T3]) CalculateCanotoCache() {
 	if c == nil {
 		return
@@ -1828,6 +1848,8 @@ func (c *NestedGenericField[T1, T2, T3]) CachedCanotoSize() int {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *NestedGenericField[T1, T2, T3]) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := canoto.Writer{
@@ -1844,6 +1866,8 @@ func (c *NestedGenericField[T1, T2, T3]) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *NestedGenericField[T1, T2, T3]) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
@@ -2104,6 +2128,8 @@ func (c *Embedded) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
+//
+// It is not safe to call this function concurrently.
 func (c *Embedded) CalculateCanotoCache() {
 	if c == nil {
 		return
@@ -2145,6 +2171,8 @@ func (c *Embedded) CachedCanotoSize() int {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *Embedded) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := canoto.Writer{
@@ -2161,6 +2189,8 @@ func (c *Embedded) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *Embedded) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
@@ -2266,6 +2296,8 @@ func (c *A) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
+//
+// It is not safe to call this function concurrently.
 func (c *A) CalculateCanotoCache() {
 	if c == nil {
 		return
@@ -2296,6 +2328,8 @@ func (c *A) CachedCanotoSize() int {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *A) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := canoto.Writer{
@@ -2312,6 +2346,8 @@ func (c *A) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *A) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
@@ -2404,6 +2440,8 @@ func (c *A__B) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
+//
+// It is not safe to call this function concurrently.
 func (c *A__B) CalculateCanotoCache() {
 	if c == nil {
 		return
@@ -2434,6 +2472,8 @@ func (c *A__B) CachedCanotoSize() int {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *A__B) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := canoto.Writer{
@@ -2450,6 +2490,8 @@ func (c *A__B) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *A__B) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
@@ -4888,6 +4930,8 @@ func (c *Scalars) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
+//
+// It is not safe to call this function concurrently.
 func (c *Scalars) CalculateCanotoCache() {
 	if c == nil {
 		return
@@ -5375,6 +5419,8 @@ func (c *Scalars) CachedCanotoSize() int {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *Scalars) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := canoto.Writer{
@@ -5391,6 +5437,8 @@ func (c *Scalars) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to call this function concurrently.
 func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w

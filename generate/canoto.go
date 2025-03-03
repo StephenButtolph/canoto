@@ -180,7 +180,7 @@ ${validOneOf}${valid}	return true
 }
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// values in the struct.${concurrencyWarning}
 func (c *${structName}${generics}) CalculateCanotoCache() {
 	if c == nil {
 		return
@@ -203,7 +203,7 @@ func (c *${structName}${generics}) CachedCanotoSize() int {
 
 // MarshalCanoto returns the Canoto representation of this struct.
 //
-// It is assumed that this struct is ValidCanoto.
+// It is assumed that this struct is ValidCanoto.${concurrencyWarning}
 func (c *${structName}${generics}) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := canoto.Writer{
@@ -219,7 +219,7 @@ func (c *${structName}${generics}) MarshalCanoto() []byte {
 // It is assumed that CalculateCanotoCache has been called since the last
 // modification to this struct.
 //
-// It is assumed that this struct is ValidCanoto.
+// It is assumed that this struct is ValidCanoto.${concurrencyWarning}
 func (c *${structName}${generics}) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
@@ -229,14 +229,18 @@ ${marshal}	return w
 `
 
 	var (
-		load        string
-		storePrefix = " = "
-		storeSuffix string
+		load               string
+		storePrefix        = " = "
+		storeSuffix        string
+		concurrencyWarning = `
+//
+// It is not safe to call this function concurrently.`
 	)
 	if m.useAtomic {
 		load = ".Load()"
 		storePrefix = ".Store(int64("
 		storeSuffix = "))"
+		concurrencyWarning = ""
 	}
 	return writeTemplate(w, structTemplate, map[string]string{
 		"tagConstants":        makeTagConstants(m),
@@ -247,6 +251,7 @@ ${marshal}	return w
 		"unmarshal":           makeUnmarshal(m),
 		"validOneOf":          makeValidOneOf(m),
 		"valid":               makeValid(m),
+		"concurrencyWarning":  concurrencyWarning,
 		"sizeVars":            makeSizeVars(m),
 		"size":                makeSize(m),
 		"assignSizeVars":      makeAssignSizeVars(m),
