@@ -26,10 +26,6 @@ const (
 )
 
 type canotoData_justAnInt struct {
-	// Enforce noCopy before atomic usage.
-	// See https://github.com/StephenButtolph/canoto/pull/32
-	_ atomic.Int64
-
 	size atomic.Int64
 }
 

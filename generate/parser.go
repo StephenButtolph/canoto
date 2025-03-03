@@ -151,6 +151,7 @@ func parse(
 			field, hasTag, err = parseField(
 				fs,
 				message.canonicalizedName,
+				message.useAtomic,
 				genericPointers,
 				sf,
 			)
@@ -184,6 +185,7 @@ func parse(
 func parseField(
 	fs *token.FileSet,
 	canonicalizedStructName string,
+	useAtomic bool,
 	genericTypes map[string]int,
 	af *ast.Field,
 ) (field, bool, error) {
@@ -193,18 +195,42 @@ func parseField(
 	}
 
 	var (
+		load        string
+		storePrefix = ` = `
+		storeSuffix string
+	)
+	if useAtomic {
+		load = ".Load()"
+		storePrefix = ".Store(int64("
+		storeSuffix = "))"
+	}
+
+	var (
 		unmarshalOneOf  string
 		sizeOneOf       string
 		sizeOneOfIndent string
 	)
 	if oneOfName != "" {
-		unmarshalOneOf = fmt.Sprintf(`
+		if useAtomic {
+			unmarshalOneOf = fmt.Sprintf(`
 			if c.canotoData.%sOneOf.Swap(%d) != 0 {
 				return canoto.ErrDuplicateOneOf
 			}`,
-			oneOfName,
-			fieldNumber,
-		)
+				oneOfName,
+				fieldNumber,
+			)
+		} else {
+			unmarshalOneOf = fmt.Sprintf(`
+			if c.canotoData.%sOneOf != 0 {
+				return canoto.ErrDuplicateOneOf
+			}
+			c.canotoData.%sOneOf = %d`,
+				oneOfName,
+				oneOfName,
+				fieldNumber,
+			)
+		}
+
 		assignOneOf := fmt.Sprintf("%sOneOf = %d", oneOfName, fieldNumber)
 		sizeOneOf = "\n\t\t" + assignOneOf
 		sizeOneOfIndent = "\n\t\t\t" + assignOneOf
@@ -271,6 +297,9 @@ func parseField(
 		fieldNumber:       fieldNumber,
 		oneOfName:         oneOfName,
 		templateArgs: map[string]string{
+			"load":              load,
+			"storePrefix":       storePrefix,
+			"storeSuffix":       storeSuffix,
 			"escapedStructName": canonicalizedStructName,
 			"fieldNumber":       strconv.FormatUint(uint64(fieldNumber), 10),
 			"wireType":          canotoType.WireType().String(),

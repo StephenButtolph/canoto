@@ -26,7 +26,7 @@ const (
 )
 
 type canotoData_LargestFieldNumber struct {
-	size atomic.Int64
+	size int
 }
 
 // MakeCanoto creates a new empty value.
@@ -53,7 +53,7 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanoto(bytes []byte) error {
 func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = LargestFieldNumber[T1]{}
-	c.canotoData.size.Store(int64(len(r.B)))
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -112,7 +112,7 @@ func (c *LargestFieldNumber[T1]) CalculateCanotoCache() {
 	if !canoto.IsZero(c.Int32) {
 		size += len(canoto__LargestFieldNumber__Int32__tag) + canoto.SizeInt(c.Int32)
 	}
-	c.canotoData.size.Store(int64(size))
+	c.canotoData.size = size
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -126,7 +126,7 @@ func (c *LargestFieldNumber[T1]) CachedCanotoSize() int {
 	if c == nil {
 		return 0
 	}
-	return int(c.canotoData.size.Load())
+	return int(c.canotoData.size)
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -169,10 +169,10 @@ const (
 )
 
 type canotoData_OneOf struct {
-	size atomic.Int64
+	size int
 
-	AOneOf atomic.Uint32
-	BOneOf atomic.Uint32
+	AOneOf uint32
+	BOneOf uint32
 }
 
 // MakeCanoto creates a new empty value.
@@ -199,7 +199,7 @@ func (c *OneOf) UnmarshalCanoto(bytes []byte) error {
 func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = OneOf{}
-	c.canotoData.size.Store(int64(len(r.B)))
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -216,9 +216,10 @@ func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.AOneOf.Swap(1) != 0 {
+			if c.canotoData.AOneOf != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
+			c.canotoData.AOneOf = 1
 
 			if err := canoto.ReadInt(&r, &c.A1); err != nil {
 				return err
@@ -230,9 +231,10 @@ func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.BOneOf.Swap(3) != 0 {
+			if c.canotoData.BOneOf != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
+			c.canotoData.BOneOf = 3
 
 			if err := canoto.ReadInt(&r, &c.B1); err != nil {
 				return err
@@ -244,9 +246,10 @@ func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.BOneOf.Swap(4) != 0 {
+			if c.canotoData.BOneOf != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
+			c.canotoData.BOneOf = 4
 
 			if err := canoto.ReadInt(&r, &c.B2); err != nil {
 				return err
@@ -280,9 +283,10 @@ func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.AOneOf.Swap(7) != 0 {
+			if c.canotoData.AOneOf != 0 {
 				return canoto.ErrDuplicateOneOf
 			}
+			c.canotoData.AOneOf = 7
 
 			if err := canoto.ReadInt(&r, &c.A2); err != nil {
 				return err
@@ -374,9 +378,9 @@ func (c *OneOf) CalculateCanotoCache() {
 		size += len(canoto__OneOf__A2__tag) + canoto.SizeInt(c.A2)
 		AOneOf = 7
 	}
-	c.canotoData.size.Store(int64(size))
-	c.canotoData.AOneOf.Store(AOneOf)
-	c.canotoData.BOneOf.Store(BOneOf)
+	c.canotoData.size = size
+	c.canotoData.AOneOf = AOneOf
+	c.canotoData.BOneOf = BOneOf
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -390,7 +394,7 @@ func (c *OneOf) CachedCanotoSize() int {
 	if c == nil {
 		return 0
 	}
-	return int(c.canotoData.size.Load())
+	return int(c.canotoData.size)
 }
 
 // CachedWhichOneOfA returns the previously calculated field number used
@@ -404,7 +408,7 @@ func (c *OneOf) CachedCanotoSize() int {
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
 func (c *OneOf) CachedWhichOneOfA() uint32 {
-	return c.canotoData.AOneOf.Load()
+	return c.canotoData.AOneOf
 }
 
 // CachedWhichOneOfB returns the previously calculated field number used
@@ -418,7 +422,7 @@ func (c *OneOf) CachedWhichOneOfA() uint32 {
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
 func (c *OneOf) CachedWhichOneOfB() uint32 {
-	return c.canotoData.BOneOf.Load()
+	return c.canotoData.BOneOf
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -484,7 +488,7 @@ const (
 )
 
 type canotoData_GenericField struct {
-	size atomic.Int64
+	size int
 }
 
 // MakeCanoto creates a new empty value.
@@ -511,7 +515,7 @@ func (c *GenericField[T1, T2, T3]) UnmarshalCanoto(bytes []byte) error {
 func (c *GenericField[T1, T2, T3]) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = GenericField[T1, T2, T3]{}
-	c.canotoData.size.Store(int64(len(r.B)))
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -1067,7 +1071,7 @@ func (c *GenericField[T1, T2, T3]) CalculateCanotoCache() {
 			size += totalSize
 		}
 	}
-	c.canotoData.size.Store(int64(size))
+	c.canotoData.size = size
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -1081,7 +1085,7 @@ func (c *GenericField[T1, T2, T3]) CachedCanotoSize() int {
 	if c == nil {
 		return 0
 	}
-	return int(c.canotoData.size.Load())
+	return int(c.canotoData.size)
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -1221,7 +1225,7 @@ const (
 )
 
 type canotoData_NestedGenericField struct {
-	size atomic.Int64
+	size int
 }
 
 // MakeCanoto creates a new empty value.
@@ -1248,7 +1252,7 @@ func (c *NestedGenericField[T1, T2, T3]) UnmarshalCanoto(bytes []byte) error {
 func (c *NestedGenericField[T1, T2, T3]) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = NestedGenericField[T1, T2, T3]{}
-	c.canotoData.size.Store(int64(len(r.B)))
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -1804,7 +1808,7 @@ func (c *NestedGenericField[T1, T2, T3]) CalculateCanotoCache() {
 			size += totalSize
 		}
 	}
-	c.canotoData.size.Store(int64(size))
+	c.canotoData.size = size
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -1818,7 +1822,7 @@ func (c *NestedGenericField[T1, T2, T3]) CachedCanotoSize() int {
 	if c == nil {
 		return 0
 	}
-	return int(c.canotoData.size.Load())
+	return int(c.canotoData.size)
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -1952,7 +1956,7 @@ const (
 )
 
 type canotoData_Embedded struct {
-	size atomic.Int64
+	size int
 }
 
 // MakeCanoto creates a new empty value.
@@ -1979,7 +1983,7 @@ func (c *Embedded) UnmarshalCanoto(bytes []byte) error {
 func (c *Embedded) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = Embedded{}
-	c.canotoData.size.Store(int64(len(r.B)))
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -2121,7 +2125,7 @@ func (c *Embedded) CalculateCanotoCache() {
 	if fieldSize := c.GenericField.CachedCanotoSize(); fieldSize != 0 {
 		size += len(canoto__Embedded__GenericField__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 	}
-	c.canotoData.size.Store(int64(size))
+	c.canotoData.size = size
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -2135,7 +2139,7 @@ func (c *Embedded) CachedCanotoSize() int {
 	if c == nil {
 		return 0
 	}
-	return int(c.canotoData.size.Load())
+	return int(c.canotoData.size)
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -2186,7 +2190,7 @@ const (
 )
 
 type canotoData_A struct {
-	size atomic.Int64
+	size int
 }
 
 // MakeCanoto creates a new empty value.
@@ -2213,7 +2217,7 @@ func (c *A) UnmarshalCanoto(bytes []byte) error {
 func (c *A) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = A{}
-	c.canotoData.size.Store(int64(len(r.B)))
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -2272,7 +2276,7 @@ func (c *A) CalculateCanotoCache() {
 	if !canoto.IsZero(c.B__C) {
 		size += len(canoto__A__B_1_1C__tag) + canoto.SizeInt(c.B__C)
 	}
-	c.canotoData.size.Store(int64(size))
+	c.canotoData.size = size
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -2286,7 +2290,7 @@ func (c *A) CachedCanotoSize() int {
 	if c == nil {
 		return 0
 	}
-	return int(c.canotoData.size.Load())
+	return int(c.canotoData.size)
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -2324,7 +2328,7 @@ const (
 )
 
 type canotoData_A__B struct {
-	size atomic.Int64
+	size int
 }
 
 // MakeCanoto creates a new empty value.
@@ -2351,7 +2355,7 @@ func (c *A__B) UnmarshalCanoto(bytes []byte) error {
 func (c *A__B) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = A__B{}
-	c.canotoData.size.Store(int64(len(r.B)))
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -2410,7 +2414,7 @@ func (c *A__B) CalculateCanotoCache() {
 	if !canoto.IsZero(c.C) {
 		size += len(canoto__A_1_1B__C__tag) + canoto.SizeInt(c.C)
 	}
-	c.canotoData.size.Store(int64(size))
+	c.canotoData.size = size
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -2424,7 +2428,7 @@ func (c *A__B) CachedCanotoSize() int {
 	if c == nil {
 		return 0
 	}
-	return int(c.canotoData.size.Load())
+	return int(c.canotoData.size)
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -2541,32 +2545,32 @@ const (
 )
 
 type canotoData_Scalars struct {
-	size                    atomic.Int64
-	RepeatedInt8Size        atomic.Int64
-	RepeatedInt16Size       atomic.Int64
-	RepeatedInt32Size       atomic.Int64
-	RepeatedInt64Size       atomic.Int64
-	RepeatedUint8Size       atomic.Int64
-	RepeatedUint16Size      atomic.Int64
-	RepeatedUint32Size      atomic.Int64
-	RepeatedUint64Size      atomic.Int64
-	RepeatedSint8Size       atomic.Int64
-	RepeatedSint16Size      atomic.Int64
-	RepeatedSint32Size      atomic.Int64
-	RepeatedSint64Size      atomic.Int64
-	FixedRepeatedInt8Size   atomic.Int64
-	FixedRepeatedInt16Size  atomic.Int64
-	FixedRepeatedInt32Size  atomic.Int64
-	FixedRepeatedInt64Size  atomic.Int64
-	FixedRepeatedUint8Size  atomic.Int64
-	FixedRepeatedUint16Size atomic.Int64
-	FixedRepeatedUint32Size atomic.Int64
-	FixedRepeatedUint64Size atomic.Int64
-	FixedRepeatedSint8Size  atomic.Int64
-	FixedRepeatedSint16Size atomic.Int64
-	FixedRepeatedSint32Size atomic.Int64
-	FixedRepeatedSint64Size atomic.Int64
-	ConstRepeatedUint64Size atomic.Int64
+	size                    int
+	RepeatedInt8Size        int
+	RepeatedInt16Size       int
+	RepeatedInt32Size       int
+	RepeatedInt64Size       int
+	RepeatedUint8Size       int
+	RepeatedUint16Size      int
+	RepeatedUint32Size      int
+	RepeatedUint64Size      int
+	RepeatedSint8Size       int
+	RepeatedSint16Size      int
+	RepeatedSint32Size      int
+	RepeatedSint64Size      int
+	FixedRepeatedInt8Size   int
+	FixedRepeatedInt16Size  int
+	FixedRepeatedInt32Size  int
+	FixedRepeatedInt64Size  int
+	FixedRepeatedUint8Size  int
+	FixedRepeatedUint16Size int
+	FixedRepeatedUint32Size int
+	FixedRepeatedUint64Size int
+	FixedRepeatedSint8Size  int
+	FixedRepeatedSint16Size int
+	FixedRepeatedSint32Size int
+	FixedRepeatedSint64Size int
+	ConstRepeatedUint64Size int
 }
 
 // MakeCanoto creates a new empty value.
@@ -2593,7 +2597,7 @@ func (c *Scalars) UnmarshalCanoto(bytes []byte) error {
 func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = Scalars{}
-	c.canotoData.size.Store(int64(len(r.B)))
+	c.canotoData.size = len(r.B)
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -2869,7 +2873,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
-			c.canotoData.RepeatedInt8Size.Store(int64(len(msgBytes)))
+			c.canotoData.RepeatedInt8Size = len(msgBytes)
 		case 22:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -2900,7 +2904,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
-			c.canotoData.RepeatedInt16Size.Store(int64(len(msgBytes)))
+			c.canotoData.RepeatedInt16Size = len(msgBytes)
 		case 23:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -2931,7 +2935,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
-			c.canotoData.RepeatedInt32Size.Store(int64(len(msgBytes)))
+			c.canotoData.RepeatedInt32Size = len(msgBytes)
 		case 24:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -2962,7 +2966,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
-			c.canotoData.RepeatedInt64Size.Store(int64(len(msgBytes)))
+			c.canotoData.RepeatedInt64Size = len(msgBytes)
 		case 25:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -2993,7 +2997,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
-			c.canotoData.RepeatedUint8Size.Store(int64(len(msgBytes)))
+			c.canotoData.RepeatedUint8Size = len(msgBytes)
 		case 26:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3024,7 +3028,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
-			c.canotoData.RepeatedUint16Size.Store(int64(len(msgBytes)))
+			c.canotoData.RepeatedUint16Size = len(msgBytes)
 		case 27:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3055,7 +3059,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
-			c.canotoData.RepeatedUint32Size.Store(int64(len(msgBytes)))
+			c.canotoData.RepeatedUint32Size = len(msgBytes)
 		case 28:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3086,7 +3090,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
-			c.canotoData.RepeatedUint64Size.Store(int64(len(msgBytes)))
+			c.canotoData.RepeatedUint64Size = len(msgBytes)
 		case 29:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3117,7 +3121,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
-			c.canotoData.RepeatedSint8Size.Store(int64(len(msgBytes)))
+			c.canotoData.RepeatedSint8Size = len(msgBytes)
 		case 30:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3148,7 +3152,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
-			c.canotoData.RepeatedSint16Size.Store(int64(len(msgBytes)))
+			c.canotoData.RepeatedSint16Size = len(msgBytes)
 		case 31:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3179,7 +3183,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
-			c.canotoData.RepeatedSint32Size.Store(int64(len(msgBytes)))
+			c.canotoData.RepeatedSint32Size = len(msgBytes)
 		case 32:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3210,7 +3214,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrInvalidLength
 			}
 			r.B = remainingBytes
-			c.canotoData.RepeatedSint64Size.Store(int64(len(msgBytes)))
+			c.canotoData.RepeatedSint64Size = len(msgBytes)
 		case 33:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3525,7 +3529,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
-			c.canotoData.FixedRepeatedInt8Size.Store(int64(len(msgBytes)))
+			c.canotoData.FixedRepeatedInt8Size = len(msgBytes)
 		case 42:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3555,7 +3559,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
-			c.canotoData.FixedRepeatedInt16Size.Store(int64(len(msgBytes)))
+			c.canotoData.FixedRepeatedInt16Size = len(msgBytes)
 		case 43:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3585,7 +3589,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
-			c.canotoData.FixedRepeatedInt32Size.Store(int64(len(msgBytes)))
+			c.canotoData.FixedRepeatedInt32Size = len(msgBytes)
 		case 44:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3615,7 +3619,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
-			c.canotoData.FixedRepeatedInt64Size.Store(int64(len(msgBytes)))
+			c.canotoData.FixedRepeatedInt64Size = len(msgBytes)
 		case 45:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3645,7 +3649,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
-			c.canotoData.FixedRepeatedUint8Size.Store(int64(len(msgBytes)))
+			c.canotoData.FixedRepeatedUint8Size = len(msgBytes)
 		case 46:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3675,7 +3679,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
-			c.canotoData.FixedRepeatedUint16Size.Store(int64(len(msgBytes)))
+			c.canotoData.FixedRepeatedUint16Size = len(msgBytes)
 		case 47:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3705,7 +3709,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
-			c.canotoData.FixedRepeatedUint32Size.Store(int64(len(msgBytes)))
+			c.canotoData.FixedRepeatedUint32Size = len(msgBytes)
 		case 48:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3735,7 +3739,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
-			c.canotoData.FixedRepeatedUint64Size.Store(int64(len(msgBytes)))
+			c.canotoData.FixedRepeatedUint64Size = len(msgBytes)
 		case 49:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3765,7 +3769,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
-			c.canotoData.FixedRepeatedSint8Size.Store(int64(len(msgBytes)))
+			c.canotoData.FixedRepeatedSint8Size = len(msgBytes)
 		case 50:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3795,7 +3799,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
-			c.canotoData.FixedRepeatedSint16Size.Store(int64(len(msgBytes)))
+			c.canotoData.FixedRepeatedSint16Size = len(msgBytes)
 		case 51:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3825,7 +3829,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
-			c.canotoData.FixedRepeatedSint32Size.Store(int64(len(msgBytes)))
+			c.canotoData.FixedRepeatedSint32Size = len(msgBytes)
 		case 52:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -3855,7 +3859,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
-			c.canotoData.FixedRepeatedSint64Size.Store(int64(len(msgBytes)))
+			c.canotoData.FixedRepeatedSint64Size = len(msgBytes)
 		case 53:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -4262,7 +4266,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrZeroValue
 			}
 			r.B = remainingBytes
-			c.canotoData.ConstRepeatedUint64Size.Store(int64(len(msgBytes)))
+			c.canotoData.ConstRepeatedUint64Size = len(msgBytes)
 		case 65:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -4958,7 +4962,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__RepeatedInt8__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.RepeatedInt8Size.Store(int64(fieldSize))
+		c.canotoData.RepeatedInt8Size = fieldSize
 	}
 	if len(c.RepeatedInt16) != 0 {
 		var fieldSize int
@@ -4966,7 +4970,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__RepeatedInt16__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.RepeatedInt16Size.Store(int64(fieldSize))
+		c.canotoData.RepeatedInt16Size = fieldSize
 	}
 	if len(c.RepeatedInt32) != 0 {
 		var fieldSize int
@@ -4974,7 +4978,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__RepeatedInt32__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.RepeatedInt32Size.Store(int64(fieldSize))
+		c.canotoData.RepeatedInt32Size = fieldSize
 	}
 	if len(c.RepeatedInt64) != 0 {
 		var fieldSize int
@@ -4982,7 +4986,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__RepeatedInt64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.RepeatedInt64Size.Store(int64(fieldSize))
+		c.canotoData.RepeatedInt64Size = fieldSize
 	}
 	if len(c.RepeatedUint8) != 0 {
 		var fieldSize int
@@ -4990,7 +4994,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__RepeatedUint8__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.RepeatedUint8Size.Store(int64(fieldSize))
+		c.canotoData.RepeatedUint8Size = fieldSize
 	}
 	if len(c.RepeatedUint16) != 0 {
 		var fieldSize int
@@ -4998,7 +5002,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__RepeatedUint16__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.RepeatedUint16Size.Store(int64(fieldSize))
+		c.canotoData.RepeatedUint16Size = fieldSize
 	}
 	if len(c.RepeatedUint32) != 0 {
 		var fieldSize int
@@ -5006,7 +5010,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__RepeatedUint32__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.RepeatedUint32Size.Store(int64(fieldSize))
+		c.canotoData.RepeatedUint32Size = fieldSize
 	}
 	if len(c.RepeatedUint64) != 0 {
 		var fieldSize int
@@ -5014,7 +5018,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__RepeatedUint64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.RepeatedUint64Size.Store(int64(fieldSize))
+		c.canotoData.RepeatedUint64Size = fieldSize
 	}
 	if len(c.RepeatedSint8) != 0 {
 		var fieldSize int
@@ -5022,7 +5026,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeSint(v)
 		}
 		size += len(canoto__Scalars__RepeatedSint8__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.RepeatedSint8Size.Store(int64(fieldSize))
+		c.canotoData.RepeatedSint8Size = fieldSize
 	}
 	if len(c.RepeatedSint16) != 0 {
 		var fieldSize int
@@ -5030,7 +5034,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeSint(v)
 		}
 		size += len(canoto__Scalars__RepeatedSint16__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.RepeatedSint16Size.Store(int64(fieldSize))
+		c.canotoData.RepeatedSint16Size = fieldSize
 	}
 	if len(c.RepeatedSint32) != 0 {
 		var fieldSize int
@@ -5038,7 +5042,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeSint(v)
 		}
 		size += len(canoto__Scalars__RepeatedSint32__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.RepeatedSint32Size.Store(int64(fieldSize))
+		c.canotoData.RepeatedSint32Size = fieldSize
 	}
 	if len(c.RepeatedSint64) != 0 {
 		var fieldSize int
@@ -5046,7 +5050,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeSint(v)
 		}
 		size += len(canoto__Scalars__RepeatedSint64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.RepeatedSint64Size.Store(int64(fieldSize))
+		c.canotoData.RepeatedSint64Size = fieldSize
 	}
 	if num := len(c.RepeatedFixed32); num != 0 {
 		fieldSize := num * canoto.SizeFint32
@@ -5085,7 +5089,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__FixedRepeatedInt8__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.FixedRepeatedInt8Size.Store(int64(fieldSize))
+		c.canotoData.FixedRepeatedInt8Size = fieldSize
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt16) {
 		var fieldSize int
@@ -5093,7 +5097,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__FixedRepeatedInt16__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.FixedRepeatedInt16Size.Store(int64(fieldSize))
+		c.canotoData.FixedRepeatedInt16Size = fieldSize
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt32) {
 		var fieldSize int
@@ -5101,7 +5105,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__FixedRepeatedInt32__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.FixedRepeatedInt32Size.Store(int64(fieldSize))
+		c.canotoData.FixedRepeatedInt32Size = fieldSize
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt64) {
 		var fieldSize int
@@ -5109,7 +5113,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__FixedRepeatedInt64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.FixedRepeatedInt64Size.Store(int64(fieldSize))
+		c.canotoData.FixedRepeatedInt64Size = fieldSize
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint8) {
 		var fieldSize int
@@ -5117,7 +5121,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__FixedRepeatedUint8__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.FixedRepeatedUint8Size.Store(int64(fieldSize))
+		c.canotoData.FixedRepeatedUint8Size = fieldSize
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint16) {
 		var fieldSize int
@@ -5125,7 +5129,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__FixedRepeatedUint16__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.FixedRepeatedUint16Size.Store(int64(fieldSize))
+		c.canotoData.FixedRepeatedUint16Size = fieldSize
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint32) {
 		var fieldSize int
@@ -5133,7 +5137,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__FixedRepeatedUint32__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.FixedRepeatedUint32Size.Store(int64(fieldSize))
+		c.canotoData.FixedRepeatedUint32Size = fieldSize
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint64) {
 		var fieldSize int
@@ -5141,7 +5145,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__FixedRepeatedUint64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.FixedRepeatedUint64Size.Store(int64(fieldSize))
+		c.canotoData.FixedRepeatedUint64Size = fieldSize
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint8) {
 		var fieldSize int
@@ -5149,7 +5153,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeSint(v)
 		}
 		size += len(canoto__Scalars__FixedRepeatedSint8__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.FixedRepeatedSint8Size.Store(int64(fieldSize))
+		c.canotoData.FixedRepeatedSint8Size = fieldSize
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint16) {
 		var fieldSize int
@@ -5157,7 +5161,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeSint(v)
 		}
 		size += len(canoto__Scalars__FixedRepeatedSint16__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.FixedRepeatedSint16Size.Store(int64(fieldSize))
+		c.canotoData.FixedRepeatedSint16Size = fieldSize
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint32) {
 		var fieldSize int
@@ -5165,7 +5169,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeSint(v)
 		}
 		size += len(canoto__Scalars__FixedRepeatedSint32__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.FixedRepeatedSint32Size.Store(int64(fieldSize))
+		c.canotoData.FixedRepeatedSint32Size = fieldSize
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint64) {
 		var fieldSize int
@@ -5173,7 +5177,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeSint(v)
 		}
 		size += len(canoto__Scalars__FixedRepeatedSint64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.FixedRepeatedSint64Size.Store(int64(fieldSize))
+		c.canotoData.FixedRepeatedSint64Size = fieldSize
 	}
 	if !canoto.IsZero(c.FixedRepeatedFixed32) {
 		const fieldSize = len(c.FixedRepeatedFixed32) * canoto.SizeFint32
@@ -5247,7 +5251,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			fieldSize += canoto.SizeInt(v)
 		}
 		size += len(canoto__Scalars__ConstRepeatedUint64__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		c.canotoData.ConstRepeatedUint64Size.Store(int64(fieldSize))
+		c.canotoData.ConstRepeatedUint64Size = fieldSize
 	}
 	(&c.CustomType).CalculateCanotoCache()
 	if fieldSize := (&c.CustomType).CachedCanotoSize(); fieldSize != 0 {
@@ -5351,7 +5355,7 @@ func (c *Scalars) CalculateCanotoCache() {
 			size += totalSize
 		}
 	}
-	c.canotoData.size.Store(int64(size))
+	c.canotoData.size = size
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -5365,7 +5369,7 @@ func (c *Scalars) CachedCanotoSize() int {
 	if c == nil {
 		return 0
 	}
-	return int(c.canotoData.size.Load())
+	return int(c.canotoData.size)
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -5474,84 +5478,84 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	}
 	if len(c.RepeatedInt8) != 0 {
 		canoto.Append(&w, canoto__Scalars__RepeatedInt8__tag)
-		canoto.AppendInt(&w, c.canotoData.RepeatedInt8Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedInt8Size))
 		for _, v := range c.RepeatedInt8 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedInt16) != 0 {
 		canoto.Append(&w, canoto__Scalars__RepeatedInt16__tag)
-		canoto.AppendInt(&w, c.canotoData.RepeatedInt16Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedInt16Size))
 		for _, v := range c.RepeatedInt16 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedInt32) != 0 {
 		canoto.Append(&w, canoto__Scalars__RepeatedInt32__tag)
-		canoto.AppendInt(&w, c.canotoData.RepeatedInt32Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedInt32Size))
 		for _, v := range c.RepeatedInt32 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedInt64) != 0 {
 		canoto.Append(&w, canoto__Scalars__RepeatedInt64__tag)
-		canoto.AppendInt(&w, c.canotoData.RepeatedInt64Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedInt64Size))
 		for _, v := range c.RepeatedInt64 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedUint8) != 0 {
 		canoto.Append(&w, canoto__Scalars__RepeatedUint8__tag)
-		canoto.AppendInt(&w, c.canotoData.RepeatedUint8Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedUint8Size))
 		for _, v := range c.RepeatedUint8 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedUint16) != 0 {
 		canoto.Append(&w, canoto__Scalars__RepeatedUint16__tag)
-		canoto.AppendInt(&w, c.canotoData.RepeatedUint16Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedUint16Size))
 		for _, v := range c.RepeatedUint16 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedUint32) != 0 {
 		canoto.Append(&w, canoto__Scalars__RepeatedUint32__tag)
-		canoto.AppendInt(&w, c.canotoData.RepeatedUint32Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedUint32Size))
 		for _, v := range c.RepeatedUint32 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedUint64) != 0 {
 		canoto.Append(&w, canoto__Scalars__RepeatedUint64__tag)
-		canoto.AppendInt(&w, c.canotoData.RepeatedUint64Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedUint64Size))
 		for _, v := range c.RepeatedUint64 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedSint8) != 0 {
 		canoto.Append(&w, canoto__Scalars__RepeatedSint8__tag)
-		canoto.AppendInt(&w, c.canotoData.RepeatedSint8Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedSint8Size))
 		for _, v := range c.RepeatedSint8 {
 			canoto.AppendSint(&w, v)
 		}
 	}
 	if len(c.RepeatedSint16) != 0 {
 		canoto.Append(&w, canoto__Scalars__RepeatedSint16__tag)
-		canoto.AppendInt(&w, c.canotoData.RepeatedSint16Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedSint16Size))
 		for _, v := range c.RepeatedSint16 {
 			canoto.AppendSint(&w, v)
 		}
 	}
 	if len(c.RepeatedSint32) != 0 {
 		canoto.Append(&w, canoto__Scalars__RepeatedSint32__tag)
-		canoto.AppendInt(&w, c.canotoData.RepeatedSint32Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedSint32Size))
 		for _, v := range c.RepeatedSint32 {
 			canoto.AppendSint(&w, v)
 		}
 	}
 	if len(c.RepeatedSint64) != 0 {
 		canoto.Append(&w, canoto__Scalars__RepeatedSint64__tag)
-		canoto.AppendInt(&w, c.canotoData.RepeatedSint64Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.RepeatedSint64Size))
 		for _, v := range c.RepeatedSint64 {
 			canoto.AppendSint(&w, v)
 		}
@@ -5606,84 +5610,84 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt8) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedInt8__tag)
-		canoto.AppendInt(&w, c.canotoData.FixedRepeatedInt8Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedInt8Size))
 		for _, v := range &c.FixedRepeatedInt8 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt16) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedInt16__tag)
-		canoto.AppendInt(&w, c.canotoData.FixedRepeatedInt16Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedInt16Size))
 		for _, v := range &c.FixedRepeatedInt16 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt32) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedInt32__tag)
-		canoto.AppendInt(&w, c.canotoData.FixedRepeatedInt32Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedInt32Size))
 		for _, v := range &c.FixedRepeatedInt32 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt64) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedInt64__tag)
-		canoto.AppendInt(&w, c.canotoData.FixedRepeatedInt64Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedInt64Size))
 		for _, v := range &c.FixedRepeatedInt64 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint8) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedUint8__tag)
-		canoto.AppendInt(&w, c.canotoData.FixedRepeatedUint8Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedUint8Size))
 		for _, v := range &c.FixedRepeatedUint8 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint16) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedUint16__tag)
-		canoto.AppendInt(&w, c.canotoData.FixedRepeatedUint16Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedUint16Size))
 		for _, v := range &c.FixedRepeatedUint16 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint32) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedUint32__tag)
-		canoto.AppendInt(&w, c.canotoData.FixedRepeatedUint32Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedUint32Size))
 		for _, v := range &c.FixedRepeatedUint32 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint64) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedUint64__tag)
-		canoto.AppendInt(&w, c.canotoData.FixedRepeatedUint64Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedUint64Size))
 		for _, v := range &c.FixedRepeatedUint64 {
 			canoto.AppendInt(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint8) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedSint8__tag)
-		canoto.AppendInt(&w, c.canotoData.FixedRepeatedSint8Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedSint8Size))
 		for _, v := range &c.FixedRepeatedSint8 {
 			canoto.AppendSint(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint16) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedSint16__tag)
-		canoto.AppendInt(&w, c.canotoData.FixedRepeatedSint16Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedSint16Size))
 		for _, v := range &c.FixedRepeatedSint16 {
 			canoto.AppendSint(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint32) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedSint32__tag)
-		canoto.AppendInt(&w, c.canotoData.FixedRepeatedSint32Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedSint32Size))
 		for _, v := range &c.FixedRepeatedSint32 {
 			canoto.AppendSint(&w, v)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedSint64) {
 		canoto.Append(&w, canoto__Scalars__FixedRepeatedSint64__tag)
-		canoto.AppendInt(&w, c.canotoData.FixedRepeatedSint64Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.FixedRepeatedSint64Size))
 		for _, v := range &c.FixedRepeatedSint64 {
 			canoto.AppendSint(&w, v)
 		}
@@ -5781,7 +5785,7 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	}
 	if !canoto.IsZero(c.ConstRepeatedUint64) {
 		canoto.Append(&w, canoto__Scalars__ConstRepeatedUint64__tag)
-		canoto.AppendInt(&w, c.canotoData.ConstRepeatedUint64Size.Load())
+		canoto.AppendInt(&w, int64(c.canotoData.ConstRepeatedUint64Size))
 		for _, v := range &c.ConstRepeatedUint64 {
 			canoto.AppendInt(&w, v)
 		}
