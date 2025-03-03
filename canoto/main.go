@@ -12,9 +12,12 @@ import (
 )
 
 const (
-	canotoFlag  = "canoto"
-	protoFlag   = "proto"
-	versionFlag = "version"
+	canotoFlag     = "canoto"
+	libraryFlag    = "library"
+	protoFlag      = "proto"
+	versionFlag    = "version"
+	concurrentFlag = "concurrent"
+	importFlag     = "import"
 )
 
 func init() {
@@ -36,6 +39,16 @@ func main() {
 				return nil
 			}
 
+			library, err := flags.GetString(libraryFlag)
+			if err != nil {
+				return fmt.Errorf("failed to get library flag: %w", err)
+			}
+			if library != "" {
+				if err := generate.Library(library); err != nil {
+					return fmt.Errorf("failed to generate library in %q: %w", library, err)
+				}
+			}
+
 			canoto, err := flags.GetBool(canotoFlag)
 			if err != nil {
 				return fmt.Errorf("failed to get canoto flag: %w", err)
@@ -45,14 +58,25 @@ func main() {
 				return fmt.Errorf("failed to get proto flag: %w", err)
 			}
 
+			useAtomic, err := flags.GetBool(concurrentFlag)
+			if err != nil {
+				return fmt.Errorf("failed to get proto flag: %w", err)
+			}
+
+			canotoImport, err := flags.GetString(importFlag)
+			if err != nil {
+				return fmt.Errorf("failed to get import flag: %w", err)
+			}
+			canotoImport = `"` + canotoImport + `"`
+
 			for _, arg := range args {
 				if canoto {
-					if err := generate.Canoto(arg); err != nil {
+					if err := generate.Canoto(arg, useAtomic, canotoImport); err != nil {
 						return fmt.Errorf("failed to generate canoto for %q: %w", arg, err)
 					}
 				}
 				if proto {
-					if err := generate.Proto(arg); err != nil {
+					if err := generate.Proto(arg, canotoImport); err != nil {
 						return fmt.Errorf("failed to generate proto for %q: %w", arg, err)
 					}
 				}
@@ -64,7 +88,10 @@ func main() {
 	flags := cmd.Flags()
 	flags.Bool(versionFlag, false, "Display the version and exit")
 	flags.Bool(canotoFlag, true, "Generate canoto file")
+	flags.String(libraryFlag, "", "Generate the canoto library in the specified directory")
 	flags.Bool(protoFlag, false, "Generate proto file")
+	flags.Bool(concurrentFlag, true, "Generate canoto serialization that is safe for concurrent access")
+	flags.String(importFlag, "github.com/StephenButtolph/canoto", "Package to depend on for canoto serialization primitives")
 
 	if err := cmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "command failed %v\n", err)

@@ -11,6 +11,7 @@ type message struct {
 	canonicalizedName string
 	numTypes          int
 	fields            []field
+	useAtomic         bool
 }
 
 func (m *message) OneOfs() []string {

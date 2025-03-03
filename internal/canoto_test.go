@@ -1,7 +1,6 @@
 package examples
 
 import (
-	"reflect"
 	"slices"
 	"strconv"
 	"testing"
@@ -9,9 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/thepudds/fzgen/fuzzer"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/StephenButtolph/canoto"
-	"github.com/StephenButtolph/canoto/internal/proto/pb"
+	"github.com/StephenButtolph/canoto/internal/pb"
 )
 
 func canonicalizeSlice[T any](s []T) []T {
@@ -78,8 +78,34 @@ func canonicalizeCanotoScalars(s *Scalars) *Scalars {
 	for i := range s.CustomFixedRepeatedBytes {
 		s.CustomFixedRepeatedBytes[i] = canonicalizeSlice(s.CustomFixedRepeatedBytes[i])
 	}
-	s.canotoData = canotoData_Scalars{}
-	s.OneOf.canotoData = canotoData_OneOf{}
+	if s.Pointer != nil && s.Pointer.Int32 == 0 {
+		s.Pointer = nil
+	}
+	s.RepeatedPointer = canonicalizeSlice(s.RepeatedPointer)
+	for i := range s.RepeatedPointer {
+		if s.RepeatedPointer[i] != nil && s.RepeatedPointer[i].Int32 == 0 {
+			s.RepeatedPointer[i] = nil
+		}
+	}
+	for i := range s.FixedRepeatedPointer {
+		if s.FixedRepeatedPointer[i] != nil && s.FixedRepeatedPointer[i].Int32 == 0 {
+			s.FixedRepeatedPointer[i] = nil
+		}
+	}
+	if s.Field != nil && s.Field.Int32 == 0 {
+		s.Field = nil
+	}
+	s.RepeatedField = canonicalizeSlice(s.RepeatedField)
+	for i := range s.RepeatedField {
+		if s.RepeatedField[i] != nil && s.RepeatedField[i].Int32 == 0 {
+			s.RepeatedField[i] = nil
+		}
+	}
+	for i := range s.FixedRepeatedField {
+		if s.FixedRepeatedField[i] != nil && s.FixedRepeatedField[i].Int32 == 0 {
+			s.FixedRepeatedField[i] = nil
+		}
+	}
 	return s
 }
 
@@ -143,6 +169,59 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 				B2: b,
 			}
 		}
+	}
+
+	var pointer *pb.LargestFieldNumber
+	if v := s.Pointer.GetInt32(); v != 0 {
+		pointer = &pb.LargestFieldNumber{
+			Int32: v,
+		}
+	}
+	repeatedPointers := make([]*pb.LargestFieldNumber, 0, len(s.RepeatedPointer))
+	for _, v := range s.RepeatedPointer {
+		var ptr *pb.LargestFieldNumber
+		if v := v.GetInt32(); v != 0 {
+			ptr = &pb.LargestFieldNumber{
+				Int32: v,
+			}
+		}
+		repeatedPointers = append(repeatedPointers, ptr)
+	}
+	fixedRepeatedPointers := make([]*pb.LargestFieldNumber, 0, len(s.FixedRepeatedPointer))
+	for _, v := range s.FixedRepeatedPointer {
+		var ptr *pb.LargestFieldNumber
+		if v := v.GetInt32(); v != 0 {
+			ptr = &pb.LargestFieldNumber{
+				Int32: v,
+			}
+		}
+		fixedRepeatedPointers = append(fixedRepeatedPointers, ptr)
+	}
+	var field *pb.LargestFieldNumber
+	if v := s.Field.GetInt32(); v != 0 {
+		field = &pb.LargestFieldNumber{
+			Int32: v,
+		}
+	}
+	repeatedFields := make([]*pb.LargestFieldNumber, 0, len(s.RepeatedField))
+	for _, v := range s.RepeatedField {
+		var field *pb.LargestFieldNumber
+		if v := v.GetInt32(); v != 0 {
+			field = &pb.LargestFieldNumber{
+				Int32: v,
+			}
+		}
+		repeatedFields = append(repeatedFields, field)
+	}
+	fixedRepeatedFields := make([]*pb.LargestFieldNumber, 0, len(s.FixedRepeatedField))
+	for _, v := range s.FixedRepeatedField {
+		var field *pb.LargestFieldNumber
+		if v := v.GetInt32(); v != 0 {
+			field = &pb.LargestFieldNumber{
+				Int32: v,
+			}
+		}
+		fixedRepeatedFields = append(fixedRepeatedFields, field)
 	}
 	return &pb.Scalars{
 		Int8:               s.Int8,
@@ -222,7 +301,13 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 		CustomFixedRepeatedBytes:      canonicalizeSlice(customFixedRepeatedBytes),
 		CustomFixedRepeatedFixedBytes: s.CustomFixedRepeatedFixedBytes,
 
-		OneOf: oneOf,
+		OneOf:                oneOf,
+		Pointer:              pointer,
+		RepeatedPointer:      canonicalizeSlice(repeatedPointers),
+		FixedRepeatedPointer: canonicalizeSlice(fixedRepeatedPointers),
+		Field:                field,
+		RepeatedField:        canonicalizeSlice(repeatedFields),
+		FixedRepeatedField:   canonicalizeSlice(fixedRepeatedFields),
 	}
 }
 
@@ -230,7 +315,7 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 	var largestFieldNumber *pb.LargestFieldNumber
 	if s.LargestFieldNumber.Int32 != 0 {
 		largestFieldNumber = &pb.LargestFieldNumber{
-			Int32: s.LargestFieldNumber.Int32,
+			Int32: uint64(s.LargestFieldNumber.Int32),
 		}
 	}
 	repeatedLargestFieldNumbers := make([]*pb.LargestFieldNumber, len(s.RepeatedLargestFieldNumber))
@@ -238,7 +323,7 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 		v := &s.RepeatedLargestFieldNumber[i]
 
 		repeatedLargestFieldNumbers[i] = &pb.LargestFieldNumber{
-			Int32: v.Int32,
+			Int32: uint64(v.Int32),
 		}
 	}
 	var (
@@ -249,7 +334,7 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 		v := &s.FixedRepeatedLargestFieldNumber[i]
 
 		fixedLargestFieldNumbers[i] = &pb.LargestFieldNumber{
-			Int32: v.Int32,
+			Int32: uint64(v.Int32),
 		}
 		isZero = isZero && v.Int32 == 0
 	}
@@ -437,6 +522,72 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 			pbs.CustomFixedRepeatedFixedBytes = append(pbs.CustomFixedRepeatedFixedBytes, slices.Clone(v[:]))
 		}
 	}
+	if s.Pointer != nil && s.Pointer.Int32 != 0 {
+		pbs.Pointer = &pb.LargestFieldNumber{
+			Int32: uint64(s.Pointer.Int32),
+		}
+	}
+	if len(s.RepeatedPointer) != 0 {
+		for _, v := range s.RepeatedPointer {
+			var ptr *pb.LargestFieldNumber
+			if v != nil && v.Int32 != 0 {
+				ptr = &pb.LargestFieldNumber{
+					Int32: uint64(v.Int32),
+				}
+			}
+			pbs.RepeatedPointer = append(pbs.RepeatedPointer, ptr)
+		}
+	}
+	{
+		isZero := true
+		for _, v := range s.FixedRepeatedPointer {
+			isZero = isZero && (v == nil || v.Int32 == 0)
+		}
+		if !isZero {
+			for _, v := range s.FixedRepeatedPointer {
+				var ptr *pb.LargestFieldNumber
+				if v != nil && v.Int32 != 0 {
+					ptr = &pb.LargestFieldNumber{
+						Int32: uint64(v.Int32),
+					}
+				}
+				pbs.FixedRepeatedPointer = append(pbs.FixedRepeatedPointer, ptr)
+			}
+		}
+	}
+	if s.Field != nil && s.Field.Int32 != 0 {
+		pbs.Field = &pb.LargestFieldNumber{
+			Int32: uint64(s.Field.Int32),
+		}
+	}
+	if len(s.RepeatedField) != 0 {
+		for _, v := range s.RepeatedField {
+			var ptr *pb.LargestFieldNumber
+			if v != nil && v.Int32 != 0 {
+				ptr = &pb.LargestFieldNumber{
+					Int32: uint64(v.Int32),
+				}
+			}
+			pbs.RepeatedField = append(pbs.RepeatedField, ptr)
+		}
+	}
+	{
+		isZero := true
+		for _, v := range s.FixedRepeatedField {
+			isZero = isZero && (v == nil || v.Int32 == 0)
+		}
+		if !isZero {
+			for _, v := range s.FixedRepeatedField {
+				var ptr *pb.LargestFieldNumber
+				if v != nil && v.Int32 != 0 {
+					ptr = &pb.LargestFieldNumber{
+						Int32: uint64(v.Int32),
+					}
+				}
+				pbs.FixedRepeatedField = append(pbs.FixedRepeatedField, ptr)
+			}
+		}
+	}
 	return &pbs
 }
 
@@ -452,6 +603,7 @@ func FuzzScalars_UnmarshalCanoto(f *testing.F) {
 		}
 
 		canotoScalars = canonicalizeCanotoScalars(canotoScalars)
+		canotoScalars.CalculateCanotoCache()
 
 		pbScalars := canotoScalarsToProto(canotoScalars)
 		pbScalarsBytes, err := proto.Marshal(pbScalars)
@@ -460,7 +612,11 @@ func FuzzScalars_UnmarshalCanoto(f *testing.F) {
 		}
 
 		canotoScalarsFromProto := &Scalars{}
-		require.NoError(canotoScalarsFromProto.UnmarshalCanoto(pbScalarsBytes))
+		if err := canotoScalarsFromProto.UnmarshalCanoto(pbScalarsBytes); err != nil {
+			// OneOf fields serialized by proto can be incompatible with canoto.
+			require.ErrorIs(err, canoto.ErrInvalidFieldOrder)
+			return
+		}
 		require.True(canotoScalarsFromProto.ValidCanoto())
 		require.Equal(
 			canotoScalars,
@@ -486,20 +642,15 @@ func FuzzScalars_MarshalCanoto(f *testing.F) {
 		w := canoto.Writer{
 			B: make([]byte, 0, size),
 		}
-		canotoScalars.MarshalCanotoInto(&w)
+		w = canotoScalars.MarshalCanotoInto(w)
 		require.Len(w.B, size)
 
 		var pbScalars pb.Scalars
 		require.NoError(proto.Unmarshal(w.B, &pbScalars))
-		if !reflect.DeepEqual(
+		require.Equal(
 			canotoScalarsToProto(canotoScalars),
 			canonicalizeProtoScalars(&pbScalars),
-		) {
-			require.Equal(
-				canotoScalarsToProto(canotoScalars),
-				canonicalizeProtoScalars(&pbScalars),
-			)
-		}
+		)
 	})
 }
 
@@ -520,8 +671,25 @@ func FuzzScalars_Canonical(f *testing.F) {
 		w := canoto.Writer{
 			B: make([]byte, 0, size),
 		}
-		scalars.MarshalCanotoInto(&w)
+		w = scalars.MarshalCanotoInto(w)
 		require.Equal(b, w.B)
+	})
+}
+
+func FuzzScalars_UnmarshalEquals(f *testing.F) {
+	f.Fuzz(func(t *testing.T, b []byte) {
+		require := require.New(t)
+
+		var (
+			scalars             Scalars
+			scalarsRecalculated Scalars
+		)
+		if err := scalars.UnmarshalCanoto(b); err != nil {
+			return
+		}
+		require.NoError(scalarsRecalculated.UnmarshalCanoto(b))
+		scalarsRecalculated.CalculateCanotoCache()
+		require.Equal(&scalarsRecalculated, &scalars)
 	})
 }
 
@@ -613,7 +781,7 @@ func TestScalars_Concurrent_MarshalCanoto(t *testing.T) {
 	}
 
 	expected := s.MarshalCanoto()
-	actual := make(chan []byte, 10)
+	actual := make(chan []byte, 100)
 	for range cap(actual) {
 		go func() {
 			actual <- s.MarshalCanoto()
@@ -624,10 +792,10 @@ func TestScalars_Concurrent_MarshalCanoto(t *testing.T) {
 	}
 }
 
-func BenchmarkScalars_MarshalCanoto(b *testing.B) {
-	b.Run("full stack", func(b *testing.B) {
+func BenchmarkScalars_Canoto(b *testing.B) {
+	b.Run("marshal/full/stack", func(b *testing.B) {
 		for range b.N {
-			cbScalars := Scalars{
+			s := Scalars{
 				Int8:     31,
 				Int16:    2164,
 				Int32:    216457,
@@ -712,102 +880,12 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 					D:  4,
 				},
 			}
-			cbScalars.MarshalCanoto()
+			s.MarshalCanoto()
 		}
 	})
-	b.Run("full heap", func(b *testing.B) {
-		cbScalars := Scalars{
-			Int8:     31,
-			Int16:    2164,
-			Int32:    216457,
-			Int64:    -2138746,
-			Uint8:    254,
-			Uint16:   21645,
-			Uint32:   32485976,
-			Uint64:   287634,
-			Sint8:    -31,
-			Sint16:   -2164,
-			Sint32:   -12786345,
-			Sint64:   98761243,
-			Fixed32:  98765234,
-			Fixed64:  1234576,
-			Sfixed32: -21348976,
-			Sfixed64: 98756432,
-			Bool:     true,
-			String:   "hi my name is Bob",
-			Bytes:    []byte("hi my name is Bob too"),
-			LargestFieldNumber: LargestFieldNumber[int32]{
-				Int32: 216457,
-			},
-
-			RepeatedInt8:     []int8{1, 2, 3},
-			RepeatedInt16:    []int16{1, 2, 3},
-			RepeatedInt32:    []int32{1, 2, 3},
-			RepeatedInt64:    []int64{1, 2, 3},
-			RepeatedUint8:    []uint8{1, 2, 3},
-			RepeatedUint16:   []uint16{1, 2, 3},
-			RepeatedUint32:   []uint32{1, 2, 3},
-			RepeatedUint64:   []uint64{1, 2, 3},
-			RepeatedSint8:    []int8{1, 2, 3},
-			RepeatedSint16:   []int16{1, 2, 3},
-			RepeatedSint32:   []int32{1, 2, 3},
-			RepeatedSint64:   []int64{1, 2, 3},
-			RepeatedFixed32:  []uint32{1, 2, 3},
-			RepeatedFixed64:  []uint64{1, 2, 3},
-			RepeatedSfixed32: []int32{1, 2, 3},
-			RepeatedSfixed64: []int64{1, 2, 3},
-			RepeatedBool:     []bool{true, false, true},
-			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
-			RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
-			RepeatedLargestFieldNumber: []LargestFieldNumber[int32]{
-				{Int32: 123455},
-				{Int32: 876523},
-			},
-
-			FixedRepeatedInt8:       [3]int8{1, 2, 3},
-			FixedRepeatedInt16:      [3]int16{1, 2, 3},
-			FixedRepeatedInt32:      [3]int32{1, 2, 3},
-			FixedRepeatedInt64:      [3]int64{1, 2, 3},
-			FixedRepeatedUint8:      [3]uint8{1, 2, 3},
-			FixedRepeatedUint16:     [3]uint16{1, 2, 3},
-			FixedRepeatedUint32:     [3]uint32{1, 2, 3},
-			FixedRepeatedUint64:     [3]uint64{1, 2, 3},
-			FixedRepeatedSint8:      [3]int8{1, 2, 3},
-			FixedRepeatedSint16:     [3]int16{1, 2, 3},
-			FixedRepeatedSint32:     [3]int32{1, 2, 3},
-			FixedRepeatedSint64:     [3]int64{1, 2, 3},
-			FixedRepeatedFixed32:    [3]uint32{1, 2, 3},
-			FixedRepeatedFixed64:    [3]uint64{1, 2, 3},
-			FixedRepeatedSfixed32:   [3]int32{1, 2, 3},
-			FixedRepeatedSfixed64:   [3]int64{1, 2, 3},
-			FixedRepeatedBool:       [3]bool{true, false, true},
-			FixedRepeatedString:     [3]string{"hi", "my", "name"},
-			FixedBytes:              [32]byte{1},
-			RepeatedFixedBytes:      [][32]byte{{1}, {2}, {3}},
-			FixedRepeatedBytes:      [3][]byte{{1}, {2}, {3}},
-			FixedRepeatedFixedBytes: [3][32]byte{{1}, {2}, {3}},
-			FixedRepeatedLargestFieldNumber: [3]LargestFieldNumber[int32]{
-				{Int32: 123455},
-				{Int32: 876523},
-				{Int32: -576214},
-			},
-
-			ConstRepeatedUint64: [constRepeatedUint64Len]uint64{1, 2, 3},
-
-			OneOf: OneOf{
-				A1: 1,
-				B2: 2,
-				C:  3,
-				D:  4,
-			},
-		}
+	b.Run("marshal/primitives/stack", func(b *testing.B) {
 		for range b.N {
-			cbScalars.MarshalCanoto()
-		}
-	})
-	b.Run("primitives stack", func(b *testing.B) {
-		for range b.N {
-			cbScalars := Scalars{
+			s := Scalars{
 				Int8:     31,
 				Int16:    2164,
 				Int32:    216457,
@@ -831,192 +909,182 @@ func BenchmarkScalars_MarshalCanoto(b *testing.B) {
 					Int32: 216457,
 				},
 			}
-			cbScalars.MarshalCanoto()
+			s.MarshalCanoto()
 		}
 	})
-	b.Run("primitives heap", func(b *testing.B) {
-		cbScalars := Scalars{
-			Int8:     31,
-			Int16:    2164,
-			Int32:    216457,
-			Int64:    -2138746,
-			Uint8:    254,
-			Uint16:   21645,
-			Uint32:   32485976,
-			Uint64:   287634,
-			Sint8:    -31,
-			Sint16:   -2164,
-			Sint32:   -12786345,
-			Sint64:   98761243,
-			Fixed32:  98765234,
-			Fixed64:  1234576,
-			Sfixed32: -21348976,
-			Sfixed64: 98756432,
-			Bool:     true,
-			String:   "hi my name is Bob",
-			Bytes:    []byte("hi my name is Bob too"),
-			LargestFieldNumber: LargestFieldNumber[int32]{
-				Int32: 216457,
-			},
-		}
-		for range b.N {
-			cbScalars.MarshalCanoto()
-		}
-	})
-}
+	full := Scalars{
+		Int8:     31,
+		Int16:    2164,
+		Int32:    216457,
+		Int64:    -2138746,
+		Uint8:    254,
+		Uint16:   21645,
+		Uint32:   32485976,
+		Uint64:   287634,
+		Sint8:    -31,
+		Sint16:   -2164,
+		Sint32:   -12786345,
+		Sint64:   98761243,
+		Fixed32:  98765234,
+		Fixed64:  1234576,
+		Sfixed32: -21348976,
+		Sfixed64: 98756432,
+		Bool:     true,
+		String:   "hi my name is Bob",
+		Bytes:    []byte("hi my name is Bob too"),
+		LargestFieldNumber: LargestFieldNumber[int32]{
+			Int32: 216457,
+		},
 
-func BenchmarkScalars_UnmarshalCanoto(b *testing.B) {
-	b.Run("full", func(b *testing.B) {
-		cbScalars := Scalars{
-			Int8:     31,
-			Int16:    2164,
-			Int32:    216457,
-			Int64:    -2138746,
-			Uint8:    254,
-			Uint16:   21645,
-			Uint32:   32485976,
-			Uint64:   287634,
-			Sint8:    -31,
-			Sint16:   -2164,
-			Sint32:   -12786345,
-			Sint64:   98761243,
-			Fixed32:  98765234,
-			Fixed64:  1234576,
-			Sfixed32: -21348976,
-			Sfixed64: 98756432,
-			Bool:     true,
-			String:   "hi my name is Bob",
-			Bytes:    []byte("hi my name is Bob too"),
-			LargestFieldNumber: LargestFieldNumber[int32]{
-				Int32: 216457,
-			},
+		RepeatedInt8:     []int8{1, 2, 3},
+		RepeatedInt16:    []int16{1, 2, 3},
+		RepeatedInt32:    []int32{1, 2, 3},
+		RepeatedInt64:    []int64{1, 2, 3},
+		RepeatedUint8:    []uint8{1, 2, 3},
+		RepeatedUint16:   []uint16{1, 2, 3},
+		RepeatedUint32:   []uint32{1, 2, 3},
+		RepeatedUint64:   []uint64{1, 2, 3},
+		RepeatedSint8:    []int8{1, 2, 3},
+		RepeatedSint16:   []int16{1, 2, 3},
+		RepeatedSint32:   []int32{1, 2, 3},
+		RepeatedSint64:   []int64{1, 2, 3},
+		RepeatedFixed32:  []uint32{1, 2, 3},
+		RepeatedFixed64:  []uint64{1, 2, 3},
+		RepeatedSfixed32: []int32{1, 2, 3},
+		RepeatedSfixed64: []int64{1, 2, 3},
+		RepeatedBool:     []bool{true, false, true},
+		RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
+		RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
+		RepeatedLargestFieldNumber: []LargestFieldNumber[int32]{
+			{Int32: 123455},
+			{Int32: 876523},
+		},
 
-			RepeatedInt8:     []int8{1, 2, 3},
-			RepeatedInt16:    []int16{1, 2, 3},
-			RepeatedInt32:    []int32{1, 2, 3},
-			RepeatedInt64:    []int64{1, 2, 3},
-			RepeatedUint8:    []uint8{1, 2, 3},
-			RepeatedUint16:   []uint16{1, 2, 3},
-			RepeatedUint32:   []uint32{1, 2, 3},
-			RepeatedUint64:   []uint64{1, 2, 3},
-			RepeatedSint8:    []int8{1, 2, 3},
-			RepeatedSint16:   []int16{1, 2, 3},
-			RepeatedSint32:   []int32{1, 2, 3},
-			RepeatedSint64:   []int64{1, 2, 3},
-			RepeatedFixed32:  []uint32{1, 2, 3},
-			RepeatedFixed64:  []uint64{1, 2, 3},
-			RepeatedSfixed32: []int32{1, 2, 3},
-			RepeatedSfixed64: []int64{1, 2, 3},
-			RepeatedBool:     []bool{true, false, true},
-			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
-			RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
-			RepeatedLargestFieldNumber: []LargestFieldNumber[int32]{
-				{Int32: 123455},
-				{Int32: 876523},
-			},
+		FixedRepeatedInt8:       [3]int8{1, 2, 3},
+		FixedRepeatedInt16:      [3]int16{1, 2, 3},
+		FixedRepeatedInt32:      [3]int32{1, 2, 3},
+		FixedRepeatedInt64:      [3]int64{1, 2, 3},
+		FixedRepeatedUint8:      [3]uint8{1, 2, 3},
+		FixedRepeatedUint16:     [3]uint16{1, 2, 3},
+		FixedRepeatedUint32:     [3]uint32{1, 2, 3},
+		FixedRepeatedUint64:     [3]uint64{1, 2, 3},
+		FixedRepeatedSint8:      [3]int8{1, 2, 3},
+		FixedRepeatedSint16:     [3]int16{1, 2, 3},
+		FixedRepeatedSint32:     [3]int32{1, 2, 3},
+		FixedRepeatedSint64:     [3]int64{1, 2, 3},
+		FixedRepeatedFixed32:    [3]uint32{1, 2, 3},
+		FixedRepeatedFixed64:    [3]uint64{1, 2, 3},
+		FixedRepeatedSfixed32:   [3]int32{1, 2, 3},
+		FixedRepeatedSfixed64:   [3]int64{1, 2, 3},
+		FixedRepeatedBool:       [3]bool{true, false, true},
+		FixedRepeatedString:     [3]string{"hi", "my", "name"},
+		FixedBytes:              [32]byte{1},
+		RepeatedFixedBytes:      [][32]byte{{1}, {2}, {3}},
+		FixedRepeatedBytes:      [3][]byte{{1}, {2}, {3}},
+		FixedRepeatedFixedBytes: [3][32]byte{{1}, {2}, {3}},
+		FixedRepeatedLargestFieldNumber: [3]LargestFieldNumber[int32]{
+			{Int32: 123455},
+			{Int32: 876523},
+			{Int32: -576214},
+		},
 
-			FixedRepeatedInt8:       [3]int8{1, 2, 3},
-			FixedRepeatedInt16:      [3]int16{1, 2, 3},
-			FixedRepeatedInt32:      [3]int32{1, 2, 3},
-			FixedRepeatedInt64:      [3]int64{1, 2, 3},
-			FixedRepeatedUint8:      [3]uint8{1, 2, 3},
-			FixedRepeatedUint16:     [3]uint16{1, 2, 3},
-			FixedRepeatedUint32:     [3]uint32{1, 2, 3},
-			FixedRepeatedUint64:     [3]uint64{1, 2, 3},
-			FixedRepeatedSint8:      [3]int8{1, 2, 3},
-			FixedRepeatedSint16:     [3]int16{1, 2, 3},
-			FixedRepeatedSint32:     [3]int32{1, 2, 3},
-			FixedRepeatedSint64:     [3]int64{1, 2, 3},
-			FixedRepeatedFixed32:    [3]uint32{1, 2, 3},
-			FixedRepeatedFixed64:    [3]uint64{1, 2, 3},
-			FixedRepeatedSfixed32:   [3]int32{1, 2, 3},
-			FixedRepeatedSfixed64:   [3]int64{1, 2, 3},
-			FixedRepeatedBool:       [3]bool{true, false, true},
-			FixedRepeatedString:     [3]string{"hi", "my", "name"},
-			FixedBytes:              [32]byte{1},
-			RepeatedFixedBytes:      [][32]byte{{1}, {2}, {3}},
-			FixedRepeatedBytes:      [3][]byte{{1}, {2}, {3}},
-			FixedRepeatedFixedBytes: [3][32]byte{{1}, {2}, {3}},
-			FixedRepeatedLargestFieldNumber: [3]LargestFieldNumber[int32]{
-				{Int32: 123455},
-				{Int32: 876523},
-				{Int32: -576214},
-			},
+		ConstRepeatedUint64: [constRepeatedUint64Len]uint64{1, 2, 3},
 
-			ConstRepeatedUint64: [constRepeatedUint64Len]uint64{1, 2, 3},
+		OneOf: OneOf{
+			A1: 1,
+			B2: 2,
+			C:  3,
+			D:  4,
+		},
+	}
+	simple := Scalars{
+		Int8:     31,
+		Int16:    2164,
+		Int32:    216457,
+		Int64:    -2138746,
+		Uint8:    254,
+		Uint16:   21645,
+		Uint32:   32485976,
+		Uint64:   287634,
+		Sint8:    -31,
+		Sint16:   -2164,
+		Sint32:   -12786345,
+		Sint64:   98761243,
+		Fixed32:  98765234,
+		Fixed64:  1234576,
+		Sfixed32: -21348976,
+		Sfixed64: 98756432,
+		Bool:     true,
+		String:   "hi my name is Bob",
+		Bytes:    []byte("hi my name is Bob too"),
+		LargestFieldNumber: LargestFieldNumber[int32]{
+			Int32: 216457,
+		},
+	}
+	marshalBenchmarks := []struct {
+		name string
+		s    *Scalars
+	}{
+		{
+			name: "full",
+			s:    &full,
+		},
+		{
+			name: "primitives",
+			s:    &simple,
+		},
+	}
+	for _, bm := range marshalBenchmarks {
+		b.Run("marshal/"+bm.name+"/heap", func(b *testing.B) {
+			for range b.N {
+				bm.s.MarshalCanoto()
+			}
+		})
+	}
 
-			OneOf: OneOf{
-				A1: 1,
-				B2: 2,
-				C:  3,
-				D:  4,
-			},
-		}
-		bytes := cbScalars.MarshalCanoto()
-
+	unmarshalBenchmarks := []struct {
+		name  string
+		bytes []byte
+	}{
+		{
+			name:  "full",
+			bytes: full.MarshalCanoto(),
+		},
+		{
+			name:  "primitives",
+			bytes: simple.MarshalCanoto(),
+		},
+	}
+	for _, bm := range unmarshalBenchmarks {
 		for _, unsafe := range []bool{false, true} {
-			b.Run("unsafe="+strconv.FormatBool(unsafe), func(b *testing.B) {
+			b.Run("unmarshal/"+bm.name+"/unsafe="+strconv.FormatBool(unsafe), func(b *testing.B) {
 				for range b.N {
 					var (
-						scalars Scalars
-						reader  = canoto.Reader{
-							B:      bytes,
+						s      Scalars
+						reader = canoto.Reader{
+							B:      bm.bytes,
 							Unsafe: unsafe,
 						}
 					)
-					_ = scalars.UnmarshalCanotoFrom(&reader)
+					_ = s.UnmarshalCanotoFrom(reader)
 				}
 			})
 		}
-	})
-	b.Run("primitives", func(b *testing.B) {
-		cbScalars := Scalars{
-			Int8:     31,
-			Int16:    2164,
-			Int32:    216457,
-			Int64:    -2138746,
-			Uint8:    254,
-			Uint16:   21645,
-			Uint32:   32485976,
-			Uint64:   287634,
-			Sint8:    -31,
-			Sint16:   -2164,
-			Sint32:   -12786345,
-			Sint64:   98761243,
-			Fixed32:  98765234,
-			Fixed64:  1234576,
-			Sfixed32: -21348976,
-			Sfixed64: 98756432,
-			Bool:     true,
-			String:   "hi my name is Bob",
-			Bytes:    []byte("hi my name is Bob too"),
-			LargestFieldNumber: LargestFieldNumber[int32]{
-				Int32: 216457,
-			},
-		}
-		bytes := cbScalars.MarshalCanoto()
+	}
 
-		for _, unsafe := range []bool{false, true} {
-			b.Run("unsafe="+strconv.FormatBool(unsafe), func(b *testing.B) {
-				for range b.N {
-					var (
-						scalars Scalars
-						reader  = canoto.Reader{
-							B:      bytes,
-							Unsafe: unsafe,
-						}
-					)
-					_ = scalars.UnmarshalCanotoFrom(&reader)
-				}
-			})
-		}
-	})
+	for _, bm := range marshalBenchmarks {
+		b.Run("calculateCache/"+bm.name, func(b *testing.B) {
+			for range b.N {
+				bm.s.CalculateCanotoCache()
+			}
+		})
+	}
 }
 
-func BenchmarkScalars_MarshalProto(b *testing.B) {
-	b.Run("full stack", func(b *testing.B) {
+func BenchmarkScalars_Proto(b *testing.B) {
+	b.Run("marshal/full/stack", func(b *testing.B) {
 		for range b.N {
-			pbScalars := pb.Scalars{
+			s := pb.Scalars{
 				Int8:     31,
 				Int16:    2164,
 				Int32:    216457,
@@ -1097,7 +1165,7 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 				FixedRepeatedLargestFieldNumber: []*pb.LargestFieldNumber{
 					{Int32: 123455},
 					{Int32: 876523},
-					{Int32: -576214},
+					{Int32: 576214},
 				},
 
 				ConstRepeatedUint64: []uint64{1, 2, 3},
@@ -1109,110 +1177,12 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 					D: 4,
 				},
 			}
-			_, _ = proto.Marshal(&pbScalars)
+			_, _ = proto.Marshal(&s)
 		}
 	})
-	b.Run("full heap", func(b *testing.B) {
-		pbScalars := pb.Scalars{
-			Int8:     31,
-			Int16:    2164,
-			Int32:    216457,
-			Int64:    -2138746,
-			Uint8:    254,
-			Uint16:   21645,
-			Uint32:   32485976,
-			Uint64:   287634,
-			Sint8:    -31,
-			Sint16:   -2164,
-			Sint32:   -12786345,
-			Sint64:   98761243,
-			Fixed32:  98765234,
-			Fixed64:  1234576,
-			Sfixed32: -21348976,
-			Sfixed64: 98756432,
-			Bool:     true,
-			String_:  "hi my name is Bob",
-			Bytes:    []byte("hi my name is Bob too"),
-			LargestFieldNumber: &pb.LargestFieldNumber{
-				Int32: 216457,
-			},
-
-			RepeatedInt8:     []int32{1, 2, 3},
-			RepeatedInt16:    []int32{1, 2, 3},
-			RepeatedInt32:    []int32{1, 2, 3},
-			RepeatedInt64:    []int64{1, 2, 3},
-			RepeatedUint8:    []uint32{1, 2, 3},
-			RepeatedUint16:   []uint32{1, 2, 3},
-			RepeatedUint32:   []uint32{1, 2, 3},
-			RepeatedUint64:   []uint64{1, 2, 3},
-			RepeatedSint8:    []int32{1, 2, 3},
-			RepeatedSint16:   []int32{1, 2, 3},
-			RepeatedSint32:   []int32{1, 2, 3},
-			RepeatedSint64:   []int64{1, 2, 3},
-			RepeatedFixed32:  []uint32{1, 2, 3},
-			RepeatedFixed64:  []uint64{1, 2, 3},
-			RepeatedSfixed32: []int32{1, 2, 3},
-			RepeatedSfixed64: []int64{1, 2, 3},
-			RepeatedBool:     []bool{true, false, true},
-			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
-			RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
-			RepeatedLargestFieldNumber: []*pb.LargestFieldNumber{
-				{Int32: 123455},
-				{Int32: 876523},
-			},
-
-			FixedRepeatedInt8:     []int32{1, 2, 3},
-			FixedRepeatedInt16:    []int32{1, 2, 3},
-			FixedRepeatedInt32:    []int32{1, 2, 3},
-			FixedRepeatedInt64:    []int64{1, 2, 3},
-			FixedRepeatedUint8:    []uint32{1, 2, 3},
-			FixedRepeatedUint16:   []uint32{1, 2, 3},
-			FixedRepeatedUint32:   []uint32{1, 2, 3},
-			FixedRepeatedUint64:   []uint64{1, 2, 3},
-			FixedRepeatedSint8:    []int32{1, 2, 3},
-			FixedRepeatedSint16:   []int32{1, 2, 3},
-			FixedRepeatedSint32:   []int32{1, 2, 3},
-			FixedRepeatedSint64:   []int64{1, 2, 3},
-			FixedRepeatedFixed32:  []uint32{1, 2, 3},
-			FixedRepeatedFixed64:  []uint64{1, 2, 3},
-			FixedRepeatedSfixed32: []int32{1, 2, 3},
-			FixedRepeatedSfixed64: []int64{1, 2, 3},
-			FixedRepeatedBool:     []bool{true, false, true},
-			FixedRepeatedString:   []string{"hi", "my", "name"},
-			FixedBytes:            []byte{0: 1, 31: 0},
-			RepeatedFixedBytes: [][]byte{
-				{0: 1, 31: 0},
-				{0: 2, 31: 0},
-				{0: 3, 31: 0},
-			},
-			FixedRepeatedBytes: [][]byte{{1}, {2}, {3}},
-			FixedRepeatedFixedBytes: [][]byte{
-				{0: 1, 31: 0},
-				{0: 2, 31: 0},
-				{0: 3, 31: 0},
-			},
-			FixedRepeatedLargestFieldNumber: []*pb.LargestFieldNumber{
-				{Int32: 123455},
-				{Int32: 876523},
-				{Int32: -576214},
-			},
-
-			ConstRepeatedUint64: []uint64{1, 2, 3},
-
-			OneOf: &pb.OneOf{
-				A: &pb.OneOf_A1{A1: 1},
-				B: &pb.OneOf_B2{B2: 2},
-				C: 3,
-				D: 4,
-			},
-		}
+	b.Run("marshal/primitives/stack", func(b *testing.B) {
 		for range b.N {
-			_, _ = proto.Marshal(&pbScalars)
-		}
-	})
-	b.Run("primitives stack", func(b *testing.B) {
-		for range b.N {
-			pbScalars := pb.Scalars{
+			s := pb.Scalars{
 				Int8:     31,
 				Int16:    2164,
 				Int32:    216457,
@@ -1236,186 +1206,388 @@ func BenchmarkScalars_MarshalProto(b *testing.B) {
 					Int32: 216457,
 				},
 			}
-			_, _ = proto.Marshal(&pbScalars)
+			_, _ = proto.Marshal(&s)
 		}
 	})
-	b.Run("primitives heap", func(b *testing.B) {
-		pbScalars := pb.Scalars{
-			Int8:     31,
-			Int16:    2164,
-			Int32:    216457,
-			Int64:    -2138746,
-			Uint8:    254,
-			Uint16:   21645,
-			Uint32:   32485976,
-			Uint64:   287634,
-			Sint8:    -31,
-			Sint16:   -2164,
-			Sint32:   -12786345,
-			Sint64:   98761243,
-			Fixed32:  98765234,
-			Fixed64:  1234576,
-			Sfixed32: -21348976,
-			Sfixed64: 98756432,
-			Bool:     true,
-			String_:  "hi my name is Bob",
-			Bytes:    []byte("hi my name is Bob too"),
-			LargestFieldNumber: &pb.LargestFieldNumber{
-				Int32: 216457,
-			},
-		}
-		for range b.N {
-			_, _ = proto.Marshal(&pbScalars)
-		}
-	})
+	full := pb.Scalars{
+		Int8:     31,
+		Int16:    2164,
+		Int32:    216457,
+		Int64:    -2138746,
+		Uint8:    254,
+		Uint16:   21645,
+		Uint32:   32485976,
+		Uint64:   287634,
+		Sint8:    -31,
+		Sint16:   -2164,
+		Sint32:   -12786345,
+		Sint64:   98761243,
+		Fixed32:  98765234,
+		Fixed64:  1234576,
+		Sfixed32: -21348976,
+		Sfixed64: 98756432,
+		Bool:     true,
+		String_:  "hi my name is Bob",
+		Bytes:    []byte("hi my name is Bob too"),
+		LargestFieldNumber: &pb.LargestFieldNumber{
+			Int32: 216457,
+		},
+
+		RepeatedInt8:     []int32{1, 2, 3},
+		RepeatedInt16:    []int32{1, 2, 3},
+		RepeatedInt32:    []int32{1, 2, 3},
+		RepeatedInt64:    []int64{1, 2, 3},
+		RepeatedUint8:    []uint32{1, 2, 3},
+		RepeatedUint16:   []uint32{1, 2, 3},
+		RepeatedUint32:   []uint32{1, 2, 3},
+		RepeatedUint64:   []uint64{1, 2, 3},
+		RepeatedSint8:    []int32{1, 2, 3},
+		RepeatedSint16:   []int32{1, 2, 3},
+		RepeatedSint32:   []int32{1, 2, 3},
+		RepeatedSint64:   []int64{1, 2, 3},
+		RepeatedFixed32:  []uint32{1, 2, 3},
+		RepeatedFixed64:  []uint64{1, 2, 3},
+		RepeatedSfixed32: []int32{1, 2, 3},
+		RepeatedSfixed64: []int64{1, 2, 3},
+		RepeatedBool:     []bool{true, false, true},
+		RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
+		RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
+		RepeatedLargestFieldNumber: []*pb.LargestFieldNumber{
+			{Int32: 123455},
+			{Int32: 876523},
+		},
+
+		FixedRepeatedInt8:     []int32{1, 2, 3},
+		FixedRepeatedInt16:    []int32{1, 2, 3},
+		FixedRepeatedInt32:    []int32{1, 2, 3},
+		FixedRepeatedInt64:    []int64{1, 2, 3},
+		FixedRepeatedUint8:    []uint32{1, 2, 3},
+		FixedRepeatedUint16:   []uint32{1, 2, 3},
+		FixedRepeatedUint32:   []uint32{1, 2, 3},
+		FixedRepeatedUint64:   []uint64{1, 2, 3},
+		FixedRepeatedSint8:    []int32{1, 2, 3},
+		FixedRepeatedSint16:   []int32{1, 2, 3},
+		FixedRepeatedSint32:   []int32{1, 2, 3},
+		FixedRepeatedSint64:   []int64{1, 2, 3},
+		FixedRepeatedFixed32:  []uint32{1, 2, 3},
+		FixedRepeatedFixed64:  []uint64{1, 2, 3},
+		FixedRepeatedSfixed32: []int32{1, 2, 3},
+		FixedRepeatedSfixed64: []int64{1, 2, 3},
+		FixedRepeatedBool:     []bool{true, false, true},
+		FixedRepeatedString:   []string{"hi", "my", "name"},
+		FixedBytes:            []byte{0: 1, 31: 0},
+		RepeatedFixedBytes: [][]byte{
+			{0: 1, 31: 0},
+			{0: 2, 31: 0},
+			{0: 3, 31: 0},
+		},
+		FixedRepeatedBytes: [][]byte{{1}, {2}, {3}},
+		FixedRepeatedFixedBytes: [][]byte{
+			{0: 1, 31: 0},
+			{0: 2, 31: 0},
+			{0: 3, 31: 0},
+		},
+		FixedRepeatedLargestFieldNumber: []*pb.LargestFieldNumber{
+			{Int32: 123455},
+			{Int32: 876523},
+			{Int32: 576214},
+		},
+
+		ConstRepeatedUint64: []uint64{1, 2, 3},
+
+		OneOf: &pb.OneOf{
+			A: &pb.OneOf_A1{A1: 1},
+			B: &pb.OneOf_B2{B2: 2},
+			C: 3,
+			D: 4,
+		},
+	}
+	simple := pb.Scalars{
+		Int8:     31,
+		Int16:    2164,
+		Int32:    216457,
+		Int64:    -2138746,
+		Uint8:    254,
+		Uint16:   21645,
+		Uint32:   32485976,
+		Uint64:   287634,
+		Sint8:    -31,
+		Sint16:   -2164,
+		Sint32:   -12786345,
+		Sint64:   98761243,
+		Fixed32:  98765234,
+		Fixed64:  1234576,
+		Sfixed32: -21348976,
+		Sfixed64: 98756432,
+		Bool:     true,
+		String_:  "hi my name is Bob",
+		Bytes:    []byte("hi my name is Bob too"),
+		LargestFieldNumber: &pb.LargestFieldNumber{
+			Int32: 216457,
+		},
+	}
+	marshalBenchmarks := []struct {
+		name string
+		s    *pb.Scalars
+	}{
+		{
+			name: "full",
+			s:    &full,
+		},
+		{
+			name: "primitives",
+			s:    &simple,
+		},
+	}
+	for _, bm := range marshalBenchmarks {
+		b.Run("marshal/"+bm.name+"/heap", func(b *testing.B) {
+			for range b.N {
+				_, _ = proto.Marshal(bm.s)
+			}
+		})
+	}
+
+	unmarshalBenchmarks := []struct {
+		name string
+		s    *pb.Scalars
+	}{
+		{
+			name: "full",
+			s:    &full,
+		},
+		{
+			name: "primitives",
+			s:    &simple,
+		},
+	}
+	for _, bm := range unmarshalBenchmarks {
+		bytes, err := proto.Marshal(bm.s)
+		require.NoError(b, err)
+
+		b.Run("unmarshal/"+bm.name, func(b *testing.B) {
+			for range b.N {
+				var s pb.Scalars
+				_ = proto.Unmarshal(bytes, &s)
+			}
+		})
+	}
 }
 
-func BenchmarkScalars_UnmarshalProto(b *testing.B) {
-	b.Run("full", func(b *testing.B) {
-		pbScalars := pb.Scalars{
-			Int8:     31,
-			Int16:    2164,
-			Int32:    216457,
-			Int64:    -2138746,
-			Uint8:    254,
-			Uint16:   21645,
-			Uint32:   32485976,
-			Uint64:   287634,
-			Sint8:    -31,
-			Sint16:   -2164,
-			Sint32:   -12786345,
-			Sint64:   98761243,
-			Fixed32:  98765234,
-			Fixed64:  1234576,
-			Sfixed32: -21348976,
-			Sfixed64: 98756432,
-			Bool:     true,
-			String_:  "hi my name is Bob",
-			Bytes:    []byte("hi my name is Bob too"),
-			LargestFieldNumber: &pb.LargestFieldNumber{
-				Int32: 216457,
+func TestAppend_ProtoCompatibility(t *testing.T) {
+	tests := []struct {
+		name  string
+		proto protoreflect.ProtoMessage
+		f     func(*canoto.Writer)
+	}{
+		{
+			name: "int8",
+			proto: &pb.Scalars{
+				Int8: 52,
 			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(1, canoto.Varint))
+				canoto.AppendInt[int8](w, 52)
+			},
+		},
+		{
+			name: "int16",
+			proto: &pb.Scalars{
+				Int16: 1234,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(2, canoto.Varint))
+				canoto.AppendInt[int16](w, 1234)
+			},
+		},
+		{
+			name: "int32",
+			proto: &pb.Scalars{
+				Int32: 121234,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(3, canoto.Varint))
+				canoto.AppendInt[int32](w, 121234)
+			},
+		},
+		{
+			name: "int64",
+			proto: &pb.Scalars{
+				Int64: 259,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(4, canoto.Varint))
+				canoto.AppendInt[int64](w, 259)
+			},
+		},
+		{
+			name: "uint8",
+			proto: &pb.Scalars{
+				Uint8: 9,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(5, canoto.Varint))
+				canoto.AppendInt[uint8](w, 9)
+			},
+		},
+		{
+			name: "uint16",
+			proto: &pb.Scalars{
+				Uint16: 1234,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(6, canoto.Varint))
+				canoto.AppendInt[uint16](w, 1234)
+			},
+		},
+		{
+			name: "uint32",
+			proto: &pb.Scalars{
+				Uint32: 1234,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(7, canoto.Varint))
+				canoto.AppendInt[uint32](w, 1234)
+			},
+		},
+		{
+			name: "uint64",
+			proto: &pb.Scalars{
+				Uint64: 2938567,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(8, canoto.Varint))
+				canoto.AppendInt[uint64](w, 2938567)
+			},
+		},
+		{
+			name: "sint8",
+			proto: &pb.Scalars{
+				Sint8: -52,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(9, canoto.Varint))
+				canoto.AppendSint[int8](w, -52)
+			},
+		},
+		{
+			name: "sint16",
+			proto: &pb.Scalars{
+				Sint16: -1234,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(10, canoto.Varint))
+				canoto.AppendSint[int16](w, -1234)
+			},
+		},
+		{
+			name: "sint32",
+			proto: &pb.Scalars{
+				Sint32: -2136745,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(11, canoto.Varint))
+				canoto.AppendSint[int32](w, -2136745)
+			},
+		},
+		{
+			name: "sint64",
+			proto: &pb.Scalars{
+				Sint64: -9287364,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(12, canoto.Varint))
+				canoto.AppendSint[int64](w, -9287364)
+			},
+		},
+		{
+			name: "fixed32",
+			proto: &pb.Scalars{
+				Fixed32: 876254,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(13, canoto.I32))
+				canoto.AppendFint32[uint32](w, 876254)
+			},
+		},
+		{
+			name: "fixed64",
+			proto: &pb.Scalars{
+				Fixed64: 328137645632,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(14, canoto.I64))
+				canoto.AppendFint64[uint64](w, 328137645632)
+			},
+		},
+		{
+			name: "sfixed32",
+			proto: &pb.Scalars{
+				Sfixed32: -123463246,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(15, canoto.I32))
+				canoto.AppendFint32[int32](w, -123463246)
+			},
+		},
+		{
+			name: "sfixed64",
+			proto: &pb.Scalars{
+				Sfixed64: -8762135423,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(16, canoto.I64))
+				canoto.AppendFint64[int64](w, -8762135423)
+			},
+		},
+		{
+			name: "bool",
+			proto: &pb.Scalars{
+				Bool: true,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(17, canoto.Varint))
+				canoto.AppendBool(w, true)
+			},
+		},
+		{
+			name: "string",
+			proto: &pb.Scalars{
+				String_: "hi mom!",
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(18, canoto.Len))
+				canoto.AppendBytes(w, "hi mom!")
+			},
+		},
+		{
+			name: "bytes",
+			proto: &pb.Scalars{
+				Bytes: []byte("hi dad!"),
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(19, canoto.Len))
+				canoto.AppendBytes(w, []byte("hi dad!"))
+			},
+		},
+		{
+			name: "largest field number",
+			proto: &pb.LargestFieldNumber{
+				Int32: 1,
+			},
+			f: func(w *canoto.Writer) {
+				canoto.Append(w, canoto.Tag(canoto.MaxFieldNumber, canoto.Varint))
+				canoto.AppendInt[int32](w, 1)
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			pbBytes, err := proto.Marshal(test.proto)
+			require.NoError(t, err)
 
-			RepeatedInt8:     []int32{1, 2, 3},
-			RepeatedInt16:    []int32{1, 2, 3},
-			RepeatedInt32:    []int32{1, 2, 3},
-			RepeatedInt64:    []int64{1, 2, 3},
-			RepeatedUint8:    []uint32{1, 2, 3},
-			RepeatedUint16:   []uint32{1, 2, 3},
-			RepeatedUint32:   []uint32{1, 2, 3},
-			RepeatedUint64:   []uint64{1, 2, 3},
-			RepeatedSint8:    []int32{1, 2, 3},
-			RepeatedSint16:   []int32{1, 2, 3},
-			RepeatedSint32:   []int32{1, 2, 3},
-			RepeatedSint64:   []int64{1, 2, 3},
-			RepeatedFixed32:  []uint32{1, 2, 3},
-			RepeatedFixed64:  []uint64{1, 2, 3},
-			RepeatedSfixed32: []int32{1, 2, 3},
-			RepeatedSfixed64: []int64{1, 2, 3},
-			RepeatedBool:     []bool{true, false, true},
-			RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
-			RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
-			RepeatedLargestFieldNumber: []*pb.LargestFieldNumber{
-				{Int32: 123455},
-				{Int32: 876523},
-			},
-
-			FixedRepeatedInt8:     []int32{1, 2, 3},
-			FixedRepeatedInt16:    []int32{1, 2, 3},
-			FixedRepeatedInt32:    []int32{1, 2, 3},
-			FixedRepeatedInt64:    []int64{1, 2, 3},
-			FixedRepeatedUint8:    []uint32{1, 2, 3},
-			FixedRepeatedUint16:   []uint32{1, 2, 3},
-			FixedRepeatedUint32:   []uint32{1, 2, 3},
-			FixedRepeatedUint64:   []uint64{1, 2, 3},
-			FixedRepeatedSint8:    []int32{1, 2, 3},
-			FixedRepeatedSint16:   []int32{1, 2, 3},
-			FixedRepeatedSint32:   []int32{1, 2, 3},
-			FixedRepeatedSint64:   []int64{1, 2, 3},
-			FixedRepeatedFixed32:  []uint32{1, 2, 3},
-			FixedRepeatedFixed64:  []uint64{1, 2, 3},
-			FixedRepeatedSfixed32: []int32{1, 2, 3},
-			FixedRepeatedSfixed64: []int64{1, 2, 3},
-			FixedRepeatedBool:     []bool{true, false, true},
-			FixedRepeatedString:   []string{"hi", "my", "name"},
-			FixedBytes:            []byte{0: 1, 31: 0},
-			RepeatedFixedBytes: [][]byte{
-				{0: 1, 31: 0},
-				{0: 2, 31: 0},
-				{0: 3, 31: 0},
-			},
-			FixedRepeatedBytes: [][]byte{{1}, {2}, {3}},
-			FixedRepeatedFixedBytes: [][]byte{
-				{0: 1, 31: 0},
-				{0: 2, 31: 0},
-				{0: 3, 31: 0},
-			},
-			FixedRepeatedLargestFieldNumber: []*pb.LargestFieldNumber{
-				{Int32: 123455},
-				{Int32: 876523},
-				{Int32: -576214},
-			},
-
-			ConstRepeatedUint64: []uint64{1, 2, 3},
-
-			OneOf: &pb.OneOf{
-				A: &pb.OneOf_A1{A1: 1},
-				B: &pb.OneOf_B2{B2: 2},
-				C: 3,
-				D: 4,
-			},
-		}
-		scalarsBytes, err := proto.Marshal(&pbScalars)
-		require.NoError(b, err)
-
-		b.ResetTimer()
-		for range b.N {
-			var (
-				scalars pb.Scalars
-				reader  = proto.UnmarshalOptions{
-					Merge: true,
-				}
-			)
-			_ = reader.Unmarshal(scalarsBytes, &scalars)
-		}
-	})
-	b.Run("primitives", func(b *testing.B) {
-		pbScalars := pb.Scalars{
-			Int8:     31,
-			Int16:    2164,
-			Int32:    216457,
-			Int64:    -2138746,
-			Uint8:    254,
-			Uint16:   21645,
-			Uint32:   32485976,
-			Uint64:   287634,
-			Sint8:    -31,
-			Sint16:   -2164,
-			Sint32:   -12786345,
-			Sint64:   98761243,
-			Fixed32:  98765234,
-			Fixed64:  1234576,
-			Sfixed32: -21348976,
-			Sfixed64: 98756432,
-			Bool:     true,
-			String_:  "hi my name is Bob",
-			Bytes:    []byte("hi my name is Bob too"),
-			LargestFieldNumber: &pb.LargestFieldNumber{
-				Int32: 216457,
-			},
-		}
-		scalarsBytes, err := proto.Marshal(&pbScalars)
-		require.NoError(b, err)
-
-		b.ResetTimer()
-		for range b.N {
-			var (
-				scalars pb.Scalars
-				reader  = proto.UnmarshalOptions{
-					Merge: true,
-				}
-			)
-			_ = reader.Unmarshal(scalarsBytes, &scalars)
-		}
-	})
+			w := &canoto.Writer{}
+			test.f(w)
+			require.Equal(t, pbBytes, w.B)
+		})
+	}
 }

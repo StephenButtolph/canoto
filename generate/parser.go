@@ -11,6 +11,8 @@ import (
 	"strings"
 
 	"github.com/fatih/structtag"
+
+	"github.com/StephenButtolph/canoto"
 )
 
 const (
@@ -19,19 +21,36 @@ const (
 )
 
 var (
+	// oneOfRegex is used to match a string that consists only of letters (both
+	// uppercase and lowercase), digits, and underscores from start to end.
+	//
+	// \A asserts the position at the start of the string.
+	// [a-zA-Z0-9_] matches any letter (both uppercase and lowercase), digit, or
+	// underscore.
+	// + matches one or more of the preceding token.
+	// \z asserts the position at the end of the string.
 	oneOfRegex = regexp.MustCompile(`\A[a-zA-Z0-9_]+\z`)
 
 	errUnexpectedNumberOfIdentifiers       = errors.New("unexpected number of identifiers")
-	errMalformedTag                        = errors.New("expected type,fieldNumber[,oneof] got")
+	errInvalidGoType                       = errors.New("invalid Go type")
+	errMalformedTag                        = errors.New(`expected "type,fieldNumber[,oneof]" got`)
+	errInvalidFieldNumber                  = errors.New("invalid field number")
+	errRepeatedOneOf                       = errors.New("oneof must not be repeated")
 	errInvalidOneOfName                    = errors.New("invalid oneof name")
 	errStructContainsDuplicateFieldNumbers = errors.New("struct contains duplicate field numbers")
 )
 
-func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
+func parse(
+	fs *token.FileSet,
+	f ast.Node,
+	useAtomic bool,
+	canotoImport string,
+) (string, []message, error) {
 	var (
-		packageName string
-		messages    []message
-		err         error
+		canotoImportName string
+		packageName      string
+		messages         []message
+		err              error
 	)
 	ast.Inspect(f, func(n ast.Node) bool {
 		if err != nil {
@@ -41,6 +60,18 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 		if f, ok := n.(*ast.File); ok {
 			packageName = f.Name.Name
 			return true
+		}
+
+		if f, ok := n.(*ast.ImportSpec); ok {
+			if f.Path.Value != canotoImport {
+				return false
+			}
+			if f.Name == nil {
+				canotoImportName = defaultCanotoSelector
+				return false
+			}
+			canotoImportName = f.Name.Name
+			return false
 		}
 
 		ts, ok := n.(*ast.TypeSpec)
@@ -57,16 +88,72 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 		message := message{
 			name:              name,
 			canonicalizedName: canonicalizeName(name),
+			useAtomic:         useAtomic,
 		}
+
+		genericPointers := make(map[string]int)
 		if ts.TypeParams != nil {
-			message.numTypes = len(ts.TypeParams.List)
+			typesToIndex := make(map[string]int)
+			for _, field := range ts.TypeParams.List {
+				for _, name := range field.Names {
+					typesToIndex[name.Name] = message.numTypes
+					message.numTypes++
+				}
+			}
+
+			var currentTypeNumber int
+			for _, field := range ts.TypeParams.List {
+				currentTypeNumber += len(field.Names)
+
+				t, ok := field.Type.(*ast.IndexExpr)
+				if !ok {
+					continue
+				}
+
+				var typeName string
+				if canotoImportName == "." {
+					x, ok := t.X.(*ast.Ident)
+					if !ok {
+						continue
+					}
+					typeName = x.Name
+				} else {
+					x, ok := t.X.(*ast.SelectorExpr)
+					if !ok {
+						continue
+					}
+					if ident, ok := x.X.(*ast.Ident); !ok || ident.Name != canotoImportName {
+						continue
+					}
+					typeName = x.Sel.Name
+				}
+				if typeName != "FieldPointer" {
+					continue
+				}
+
+				ident, ok := t.Index.(*ast.Ident)
+				if !ok {
+					continue
+				}
+				// Make sure the type is generic
+				if _, ok := typesToIndex[ident.Name]; !ok {
+					continue
+				}
+
+				genericPointers[ident.Name] = currentTypeNumber
+			}
 		}
 		for _, sf := range st.Fields.List {
 			var (
 				field  field
 				hasTag bool
 			)
-			field, hasTag, err = parseField(fs, message.canonicalizedName, sf)
+			field, hasTag, err = parseField(
+				fs,
+				message.canonicalizedName,
+				genericPointers,
+				sf,
+			)
 			if err != nil {
 				return false
 			}
@@ -94,19 +181,15 @@ func parse(fs *token.FileSet, f ast.Node) (string, []message, error) {
 	return packageName, messages, err
 }
 
-func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field) (field, bool, error) {
+func parseField(
+	fs *token.FileSet,
+	canonicalizedStructName string,
+	genericTypes map[string]int,
+	af *ast.Field,
+) (field, bool, error) {
 	canotoType, fieldNumber, oneOfName, hasTag, err := parseFieldTag(fs, af)
 	if err != nil || !hasTag {
 		return field{}, false, err
-	}
-
-	if len(af.Names) != 1 {
-		return field{}, false, fmt.Errorf("%w wanted %d got %d at %s",
-			errUnexpectedNumberOfIdentifiers,
-			1,
-			len(af.Names),
-			fs.Position(af.Pos()),
-		)
 	}
 
 	var (
@@ -128,11 +211,63 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 		sizeOneOfIndent = "\n\t\t\t" + assignOneOf
 	}
 
-	name := af.Names[0].Name
+	var (
+		t      = af.Type
+		goType string
+	)
+	for {
+		switch tt := t.(type) {
+		case *ast.Ident:
+			goType = tt.Name
+		case *ast.SelectorExpr:
+		case *ast.StarExpr:
+			t = tt.X
+			continue
+		case *ast.ArrayType:
+			t = tt.Elt
+			continue
+		case *ast.IndexExpr:
+			t = tt.X
+			continue
+		case *ast.IndexListExpr:
+			t = tt.X
+			continue
+		default:
+			return field{}, false, fmt.Errorf("%w %T at %s",
+				errInvalidGoType,
+				t,
+				fs.Position(t.Pos()),
+			)
+		}
+		break
+	}
+
+	var name string
+	switch len(af.Names) {
+	case 0:
+		name = goType
+	case 1:
+		name = af.Names[0].Name
+	default:
+		return field{}, false, fmt.Errorf("%w wanted <= 1 but got %d at %s",
+			errUnexpectedNumberOfIdentifiers,
+			len(af.Names),
+			fs.Position(af.Pos()),
+		)
+	}
+
+	var genericTypeCast string
+	if genericType, ok := genericTypes[goType]; ok {
+		genericTypeCast = fmt.Sprintf("T%d", genericType)
+	}
+
 	canonicalizedName := canonicalizeName(name)
+	protoType := canotoType.ProtoType(goType)
 	return field{
 		name:              name,
 		canonicalizedName: canonicalizedName,
+		goType:            goType,
+		protoType:         protoType,
 		canotoType:        canotoType,
 		fieldNumber:       fieldNumber,
 		oneOfName:         oneOfName,
@@ -140,7 +275,11 @@ func parseField(fs *token.FileSet, canonicalizedStructName string, af *ast.Field
 			"escapedStructName": canonicalizedStructName,
 			"fieldNumber":       strconv.FormatUint(uint64(fieldNumber), 10),
 			"wireType":          canotoType.WireType().String(),
-			"protoType":         canotoType.ProtoType(),
+			"goType":            goType,
+			"genericTypeCast":   genericTypeCast,
+			"protoType":         protoType,
+			"protoTypePrefix":   canotoType.ProtoTypePrefix(),
+			"protoTypeSuffix":   canotoType.ProtoTypeSuffix(),
 			"fieldName":         name,
 			"escapedFieldName":  canonicalizedName,
 			"suffix":            canotoType.Suffix(),
@@ -191,7 +330,7 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (
 		)
 	}
 
-	if len(tag.Options) > 2 {
+	if len(tag.Options) > 2 || len(tag.Options) < 1 {
 		return "", 0, "", false, fmt.Errorf("%w %q at %s",
 			errMalformedTag,
 			tag.Value(),
@@ -206,9 +345,30 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (
 			fs.Position(field.Pos()),
 		)
 	}
+	if fieldNumber == 0 {
+		return "", 0, "", false, fmt.Errorf("%w 0 at %s",
+			errInvalidFieldNumber,
+			fs.Position(field.Pos()),
+		)
+	}
+	if fieldNumber > canoto.MaxFieldNumber {
+		return "", 0, "", false, fmt.Errorf("%w %d exceeds maximum value of %d at %s",
+			errInvalidFieldNumber,
+			fieldNumber,
+			canoto.MaxFieldNumber,
+			fs.Position(field.Pos()),
+		)
+	}
 
 	var oneof string
 	if len(tag.Options) == 2 {
+		if fieldType.IsRepeated() {
+			return "", 0, "", false, fmt.Errorf("%w at %s",
+				errRepeatedOneOf,
+				fs.Position(field.Pos()),
+			)
+		}
+
 		oneof = tag.Options[1]
 		if !oneOfRegex.MatchString(oneof) {
 			return "", 0, "", false, fmt.Errorf("%w %q at %s",
