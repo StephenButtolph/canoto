@@ -412,7 +412,7 @@ func HasPrefix(bytes []byte, prefix string) bool {
 // UTF-8.
 func ReadString[T ~string](r *Reader, v *T) error {
 	var length int64
-	if err := ReadInt[int64](r, &length); err != nil {
+	if err := ReadInt(r, &length); err != nil {
 		return err
 	}
 	if length < 0 {
@@ -439,7 +439,7 @@ func ReadString[T ~string](r *Reader, v *T) error {
 // ReadBytes reads a byte slice from the reader.
 func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 	var length int64
-	if err := ReadInt[int64](r, &length); err != nil {
+	if err := ReadInt(r, &length); err != nil {
 		return err
 	}
 	if length < 0 {
