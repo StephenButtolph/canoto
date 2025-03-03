@@ -40,6 +40,8 @@ type ExampleStruct0 struct {
 
 type ExampleStruct1 struct {
 	Int32 int32 `canoto:"int,536870911"`
+
+	canotoData canotoData_ExampleStruct1
 }
 ```
 
