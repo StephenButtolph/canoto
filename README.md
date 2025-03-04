@@ -195,6 +195,24 @@ var _ canoto.Message = (*GenericField[BadUsage])(nil)
 
 Because `BadUsage` is an interface, it does not have a useful zero value and will panic when `GenericField` attempts to call its methods.
 
+### Pass-By-Value Messages
+
+By default, the auto-generated `canotoData` struct includes atomic variables. This ensures that `MarshalCanoto` can be called at the same time on multiple threads, which is expected for what appears to be a read only method.
+
+However, this results in being unable to pass messages by value due to the [NoCopy](https://github.com/golang/go/issues/8005) included on atomic variables.
+
+If concurrent calls to `MarshalCanoto` are not required and it is desired to be able to pass a message by value, the `canoto:"noatomic"` tag can be added to the `canotoData` field to remove the usage of atomic variables.
+
+For example:
+
+```golang
+type PassableByValue struct {
+	Int int64 `canoto:"int,1"`
+
+	canotoData canotoData_PassableByValue `canoto:"noatomic"`
+}
+```
+
 ### Standalone Implementations
 
 In some instances, it may be desirable for the generated code to avoid introducing the dependency on this repo into the `go.mod` file. As an example, if the user must support having multiple versions of canoto utilized in the same application.
