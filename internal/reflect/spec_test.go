@@ -219,3 +219,22 @@ func TestSpec(t *testing.T) {
 
 	t.Fail()
 }
+
+func TestSpecSpec(t *testing.T) {
+	require := require.New(t)
+
+	specSpec := (*Spec)(nil).CanotoSpec()
+	specBytes := specSpec.MarshalCanoto()
+	msg, err := specSpec.Unmarshal(specBytes)
+	require.NoError(err)
+
+	specJSON, err := json.MarshalIndent(specSpec, "", "  ")
+	require.NoError(err)
+	t.Log(string(specJSON))
+
+	msgJSON, err := json.MarshalIndent(msg, "", "  ")
+	require.NoError(err)
+	t.Log(string(msgJSON))
+
+	t.Fail()
+}

@@ -302,13 +302,65 @@ func (f *FieldType) unmarshalRecursive(r *canoto.Reader, specs []*Spec) (any, er
 }
 
 func (f *FieldType) unmarshalSpec(r *canoto.Reader, specs []*Spec) (any, error) {
-	var b []byte
-	if err := canoto.ReadBytes(r, &b); err != nil {
+	// Read the first entry manually because the tag is already stripped.
+	var msgBytes []byte
+	if err := canoto.ReadBytes(r, &msgBytes); err != nil {
+		return nil, err
+	}
+	msg, err := f.TypeMessage.unmarshal(
+		&canoto.Reader{
+			B: msgBytes,
+		},
+		specs,
+	)
+	if err != nil {
+		return nil, err
+	}
+	if !f.Repeated {
+		// If there is only one entry, return it.
+		return msg, nil
+	}
+
+	// Count the number of additional entries after the first entry.
+	wireType, err := f.wireType()
+	if err != nil {
+		return nil, err
+	}
+	expectedTag := canoto.Tag(f.FieldNumber, wireType)
+	countMinus1, err := canoto.CountBytes(r.B, string(expectedTag))
+	if err != nil {
 		return nil, err
 	}
 
-	r = &canoto.Reader{
-		B: b,
+	// If there should be a specific number of entries, check that the count is
+	// correct.
+	totalCount := countMinus1 + 1
+	if f.FixedLength > 0 && uint64(totalCount) != f.FixedLength {
+		return nil, canoto.ErrInvalidLength
 	}
-	return f.TypeMessage.unmarshal(r, specs)
+
+	msgs := make([]any, totalCount)
+	msgs[0] = msg
+
+	// Read the rest of the entries, stripping the tag each time.
+	for i := range countMinus1 {
+		r.B = r.B[len(expectedTag):]
+		if err := canoto.ReadBytes(r, &msgBytes); err != nil {
+			return nil, err
+		}
+		if len(msgBytes) == 0 {
+			continue
+		}
+
+		msgs[1+i], err = f.TypeMessage.unmarshal(
+			&canoto.Reader{
+				B: msgBytes,
+			},
+			specs,
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return msgs, nil
 }
