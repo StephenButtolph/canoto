@@ -554,13 +554,3 @@ func intLengthEnum[T Int]() uint8 {
 	}
 	panic("unsupported integer size")
 }
-
-// isBytesEmpty returns true if the byte slice is all zeros.
-func isBytesEmpty(b []byte) bool {
-	for _, v := range b {
-		if v != 0 {
-			return false
-		}
-	}
-	return true
-}
