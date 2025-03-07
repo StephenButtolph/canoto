@@ -57,28 +57,28 @@ func (s *Spec) unmarshal(r *canoto.Reader, specs []*Spec) (Any, error) {
 	for canoto.HasNext(r) {
 		fieldNumber, wireType, err := canoto.ReadTag(r)
 		if err != nil {
-			return Any{}, err
+			return Any{}, fmt.Errorf("reading tag: %w", err)
 		}
 		if fieldNumber < minField {
-			return Any{}, canoto.ErrInvalidFieldOrder
+			return Any{}, fmt.Errorf("fieldNumber %d < minField %d: %w", fieldNumber, minField, canoto.ErrInvalidFieldOrder)
 		}
 
 		fieldType, err := s.findField(fieldNumber)
 		if err != nil {
-			return Any{}, err
+			return Any{}, fmt.Errorf("find field %d: %w", fieldNumber, err)
 		}
 
 		expectedWireType, err := fieldType.wireType()
 		if err != nil {
-			return Any{}, err
+			return Any{}, fmt.Errorf("wireType for %d: %w", fieldNumber, err)
 		}
 		if wireType != expectedWireType {
-			return Any{}, canoto.ErrInvalidWireType
+			return Any{}, fmt.Errorf("fieldNumber %d: %w", fieldNumber, canoto.ErrInvalidWireType)
 		}
 
 		value, err := fieldType.unmarshal(r, specs)
 		if err != nil {
-			return Any{}, err
+			return Any{}, fmt.Errorf("unmarshal fieldNumber %d: %w", fieldNumber, err)
 		}
 		a[fieldType.Name] = value
 

@@ -7,6 +7,8 @@ package reflect
 
 import (
 	"io"
+	"reflect"
+	"slices"
 	"sync/atomic"
 	"unicode/utf8"
 
@@ -30,23 +32,35 @@ type canotoData_Spec struct {
 	size atomic.Int64
 }
 
-func (*Spec) CanotoSpec() *Spec {
-	return &Spec{
+func (c *Spec) CanotoSpec() *Spec {
+	return c.CanotoSpecWith(nil)
+}
+
+func (*Spec) CanotoSpecWith(types []reflect.Type) *Spec {
+	types = append(types, reflect.TypeOf(Spec{}))
+	s := &Spec{
 		Name:   "Spec",
-		Fields: []*FieldType{
-			{
-				FieldNumber: 1,
-				Name:        "Name",
-				TypeString:  true,
-			},
-			{
-				FieldNumber: 2,
-				Name:        "Fields",
-				Repeated:	true,
-				TypeMessage: (*FieldType)(nil).CanotoSpec(),
-			},
-		},
+		Fields: make([]*FieldType, 0, 2),
 	}
+	s.Fields = append(s.Fields, &FieldType{
+		FieldNumber: 1,
+		Name:        "Name",
+		TypeString:  true,
+	})
+	{
+		f := &FieldType{
+			FieldNumber: 2,
+			Name:        "Fields",
+			Repeated:    true,
+		}
+		if index := slices.Index(types, reflect.TypeOf(FieldType{})); index >= 0 {
+			f.TypeRecursive = uint64(len(types) - index)
+		} else {
+			f.TypeMessage = (*FieldType)(nil).CanotoSpecWith(types)
+		}
+		s.Fields = append(s.Fields, f)
+	}
+	return s
 }
 
 // MakeCanoto creates a new empty value.
@@ -282,87 +296,100 @@ type canotoData_FieldType struct {
 	TypeOneOf atomic.Uint32
 }
 
-func (*FieldType) CanotoSpec() *Spec {
-	return &Spec{
-		Name: "FieldType",
-		Fields: []*FieldType{
-			{
-				FieldNumber: 1,
-				Name: 	  "FieldNumber",
-				TypeUint:  32,
-			},
-			{
-				FieldNumber: 2,
-				Name: 	  "Name",
-				TypeString: true,
-			},
-			{
-				FieldNumber: 3,
-				Name: 	  "FixedLength",
-				TypeUint:  64,
-			},
-			{
-				FieldNumber: 4,
-				Name: 	  "Repeated",
-				TypeBool:  true,
-			},
-			{
-				FieldNumber: 5,
-				Name: 	  "TypeInt",
-				TypeUint:  8,
-			},
-			{
-				FieldNumber: 6,
-				Name: 	  "TypeUint",
-				TypeUint:  8,
-			},
-			{
-				FieldNumber: 7,
-				Name: 	  "TypeSint",
-				TypeUint:  8,
-			},
-			{
-				FieldNumber: 8,
-				Name: 	  "TypeFint",
-				TypeUint:  8,
-			},
-			{
-				FieldNumber: 9,
-				Name: 	  "TypeSFint",
-				TypeUint:  8,
-			},
-			{
-				FieldNumber: 10,
-				Name: 	  "TypeBool",
-				TypeBool:  true,
-			},
-			{
-				FieldNumber: 11,
-				Name: 	  "TypeString",
-				TypeBool:  true,
-			},
-			{
-				FieldNumber: 12,
-				Name: 	  "TypeBytes",
-				TypeBool:  true,
-			},
-			{
-				FieldNumber: 13,
-				Name: 	  "TypeFixedBytes",
-				TypeUint:  64,
-			},
-			{
-				FieldNumber: 14,
-				Name: 	  "TypeRecursive",
-				TypeUint:  64,
-			},
-			{
-				FieldNumber: 15,
-				Name: 	  "TypeMessage",
-				TypeRecursive: 2,
-			},
-		},
+func (c *FieldType) CanotoSpec() *Spec {
+	return c.CanotoSpecWith(nil)
+}
+
+func (*FieldType) CanotoSpecWith(types []reflect.Type) *Spec {
+	types = append(types, reflect.TypeOf(FieldType{}))
+	s := &Spec{
+		Name:   "FieldType",
+		Fields: make([]*FieldType, 0, 15),
 	}
+	s.Fields = append(s.Fields, FieldTypeFromInt(
+		FieldType{}.FieldNumber, 
+		1, 
+		"FieldNumber",
+	))
+	s.Fields = append(s.Fields, &FieldType{
+		FieldNumber: 2, 
+		Name: "Name", 
+		TypeString: true,
+	})
+	s.Fields = append(s.Fields, FieldTypeFromInt(
+		FieldType{}.FixedLength, 
+		3, 
+		"FixedLength",
+	))
+	s.Fields = append(s.Fields, &FieldType{
+		FieldNumber: 4, 
+		Name: "Repeated", 
+		TypeBool: true,
+	})
+	s.Fields = append(s.Fields, FieldTypeFromInt(
+		FieldType{}.TypeInt, 
+		5, 
+		"TypeInt",
+	))
+	s.Fields = append(s.Fields, FieldTypeFromInt(
+		FieldType{}.TypeUint, 
+		6, 
+		"TypeUint",
+	))
+	s.Fields = append(s.Fields, FieldTypeFromInt(
+		FieldType{}.TypeSint, 
+		7, 
+		"TypeSint",
+	))
+	s.Fields = append(s.Fields, FieldTypeFromInt(
+		FieldType{}.TypeFint, 
+		8, 
+		"TypeFint",
+	))
+	s.Fields = append(s.Fields, FieldTypeFromInt(
+		FieldType{}.TypeSFint, 
+		9, 
+		"TypeSFint",
+	))
+	s.Fields = append(s.Fields, &FieldType{
+		FieldNumber: 10, 
+		Name: "TypeBool", 
+		TypeBool: true,
+	})
+	s.Fields = append(s.Fields, &FieldType{
+		FieldNumber: 11, 
+		Name: "TypeString", 
+		TypeBool: true,
+	})
+	s.Fields = append(s.Fields, &FieldType{
+		FieldNumber: 12, 
+		Name: "TypeBytes", 
+		TypeBool: true,
+	})
+	s.Fields = append(s.Fields, FieldTypeFromInt(
+		FieldType{}.TypeFixedBytes, 
+		13, 
+		"TypeFixedBytes",
+	))
+	s.Fields = append(s.Fields, FieldTypeFromInt(
+		FieldType{}.TypeRecursive, 
+		14, 
+		"TypeRecursive",
+	))
+	{
+		f := &FieldType{
+			FieldNumber: 15,
+			Name:        "TypeMessage",
+			Repeated:    true,
+		}
+		if index := slices.Index(types, reflect.TypeOf(Spec{})); index >= 0 {
+			f.TypeRecursive = uint64(len(types) - index)
+		} else {
+			f.TypeMessage = (*Spec)(nil).CanotoSpecWith(types)
+		}
+		s.Fields = append(s.Fields, f)
+	}
+	return s
 }
 
 // MakeCanoto creates a new empty value.
@@ -781,7 +808,7 @@ func (c *FieldType) CalculateCanotoCache() {
 		(c.TypeMessage).CalculateCanotoCache()
 		if fieldSize := (c.TypeMessage).CachedCanotoSize(); fieldSize != 0 {
 			size += len(canoto__FieldType__TypeMessage__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		TypeOneOf = 15
+			TypeOneOf = 15
 		}
 	}
 	c.canotoData.size.Store(int64(size))

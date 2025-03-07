@@ -224,17 +224,40 @@ func TestSpecSpec(t *testing.T) {
 	require := require.New(t)
 
 	specSpec := (*Spec)(nil).CanotoSpec()
-	specBytes := specSpec.MarshalCanoto()
-	msg, err := specSpec.Unmarshal(specBytes)
-	require.NoError(err)
-
 	specJSON, err := json.MarshalIndent(specSpec, "", "  ")
 	require.NoError(err)
 	t.Log(string(specJSON))
 
+	specBytes := specSpec.MarshalCanoto()
+	msg, err := specSpec.Unmarshal(specBytes)
+	require.NoError(err)
+
 	msgJSON, err := json.MarshalIndent(msg, "", "  ")
 	require.NoError(err)
 	t.Log(string(msgJSON))
+}
 
-	t.Fail()
+func TestFieldTypeSpec(t *testing.T) {
+	require := require.New(t)
+
+	msg := &FieldType{
+		FieldNumber:    500,
+		Name:           "yolo",
+		FixedLength:    32,
+		Repeated:       true,
+		TypeFixedBytes: 64,
+	}
+
+	fieldTypeSpec := msg.CanotoSpec()
+	specJSON, err := json.MarshalIndent(fieldTypeSpec, "", "  ")
+	require.NoError(err)
+	t.Log(string(specJSON))
+
+	msgBytes := msg.MarshalCanoto()
+	anyMsg, err := fieldTypeSpec.Unmarshal(msgBytes)
+	require.NoError(err)
+
+	msgJSON, err := json.MarshalIndent(anyMsg, "", "  ")
+	require.NoError(err)
+	t.Log(string(msgJSON))
 }
