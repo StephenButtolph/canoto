@@ -1,4 +1,4 @@
-package canoto_test
+package canoto
 
 import (
 	"encoding/hex"
@@ -10,8 +10,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/thepudds/fzgen/fuzzer"
-
-	. "github.com/StephenButtolph/canoto"
 )
 
 type validTest[T any] struct {
@@ -957,4 +955,34 @@ func FuzzAppendBytes_bytes(f *testing.F) {
 		require.Equal(v, got)
 		require.Empty(r.B)
 	})
+}
+
+func TestIsSigned(t *testing.T) {
+	require := require.New(t)
+
+	require.True(isSigned[int8]())
+	require.True(isSigned[int16]())
+	require.True(isSigned[int32]())
+	require.True(isSigned[int64]())
+
+	require.False(isSigned[uint8]())
+	require.False(isSigned[uint16]())
+	require.False(isSigned[uint32]())
+	require.False(isSigned[uint64]())
+}
+
+func TestIntLengthEnum(t *testing.T) {
+	require := require.New(t)
+
+	require.Equal(uint8(1), intLengthEnum[int8]())
+	require.Equal(uint8(1), intLengthEnum[uint8]())
+
+	require.Equal(uint8(2), intLengthEnum[int16]())
+	require.Equal(uint8(2), intLengthEnum[uint16]())
+
+	require.Equal(uint8(3), intLengthEnum[int32]())
+	require.Equal(uint8(3), intLengthEnum[uint32]())
+
+	require.Equal(uint8(4), intLengthEnum[int64]())
+	require.Equal(uint8(4), intLengthEnum[uint64]())
 }

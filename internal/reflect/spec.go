@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"unicode/utf8"
 
 	"github.com/StephenButtolph/canoto"
 )
@@ -57,28 +58,28 @@ func (s *Spec) unmarshal(r *canoto.Reader, specs []*Spec) (Any, error) {
 	for canoto.HasNext(r) {
 		fieldNumber, wireType, err := canoto.ReadTag(r)
 		if err != nil {
-			return Any{}, fmt.Errorf("reading tag: %w", err)
+			return Any{}, err
 		}
 		if fieldNumber < minField {
-			return Any{}, fmt.Errorf("fieldNumber %d < minField %d: %w", fieldNumber, minField, canoto.ErrInvalidFieldOrder)
+			return Any{}, fmt.Errorf("%s-%d: %w", s.Name, fieldNumber, canoto.ErrInvalidFieldOrder)
 		}
 
 		fieldType, err := s.findField(fieldNumber)
 		if err != nil {
-			return Any{}, fmt.Errorf("find field %d: %w", fieldNumber, err)
+			return Any{}, err
 		}
 
 		expectedWireType, err := fieldType.wireType()
 		if err != nil {
-			return Any{}, fmt.Errorf("wireType for %d: %w", fieldNumber, err)
+			return Any{}, err
 		}
 		if wireType != expectedWireType {
-			return Any{}, fmt.Errorf("fieldNumber %d: %w", fieldNumber, canoto.ErrInvalidWireType)
+			return Any{}, canoto.ErrInvalidWireType
 		}
 
 		value, err := fieldType.unmarshal(r, specs)
 		if err != nil {
-			return Any{}, fmt.Errorf("unmarshal fieldNumber %d: %w", fieldNumber, err)
+			return Any{}, err
 		}
 		a[fieldType.Name] = value
 
@@ -155,142 +156,203 @@ func (f *FieldType) unmarshal(r *canoto.Reader, specs []*Spec) (any, error) {
 }
 
 func (f *FieldType) unmarshalInt(r *canoto.Reader, _ []*Spec) (any, error) {
-	switch f.TypeInt {
-	case 8:
-		var v int8
-		err := canoto.ReadInt(r, &v)
-		return v, err
-	case 16:
-		var v int16
-		err := canoto.ReadInt(r, &v)
-		return v, err
-	case 32:
-		var v int32
-		err := canoto.ReadInt(r, &v)
-		return v, err
-	case 64:
-		var v int64
-		err := canoto.ReadInt(r, &v)
-		return v, err
-	default:
-		return nil, canoto.ErrUnknownField
-	}
+	return unmarshalPackedVarint(
+		f,
+		r,
+		func(r *canoto.Reader) (int64, error) {
+			switch f.TypeInt {
+			case 8:
+				var v int8
+				err := canoto.ReadInt(r, &v)
+				return int64(v), err
+			case 16:
+				var v int16
+				err := canoto.ReadInt(r, &v)
+				return int64(v), err
+			case 32:
+				var v int32
+				err := canoto.ReadInt(r, &v)
+				return int64(v), err
+			case 64:
+				var v int64
+				err := canoto.ReadInt(r, &v)
+				return v, err
+			default:
+				return 0, canoto.ErrUnknownField
+			}
+		},
+	)
 }
 
 func (f *FieldType) unmarshalUint(r *canoto.Reader, _ []*Spec) (any, error) {
-	switch f.TypeUint {
-	case 8:
-		var v uint8
-		err := canoto.ReadInt(r, &v)
-		return v, err
-	case 16:
-		var v uint16
-		err := canoto.ReadInt(r, &v)
-		return v, err
-	case 32:
-		var v uint32
-		err := canoto.ReadInt(r, &v)
-		return v, err
-	case 64:
-		var v uint64
-		err := canoto.ReadInt(r, &v)
-		return v, err
-	default:
-		return nil, canoto.ErrUnknownField
-	}
+	return unmarshalPackedVarint(
+		f,
+		r,
+		func(r *canoto.Reader) (uint64, error) {
+			switch f.TypeUint {
+			case 8:
+				var v uint8
+				err := canoto.ReadInt(r, &v)
+				return uint64(v), err
+			case 16:
+				var v uint16
+				err := canoto.ReadInt(r, &v)
+				return uint64(v), err
+			case 32:
+				var v uint32
+				err := canoto.ReadInt(r, &v)
+				return uint64(v), err
+			case 64:
+				var v uint64
+				err := canoto.ReadInt(r, &v)
+				return v, err
+			default:
+				return 0, canoto.ErrUnknownField
+			}
+		},
+	)
 }
 
 func (f *FieldType) unmarshalSint(r *canoto.Reader, _ []*Spec) (any, error) {
-	switch f.TypeSint {
-	case 8:
-		var v int8
-		err := canoto.ReadSint(r, &v)
-		return v, err
-	case 16:
-		var v int16
-		err := canoto.ReadSint(r, &v)
-		return v, err
-	case 32:
-		var v int32
-		err := canoto.ReadSint(r, &v)
-		return v, err
-	case 64:
-		var v int64
-		err := canoto.ReadSint(r, &v)
-		return v, err
-	default:
-		return nil, canoto.ErrUnknownField
-	}
+	return unmarshalPackedVarint(
+		f,
+		r,
+		func(r *canoto.Reader) (int64, error) {
+			switch f.TypeSint {
+			case 8:
+				var v int8
+				err := canoto.ReadSint(r, &v)
+				return int64(v), err
+			case 16:
+				var v int16
+				err := canoto.ReadSint(r, &v)
+				return int64(v), err
+			case 32:
+				var v int32
+				err := canoto.ReadSint(r, &v)
+				return int64(v), err
+			case 64:
+				var v int64
+				err := canoto.ReadSint(r, &v)
+				return v, err
+			default:
+				return 0, canoto.ErrUnknownField
+			}
+		},
+	)
 }
 
 func (f *FieldType) unmarshalFint(r *canoto.Reader, _ []*Spec) (any, error) {
-	switch f.TypeFint {
+	var size uint
+	switch f.TypeSFint {
 	case 32:
-		var v uint32
-		err := canoto.ReadFint32(r, &v)
-		return v, err
+		size = canoto.SizeFint32
 	case 64:
-		var v uint64
-		err := canoto.ReadFint64(r, &v)
-		return v, err
+		size = canoto.SizeFint64
 	default:
-		return nil, canoto.ErrUnknownField
+		return 0, canoto.ErrUnknownField
 	}
+	return unmarshalPackedFixed(
+		f,
+		r,
+		func(r *canoto.Reader) (uint64, error) {
+			switch f.TypeSFint {
+			case 32:
+				var v uint32
+				err := canoto.ReadFint32(r, &v)
+				return uint64(v), err
+			case 64:
+				var v uint64
+				err := canoto.ReadFint64(r, &v)
+				return v, err
+			default:
+				return 0, canoto.ErrUnknownField
+			}
+		},
+		size,
+	)
 }
 
 func (f *FieldType) unmarshalSFint(r *canoto.Reader, _ []*Spec) (any, error) {
+	var size uint
 	switch f.TypeSFint {
 	case 32:
-		var v int32
-		err := canoto.ReadFint32(r, &v)
-		return v, err
+		size = canoto.SizeFint32
 	case 64:
-		var v int64
-		err := canoto.ReadFint64(r, &v)
-		return v, err
+		size = canoto.SizeFint64
 	default:
-		return nil, canoto.ErrUnknownField
+		return 0, canoto.ErrUnknownField
 	}
+	return unmarshalPackedFixed(
+		f,
+		r,
+		func(r *canoto.Reader) (int64, error) {
+			switch f.TypeSFint {
+			case 32:
+				var v int32
+				err := canoto.ReadFint32(r, &v)
+				return int64(v), err
+			case 64:
+				var v int64
+				err := canoto.ReadFint64(r, &v)
+				return v, err
+			default:
+				return 0, canoto.ErrUnknownField
+			}
+		},
+		size,
+	)
 }
 
 func (f *FieldType) unmarshalBool(r *canoto.Reader, _ []*Spec) (any, error) {
-	var v bool
-	err := canoto.ReadBool(r, &v)
-	return v, err
+	return unmarshalPackedVarint(
+		f,
+		r,
+		func(r *canoto.Reader) (bool, error) {
+			var v bool
+			err := canoto.ReadBool(r, &v)
+			return v, err
+		},
+	)
 }
 
 func (f *FieldType) unmarshalString(r *canoto.Reader, _ []*Spec) (any, error) {
-	var v string
-	err := canoto.ReadString(r, &v)
-	return v, err
+	return unmarshalUnpacked(
+		f,
+		r,
+		func(msgBytes []byte) (string, error) {
+			if !utf8.Valid(msgBytes) {
+				return "", canoto.ErrStringNotUTF8
+			}
+			return string(msgBytes), nil
+		},
+	)
 }
 
 func (f *FieldType) unmarshalBytes(r *canoto.Reader, _ []*Spec) (any, error) {
-	var v []byte
-	err := canoto.ReadBytes(r, &v)
-	return v, err
+	return unmarshalUnpacked(
+		f,
+		r,
+		func(msgBytes []byte) ([]byte, error) {
+			return msgBytes, nil
+		},
+	)
 }
 
 func (f *FieldType) unmarshalFixedBytes(r *canoto.Reader, _ []*Spec) (any, error) {
-	var v []byte
-	if err := canoto.ReadBytes(r, &v); err != nil {
-		return nil, err
-	}
-	if uint64(len(v)) != f.TypeFixedBytes {
-		return nil, canoto.ErrInvalidLength
-	}
-	return v, nil
+	return unmarshalUnpacked(
+		f,
+		r,
+		func(msgBytes []byte) ([]byte, error) {
+			if uint64(len(msgBytes)) != f.TypeFixedBytes {
+				return nil, canoto.ErrInvalidLength
+			}
+			return msgBytes, nil
+		},
+	)
 }
 
 func (f *FieldType) unmarshalRecursive(r *canoto.Reader, specs []*Spec) (any, error) {
-	var b []byte
-	if err := canoto.ReadBytes(r, &b); err != nil {
-		return nil, err
-	}
-
-	r = &canoto.Reader{
-		B: b,
-	}
 	numSpecs := uint64(len(specs))
 	if f.TypeRecursive > numSpecs {
 		return nil, errors.New("invalid depth")
@@ -298,35 +360,152 @@ func (f *FieldType) unmarshalRecursive(r *canoto.Reader, specs []*Spec) (any, er
 	index := numSpecs - f.TypeRecursive
 	spec := specs[index]
 	specs = slices.Clone(specs[:index])
-	return spec.unmarshal(r, specs)
+
+	return unmarshalUnpacked(
+		f,
+		r,
+		func(msgBytes []byte) (Any, error) {
+			return spec.unmarshal(
+				&canoto.Reader{
+					B: msgBytes,
+				},
+				specs,
+			)
+		},
+	)
 }
 
 func (f *FieldType) unmarshalSpec(r *canoto.Reader, specs []*Spec) (any, error) {
+	return unmarshalUnpacked(
+		f,
+		r,
+		func(msgBytes []byte) (Any, error) {
+			return f.TypeMessage.unmarshal(
+				&canoto.Reader{
+					B: msgBytes,
+				},
+				specs,
+			)
+		},
+	)
+}
+
+func unmarshalPackedVarint[T comparable](
+	f *FieldType,
+	r *canoto.Reader,
+	unmarshal func(r *canoto.Reader) (T, error),
+) (any, error) {
+	if !f.Repeated {
+		// If there is only one entry, read it.
+		value, err := unmarshal(r)
+		if err != nil {
+			return nil, err
+		}
+		if canoto.IsZero(value) {
+			return nil, canoto.ErrZeroValue
+		}
+		return unmarshal(r)
+	}
+
+	// Read the full packed bytes.
+	var msgBytes []byte
+	if err := canoto.ReadBytes(r, &msgBytes); err != nil {
+		return nil, err
+	}
+
+	count := canoto.CountInts(msgBytes)
+	if f.FixedLength > 0 && uint64(count) != f.FixedLength {
+		return nil, canoto.ErrInvalidLength
+	}
+
+	values := make([]T, count)
+	r = &canoto.Reader{
+		B: msgBytes,
+	}
+	for i := range values {
+		value, err := unmarshal(r)
+		if err != nil {
+			return nil, err
+		}
+		values[i] = value
+	}
+	if canoto.HasNext(r) {
+		return nil, canoto.ErrInvalidLength
+	}
+	return values, nil
+}
+
+func unmarshalPackedFixed[T comparable](
+	f *FieldType,
+	r *canoto.Reader,
+	unmarshal func(r *canoto.Reader) (T, error),
+	size uint,
+) (any, error) {
+	if !f.Repeated {
+		// If there is only one entry, read it.
+		value, err := unmarshal(r)
+		if err != nil {
+			return nil, err
+		}
+		if canoto.IsZero(value) {
+			return nil, canoto.ErrZeroValue
+		}
+		return unmarshal(r)
+	}
+
+	// Read the full packed bytes.
+	var msgBytes []byte
+	if err := canoto.ReadBytes(r, &msgBytes); err != nil {
+		return nil, err
+	}
+
+	numMsgBytes := uint(len(msgBytes))
+	if numMsgBytes%size != 0 {
+		return nil, canoto.ErrInvalidLength
+	}
+	count := numMsgBytes / size
+	if f.FixedLength > 0 && uint64(count) != f.FixedLength {
+		return nil, canoto.ErrInvalidLength
+	}
+
+	values := make([]T, count)
+	r = &canoto.Reader{
+		B: msgBytes,
+	}
+	for i := range values {
+		value, err := unmarshal(r)
+		if err != nil {
+			return nil, err
+		}
+		values[i] = value
+	}
+	return values, nil
+}
+
+func unmarshalUnpacked[T any](
+	f *FieldType,
+	r *canoto.Reader,
+	unmarshal func([]byte) (T, error),
+) (any, error) {
 	// Read the first entry manually because the tag is already stripped.
 	var msgBytes []byte
 	if err := canoto.ReadBytes(r, &msgBytes); err != nil {
 		return nil, err
 	}
-	msg, err := f.TypeMessage.unmarshal(
-		&canoto.Reader{
-			B: msgBytes,
-		},
-		specs,
-	)
+	value, err := unmarshal(msgBytes)
 	if err != nil {
 		return nil, err
 	}
 	if !f.Repeated {
 		// If there is only one entry, return it.
-		return msg, nil
+		if len(msgBytes) == 0 {
+			return nil, canoto.ErrZeroValue
+		}
+		return value, nil
 	}
 
 	// Count the number of additional entries after the first entry.
-	wireType, err := f.wireType()
-	if err != nil {
-		return nil, err
-	}
-	expectedTag := canoto.Tag(f.FieldNumber, wireType)
+	expectedTag := canoto.Tag(f.FieldNumber, canoto.Len)
 	countMinus1, err := canoto.CountBytes(r.B, string(expectedTag))
 	if err != nil {
 		return nil, err
@@ -339,8 +518,8 @@ func (f *FieldType) unmarshalSpec(r *canoto.Reader, specs []*Spec) (any, error) 
 		return nil, canoto.ErrInvalidLength
 	}
 
-	msgs := make([]any, totalCount)
-	msgs[0] = msg
+	values := make([]T, totalCount)
+	values[0] = value
 
 	// Read the rest of the entries, stripping the tag each time.
 	for i := range countMinus1 {
@@ -352,15 +531,10 @@ func (f *FieldType) unmarshalSpec(r *canoto.Reader, specs []*Spec) (any, error) 
 			continue
 		}
 
-		msgs[1+i], err = f.TypeMessage.unmarshal(
-			&canoto.Reader{
-				B: msgBytes,
-			},
-			specs,
-		)
+		values[1+i], err = unmarshal(msgBytes)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return msgs, nil
+	return values, nil
 }

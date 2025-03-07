@@ -504,3 +504,63 @@ func unsafeString(b []byte) string {
 	// avoid copying during the conversion
 	return unsafe.String(unsafe.SliceData(b), len(b))
 }
+
+func FieldTypeFromInt[T Int](
+	_ T,
+	fieldNumber uint32,
+	name string,
+) *FieldType {
+	f := &FieldType{
+		FieldNumber: fieldNumber,
+		Name:        name,
+	}
+	if isSigned[T]() {
+		f.TypeInt = intLengthEnum[T]()
+	} else {
+		f.TypeUint = intLengthEnum[T]()
+	}
+	return f
+}
+
+func FieldTypeFromSint[T Sint](
+	_ T,
+	fieldNumber uint32,
+	name string,
+) *FieldType {
+	return &FieldType{
+		FieldNumber: fieldNumber,
+		Name:        name,
+		TypeSint:    intLengthEnum[T](),
+	}
+}
+
+// isSigned returns true if the integer type is signed.
+func isSigned[T Int]() bool {
+	return ^T(0) < T(0)
+}
+
+// intLengthEnum returns the length of the integer type.
+// 1 ->  8 bits
+// 2 -> 16 bits
+// 3 -> 32 bits
+// 4 -> 64 bits
+func intLengthEnum[T Int]() uint8 {
+	for i := range 4 {
+		byteLen := 1 << i
+		bitLen := 8 * byteLen
+		if T(1)<<bitLen == T(0) {
+			return uint8(i + 1)
+		}
+	}
+	panic("unsupported integer size")
+}
+
+// isBytesEmpty returns true if the byte slice is all zeros.
+func isBytesEmpty(b []byte) bool {
+	for _, v := range b {
+		if v != 0 {
+			return false
+		}
+	}
+	return true
+}

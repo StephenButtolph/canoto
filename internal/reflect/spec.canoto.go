@@ -56,6 +56,7 @@ func (c *Spec) CanotoSpec(types ...reflect.Type) *Spec {
 		}
 		s.Fields = append(s.Fields, f)
 	}
+	s.CalculateCanotoCache()
 	return s
 }
 
@@ -381,6 +382,7 @@ func (c *FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 		}
 		s.Fields = append(s.Fields, f)
 	}
+	s.CalculateCanotoCache()
 	return s
 }
 
