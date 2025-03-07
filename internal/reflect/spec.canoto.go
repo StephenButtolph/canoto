@@ -32,11 +32,7 @@ type canotoData_Spec struct {
 	size atomic.Int64
 }
 
-func (c *Spec) CanotoSpec() *Spec {
-	return c.CanotoSpecWith(nil)
-}
-
-func (*Spec) CanotoSpecWith(types []reflect.Type) *Spec {
+func (c *Spec) CanotoSpec(types ...reflect.Type) *Spec {
 	types = append(types, reflect.TypeOf(Spec{}))
 	s := &Spec{
 		Name:   "Spec",
@@ -56,7 +52,7 @@ func (*Spec) CanotoSpecWith(types []reflect.Type) *Spec {
 		if index := slices.Index(types, reflect.TypeOf(FieldType{})); index >= 0 {
 			f.TypeRecursive = uint64(len(types) - index)
 		} else {
-			f.TypeMessage = (*FieldType)(nil).CanotoSpecWith(types)
+			f.TypeMessage = (*FieldType)(nil).CanotoSpec(types...)
 		}
 		s.Fields = append(s.Fields, f)
 	}
@@ -296,11 +292,7 @@ type canotoData_FieldType struct {
 	TypeOneOf atomic.Uint32
 }
 
-func (c *FieldType) CanotoSpec() *Spec {
-	return c.CanotoSpecWith(nil)
-}
-
-func (*FieldType) CanotoSpecWith(types []reflect.Type) *Spec {
+func (c *FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 	types = append(types, reflect.TypeOf(FieldType{}))
 	s := &Spec{
 		Name:   "FieldType",
@@ -385,7 +377,7 @@ func (*FieldType) CanotoSpecWith(types []reflect.Type) *Spec {
 		if index := slices.Index(types, reflect.TypeOf(Spec{})); index >= 0 {
 			f.TypeRecursive = uint64(len(types) - index)
 		} else {
-			f.TypeMessage = (*Spec)(nil).CanotoSpecWith(types)
+			f.TypeMessage = (*Spec)(nil).CanotoSpec(types...)
 		}
 		s.Fields = append(s.Fields, f)
 	}
