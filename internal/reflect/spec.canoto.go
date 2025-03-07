@@ -43,86 +43,7 @@ func (*Spec) CanotoSpec() *Spec {
 				FieldNumber: 2,
 				Name:        "Fields",
 				Repeated:	true,
-				TypeMessage: &Spec{
-					Name: "FieldType",
-					Fields: []*FieldType{
-						{
-							FieldNumber: 1,
-							Name: 	  "FieldNumber",
-							TypeUint:  32,
-						},
-						{
-							FieldNumber: 2,
-							Name: 	  "Name",
-							TypeString: true,
-						},
-						{
-							FieldNumber: 3,
-							Name: 	  "FixedLength",
-							TypeUint:  64,
-						},
-						{
-							FieldNumber: 4,
-							Name: 	  "Repeated",
-							TypeBool:  true,
-						},
-						{
-							FieldNumber: 5,
-							Name: 	  "TypeInt",
-							TypeUint:  8,
-						},
-						{
-							FieldNumber: 6,
-							Name: 	  "TypeUint",
-							TypeUint:  8,
-						},
-						{
-							FieldNumber: 7,
-							Name: 	  "TypeSint",
-							TypeUint:  8,
-						},
-						{
-							FieldNumber: 8,
-							Name: 	  "TypeFint",
-							TypeUint:  8,
-						},
-						{
-							FieldNumber: 9,
-							Name: 	  "TypeSFint",
-							TypeUint:  8,
-						},
-						{
-							FieldNumber: 10,
-							Name: 	  "TypeBool",
-							TypeBool:  true,
-						},
-						{
-							FieldNumber: 11,
-							Name: 	  "TypeString",
-							TypeBool:  true,
-						},
-						{
-							FieldNumber: 12,
-							Name: 	  "TypeBytes",
-							TypeBool:  true,
-						},
-						{
-							FieldNumber: 13,
-							Name: 	  "TypeFixedBytes",
-							TypeUint:  64,
-						},
-						{
-							FieldNumber: 14,
-							Name: 	  "TypeRecursive",
-							TypeUint:  64,
-						},
-						{
-							FieldNumber: 15,
-							Name: 	  "TypeMessage",
-							TypeRecursive: 2,
-						},
-					},
-				},
+				TypeMessage: (*FieldType)(nil).CanotoSpec(),
 			},
 		},
 	}
@@ -359,6 +280,89 @@ type canotoData_FieldType struct {
 	size atomic.Int64
 
 	TypeOneOf atomic.Uint32
+}
+
+func (*FieldType) CanotoSpec() *Spec {
+	return &Spec{
+		Name: "FieldType",
+		Fields: []*FieldType{
+			{
+				FieldNumber: 1,
+				Name: 	  "FieldNumber",
+				TypeUint:  32,
+			},
+			{
+				FieldNumber: 2,
+				Name: 	  "Name",
+				TypeString: true,
+			},
+			{
+				FieldNumber: 3,
+				Name: 	  "FixedLength",
+				TypeUint:  64,
+			},
+			{
+				FieldNumber: 4,
+				Name: 	  "Repeated",
+				TypeBool:  true,
+			},
+			{
+				FieldNumber: 5,
+				Name: 	  "TypeInt",
+				TypeUint:  8,
+			},
+			{
+				FieldNumber: 6,
+				Name: 	  "TypeUint",
+				TypeUint:  8,
+			},
+			{
+				FieldNumber: 7,
+				Name: 	  "TypeSint",
+				TypeUint:  8,
+			},
+			{
+				FieldNumber: 8,
+				Name: 	  "TypeFint",
+				TypeUint:  8,
+			},
+			{
+				FieldNumber: 9,
+				Name: 	  "TypeSFint",
+				TypeUint:  8,
+			},
+			{
+				FieldNumber: 10,
+				Name: 	  "TypeBool",
+				TypeBool:  true,
+			},
+			{
+				FieldNumber: 11,
+				Name: 	  "TypeString",
+				TypeBool:  true,
+			},
+			{
+				FieldNumber: 12,
+				Name: 	  "TypeBytes",
+				TypeBool:  true,
+			},
+			{
+				FieldNumber: 13,
+				Name: 	  "TypeFixedBytes",
+				TypeUint:  64,
+			},
+			{
+				FieldNumber: 14,
+				Name: 	  "TypeRecursive",
+				TypeUint:  64,
+			},
+			{
+				FieldNumber: 15,
+				Name: 	  "TypeMessage",
+				TypeRecursive: 2,
+			},
+		},
+	}
 }
 
 // MakeCanoto creates a new empty value.
