@@ -1,5 +1,3 @@
-//go:generate canoto $GOFILE
-
 package reflect
 
 import (
