@@ -134,14 +134,16 @@ type canotoData_${structName} struct {
 ${sizeCache}${oneOfCache}}
 
 // CanotoSpec returns the specification of this canoto message.
-func (*${structName}${generics}) CanotoSpec(types ...reflect.Type) *canoto.Spec {
+func (*${structName}${generics}) CanotoSpec(types ...reflect.Type) *${selector}Spec {
 	types = append(types, reflect.TypeOf(${structName}${generics}{}))
 	var zero ${structName}${generics}
-	return &canoto.Spec{
+	s := &${selector}Spec{
 		Name:   "${structName}",
-		Fields: []*canoto.FieldType{
+		Fields: []*${selector}FieldType{
 ${spec}		},
 	}
+	s.CalculateCanotoCache()
+	return s
 }
 
 // MakeCanoto creates a new empty value.
@@ -415,14 +417,14 @@ func makeOneOfCache(m message) string {
 func makeSpec(m message) string {
 	return writeMessage(m, messageTemplate{
 		ints: typeTemplate{
-			single: `			canoto.FieldTypeFrom${suffix}(
+			single: `			${selector}FieldTypeFrom${suffix}(
 				zero.${fieldName},
 				${fieldNumber},
 				"${fieldName}",
 				"${oneOf}",
 			),
 `,
-			repeated: `			canoto.FieldTypeFromRepeated${suffix}(
+			repeated: `			${selector}FieldTypeFromRepeated${suffix}(
 				zero.${fieldName},
 				${fieldNumber},
 				"${fieldName}",
@@ -430,7 +432,7 @@ func makeSpec(m message) string {
 				"${oneOf}",
 			),
 `,
-			fixedRepeated: `			canoto.FieldTypeFromRepeated${suffix}(
+			fixedRepeated: `			${selector}FieldTypeFromRepeated${suffix}(
 				zero.${fieldName}[:],
 				${fieldNumber},
 				"${fieldName}",
@@ -440,14 +442,14 @@ func makeSpec(m message) string {
 `,
 		},
 		fints: typeTemplate{
-			single: `			canoto.FieldTypeFromFint(
+			single: `			${selector}FieldTypeFromFint(
 				zero.${fieldName},
 				${fieldNumber},
 				"${fieldName}",
 				"${oneOf}",
 			),
 `,
-			repeated: `			canoto.FieldTypeFromRepeatedFint(
+			repeated: `			${selector}FieldTypeFromRepeatedFint(
 				zero.${fieldName},
 				${fieldNumber},
 				"${fieldName}",
@@ -455,7 +457,7 @@ func makeSpec(m message) string {
 				"${oneOf}",
 			),
 `,
-			fixedRepeated: `			canoto.FieldTypeFromRepeatedFint(
+			fixedRepeated: `			${selector}FieldTypeFromRepeatedFint(
 				zero.${fieldName}[:],
 				${fieldNumber},
 				"${fieldName}",
@@ -565,7 +567,7 @@ func makeSpec(m message) string {
 			},
 `,
 		values: typeTemplate{
-			single: `			canoto.FieldTypeFromPointer(
+			single: `			${selector}FieldTypeFromPointer(
 				${genericTypeCast}(&zero.${fieldName}),
 				${fieldNumber},
 				"${fieldName}",
@@ -575,8 +577,8 @@ func makeSpec(m message) string {
 				types,
 			),
 `,
-			repeated: `			canoto.FieldTypeFromPointer(
-				${genericTypeCast}(canoto.MakeEntryPointer(zero.${fieldName})),
+			repeated: `			${selector}FieldTypeFromPointer(
+				${genericTypeCast}(${selector}MakeEntryPointer(zero.${fieldName})),
 				${fieldNumber},
 				"${fieldName}",
 				0,
@@ -585,8 +587,8 @@ func makeSpec(m message) string {
 				types,
 			),
 `,
-			fixedRepeated: `			canoto.FieldTypeFromPointer(
-				${genericTypeCast}(canoto.MakeEntryPointer(zero.${fieldName}[:])),
+			fixedRepeated: `			${selector}FieldTypeFromPointer(
+				${genericTypeCast}(${selector}MakeEntryPointer(zero.${fieldName}[:])),
 				${fieldNumber},
 				"${fieldName}",
 				uint64(len(zero.${fieldName})),
@@ -597,7 +599,7 @@ func makeSpec(m message) string {
 `,
 		},
 		pointers: typeTemplate{
-			single: `			canoto.FieldTypeFromPointer(
+			single: `			${selector}FieldTypeFromPointer(
 				${genericTypeCast}(zero.${fieldName}),
 				${fieldNumber},
 				"${fieldName}",
@@ -607,8 +609,8 @@ func makeSpec(m message) string {
 				types,
 			),
 `,
-			repeated: `			canoto.FieldTypeFromPointer(
-				${genericTypeCast}(canoto.MakeEntry(zero.${fieldName})),
+			repeated: `			${selector}FieldTypeFromPointer(
+				${genericTypeCast}(${selector}MakeEntry(zero.${fieldName})),
 				${fieldNumber},
 				"${fieldName}",
 				0,
@@ -617,8 +619,8 @@ func makeSpec(m message) string {
 				types,
 			),
 `,
-			fixedRepeated: `			canoto.FieldTypeFromPointer(
-				${genericTypeCast}(canoto.MakeEntry(zero.${fieldName}[:])),
+			fixedRepeated: `			${selector}FieldTypeFromPointer(
+				${genericTypeCast}(${selector}MakeEntry(zero.${fieldName}[:])),
 				${fieldNumber},
 				"${fieldName}",
 				uint64(len(zero.${fieldName})),
@@ -629,7 +631,7 @@ func makeSpec(m message) string {
 `,
 		},
 		fields: typeTemplate{
-			single: `			canoto.FieldTypeFromMaker(
+			single: `			${selector}FieldTypeFromMaker(
 				zero.${fieldName},
 				${fieldNumber},
 				"${fieldName}",
@@ -639,8 +641,8 @@ func makeSpec(m message) string {
 				types,
 			),
 `,
-			repeated: `			canoto.FieldTypeFromMaker(
-				canoto.MakeEntry(zero.${fieldName}),
+			repeated: `			${selector}FieldTypeFromMaker(
+				${selector}MakeEntry(zero.${fieldName}),
 				${fieldNumber},
 				"${fieldName}",
 				0,
@@ -650,8 +652,8 @@ func makeSpec(m message) string {
 			),
 `,
 
-			fixedRepeated: `			canoto.FieldTypeFromMaker(
-				canoto.MakeEntry(zero.${fieldName}[:]),
+			fixedRepeated: `			${selector}FieldTypeFromMaker(
+				${selector}MakeEntry(zero.${fieldName}[:]),
 				${fieldNumber},
 				"${fieldName}",
 				uint64(len(zero.${fieldName})),

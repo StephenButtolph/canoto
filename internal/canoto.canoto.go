@@ -36,7 +36,7 @@ type canotoData_LargestFieldNumber struct {
 func (*LargestFieldNumber[T1]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(LargestFieldNumber[T1]{}))
 	var zero LargestFieldNumber[T1]
-	return &canoto.Spec{
+	s := &canoto.Spec{
 		Name:   "LargestFieldNumber",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
@@ -47,6 +47,8 @@ func (*LargestFieldNumber[T1]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
+	s.CalculateCanotoCache()
+	return s
 }
 
 // MakeCanoto creates a new empty value.
@@ -199,7 +201,7 @@ type canotoData_OneOf struct {
 func (*OneOf) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(OneOf{}))
 	var zero OneOf
-	return &canoto.Spec{
+	s := &canoto.Spec{
 		Name:   "OneOf",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
@@ -240,6 +242,8 @@ func (*OneOf) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
+	s.CalculateCanotoCache()
+	return s
 }
 
 // MakeCanoto creates a new empty value.
@@ -553,7 +557,7 @@ type canotoData_OnlyGenericField struct {
 func (*OnlyGenericField[T1]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(OnlyGenericField[T1]{}))
 	var zero OnlyGenericField[T1]
-	return &canoto.Spec{
+	s := &canoto.Spec{
 		Name:   "OnlyGenericField",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromMaker(
@@ -594,6 +598,8 @@ func (*OnlyGenericField[T1]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
+	s.CalculateCanotoCache()
+	return s
 }
 
 // MakeCanoto creates a new empty value.
@@ -964,7 +970,7 @@ type canotoData_LinkedList struct {
 func (*LinkedList) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(LinkedList{}))
 	var zero LinkedList
-	return &canoto.Spec{
+	s := &canoto.Spec{
 		Name:   "LinkedList",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
@@ -984,6 +990,8 @@ func (*LinkedList) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
+	s.CalculateCanotoCache()
+	return s
 }
 
 // MakeCanoto creates a new empty value.
@@ -1169,7 +1177,7 @@ type canotoData_RecursiveA struct {
 func (*RecursiveA) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(RecursiveA{}))
 	var zero RecursiveA
-	return &canoto.Spec{
+	s := &canoto.Spec{
 		Name:   "RecursiveA",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromPointer(
@@ -1183,6 +1191,8 @@ func (*RecursiveA) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
+	s.CalculateCanotoCache()
+	return s
 }
 
 // MakeCanoto creates a new empty value.
@@ -1350,7 +1360,7 @@ type canotoData_RecursiveB struct {
 func (*RecursiveB) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(RecursiveB{}))
 	var zero RecursiveB
-	return &canoto.Spec{
+	s := &canoto.Spec{
 		Name:   "RecursiveB",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromPointer(
@@ -1364,6 +1374,8 @@ func (*RecursiveB) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
+	s.CalculateCanotoCache()
+	return s
 }
 
 // MakeCanoto creates a new empty value.
@@ -1539,7 +1551,7 @@ type canotoData_GenericField struct {
 func (*GenericField[T1, T2, T3]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(GenericField[T1, T2, T3]{}))
 	var zero GenericField[T1, T2, T3]
-	return &canoto.Spec{
+	s := &canoto.Spec{
 		Name:   "GenericField",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromPointer(
@@ -1625,6 +1637,8 @@ func (*GenericField[T1, T2, T3]) CanotoSpec(types ...reflect.Type) *canoto.Spec 
 			),
 		},
 	}
+	s.CalculateCanotoCache()
+	return s
 }
 
 // MakeCanoto creates a new empty value.
@@ -2368,7 +2382,7 @@ type canotoData_NestedGenericField struct {
 func (*NestedGenericField[T1, T2, T3]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(NestedGenericField[T1, T2, T3]{}))
 	var zero NestedGenericField[T1, T2, T3]
-	return &canoto.Spec{
+	s := &canoto.Spec{
 		Name:   "NestedGenericField",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromPointer(
@@ -2454,6 +2468,8 @@ func (*NestedGenericField[T1, T2, T3]) CanotoSpec(types ...reflect.Type) *canoto
 			),
 		},
 	}
+	s.CalculateCanotoCache()
+	return s
 }
 
 // MakeCanoto creates a new empty value.
@@ -3191,7 +3207,7 @@ type canotoData_Embedded struct {
 func (*Embedded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(Embedded{}))
 	var zero Embedded
-	return &canoto.Spec{
+	s := &canoto.Spec{
 		Name:   "Embedded",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromPointer(
@@ -3223,6 +3239,8 @@ func (*Embedded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
+	s.CalculateCanotoCache()
+	return s
 }
 
 // MakeCanoto creates a new empty value.
@@ -3463,7 +3481,7 @@ type canotoData_A struct {
 func (*A) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(A{}))
 	var zero A
-	return &canoto.Spec{
+	s := &canoto.Spec{
 		Name:   "A",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
@@ -3474,6 +3492,8 @@ func (*A) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
+	s.CalculateCanotoCache()
+	return s
 }
 
 // MakeCanoto creates a new empty value.
@@ -3618,7 +3638,7 @@ type canotoData_A__B struct {
 func (*A__B) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(A__B{}))
 	var zero A__B
-	return &canoto.Spec{
+	s := &canoto.Spec{
 		Name:   "A__B",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
@@ -3629,6 +3649,8 @@ func (*A__B) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
+	s.CalculateCanotoCache()
+	return s
 }
 
 // MakeCanoto creates a new empty value.
@@ -3877,7 +3899,7 @@ type canotoData_Scalars struct {
 func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(Scalars{}))
 	var zero Scalars
-	return &canoto.Spec{
+	s := &canoto.Spec{
 		Name:   "Scalars",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
@@ -4446,6 +4468,8 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
+	s.CalculateCanotoCache()
+	return s
 }
 
 // MakeCanoto creates a new empty value.

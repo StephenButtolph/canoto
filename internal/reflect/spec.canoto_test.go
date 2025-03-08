@@ -57,7 +57,7 @@ type canotoData_testMessage struct {
 func (*testMessage) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(testMessage{}))
 	var zero testMessage
-	return &canoto.Spec{
+	s := &canoto.Spec{
 		Name:   "testMessage",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
@@ -200,6 +200,8 @@ func (*testMessage) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
+	s.CalculateCanotoCache()
+	return s
 }
 
 // MakeCanoto creates a new empty value.
@@ -780,7 +782,7 @@ type canotoData_testSimpleMessage struct {
 func (*testSimpleMessage) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(testSimpleMessage{}))
 	var zero testSimpleMessage
-	return &canoto.Spec{
+	s := &canoto.Spec{
 		Name:   "testSimpleMessage",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
@@ -791,6 +793,8 @@ func (*testSimpleMessage) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
+	s.CalculateCanotoCache()
+	return s
 }
 
 // MakeCanoto creates a new empty value.

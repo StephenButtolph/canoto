@@ -1,3 +1,5 @@
+//go:generate canoto --internal $GOFILE
+
 package canoto
 
 import (
@@ -12,7 +14,7 @@ type (
 		Name   string       `canoto:"string,1"           json:"name"`
 		Fields []*FieldType `canoto:"repeated pointer,2" json:"fields"` // TODO: Replace this with a map.
 
-		// canotoData canotoData_Spec
+		canotoData canotoData_Spec
 	}
 	FieldType struct {
 		FieldNumber    uint32 `canoto:"int,1"           json:"fieldNumber"`
@@ -32,7 +34,7 @@ type (
 		TypeRecursive  uint64 `canoto:"int,15,Type"     json:"typeRecursive,omitempty"`  // depth of the recursion.
 		TypeMessage    *Spec  `canoto:"pointer,16,Type" json:"typeMessage,omitempty"`
 
-		// canotoData canotoData_FieldType
+		canotoData canotoData_FieldType
 	}
 	unmarshaler func(f *FieldType, r *Reader, specs []*Spec) (any, error)
 	Any         map[string]any
@@ -104,7 +106,7 @@ func (s *Spec) findField(fieldNumber uint32) (*FieldType, error) {
 }
 
 func (f *FieldType) wireType() (WireType, error) {
-	whichOneOf := 0 // f.CachedWhichOneOfType()
+	whichOneOf := f.CachedWhichOneOfType()
 	switch whichOneOf {
 	case 6, 7, 8, 11:
 		if f.Repeated {
@@ -137,7 +139,7 @@ func (f *FieldType) wireType() (WireType, error) {
 }
 
 func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
-	whichOneOf := uint32(0) // f.CachedWhichOneOfType()
+	whichOneOf := f.CachedWhichOneOfType()
 	unmarshal, ok := map[uint32]unmarshaler{
 		6:  (*FieldType).unmarshalInt,
 		7:  (*FieldType).unmarshalUint,
