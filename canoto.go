@@ -532,10 +532,23 @@ func MakeSlice[T any](_ []T, length int) []T {
 	return make([]T, length)
 }
 
+// MakeEntry returns the zero value of an element in the provided slice.
+//
+// This function is useful to use in auto-generated code, when the type of a
+// variable is unknown. For example, if we have a variable `v` which we know to
+// be a slice, but we do not know the type of the elements, we can use this
+// function to leverage golang's type inference to create an element.
 func MakeEntry[S ~[]E, E any](_ S) (_ E) {
 	return
 }
 
+// MakeEntry returns a pointer to the zero value of an element in the provided
+// slice.
+//
+// This function is useful to use in auto-generated code, when the type of a
+// variable is unknown. For example, if we have a variable `v` which we know to
+// be a slice, but we do not know the type of the elements, we can use this
+// function to leverage golang's type inference to create an element.
 func MakeEntryPointer[S ~[]E, E any](_ S) *E {
 	return new(E)
 }
@@ -554,6 +567,7 @@ func unsafeString(b []byte) string {
 	return unsafe.String(unsafe.SliceData(b), len(b))
 }
 
+// FieldTypeFromInt creates a FieldType from an integer.
 func FieldTypeFromInt[T Int](
 	_ T,
 	fieldNumber uint32,
@@ -577,6 +591,7 @@ func FieldTypeFromInt[T Int](
 	return f
 }
 
+// FieldTypeFromSint creates a FieldType from a signed integer.
 func FieldTypeFromSint[T Sint](
 	_ T,
 	fieldNumber uint32,
@@ -595,6 +610,7 @@ func FieldTypeFromSint[T Sint](
 	}
 }
 
+// FieldTypeFromFint creates a FieldType from a fixed-length integer.
 func FieldTypeFromFint[T Int](
 	_ T,
 	fieldNumber uint32,
@@ -618,6 +634,7 @@ func FieldTypeFromFint[T Int](
 	return f
 }
 
+// FieldTypeFromField creates a FieldType from a field.
 func FieldTypeFromField[T Field](
 	field T,
 	fieldNumber uint32,
