@@ -301,7 +301,7 @@ func (f *FieldType) unmarshalSFint(r *Reader, _ []*Spec) (any, error) {
 }
 
 func (f *FieldType) unmarshalBool(r *Reader, _ []*Spec) (any, error) {
-	return unmarshalPackedVarint(
+	return unmarshalPackedFixed(
 		f,
 		r,
 		func(r *Reader) (bool, error) {
@@ -309,6 +309,7 @@ func (f *FieldType) unmarshalBool(r *Reader, _ []*Spec) (any, error) {
 			err := ReadBool(r, &v)
 			return v, err
 		},
+		1,
 	)
 }
 
@@ -500,6 +501,8 @@ func unmarshalPackedFixed[T comparable](
 
 		var size uint64
 		switch sizeEnum {
+		case 1:
+			size = SizeBool
 		case 3:
 			size = SizeFint32
 		case 4:
