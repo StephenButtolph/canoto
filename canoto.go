@@ -656,11 +656,10 @@ func isSigned[T Int]() bool {
 
 // intSizeOf returns the intSize of the integer type.
 func intSizeOf[T Int]() SizeEnum {
-	for i := range 4 {
-		byteLen := 1 << i
-		bitLen := 8 * byteLen
+	for i := range SizeEnum64 {
+		bitLen := 1 << (i + 3)
 		if T(1)<<bitLen == T(0) {
-			return SizeEnum(i + 1)
+			return i + 1
 		}
 	}
 	panic("unsupported integer size")

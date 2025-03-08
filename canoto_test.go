@@ -971,7 +971,7 @@ func TestIsSigned(t *testing.T) {
 	require.False(isSigned[uint64]())
 }
 
-func TesIntSizeOf(t *testing.T) {
+func TestIntSizeOf(t *testing.T) {
 	require := require.New(t)
 
 	require.Equal(SizeEnum8, intSizeOf[int8]())
