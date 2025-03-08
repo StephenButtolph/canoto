@@ -436,9 +436,6 @@ func unmarshalPackedVarint[T comparable](
 	if err := ReadBytes(r, &msgBytes); err != nil {
 		return nil, err
 	}
-	if f.FixedLength == 0 && len(msgBytes) == 0 {
-		return nil, ErrZeroValue
-	}
 
 	count := f.FixedLength
 	if count == 0 {
@@ -489,27 +486,28 @@ func unmarshalPackedFixed[T comparable](
 	if err := ReadBytes(r, &msgBytes); err != nil {
 		return nil, err
 	}
-	numMsgBytes := uint(len(msgBytes))
-	if len(msgBytes) == 0 {
-		return nil, ErrZeroValue
-	}
 
-	var size uint
-	switch sizeEnum {
-	case 3:
-		size = SizeFint32
-	case 4:
-		size = SizeFint64
-	default:
-		return 0, ErrUnknownField
-	}
+	count := f.FixedLength
+	if count == 0 {
+		numMsgBytes := uint64(len(msgBytes))
+		if numMsgBytes == 0 {
+			return nil, ErrZeroValue
+		}
 
-	if numMsgBytes%size != 0 {
-		return nil, ErrInvalidLength
-	}
-	count := numMsgBytes / size
-	if f.FixedLength > 0 && uint64(count) != f.FixedLength {
-		return nil, ErrInvalidLength
+		var size uint64
+		switch sizeEnum {
+		case 3:
+			size = SizeFint32
+		case 4:
+			size = SizeFint64
+		default:
+			return 0, ErrUnknownField
+		}
+
+		if numMsgBytes%size != 0 {
+			return nil, ErrInvalidLength
+		}
+		count = numMsgBytes / size
 	}
 
 	values := make([]T, count)
@@ -524,6 +522,9 @@ func unmarshalPackedFixed[T comparable](
 		}
 		values[i] = value
 		isZero = isZero && IsZero(value)
+	}
+	if HasNext(r) {
+		return nil, ErrInvalidLength
 	}
 	if f.FixedLength > 0 && isZero {
 		return nil, ErrZeroValue
