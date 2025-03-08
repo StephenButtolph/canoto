@@ -5920,7 +5920,6 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				expectedLength      = len(c.FixedBytes)
 				expectedLengthInt64 = int64(expectedLength)
 			)
-
 			var length int64
 			if err := canoto.ReadInt(&r, &length); err != nil {
 				return err
@@ -6189,7 +6188,6 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				expectedLength      = len(c.CustomFixedBytes)
 				expectedLengthInt64 = int64(expectedLength)
 			)
-
 			var length int64
 			if err := canoto.ReadInt(&r, &length); err != nil {
 				return err

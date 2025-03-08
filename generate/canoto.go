@@ -914,7 +914,6 @@ func makeUnmarshal(m message) string {
 				expectedLength      = len(c.${fieldName})
 				expectedLengthInt64 = int64(expectedLength)
 			)
-
 			var length int64
 			if err := ${selector}ReadInt(&r, &length); err != nil {
 				return err
