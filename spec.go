@@ -15,7 +15,7 @@ import (
 type (
 	Spec struct {
 		Name   string       `canoto:"string,1"           json:"name"`
-		Fields []*FieldType `canoto:"repeated pointer,2" json:"fields"` // TODO: Replace this with a map.
+		Fields []*FieldType `canoto:"repeated pointer,2" json:"fields"`
 
 		canotoData canotoData_Spec
 	}
