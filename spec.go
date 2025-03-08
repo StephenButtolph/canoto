@@ -5,6 +5,7 @@ package canoto
 import (
 	"errors"
 	"fmt"
+	"io"
 	"slices"
 	"unicode/utf8"
 )
@@ -337,16 +338,70 @@ func (f *FieldType) unmarshalBytes(r *Reader, _ []*Spec) (any, error) {
 }
 
 func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
-	return unmarshalUnpacked(
-		f,
-		r,
-		func(msgBytes []byte) ([]byte, bool, error) {
-			if f.TypeFixedBytes != uint64(len(msgBytes)) {
-				return nil, false, ErrInvalidLength
-			}
-			return msgBytes, isBytesEmpty(msgBytes), nil
-		},
-	)
+	// Read the first entry manually because the tag is already stripped.
+	var length int64
+	if err := ReadInt(r, &length); err != nil {
+		return nil, err
+	}
+	if length != int64(f.TypeFixedBytes) {
+		return nil, ErrInvalidLength
+	}
+	if f.TypeFixedBytes > uint64(len(r.B)) {
+		return nil, io.ErrUnexpectedEOF
+	}
+
+	msgBytes := r.B[:f.TypeFixedBytes]
+	r.B = r.B[f.TypeFixedBytes:]
+
+	if !f.Repeated {
+		// If there is only one entry, return it.
+		if isBytesEmpty(msgBytes) {
+			return nil, ErrZeroValue
+		}
+		return slices.Clone(msgBytes), nil
+	}
+
+	// Count the number of additional entries after the first entry.
+	expectedTag := Tag(f.FieldNumber, Len)
+
+	count := f.FixedLength
+	if count == 0 {
+		countMinus1, err := CountBytes(r.B, string(expectedTag))
+		if err != nil {
+			return nil, err
+		}
+		count = uint64(countMinus1 + 1)
+	}
+
+	values := make([][]byte, count)
+	values[0] = slices.Clone(msgBytes)
+
+	isZero := isBytesEmpty(msgBytes)
+
+	// Read the rest of the entries, stripping the tag each time.
+	for i := range count - 1 {
+		if !HasPrefix(r.B, string(expectedTag)) {
+			return nil, ErrUnknownField
+		}
+		r.B = r.B[len(expectedTag):]
+
+		if err := ReadInt(r, &length); err != nil {
+			return nil, err
+		}
+		if length != int64(f.TypeFixedBytes) {
+			return nil, ErrInvalidLength
+		}
+		if f.TypeFixedBytes > uint64(len(r.B)) {
+			return nil, io.ErrUnexpectedEOF
+		}
+
+		values[1+i] = slices.Clone(msgBytes)
+		isZero = isZero && isBytesEmpty(msgBytes)
+	}
+	if f.FixedLength > 0 && isZero {
+		return nil, ErrZeroValue
+	}
+	return values, nil
 }
 
 func (f *FieldType) unmarshalRecursive(r *Reader, specs []*Spec) (any, error) {
