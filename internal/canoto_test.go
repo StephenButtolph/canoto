@@ -70,9 +70,9 @@ func canonicalizeCanotoScalars(s *Scalars) *Scalars {
 	for i := range s.FixedRepeatedBytes {
 		s.FixedRepeatedBytes[i] = canonicalizeSlice(s.FixedRepeatedBytes[i])
 	}
-	if s.CustomType.CachedCanotoSize() == 0 {
-		s.CustomType.Int = nil
-	}
+	// if s.CustomType.CachedCanotoSize() == 0 {
+	// 	s.CustomType.Int = nil
+	// }
 	s.CustomBytes = canonicalizeSlice(s.CustomBytes)
 	s.CustomRepeatedBytes = canonicalizeSlice(s.CustomRepeatedBytes)
 	s.CustomRepeatedFixedBytes = canonicalizeSlice(s.CustomRepeatedFixedBytes)
@@ -344,9 +344,9 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 	}
 
 	var customType []byte
-	if s.CustomType.CachedCanotoSize() != 0 {
-		customType = s.CustomType.Int.Bytes()
-	}
+	// if s.CustomType.CachedCanotoSize() != 0 {
+	// 	customType = s.CustomType.Int.Bytes()
+	// }
 
 	var oneOf *pb.OneOf
 	if s.OneOf.A1 != 0 || s.OneOf.A2 != 0 || s.OneOf.B1 != 0 || s.OneOf.B2 != 0 || s.OneOf.C != 0 || s.OneOf.D != 0 {

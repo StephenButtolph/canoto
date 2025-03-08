@@ -4,7 +4,6 @@ package examples
 
 import (
 	"github.com/StephenButtolph/canoto"
-	"github.com/StephenButtolph/canoto/internal/big"
 )
 
 const constRepeatedUint64Len = 3
@@ -195,22 +194,22 @@ type Scalars struct {
 	FixedRepeatedFixedBytes         [3][32]byte                    `canoto:"fixed repeated fixed bytes,62"`
 	FixedRepeatedLargestFieldNumber [3]LargestFieldNumber[int32]   `canoto:"fixed repeated value,63"`
 	ConstRepeatedUint64             [constRepeatedUint64Len]uint64 `canoto:"fixed repeated int,64"`
-	CustomType                      big.Int                        `canoto:"value,65"`
-	CustomUint32                    customUint32                   `canoto:"fint32,66"`
-	CustomString                    customString                   `canoto:"string,67"`
-	CustomBytes                     customBytes                    `canoto:"bytes,68"`
-	CustomFixedBytes                customFixedBytes               `canoto:"fixed bytes,69"`
-	CustomRepeatedBytes             customRepeatedBytes            `canoto:"repeated bytes,70"`
-	CustomRepeatedFixedBytes        customRepeatedFixedBytes       `canoto:"repeated fixed bytes,71"`
-	CustomFixedRepeatedBytes        customFixedRepeatedBytes       `canoto:"fixed repeated bytes,72"`
-	CustomFixedRepeatedFixedBytes   customFixedRepeatedFixedBytes  `canoto:"fixed repeated fixed bytes,73"`
-	OneOf                           OneOf                          `canoto:"value,74"`
-	Pointer                         *LargestFieldNumber[uint32]    `canoto:"pointer,75"`
-	RepeatedPointer                 []*LargestFieldNumber[uint32]  `canoto:"repeated pointer,76"`
-	FixedRepeatedPointer            [3]*LargestFieldNumber[uint32] `canoto:"fixed repeated pointer,77"`
-	Field                           *LargestFieldNumber[uint32]    `canoto:"field,78"`
-	RepeatedField                   []*LargestFieldNumber[uint32]  `canoto:"repeated field,79"`
-	FixedRepeatedField              [3]*LargestFieldNumber[uint32] `canoto:"fixed repeated field,80"`
+	// CustomType                      big.Int                        `canoto:"value,65"`
+	CustomUint32                  customUint32                   `canoto:"fint32,66"`
+	CustomString                  customString                   `canoto:"string,67"`
+	CustomBytes                   customBytes                    `canoto:"bytes,68"`
+	CustomFixedBytes              customFixedBytes               `canoto:"fixed bytes,69"`
+	CustomRepeatedBytes           customRepeatedBytes            `canoto:"repeated bytes,70"`
+	CustomRepeatedFixedBytes      customRepeatedFixedBytes       `canoto:"repeated fixed bytes,71"`
+	CustomFixedRepeatedBytes      customFixedRepeatedBytes       `canoto:"fixed repeated bytes,72"`
+	CustomFixedRepeatedFixedBytes customFixedRepeatedFixedBytes  `canoto:"fixed repeated fixed bytes,73"`
+	OneOf                         OneOf                          `canoto:"value,74"`
+	Pointer                       *LargestFieldNumber[uint32]    `canoto:"pointer,75"`
+	RepeatedPointer               []*LargestFieldNumber[uint32]  `canoto:"repeated pointer,76"`
+	FixedRepeatedPointer          [3]*LargestFieldNumber[uint32] `canoto:"fixed repeated pointer,77"`
+	Field                         *LargestFieldNumber[uint32]    `canoto:"field,78"`
+	RepeatedField                 []*LargestFieldNumber[uint32]  `canoto:"repeated field,79"`
+	FixedRepeatedField            [3]*LargestFieldNumber[uint32] `canoto:"fixed repeated field,80"`
 
 	canotoData canotoData_Scalars
 }
