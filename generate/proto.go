@@ -18,6 +18,7 @@ const protoExtension = ".proto"
 func Proto(
 	inputFilePath string,
 	canotoImport string,
+	internal bool,
 ) error {
 	extension := filepath.Ext(inputFilePath)
 	if extension != goExtension {
@@ -31,7 +32,7 @@ func Proto(
 		return err
 	}
 
-	packageName, messages, err := parse(fs, f, canotoImport)
+	packageName, messages, err := parse(fs, f, canotoImport, internal)
 	if err != nil {
 		return err
 	}
