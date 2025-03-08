@@ -551,23 +551,24 @@ func unmarshalUnpacked[T any](
 
 	// Count the number of additional entries after the first entry.
 	expectedTag := Tag(f.FieldNumber, Len)
-	countMinus1, err := CountBytes(r.B, string(expectedTag))
-	if err != nil {
-		return nil, err
+
+	count := f.FixedLength
+	if count == 0 {
+		countMinus1, err := CountBytes(r.B, string(expectedTag))
+		if err != nil {
+			return nil, err
+		}
+		count = uint64(countMinus1 + 1)
 	}
 
-	// If there should be a specific number of entries, check that the count is
-	// correct.
-	totalCount := countMinus1 + 1
-	if f.FixedLength > 0 && uint64(totalCount) != f.FixedLength {
-		return nil, ErrInvalidLength
-	}
-
-	values := make([]T, totalCount)
+	values := make([]T, count)
 	values[0] = value
 
 	// Read the rest of the entries, stripping the tag each time.
-	for i := range countMinus1 {
+	for i := range count - 1 {
+		if !HasPrefix(r.B, string(expectedTag)) {
+			return nil, ErrUnknownField
+		}
 		r.B = r.B[len(expectedTag):]
 
 		var isFieldZero bool
