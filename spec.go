@@ -439,6 +439,10 @@ func unmarshalPackedVarint[T comparable](
 
 	count := f.FixedLength
 	if count == 0 {
+		if len(msgBytes) == 0 {
+			return nil, ErrZeroValue
+		}
+
 		count = uint64(CountInts(msgBytes))
 	}
 	values := make([]T, count)
