@@ -436,15 +436,14 @@ func unmarshalPackedVarint[T comparable](
 	if err := ReadBytes(r, &msgBytes); err != nil {
 		return nil, err
 	}
-	if len(msgBytes) == 0 {
+	if f.FixedLength == 0 && len(msgBytes) == 0 {
 		return nil, ErrZeroValue
 	}
 
-	count := CountInts(msgBytes)
-	if f.FixedLength > 0 && uint64(count) != f.FixedLength {
-		return nil, ErrInvalidLength
+	count := f.FixedLength
+	if count == 0 {
+		count = uint64(CountInts(msgBytes))
 	}
-
 	values := make([]T, count)
 	r = &Reader{
 		B: msgBytes,
