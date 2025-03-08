@@ -838,7 +838,7 @@ func (c *FieldType) CalculateCanotoCache() {
 		(c.TypeMessage).CalculateCanotoCache()
 		if fieldSize := (c.TypeMessage).CachedCanotoSize(); fieldSize != 0 {
 			size += len(canoto__FieldType__TypeMessage__tag) + SizeInt(int64(fieldSize)) + fieldSize
-		TypeOneOf = 16
+			TypeOneOf = 16
 		}
 	}
 	c.canotoData.size.Store(int64(size))
