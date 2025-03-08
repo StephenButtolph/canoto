@@ -23,6 +23,15 @@ const (
 	_ // EGROUP is deprecated and not supported
 	I32
 
+	// SizeEnum8 indicates either an int8 or uint8.
+	SizeEnum8 SizeEnum = 1
+	// SizeEnum16 indicates either an int16 or uint16.
+	SizeEnum16 SizeEnum = 2
+	// SizeEnum32 indicates either an int32 or uint32.
+	SizeEnum32 SizeEnum = 3
+	// SizeEnum64 indicates either an int64 or uint64.
+	SizeEnum64 SizeEnum = 4
+
 	// SizeFint32 is the size of a 32-bit fixed size integer in bytes.
 	SizeFint32 = 4
 	// SizeFint64 is the size of a 64-bit fixed size integer in bytes.
@@ -56,13 +65,15 @@ var (
 	//go:embed canoto.go
 	Code string
 
-	ErrInvalidFieldOrder  = errors.New("invalid field order")
-	ErrUnexpectedWireType = errors.New("unexpected wire type")
-	ErrDuplicateOneOf     = errors.New("duplicate oneof field")
-	ErrInvalidLength      = errors.New("decoded length is invalid")
-	ErrZeroValue          = errors.New("zero value")
-	ErrUnknownField       = errors.New("unknown field")
-	ErrPaddedZeroes       = errors.New("padded zeroes")
+	ErrInvalidFieldOrder   = errors.New("invalid field order")
+	ErrUnexpectedWireType  = errors.New("unexpected wire type")
+	ErrDuplicateOneOf      = errors.New("duplicate oneof field")
+	ErrInvalidLength       = errors.New("decoded length is invalid")
+	ErrZeroValue           = errors.New("zero value")
+	ErrUnknownField        = errors.New("unknown field")
+	ErrPaddedZeroes        = errors.New("padded zeroes")
+	ErrUnknownFieldType    = errors.New("unknown field type")
+	ErrUnexpectedFieldSize = errors.New("unexpected field size")
 
 	ErrOverflow        = errors.New("overflow")
 	ErrInvalidWireType = errors.New("invalid wire type")
@@ -170,6 +181,9 @@ type (
 	Writer struct {
 		B []byte
 	}
+
+	// SizeEnum indicate the size of an integer type in canoto specifications.
+	SizeEnum uint8
 )
 
 func (w WireType) IsValid() bool {
@@ -193,6 +207,32 @@ func (w WireType) String() string {
 		return "I32"
 	default:
 		return "Invalid"
+	}
+}
+
+func (s SizeEnum) FixedWireType() (WireType, bool) {
+	switch s {
+	case SizeEnum32:
+		return I32, true
+	case SizeEnum64:
+		return I64, true
+	default:
+		return 0, false
+	}
+}
+
+func (s SizeEnum) NumBytes() (uint64, bool) {
+	switch s {
+	case SizeEnum8:
+		return 1, true
+	case SizeEnum16:
+		return 2, true
+	case SizeEnum32:
+		return 4, true
+	case SizeEnum64:
+		return 8, true
+	default:
+		return 0, false
 	}
 }
 
@@ -526,9 +566,9 @@ func FieldTypeFromInt[T Int](
 		OneOf:       oneOf,
 	}
 	if isSigned[T]() {
-		f.TypeInt = intLengthEnum[T]()
+		f.TypeInt = intSizeOf[T]()
 	} else {
-		f.TypeUint = intLengthEnum[T]()
+		f.TypeUint = intSizeOf[T]()
 	}
 	return f
 }
@@ -557,7 +597,7 @@ func FieldTypeFromSint[T Sint](
 		FieldNumber: fieldNumber,
 		Name:        name,
 		OneOf:       oneOf,
-		TypeSint:    intLengthEnum[T](),
+		TypeSint:    intSizeOf[T](),
 	}
 }
 
@@ -587,9 +627,9 @@ func FieldTypeFromFint[T Int](
 		OneOf:       oneOf,
 	}
 	if isSigned[T]() {
-		f.TypeSFint = intLengthEnum[T]()
+		f.TypeSFint = intSizeOf[T]()
 	} else {
-		f.TypeFint = intLengthEnum[T]()
+		f.TypeFint = intSizeOf[T]()
 	}
 	return f
 }
@@ -675,17 +715,13 @@ func isSigned[T Int]() bool {
 	return ^T(0) < T(0)
 }
 
-// intLengthEnum returns the length of the integer type.
-// 1 ->  8 bits
-// 2 -> 16 bits
-// 3 -> 32 bits
-// 4 -> 64 bits
-func intLengthEnum[T Int]() uint8 {
+// intSizeOf returns the intSize of the integer type.
+func intSizeOf[T Int]() SizeEnum {
 	for i := range 4 {
 		byteLen := 1 << i
 		bitLen := 8 * byteLen
 		if T(1)<<bitLen == T(0) {
-			return uint8(i + 1)
+			return SizeEnum(i + 1)
 		}
 	}
 	panic("unsupported integer size")

@@ -971,18 +971,18 @@ func TestIsSigned(t *testing.T) {
 	require.False(isSigned[uint64]())
 }
 
-func TestIntLengthEnum(t *testing.T) {
+func TesIntSizeOf(t *testing.T) {
 	require := require.New(t)
 
-	require.Equal(uint8(1), intLengthEnum[int8]())
-	require.Equal(uint8(1), intLengthEnum[uint8]())
+	require.Equal(SizeEnum8, intSizeOf[int8]())
+	require.Equal(SizeEnum8, intSizeOf[uint8]())
 
-	require.Equal(uint8(2), intLengthEnum[int16]())
-	require.Equal(uint8(2), intLengthEnum[uint16]())
+	require.Equal(SizeEnum16, intSizeOf[int16]())
+	require.Equal(SizeEnum16, intSizeOf[uint16]())
 
-	require.Equal(uint8(3), intLengthEnum[int32]())
-	require.Equal(uint8(3), intLengthEnum[uint32]())
+	require.Equal(SizeEnum32, intSizeOf[int32]())
+	require.Equal(SizeEnum32, intSizeOf[uint32]())
 
-	require.Equal(uint8(4), intLengthEnum[int64]())
-	require.Equal(uint8(4), intLengthEnum[uint64]())
+	require.Equal(SizeEnum64, intSizeOf[int64]())
+	require.Equal(SizeEnum64, intSizeOf[uint64]())
 }

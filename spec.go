@@ -20,22 +20,22 @@ type (
 		canotoData canotoData_Spec
 	}
 	FieldType struct {
-		FieldNumber    uint32 `canoto:"int,1"           json:"fieldNumber"`
-		Name           string `canoto:"string,2"        json:"name"`
-		FixedLength    uint64 `canoto:"int,3"           json:"fixedLength,omitempty"`
-		Repeated       bool   `canoto:"bool,4"          json:"repeated,omitempty"`
-		OneOf          string `canoto:"string,5"        json:"oneOf,omitempty"`
-		TypeInt        uint8  `canoto:"int,6,Type"      json:"typeInt,omitempty"`        // can be any of 8, 16, 32, or 64.
-		TypeUint       uint8  `canoto:"int,7,Type"      json:"typeUint,omitempty"`       // can be any of 8, 16, 32, or 64.
-		TypeSint       uint8  `canoto:"int,8,Type"      json:"typeSint,omitempty"`       // can be any of 8, 16, 32, or 64.
-		TypeFint       uint8  `canoto:"int,9,Type"      json:"typeFint,omitempty"`       // can be either 32 or 64.
-		TypeSFint      uint8  `canoto:"int,10,Type"     json:"typeSFint,omitempty"`      // can be either 32 or 64.
-		TypeBool       bool   `canoto:"bool,11,Type"    json:"typeBool,omitempty"`       // can only be true.
-		TypeString     bool   `canoto:"bool,12,Type"    json:"typeString,omitempty"`     // can only be true.
-		TypeBytes      bool   `canoto:"bool,13,Type"    json:"typeBytes,omitempty"`      // can only be true.
-		TypeFixedBytes uint64 `canoto:"int,14,Type"     json:"typeFixedBytes,omitempty"` // length of the fixed bytes.
-		TypeRecursive  uint64 `canoto:"int,15,Type"     json:"typeRecursive,omitempty"`  // depth of the recursion.
-		TypeMessage    *Spec  `canoto:"pointer,16,Type" json:"typeMessage,omitempty"`
+		FieldNumber    uint32   `canoto:"int,1"           json:"fieldNumber"`
+		Name           string   `canoto:"string,2"        json:"name"`
+		FixedLength    uint64   `canoto:"int,3"           json:"fixedLength,omitempty"`
+		Repeated       bool     `canoto:"bool,4"          json:"repeated,omitempty"`
+		OneOf          string   `canoto:"string,5"        json:"oneOf,omitempty"`
+		TypeInt        SizeEnum `canoto:"int,6,Type"      json:"typeInt,omitempty"`        // can be any of 8, 16, 32, or 64.
+		TypeUint       SizeEnum `canoto:"int,7,Type"      json:"typeUint,omitempty"`       // can be any of 8, 16, 32, or 64.
+		TypeSint       SizeEnum `canoto:"int,8,Type"      json:"typeSint,omitempty"`       // can be any of 8, 16, 32, or 64.
+		TypeFint       SizeEnum `canoto:"int,9,Type"      json:"typeFint,omitempty"`       // can be either 32 or 64.
+		TypeSFint      SizeEnum `canoto:"int,10,Type"     json:"typeSFint,omitempty"`      // can be either 32 or 64.
+		TypeBool       bool     `canoto:"bool,11,Type"    json:"typeBool,omitempty"`       // can only be true.
+		TypeString     bool     `canoto:"bool,12,Type"    json:"typeString,omitempty"`     // can only be true.
+		TypeBytes      bool     `canoto:"bool,13,Type"    json:"typeBytes,omitempty"`      // can only be true.
+		TypeFixedBytes uint64   `canoto:"int,14,Type"     json:"typeFixedBytes,omitempty"` // length of the fixed bytes.
+		TypeRecursive  uint64   `canoto:"int,15,Type"     json:"typeRecursive,omitempty"`  // depth of the recursion.
+		TypeMessage    *Spec    `canoto:"pointer,16,Type" json:"typeMessage,omitempty"`
 
 		canotoData canotoData_FieldType
 	}
@@ -149,30 +149,24 @@ func (f *FieldType) wireType() (WireType, error) {
 		if f.Repeated {
 			return Len, nil
 		}
-		switch f.TypeFint {
-		case 3:
-			return I32, nil
-		case 4:
-			return I64, nil
-		default:
-			return 0, ErrUnknownField
+		w, ok := f.TypeFint.FixedWireType()
+		if !ok {
+			return 0, ErrUnexpectedFieldSize
 		}
+		return w, nil
 	case 10:
 		if f.Repeated {
 			return Len, nil
 		}
-		switch f.TypeSFint {
-		case 3:
-			return I32, nil
-		case 4:
-			return I64, nil
-		default:
-			return 0, ErrUnknownField
+		w, ok := f.TypeSFint.FixedWireType()
+		if !ok {
+			return 0, ErrUnexpectedFieldSize
 		}
+		return w, nil
 	case 12, 13, 14, 15, 16:
 		return Len, nil
 	default:
-		return 0, ErrUnknownField
+		return 0, ErrUnknownFieldType
 	}
 }
 
@@ -192,7 +186,7 @@ func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 		16: (*FieldType).unmarshalSpec,
 	}[whichOneOf]
 	if !ok {
-		return nil, ErrUnknownField
+		return nil, ErrUnknownFieldType
 	}
 	value, err := unmarshal(f, r, specs)
 	if err != nil {
@@ -207,24 +201,24 @@ func (f *FieldType) unmarshalInt(r *Reader, _ []*Spec) (any, error) {
 		r,
 		func(r *Reader) (int64, error) {
 			switch f.TypeInt {
-			case 1:
+			case SizeEnum8:
 				var v int8
 				err := ReadInt(r, &v)
 				return int64(v), err
-			case 2:
+			case SizeEnum16:
 				var v int16
 				err := ReadInt(r, &v)
 				return int64(v), err
-			case 3:
+			case SizeEnum32:
 				var v int32
 				err := ReadInt(r, &v)
 				return int64(v), err
-			case 4:
+			case SizeEnum64:
 				var v int64
 				err := ReadInt(r, &v)
 				return v, err
 			default:
-				return 0, ErrUnknownField
+				return 0, ErrUnexpectedFieldSize
 			}
 		},
 	)
@@ -236,24 +230,24 @@ func (f *FieldType) unmarshalUint(r *Reader, _ []*Spec) (any, error) {
 		r,
 		func(r *Reader) (uint64, error) {
 			switch f.TypeUint {
-			case 1:
+			case SizeEnum8:
 				var v uint8
 				err := ReadInt(r, &v)
 				return uint64(v), err
-			case 2:
+			case SizeEnum16:
 				var v uint16
 				err := ReadInt(r, &v)
 				return uint64(v), err
-			case 3:
+			case SizeEnum32:
 				var v uint32
 				err := ReadInt(r, &v)
 				return uint64(v), err
-			case 4:
+			case SizeEnum64:
 				var v uint64
 				err := ReadInt(r, &v)
 				return v, err
 			default:
-				return 0, ErrUnknownField
+				return 0, ErrUnexpectedFieldSize
 			}
 		},
 	)
@@ -265,24 +259,24 @@ func (f *FieldType) unmarshalSint(r *Reader, _ []*Spec) (any, error) {
 		r,
 		func(r *Reader) (int64, error) {
 			switch f.TypeSint {
-			case 1:
+			case SizeEnum8:
 				var v int8
 				err := ReadSint(r, &v)
 				return int64(v), err
-			case 2:
+			case SizeEnum16:
 				var v int16
 				err := ReadSint(r, &v)
 				return int64(v), err
-			case 3:
+			case SizeEnum32:
 				var v int32
 				err := ReadSint(r, &v)
 				return int64(v), err
-			case 4:
+			case SizeEnum64:
 				var v int64
 				err := ReadSint(r, &v)
 				return v, err
 			default:
-				return 0, ErrUnknownField
+				return 0, ErrUnexpectedFieldSize
 			}
 		},
 	)
@@ -294,16 +288,16 @@ func (f *FieldType) unmarshalFint(r *Reader, _ []*Spec) (any, error) {
 		r,
 		func(r *Reader) (uint64, error) {
 			switch f.TypeFint {
-			case 3:
+			case SizeEnum32:
 				var v uint32
 				err := ReadFint32(r, &v)
 				return uint64(v), err
-			case 4:
+			case SizeEnum64:
 				var v uint64
 				err := ReadFint64(r, &v)
 				return v, err
 			default:
-				return 0, ErrUnknownField
+				return 0, ErrUnexpectedFieldSize
 			}
 		},
 		f.TypeFint,
@@ -316,16 +310,16 @@ func (f *FieldType) unmarshalSFint(r *Reader, _ []*Spec) (any, error) {
 		r,
 		func(r *Reader) (int64, error) {
 			switch f.TypeSFint {
-			case 3:
+			case SizeEnum32:
 				var v int32
 				err := ReadFint32(r, &v)
 				return int64(v), err
-			case 4:
+			case SizeEnum64:
 				var v int64
 				err := ReadFint64(r, &v)
 				return v, err
 			default:
-				return 0, ErrUnknownField
+				return 0, ErrUnexpectedFieldSize
 			}
 		},
 		f.TypeSFint,
@@ -541,7 +535,7 @@ func unmarshalPackedFixed[T comparable](
 	f *FieldType,
 	r *Reader,
 	unmarshal func(r *Reader) (T, error),
-	sizeEnum uint8,
+	sizeEnum SizeEnum,
 ) (any, error) {
 	if !f.Repeated {
 		// If there is only one entry, read it.
@@ -568,18 +562,10 @@ func unmarshalPackedFixed[T comparable](
 			return nil, ErrZeroValue
 		}
 
-		var size uint64
-		switch sizeEnum {
-		case 1:
-			size = SizeBool
-		case 3:
-			size = SizeFint32
-		case 4:
-			size = SizeFint64
-		default:
-			return 0, ErrUnknownField
+		size, ok := sizeEnum.NumBytes()
+		if !ok {
+			return nil, ErrUnexpectedFieldSize
 		}
-
 		if numMsgBytes%size != 0 {
 			return nil, ErrInvalidLength
 		}
