@@ -1,7 +1,6 @@
 package examples
 
 import (
-	"encoding/json"
 	"slices"
 	"strconv"
 	"testing"
@@ -1604,9 +1603,13 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 	}
 }
 
-func TestT(t *testing.T) {
-	spec := (*OnlyGenericField[*RecursiveA])(nil).CanotoSpec()
-	specJSON, err := json.MarshalIndent(spec, "", "  ")
-	require.NoError(t, err)
-	t.Fatal(string(specJSON))
+func FuzzScalars_Spec(f *testing.F) {
+	spec := (*Scalars)(nil).CanotoSpec()
+	f.Fuzz(func(t *testing.T, b []byte) {
+		var scalars Scalars
+		expectedErr := scalars.UnmarshalCanoto(b)
+
+		_, actualErr := canoto.Unmarshal(spec, b)
+		require.Equal(t, expectedErr, actualErr)
+	})
 }
