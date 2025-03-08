@@ -147,6 +147,7 @@ message Scalars {
   repeated bytes FixedRepeatedFixedBytes = 62;
   repeated LargestFieldNumber FixedRepeatedLargestFieldNumber = 63;
   repeated uint64 ConstRepeatedUint64 = 64;
+  bytes CustomType = 65;
   fixed32 CustomUint32 = 66;
   string CustomString = 67;
   bytes CustomBytes = 68;

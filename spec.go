@@ -3,10 +3,12 @@
 package canoto
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"slices"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -38,7 +40,13 @@ type (
 		canotoData canotoData_FieldType
 	}
 	unmarshaler func(f *FieldType, r *Reader, specs []*Spec) (any, error)
-	Any         map[string]any
+	Any         struct {
+		Fields []AnyField
+	}
+	AnyField struct {
+		Name  string
+		Value any
+	}
 )
 
 // Unmarshal unmarshals the given bytes into a map of fields based on the
@@ -50,11 +58,31 @@ func Unmarshal(s *Spec, b []byte) (Any, error) {
 	return s.unmarshal(&r, nil)
 }
 
+func (a Any) MarshalJSON() ([]byte, error) {
+	var sb strings.Builder
+	_, _ = sb.WriteString("{")
+	for i, f := range a.Fields {
+		if i > 0 {
+			_, _ = sb.WriteString(",")
+		}
+		_, _ = sb.WriteString(`"`)
+		_, _ = sb.WriteString(f.Name)
+		_, _ = sb.WriteString(`":`)
+		b, err := json.Marshal(f.Value)
+		if err != nil {
+			return nil, err
+		}
+		_, _ = sb.Write(b)
+	}
+	_, _ = sb.WriteString("}")
+	return []byte(sb.String()), nil
+}
+
 func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 	specs = append(specs, s)
 	var (
 		minField uint32
-		a        = make(Any)
+		a        Any
 		oneOfs   = make(map[string]struct{})
 	)
 	for HasNext(r) {
@@ -90,7 +118,10 @@ func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 		if err != nil {
 			return Any{}, fmt.Errorf("unmarshal fieldNumber %d: %w", fieldNumber, err)
 		}
-		a[fieldType.Name] = value
+		a.Fields = append(a.Fields, AnyField{
+			Name:  fieldType.Name,
+			Value: value,
+		})
 
 		minField = fieldNumber + 1
 	}
@@ -421,7 +452,7 @@ func (f *FieldType) unmarshalRecursive(r *Reader, specs []*Spec) (any, error) {
 		r,
 		func(msgBytes []byte) (Any, bool, error) {
 			if len(msgBytes) == 0 {
-				return nil, true, nil
+				return Any{}, true, nil
 			}
 			a, err := spec.unmarshal(
 				&Reader{
@@ -440,7 +471,7 @@ func (f *FieldType) unmarshalSpec(r *Reader, specs []*Spec) (any, error) {
 		r,
 		func(msgBytes []byte) (Any, bool, error) {
 			if len(msgBytes) == 0 {
-				return nil, true, nil
+				return Any{}, true, nil
 			}
 			a, err := f.TypeMessage.unmarshal(
 				&Reader{
