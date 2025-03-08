@@ -395,6 +395,9 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 			return nil, io.ErrUnexpectedEOF
 		}
 
+		msgBytes := r.B[:f.TypeFixedBytes]
+		r.B = r.B[f.TypeFixedBytes:]
+
 		values[1+i] = slices.Clone(msgBytes)
 		isZero = isZero && isBytesEmpty(msgBytes)
 	}
