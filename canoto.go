@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"math/bits"
+	"reflect"
 	"slices"
 	"unicode/utf8"
 	"unsafe"
@@ -95,6 +96,11 @@ type (
 
 	// Field defines a type that can be included inside of a Canoto message.
 	Field interface {
+		// CanotoSpec returns the specification of this canoto message.
+		//
+		// If there is not a valid specification of this type, it returns nil.
+		CanotoSpec(types ...reflect.Type) *Spec
+
 		// MarshalCanotoInto writes the field into a canoto.Writer and returns
 		// the resulting canoto.Writer.
 		//
@@ -486,6 +492,14 @@ func MakeSlice[T any](_ []T, length int) []T {
 	return make([]T, length)
 }
 
+func MakeEntry[S ~[]E, E any](_ S) (_ E) {
+	return
+}
+
+func MakeEntryPointer[S ~[]E, E any](_ S) *E {
+	return new(E)
+}
+
 // Zero returns the zero value for its type.
 func Zero[T any](_ T) (_ T) {
 	return
@@ -509,10 +523,12 @@ func FieldTypeFromInt[T Int](
 	_ T,
 	fieldNumber uint32,
 	name string,
+	oneOf string,
 ) *FieldType {
 	f := &FieldType{
 		FieldNumber: fieldNumber,
 		Name:        name,
+		OneOf:       oneOf,
 	}
 	if isSigned[T]() {
 		f.TypeInt = intLengthEnum[T]()
@@ -522,16 +538,141 @@ func FieldTypeFromInt[T Int](
 	return f
 }
 
+func FieldTypeFromRepeatedInt[S ~[]E, E Int](
+	_ S,
+	fieldNumber uint32,
+	name string,
+	fixedLength uint64,
+	oneOf string,
+) *FieldType {
+	var v E
+	f := FieldTypeFromInt(v, fieldNumber, name, oneOf)
+	f.FixedLength = fixedLength
+	f.Repeated = true
+	return f
+}
+
 func FieldTypeFromSint[T Sint](
 	_ T,
 	fieldNumber uint32,
 	name string,
+	oneOf string,
 ) *FieldType {
 	return &FieldType{
 		FieldNumber: fieldNumber,
 		Name:        name,
+		OneOf:       oneOf,
 		TypeSint:    intLengthEnum[T](),
 	}
+}
+
+func FieldTypeFromRepeatedSint[S ~[]E, E Sint](
+	_ S,
+	fieldNumber uint32,
+	name string,
+	fixedLength uint64,
+	oneOf string,
+) *FieldType {
+	var v E
+	f := FieldTypeFromSint(v, fieldNumber, name, oneOf)
+	f.FixedLength = fixedLength
+	f.Repeated = true
+	return f
+}
+
+func FieldTypeFromFint[T Int](
+	_ T,
+	fieldNumber uint32,
+	name string,
+	oneOf string,
+) *FieldType {
+	f := &FieldType{
+		FieldNumber: fieldNumber,
+		Name:        name,
+		OneOf:       oneOf,
+	}
+	if isSigned[T]() {
+		f.TypeSFint = intLengthEnum[T]()
+	} else {
+		f.TypeFint = intLengthEnum[T]()
+	}
+	return f
+}
+
+func FieldTypeFromRepeatedFint[S ~[]E, E Int](
+	_ S,
+	fieldNumber uint32,
+	name string,
+	fixedLength uint64,
+	oneOf string,
+) *FieldType {
+	var v E
+	f := FieldTypeFromFint(v, fieldNumber, name, oneOf)
+	f.FixedLength = fixedLength
+	f.Repeated = true
+	return f
+}
+
+func FieldTypeFromPointer[V any, P FieldPointer[V]](
+	field P,
+	fieldNumber uint32,
+	name string,
+	fixedLength uint64,
+	repeated bool,
+	oneOf string,
+	types []reflect.Type,
+) *FieldType {
+	var (
+		f = &FieldType{
+			FieldNumber: fieldNumber,
+			Name:        name,
+			FixedLength: fixedLength,
+			Repeated:    repeated,
+			OneOf:       oneOf,
+		}
+		fieldType = reflect.TypeOf(field).Elem()
+	)
+	if index := slices.Index(types, fieldType); index >= 0 {
+		f.TypeRecursive = uint64(len(types) - index)
+	} else {
+		f.TypeMessage = field.CanotoSpec(types...)
+		// If this does not have a valid spec, it is treated as bytes.
+		if f.TypeMessage == nil {
+			f.TypeBytes = true
+		}
+	}
+	return f
+}
+
+func FieldTypeFromMaker[T FieldMaker[T]](
+	field T,
+	fieldNumber uint32,
+	name string,
+	fixedLength uint64,
+	repeated bool,
+	oneOf string,
+	types []reflect.Type,
+) *FieldType {
+	var (
+		f = &FieldType{
+			FieldNumber: fieldNumber,
+			Name:        name,
+			FixedLength: fixedLength,
+			Repeated:    repeated,
+			OneOf:       oneOf,
+		}
+		fieldType = reflect.TypeOf(field).Elem()
+	)
+	if index := slices.Index(types, fieldType); index >= 0 {
+		f.TypeRecursive = uint64(len(types) - index)
+	} else {
+		f.TypeMessage = field.CanotoSpec(types...)
+		// If this does not have a valid spec, it is treated as bytes.
+		if f.TypeMessage == nil {
+			f.TypeBytes = true
+		}
+	}
+	return f
 }
 
 // isSigned returns true if the integer type is signed.

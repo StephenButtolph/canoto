@@ -2,6 +2,7 @@ package big
 
 import (
 	"math/big"
+	"reflect"
 
 	"github.com/StephenButtolph/canoto"
 )
@@ -13,6 +14,12 @@ var (
 
 type Int struct {
 	Int *big.Int
+}
+
+func (*Int) CanotoSpec(...reflect.Type) *canoto.Spec {
+	// Nil indicates that the type does not have a valid spec. This type will be
+	// treated as opaque bytes.
+	return nil
 }
 
 func (*Int) MakeCanoto() *Int {

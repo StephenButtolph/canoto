@@ -24,6 +24,26 @@ message OneOf {
   int64 D = 6;
 }
 
+message OnlyGenericField {
+  bytes Field = 1;
+  repeated bytes RepeatedField = 2;
+  repeated bytes FixedRepeatedField = 3;
+  OnlyGenericField Next = 4;
+}
+
+message LinkedList {
+  uint64 Int = 1;
+  LinkedList Next = 2;
+}
+
+message RecursiveA {
+  RecursiveB Next = 1;
+}
+
+message RecursiveB {
+  RecursiveA Next = 1;
+}
+
 message GenericField {
   bytes Value = 1;
   repeated bytes RepeatedValue = 2;

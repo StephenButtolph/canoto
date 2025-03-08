@@ -78,6 +78,8 @@ package ${package}
 
 import (
 	"io"
+	"reflect"
+	"slices"
 	"sync/atomic"
 	"unicode/utf8"
 
@@ -88,6 +90,7 @@ import (
 var (
 	_ atomic.Int64
 
+	_ = slices.Index[[]reflect.Type, reflect.Type]
 	_ = io.ErrUnexpectedEOF
 	_ = utf8.ValidString
 )
@@ -117,6 +120,17 @@ ${tagConstants})
 
 type canotoData_${structName} struct {
 ${sizeCache}${oneOfCache}}
+
+// CanotoSpec returns the specification of this canoto message.
+func (*${structName}${generics}) CanotoSpec(types ...reflect.Type) *canoto.Spec {
+	types = append(types, reflect.TypeOf(${structName}${generics}{}))
+	var zero ${structName}${generics}
+	return &canoto.Spec{
+		Name:   "${structName}",
+		Fields: []*canoto.FieldType{
+${spec}		},
+	}
+}
 
 // MakeCanoto creates a new empty value.
 func (*${structName}${generics}) MakeCanoto() *${structName}${generics} {
@@ -249,6 +263,7 @@ ${marshal}	return w
 		"generics":            makeGenerics(m),
 		"sizeCache":           makeSizeCache(m),
 		"oneOfCache":          makeOneOfCache(m),
+		"spec":                makeSpec(m),
 		"unmarshal":           makeUnmarshal(m),
 		"validOneOf":          makeValidOneOf(m),
 		"valid":               makeValid(m),
@@ -382,6 +397,258 @@ func makeOneOfCache(m message) string {
 		_, _ = fmt.Fprintf(&s, template, oneOf+oneOfSuffix)
 	}
 	return s.String()
+}
+
+func makeSpec(m message) string {
+	return writeMessage(m, messageTemplate{
+		ints: typeTemplate{
+			single: `			canoto.FieldTypeFrom${suffix}(
+				zero.${fieldName},
+				${fieldNumber},
+				"${fieldName}",
+				"${oneOf}",
+			),
+`,
+			repeated: `			canoto.FieldTypeFromRepeated${suffix}(
+				zero.${fieldName},
+				${fieldNumber},
+				"${fieldName}",
+				0,
+				"${oneOf}",
+			),
+`,
+			fixedRepeated: `			canoto.FieldTypeFromRepeated${suffix}(
+				zero.${fieldName}[:],
+				${fieldNumber},
+				"${fieldName}",
+				uint64(len(zero.${fieldName})),
+				"${oneOf}",
+			),
+`,
+		},
+		fints: typeTemplate{
+			single: `			canoto.FieldTypeFromFint(
+				zero.${fieldName},
+				${fieldNumber},
+				"${fieldName}",
+				"${oneOf}",
+			),
+`,
+			repeated: `			canoto.FieldTypeFromRepeatedFint(
+				zero.${fieldName},
+				${fieldNumber},
+				"${fieldName}",
+				0,
+				"${oneOf}",
+			),
+`,
+			fixedRepeated: `			canoto.FieldTypeFromRepeatedFint(
+				zero.${fieldName}[:],
+				${fieldNumber},
+				"${fieldName}",
+				uint64(len(zero.${fieldName})),
+				"${oneOf}",
+			),
+`,
+		},
+		bools: typeTemplate{
+			single: `			{
+				FieldNumber: ${fieldNumber},
+				Name:        "${fieldName}",
+				OneOf:       "${oneOf}",
+				TypeBool:	 true,
+			},
+`,
+			repeated: `			{
+				FieldNumber: ${fieldNumber},
+				Name:        "${fieldName}",
+				Repeated:    true,
+				OneOf:       "${oneOf}",
+				TypeBool:	 true,
+			},
+`,
+			fixedRepeated: `			{
+				FieldNumber: ${fieldNumber},
+				Name:        "${fieldName}",
+				FixedLength: uint64(len(zero.${fieldName})),
+				Repeated:    true,
+				OneOf:       "${oneOf}",
+				TypeBool:	 true,
+			},
+`,
+		},
+		strings: typeTemplate{
+			single: `			{
+				FieldNumber: ${fieldNumber},
+				Name:        "${fieldName}",
+				OneOf:       "${oneOf}",
+				TypeString:	 true,
+			},
+`,
+			repeated: `			{
+				FieldNumber: ${fieldNumber},
+				Name:        "${fieldName}",
+				Repeated:    true,
+				OneOf:       "${oneOf}",
+				TypeString:	 true,
+			},
+`,
+			fixedRepeated: `			{
+				FieldNumber: ${fieldNumber},
+				Name:        "${fieldName}",
+				FixedLength: uint64(len(zero.${fieldName})),
+				Repeated:    true,
+				OneOf:       "${oneOf}",
+				TypeString:	 true,
+			},
+`,
+		},
+		bytesTemplate: `			{
+				FieldNumber: ${fieldNumber},
+				Name:        "${fieldName}",
+				OneOf:       "${oneOf}",
+				TypeBytes:	 true,
+			},
+`,
+		repeatedBytesTemplate: `			{
+				FieldNumber: ${fieldNumber},
+				Name:        "${fieldName}",
+				Repeated:    true,
+				OneOf:       "${oneOf}",
+				TypeBytes:	 true,
+			},
+`,
+		fixedBytesTemplate: `			{
+				FieldNumber:    ${fieldNumber},
+				Name:           "${fieldName}",
+				OneOf:          "${oneOf}",
+				TypeFixedBytes:	uint64(len(zero.${fieldName})),
+			},
+`,
+		repeatedFixedBytesTemplate: `			{
+				FieldNumber:    ${fieldNumber},
+				Name:           "${fieldName}",
+				Repeated:	    true,
+				OneOf:          "${oneOf}",
+				TypeFixedBytes:	uint64(len(zero.${fieldName}[0])),
+			},
+`,
+		fixedRepeatedBytesTemplate: `			{
+				FieldNumber: ${fieldNumber},
+				Name:        "${fieldName}",
+				FixedLength: uint64(len(zero.${fieldName})),
+				Repeated:    true,
+				OneOf:       "${oneOf}",
+				TypeBytes:	 true,
+			},
+`,
+		fixedRepeatedFixedBytesTemplate: `			{
+				FieldNumber: ${fieldNumber},
+				Name:        "${fieldName}",
+				FixedLength: uint64(len(zero.${fieldName})),
+				Repeated:    true,
+				OneOf:       "${oneOf}",
+				TypeFixedBytes:	uint64(len(zero.${fieldName}[0])),
+			},
+`,
+		values: typeTemplate{
+			single: `			canoto.FieldTypeFromPointer(
+				${genericTypeCast}(&zero.${fieldName}),
+				${fieldNumber},
+				"${fieldName}",
+				0,
+				false,
+				"${oneOf}",
+				types,
+			),
+`,
+			repeated: `			canoto.FieldTypeFromPointer(
+				${genericTypeCast}(canoto.MakeEntryPointer(zero.${fieldName})),
+				${fieldNumber},
+				"${fieldName}",
+				0,
+				true,
+				"${oneOf}",
+				types,
+			),
+`,
+			fixedRepeated: `			canoto.FieldTypeFromPointer(
+				${genericTypeCast}(canoto.MakeEntryPointer(zero.${fieldName}[:])),
+				${fieldNumber},
+				"${fieldName}",
+				uint64(len(zero.${fieldName})),
+				true,
+				"${oneOf}",
+				types,
+			),
+`,
+		},
+		pointers: typeTemplate{
+			single: `			canoto.FieldTypeFromPointer(
+				${genericTypeCast}(zero.${fieldName}),
+				${fieldNumber},
+				"${fieldName}",
+				0,
+				false,
+				"${oneOf}",
+				types,
+			),
+`,
+			repeated: `			canoto.FieldTypeFromPointer(
+				${genericTypeCast}(canoto.MakeEntry(zero.${fieldName})),
+				${fieldNumber},
+				"${fieldName}",
+				0,
+				true,
+				"${oneOf}",
+				types,
+			),
+`,
+			fixedRepeated: `			canoto.FieldTypeFromPointer(
+				${genericTypeCast}(canoto.MakeEntry(zero.${fieldName}[:])),
+				${fieldNumber},
+				"${fieldName}",
+				uint64(len(zero.${fieldName})),
+				true,
+				"${oneOf}",
+				types,
+			),
+`,
+		},
+		fields: typeTemplate{
+			single: `			canoto.FieldTypeFromMaker(
+				zero.${fieldName},
+				${fieldNumber},
+				"${fieldName}",
+				0,
+				false,
+				"${oneOf}",
+				types,
+			),
+`,
+			repeated: `			canoto.FieldTypeFromMaker(
+				canoto.MakeEntry(zero.${fieldName}),
+				${fieldNumber},
+				"${fieldName}",
+				0,
+				true,
+				"${oneOf}",
+				types,
+			),
+`,
+
+			fixedRepeated: `			canoto.FieldTypeFromMaker(
+				canoto.MakeEntry(zero.${fieldName}[:]),
+				${fieldNumber},
+				"${fieldName}",
+				uint64(len(zero.${fieldName})),
+				true,
+				"${oneOf}",
+				types,
+			),
+`,
+		},
+	})
 }
 
 func makeUnmarshal(m message) string {
@@ -1942,7 +2209,10 @@ type typeTemplate struct {
 	fixedRepeated string
 }
 
-func writeMessage(m message, t messageTemplate) string {
+func writeMessage(
+	m message,
+	t messageTemplate,
+) string {
 	var s strings.Builder
 	for _, f := range m.fields {
 		_ = writeField(&s, f, t)
@@ -1950,7 +2220,11 @@ func writeMessage(m message, t messageTemplate) string {
 	return s.String()
 }
 
-func writeField(w io.Writer, f field, t messageTemplate) error {
+func writeField(
+	w io.Writer,
+	f field,
+	t messageTemplate,
+) error {
 	var template string
 	switch c := f.canotoType; c {
 	case canotoInt, canotoSint:
@@ -2011,7 +2285,11 @@ func writeField(w io.Writer, f field, t messageTemplate) error {
 	return writeTemplate(w, template, f.templateArgs)
 }
 
-func writeTemplate(w io.Writer, template string, args map[string]string) error {
+func writeTemplate(
+	w io.Writer,
+	template string,
+	args map[string]string,
+) error {
 	s := os.Expand(template, func(key string) string {
 		return args[key]
 	})

@@ -49,6 +49,34 @@ type OneOf struct {
 	canotoData canotoData_OneOf
 }
 
+type OnlyGenericField[T canoto.FieldMaker[T]] struct {
+	Field              T                    `canoto:"field,1"`
+	RepeatedField      []T                  `canoto:"repeated field,2"`
+	FixedRepeatedField [3]T                 `canoto:"fixed repeated field,3"`
+	Next               *OnlyGenericField[T] `canoto:"pointer,4"`
+
+	canotoData canotoData_GenericField
+}
+
+type LinkedList struct {
+	Int  uint64      `canoto:"int,1"`
+	Next *LinkedList `canoto:"pointer,2"`
+
+	canotoData canotoData_LinkedList
+}
+
+type RecursiveA struct {
+	Next *RecursiveB `canoto:"pointer,1"`
+
+	canotoData canotoData_RecursiveA
+}
+
+type RecursiveB struct {
+	Next *RecursiveA `canoto:"pointer,1"`
+
+	canotoData canotoData_RecursiveB
+}
+
 type GenericField[V any, _ canoto.FieldPointer[V], T canoto.FieldMaker[T]] struct {
 	Value                V     `canoto:"value,1"`
 	RepeatedValue        []V   `canoto:"repeated value,2"`

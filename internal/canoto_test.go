@@ -1,6 +1,7 @@
 package examples
 
 import (
+	"encoding/json"
 	"slices"
 	"strconv"
 	"testing"
@@ -1601,4 +1602,11 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 			require.Equal(t, pbBytes, w.B)
 		})
 	}
+}
+
+func TestT(t *testing.T) {
+	spec := (*OnlyGenericField[*RecursiveA])(nil).CanotoSpec()
+	specJSON, err := json.MarshalIndent(spec, "", "  ")
+	require.NoError(t, err)
+	t.Fatal(string(specJSON))
 }

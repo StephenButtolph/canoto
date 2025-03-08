@@ -7,6 +7,8 @@ package reflect
 
 import (
 	"io"
+	"reflect"
+	"slices"
 	"sync/atomic"
 	"unicode/utf8"
 
@@ -17,6 +19,7 @@ import (
 var (
 	_ atomic.Int64
 
+	_ = slices.Index[[]reflect.Type, reflect.Type]
 	_ = io.ErrUnexpectedEOF
 	_ = utf8.ValidString
 )
@@ -48,6 +51,155 @@ const (
 
 type canotoData_testMessage struct {
 	size atomic.Int64
+}
+
+// CanotoSpec returns the specification of this canoto message.
+func (*testMessage) CanotoSpec(types ...reflect.Type) *canoto.Spec {
+	types = append(types, reflect.TypeOf(testMessage{}))
+	var zero testMessage
+	return &canoto.Spec{
+		Name:   "testMessage",
+		Fields: []*canoto.FieldType{
+			canoto.FieldTypeFromInt(
+				zero.Int8,
+				1,
+				"Int8",
+				"",
+			),
+			canoto.FieldTypeFromInt(
+				zero.Int16,
+				2,
+				"Int16",
+				"",
+			),
+			canoto.FieldTypeFromInt(
+				zero.Int32,
+				3,
+				"Int32",
+				"",
+			),
+			canoto.FieldTypeFromInt(
+				zero.Int64,
+				4,
+				"Int64",
+				"",
+			),
+			canoto.FieldTypeFromInt(
+				zero.Uint8,
+				5,
+				"Uint8",
+				"",
+			),
+			canoto.FieldTypeFromInt(
+				zero.Uint16,
+				6,
+				"Uint16",
+				"",
+			),
+			canoto.FieldTypeFromInt(
+				zero.Uint32,
+				7,
+				"Uint32",
+				"",
+			),
+			canoto.FieldTypeFromInt(
+				zero.Uint64,
+				8,
+				"Uint64",
+				"",
+			),
+			canoto.FieldTypeFromSint(
+				zero.Sint8,
+				9,
+				"Sint8",
+				"",
+			),
+			canoto.FieldTypeFromSint(
+				zero.Sint16,
+				10,
+				"Sint16",
+				"",
+			),
+			canoto.FieldTypeFromSint(
+				zero.Sint32,
+				11,
+				"Sint32",
+				"",
+			),
+			canoto.FieldTypeFromSint(
+				zero.Sint64,
+				12,
+				"Sint64",
+				"",
+			),
+			canoto.FieldTypeFromFint(
+				zero.Fixed32,
+				13,
+				"Fixed32",
+				"",
+			),
+			canoto.FieldTypeFromFint(
+				zero.Fixed64,
+				14,
+				"Fixed64",
+				"",
+			),
+			canoto.FieldTypeFromFint(
+				zero.Sfixed32,
+				15,
+				"Sfixed32",
+				"",
+			),
+			canoto.FieldTypeFromFint(
+				zero.Sfixed64,
+				16,
+				"Sfixed64",
+				"",
+			),
+			{
+				FieldNumber: 17,
+				Name:        "Bool",
+				OneOf:       "",
+				TypeBool:	 true,
+			},
+			{
+				FieldNumber: 18,
+				Name:        "String",
+				OneOf:       "",
+				TypeString:	 true,
+			},
+			{
+				FieldNumber: 19,
+				Name:        "Bytes",
+				OneOf:       "",
+				TypeBytes:	 true,
+			},
+			{
+				FieldNumber:    20,
+				Name:           "FixedBytes",
+				OneOf:          "",
+				TypeFixedBytes:	uint64(len(zero.FixedBytes)),
+			},
+			canoto.FieldTypeFromPointer(
+				(zero.Recursive),
+				21,
+				"Recursive",
+				0,
+				false,
+				"",
+				types,
+			),
+			canoto.FieldTypeFromPointer(
+				(&zero.Message),
+				22,
+				"Message",
+				0,
+				false,
+				"",
+				types,
+			),
+		},
+	}
 }
 
 // MakeCanoto creates a new empty value.
@@ -622,6 +774,23 @@ const (
 
 type canotoData_testSimpleMessage struct {
 	size atomic.Int64
+}
+
+// CanotoSpec returns the specification of this canoto message.
+func (*testSimpleMessage) CanotoSpec(types ...reflect.Type) *canoto.Spec {
+	types = append(types, reflect.TypeOf(testSimpleMessage{}))
+	var zero testSimpleMessage
+	return &canoto.Spec{
+		Name:   "testSimpleMessage",
+		Fields: []*canoto.FieldType{
+			canoto.FieldTypeFromInt(
+				zero.Int8,
+				1,
+				"Int8",
+				"",
+			),
+		},
+	}
 }
 
 // MakeCanoto creates a new empty value.
