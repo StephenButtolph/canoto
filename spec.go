@@ -458,6 +458,9 @@ func unmarshalPackedVarint[T comparable](
 		values[i] = value
 		isZero = isZero && IsZero(value)
 	}
+	if HasNext(r) {
+		return nil, ErrInvalidLength
+	}
 	if f.FixedLength > 0 && isZero {
 		return nil, ErrZeroValue
 	}
