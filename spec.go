@@ -114,6 +114,9 @@ func (f *FieldType) wireType() (WireType, error) {
 		}
 		return Varint, nil
 	case 9:
+		if f.Repeated {
+			return Len, nil
+		}
 		switch f.TypeFint {
 		case 3:
 			return I32, nil
@@ -123,6 +126,9 @@ func (f *FieldType) wireType() (WireType, error) {
 			return 0, ErrUnknownField
 		}
 	case 10:
+		if f.Repeated {
+			return Len, nil
+		}
 		switch f.TypeSFint {
 		case 3:
 			return I32, nil
