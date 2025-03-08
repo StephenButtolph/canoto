@@ -910,18 +910,16 @@ func makeUnmarshal(m message) string {
 				return ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			const (
-				expectedLength      = len(c.${fieldName})
-				expectedLengthInt64 = int64(expectedLength)
-			)
+			const expectedLength = int64(len(c.${fieldName}))
+
 			var length int64
 			if err := ${selector}ReadInt(&r, &length); err != nil {
 				return err
 			}
-			if expectedLength > len(r.B) {
+			if length > int64(len(r.B)) {
 				return io.ErrUnexpectedEOF
 			}
-			if length != expectedLengthInt64 {
+			if length != expectedLength {
 				return ${selector}ErrInvalidLength
 			}
 
@@ -936,10 +934,7 @@ func makeUnmarshal(m message) string {
 				return ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			const (
-				expectedLength      = len(c.${fieldName}[0])
-				expectedLengthInt64 = int64(expectedLength)
-			)
+			const expectedLength = int64(len(c.${fieldName}[0]))
 
 			// Read the first entry manually because the tag is already
 			// stripped.
@@ -947,23 +942,22 @@ func makeUnmarshal(m message) string {
 			if err := ${selector}ReadInt(&r, &length); err != nil {
 				return err
 			}
-			if expectedLength > len(r.B) {
+			if length > int64(len(r.B)) {
 				return io.ErrUnexpectedEOF
 			}
-			if length != expectedLengthInt64 {
-				return ${selector}ErrInvalidLength
-			}
-
-			firstEntry := r.B[:expectedLength]
-			r.B = r.B[expectedLength:]
+			firstEntry := r.B[:length]
+			r.B = r.B[length:]
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := ${selector}CountBytes(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag)
 			if err != nil {
 				return err
 			}
-
 			c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
+
+			if length != expectedLength {
+				return ${selector}ErrInvalidLength
+			}
 			copy((&c.${fieldName}[0])[:], firstEntry)
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -972,10 +966,10 @@ func makeUnmarshal(m message) string {
 				if err := ${selector}ReadInt(&r, &length); err != nil {
 					return err
 				}
-				if expectedLength > len(r.B) {
+				if length > int64(len(r.B)) {
 					return io.ErrUnexpectedEOF
 				}
-				if length != expectedLengthInt64 {
+				if length != expectedLength {
 					return ${selector}ErrInvalidLength
 				}
 
@@ -989,10 +983,7 @@ func makeUnmarshal(m message) string {
 				return ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			const (
-				expectedLength      = len(c.${fieldName}[0])
-				expectedLengthInt64 = int64(expectedLength)
-			)
+			const expectedLength = int64(len(c.${fieldName}[0]))
 
 			// Read the first entry manually because the tag is already
 			// stripped.
@@ -1000,10 +991,10 @@ func makeUnmarshal(m message) string {
 			if err := ${selector}ReadInt(&r, &length); err != nil {
 				return err
 			}
-			if expectedLength > len(r.B) {
+			if length > int64(len(r.B)) {
 				return io.ErrUnexpectedEOF
 			}
-			if length != expectedLengthInt64 {
+			if length != expectedLength {
 				return ${selector}ErrInvalidLength
 			}
 
@@ -1021,10 +1012,10 @@ func makeUnmarshal(m message) string {
 				if err := ${selector}ReadInt(&r, &length); err != nil {
 					return err
 				}
-				if expectedLength > len(r.B) {
+				if length > int64(len(r.B)) {
 					return io.ErrUnexpectedEOF
 				}
-				if length != expectedLengthInt64 {
+				if length != expectedLength {
 					return ${selector}ErrInvalidLength
 				}
 

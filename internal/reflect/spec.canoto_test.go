@@ -455,18 +455,16 @@ func (c *testMessage) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			const (
-				expectedLength      = len(c.FixedBytes)
-				expectedLengthInt64 = int64(expectedLength)
-			)
+			const expectedLength = int64(len(c.FixedBytes))
+
 			var length int64
 			if err := canoto.ReadInt(&r, &length); err != nil {
 				return err
 			}
-			if expectedLength > len(r.B) {
+			if length > int64(len(r.B)) {
 				return io.ErrUnexpectedEOF
 			}
-			if length != expectedLengthInt64 {
+			if length != expectedLength {
 				return canoto.ErrInvalidLength
 			}
 

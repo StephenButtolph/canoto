@@ -5926,18 +5926,16 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			const (
-				expectedLength      = len(c.FixedBytes)
-				expectedLengthInt64 = int64(expectedLength)
-			)
+			const expectedLength = int64(len(c.FixedBytes))
+
 			var length int64
 			if err := canoto.ReadInt(&r, &length); err != nil {
 				return err
 			}
-			if expectedLength > len(r.B) {
+			if length > int64(len(r.B)) {
 				return io.ErrUnexpectedEOF
 			}
-			if length != expectedLengthInt64 {
+			if length != expectedLength {
 				return canoto.ErrInvalidLength
 			}
 
@@ -5951,10 +5949,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			const (
-				expectedLength      = len(c.RepeatedFixedBytes[0])
-				expectedLengthInt64 = int64(expectedLength)
-			)
+			const expectedLength = int64(len(c.RepeatedFixedBytes[0]))
 
 			// Read the first entry manually because the tag is already
 			// stripped.
@@ -5962,23 +5957,22 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if err := canoto.ReadInt(&r, &length); err != nil {
 				return err
 			}
-			if expectedLength > len(r.B) {
+			if length > int64(len(r.B)) {
 				return io.ErrUnexpectedEOF
 			}
-			if length != expectedLengthInt64 {
-				return canoto.ErrInvalidLength
-			}
-
-			firstEntry := r.B[:expectedLength]
-			r.B = r.B[expectedLength:]
+			firstEntry := r.B[:length]
+			r.B = r.B[length:]
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__Scalars__RepeatedFixedBytes__tag)
 			if err != nil {
 				return err
 			}
-
 			c.RepeatedFixedBytes = canoto.MakeSlice(c.RepeatedFixedBytes, countMinus1+1)
+
+			if length != expectedLength {
+				return canoto.ErrInvalidLength
+			}
 			copy((&c.RepeatedFixedBytes[0])[:], firstEntry)
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -5987,10 +5981,10 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				if err := canoto.ReadInt(&r, &length); err != nil {
 					return err
 				}
-				if expectedLength > len(r.B) {
+				if length > int64(len(r.B)) {
 					return io.ErrUnexpectedEOF
 				}
-				if length != expectedLengthInt64 {
+				if length != expectedLength {
 					return canoto.ErrInvalidLength
 				}
 
@@ -6029,10 +6023,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			const (
-				expectedLength      = len(c.FixedRepeatedFixedBytes[0])
-				expectedLengthInt64 = int64(expectedLength)
-			)
+			const expectedLength = int64(len(c.FixedRepeatedFixedBytes[0]))
 
 			// Read the first entry manually because the tag is already
 			// stripped.
@@ -6040,10 +6031,10 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if err := canoto.ReadInt(&r, &length); err != nil {
 				return err
 			}
-			if expectedLength > len(r.B) {
+			if length > int64(len(r.B)) {
 				return io.ErrUnexpectedEOF
 			}
-			if length != expectedLengthInt64 {
+			if length != expectedLength {
 				return canoto.ErrInvalidLength
 			}
 
@@ -6061,10 +6052,10 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				if err := canoto.ReadInt(&r, &length); err != nil {
 					return err
 				}
-				if expectedLength > len(r.B) {
+				if length > int64(len(r.B)) {
 					return io.ErrUnexpectedEOF
 				}
-				if length != expectedLengthInt64 {
+				if length != expectedLength {
 					return canoto.ErrInvalidLength
 				}
 
@@ -6218,18 +6209,16 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			const (
-				expectedLength      = len(c.CustomFixedBytes)
-				expectedLengthInt64 = int64(expectedLength)
-			)
+			const expectedLength = int64(len(c.CustomFixedBytes))
+
 			var length int64
 			if err := canoto.ReadInt(&r, &length); err != nil {
 				return err
 			}
-			if expectedLength > len(r.B) {
+			if length > int64(len(r.B)) {
 				return io.ErrUnexpectedEOF
 			}
-			if length != expectedLengthInt64 {
+			if length != expectedLength {
 				return canoto.ErrInvalidLength
 			}
 
@@ -6278,10 +6267,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			const (
-				expectedLength      = len(c.CustomRepeatedFixedBytes[0])
-				expectedLengthInt64 = int64(expectedLength)
-			)
+			const expectedLength = int64(len(c.CustomRepeatedFixedBytes[0]))
 
 			// Read the first entry manually because the tag is already
 			// stripped.
@@ -6289,23 +6275,22 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if err := canoto.ReadInt(&r, &length); err != nil {
 				return err
 			}
-			if expectedLength > len(r.B) {
+			if length > int64(len(r.B)) {
 				return io.ErrUnexpectedEOF
 			}
-			if length != expectedLengthInt64 {
-				return canoto.ErrInvalidLength
-			}
-
-			firstEntry := r.B[:expectedLength]
-			r.B = r.B[expectedLength:]
+			firstEntry := r.B[:length]
+			r.B = r.B[length:]
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__Scalars__CustomRepeatedFixedBytes__tag)
 			if err != nil {
 				return err
 			}
-
 			c.CustomRepeatedFixedBytes = canoto.MakeSlice(c.CustomRepeatedFixedBytes, countMinus1+1)
+
+			if length != expectedLength {
+				return canoto.ErrInvalidLength
+			}
 			copy((&c.CustomRepeatedFixedBytes[0])[:], firstEntry)
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -6314,10 +6299,10 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				if err := canoto.ReadInt(&r, &length); err != nil {
 					return err
 				}
-				if expectedLength > len(r.B) {
+				if length > int64(len(r.B)) {
 					return io.ErrUnexpectedEOF
 				}
-				if length != expectedLengthInt64 {
+				if length != expectedLength {
 					return canoto.ErrInvalidLength
 				}
 
@@ -6356,10 +6341,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			const (
-				expectedLength      = len(c.CustomFixedRepeatedFixedBytes[0])
-				expectedLengthInt64 = int64(expectedLength)
-			)
+			const expectedLength = int64(len(c.CustomFixedRepeatedFixedBytes[0]))
 
 			// Read the first entry manually because the tag is already
 			// stripped.
@@ -6367,10 +6349,10 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if err := canoto.ReadInt(&r, &length); err != nil {
 				return err
 			}
-			if expectedLength > len(r.B) {
+			if length > int64(len(r.B)) {
 				return io.ErrUnexpectedEOF
 			}
-			if length != expectedLengthInt64 {
+			if length != expectedLength {
 				return canoto.ErrInvalidLength
 			}
 
@@ -6388,10 +6370,10 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				if err := canoto.ReadInt(&r, &length); err != nil {
 					return err
 				}
-				if expectedLength > len(r.B) {
+				if length > int64(len(r.B)) {
 					return io.ErrUnexpectedEOF
 				}
-				if length != expectedLengthInt64 {
+				if length != expectedLength {
 					return canoto.ErrInvalidLength
 				}
 

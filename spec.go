@@ -5,8 +5,8 @@ package canoto
 import (
 	"errors"
 	"fmt"
-	"io"
 	"slices"
+	"unicode/utf8"
 )
 
 type (
@@ -317,12 +317,11 @@ func (f *FieldType) unmarshalString(r *Reader, _ []*Spec) (any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
-		func(r *Reader) (string, bool, error) {
-			var s string
-			if err := ReadString(r, &s); err != nil {
-				return "", false, err
+		func(msgBytes []byte) (string, bool, error) {
+			if !utf8.Valid(msgBytes) {
+				return "", false, ErrStringNotUTF8
 			}
-			return s, len(s) == 0, nil
+			return string(msgBytes), len(msgBytes) == 0, nil
 		},
 	)
 }
@@ -331,10 +330,8 @@ func (f *FieldType) unmarshalBytes(r *Reader, _ []*Spec) (any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
-		func(r *Reader) ([]byte, bool, error) {
-			var msgBytes []byte
-			err := ReadBytes(r, &msgBytes)
-			return msgBytes, len(msgBytes) == 0, err
+		func(msgBytes []byte) ([]byte, bool, error) {
+			return msgBytes, len(msgBytes) == 0, nil
 		},
 	)
 }
@@ -343,19 +340,10 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
-		func(r *Reader) ([]byte, bool, error) {
-			var length uint64
-			if err := ReadInt(r, &length); err != nil {
-				return nil, false, err
-			}
-			if f.TypeFixedBytes > uint64(len(r.B)) {
-				return nil, false, io.ErrUnexpectedEOF
-			}
-			if length != f.TypeFixedBytes {
+		func(msgBytes []byte) ([]byte, bool, error) {
+			if f.TypeFixedBytes != uint64(len(r.B)) {
 				return nil, false, ErrInvalidLength
 			}
-			msgBytes := slices.Clone(r.B[:length])
-			r.B = r.B[length:]
 			return msgBytes, isBytesEmpty(msgBytes), nil
 		},
 	)
@@ -373,11 +361,7 @@ func (f *FieldType) unmarshalRecursive(r *Reader, specs []*Spec) (any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
-		func(r *Reader) (Any, bool, error) {
-			var msgBytes []byte
-			if err := ReadBytes(r, &msgBytes); err != nil {
-				return nil, false, err
-			}
+		func(msgBytes []byte) (Any, bool, error) {
 			if len(msgBytes) == 0 {
 				return nil, true, nil
 			}
@@ -396,11 +380,7 @@ func (f *FieldType) unmarshalSpec(r *Reader, specs []*Spec) (any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
-		func(r *Reader) (Any, bool, error) {
-			var msgBytes []byte
-			if err := ReadBytes(r, &msgBytes); err != nil {
-				return nil, false, err
-			}
+		func(msgBytes []byte) (Any, bool, error) {
 			if len(msgBytes) == 0 {
 				return nil, true, nil
 			}
@@ -542,15 +522,19 @@ func unmarshalPackedFixed[T comparable](
 func unmarshalUnpacked[T any](
 	f *FieldType,
 	r *Reader,
-	unmarshal func(*Reader) (T, bool, error),
+	unmarshal func([]byte) (T, bool, error),
 ) (any, error) {
 	// Read the first entry manually because the tag is already stripped.
-	value, isZero, err := unmarshal(r)
-	if err != nil {
+	var msgBytes []byte
+	if err := ReadBytes(r, &msgBytes); err != nil {
 		return nil, err
 	}
 	if !f.Repeated {
 		// If there is only one entry, return it.
+		value, isZero, err := unmarshal(msgBytes)
+		if err != nil {
+			return nil, err
+		}
 		if isZero {
 			return nil, ErrZeroValue
 		}
@@ -570,6 +554,11 @@ func unmarshalUnpacked[T any](
 	}
 
 	values := make([]T, count)
+
+	value, isZero, err := unmarshal(msgBytes)
+	if err != nil {
+		return nil, err
+	}
 	values[0] = value
 
 	// Read the rest of the entries, stripping the tag each time.
@@ -579,8 +568,12 @@ func unmarshalUnpacked[T any](
 		}
 		r.B = r.B[len(expectedTag):]
 
+		if err := ReadBytes(r, &msgBytes); err != nil {
+			return nil, err
+		}
+
 		var isFieldZero bool
-		values[1+i], isFieldZero, err = unmarshal(r)
+		values[1+i], isFieldZero, err = unmarshal(msgBytes)
 		if err != nil {
 			return nil, err
 		}
