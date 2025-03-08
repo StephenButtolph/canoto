@@ -973,10 +973,10 @@ func makeUnmarshal(m message) string {
 					return err
 				}
 				if length != expectedLengthInt64 {
-					return io.ErrUnexpectedEOF
+					return ${selector}ErrInvalidLength
 				}
 				if expectedLength > len(r.B) {
-					return ${selector}ErrInvalidLength
+					return io.ErrUnexpectedEOF
 				}
 
 				copy((&c.${fieldName}[1+i])[:], r.B)

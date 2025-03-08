@@ -5978,10 +5978,10 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 					return err
 				}
 				if length != expectedLengthInt64 {
-					return io.ErrUnexpectedEOF
+					return canoto.ErrInvalidLength
 				}
 				if expectedLength > len(r.B) {
-					return canoto.ErrInvalidLength
+					return io.ErrUnexpectedEOF
 				}
 
 				copy((&c.RepeatedFixedBytes[1+i])[:], r.B)
@@ -6281,10 +6281,10 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 					return err
 				}
 				if length != expectedLengthInt64 {
-					return io.ErrUnexpectedEOF
+					return canoto.ErrInvalidLength
 				}
 				if expectedLength > len(r.B) {
-					return canoto.ErrInvalidLength
+					return io.ErrUnexpectedEOF
 				}
 
 				copy((&c.CustomRepeatedFixedBytes[1+i])[:], r.B)
