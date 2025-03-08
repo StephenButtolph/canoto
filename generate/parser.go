@@ -48,6 +48,7 @@ func parse(
 	fs *token.FileSet,
 	f ast.Node,
 	canotoImport string,
+	internal bool,
 ) (string, []message, error) {
 	var (
 		canotoImportName string
@@ -113,7 +114,7 @@ func parse(
 				}
 
 				var typeName string
-				if canotoImportName == "." {
+				if canotoImportName == "." || internal {
 					x, ok := t.X.(*ast.Ident)
 					if !ok {
 						continue
@@ -165,6 +166,7 @@ func parse(
 				fs,
 				message.canonicalizedName,
 				useAtomic,
+				internal,
 				genericPointers,
 				sf,
 			)
@@ -237,6 +239,7 @@ func parseField(
 	fs *token.FileSet,
 	canonicalizedStructName string,
 	useAtomic bool,
+	internal bool,
 	genericTypes map[string]int,
 	af *ast.Field,
 ) (field, bool, error) {
@@ -256,6 +259,11 @@ func parseField(
 		storeSuffix = "))"
 	}
 
+	var selector string
+	if !internal {
+		selector = defaultCanotoImporter
+	}
+
 	var (
 		unmarshalOneOf  string
 		sizeOneOf       string
@@ -265,18 +273,20 @@ func parseField(
 		if useAtomic {
 			unmarshalOneOf = fmt.Sprintf(`
 			if c.canotoData.%sOneOf.Swap(%d) != 0 {
-				return canoto.ErrDuplicateOneOf
+				return %sErrDuplicateOneOf
 			}`,
 				oneOfName,
 				fieldNumber,
+				selector,
 			)
 		} else {
 			unmarshalOneOf = fmt.Sprintf(`
 			if c.canotoData.%sOneOf != 0 {
-				return canoto.ErrDuplicateOneOf
+				return %sErrDuplicateOneOf
 			}
 			c.canotoData.%sOneOf = %d`,
 				oneOfName,
+				selector,
 				oneOfName,
 				fieldNumber,
 			)
@@ -348,6 +358,7 @@ func parseField(
 		fieldNumber:       fieldNumber,
 		oneOfName:         oneOfName,
 		templateArgs: map[string]string{
+			"selector":          selector,
 			"load":              load,
 			"storePrefix":       storePrefix,
 			"storeSuffix":       storeSuffix,
