@@ -5960,8 +5960,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return io.ErrUnexpectedEOF
 			}
 
-			firstEntry := r.B[:length]
-			r.B = r.B[length:]
+			firstEntry := r.B[:expectedLength]
+			r.B = r.B[expectedLength:]
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__Scalars__RepeatedFixedBytes__tag)
@@ -6264,8 +6264,8 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return io.ErrUnexpectedEOF
 			}
 
-			firstEntry := r.B[:length]
-			r.B = r.B[length:]
+			firstEntry := r.B[:expectedLength]
+			r.B = r.B[expectedLength:]
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canoto__Scalars__CustomRepeatedFixedBytes__tag)

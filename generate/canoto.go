@@ -955,8 +955,8 @@ func makeUnmarshal(m message) string {
 				return io.ErrUnexpectedEOF
 			}
 
-			firstEntry := r.B[:length]
-			r.B = r.B[length:]
+			firstEntry := r.B[:expectedLength]
+			r.B = r.B[expectedLength:]
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := ${selector}CountBytes(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag)
