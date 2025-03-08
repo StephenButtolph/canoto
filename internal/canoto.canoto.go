@@ -5412,7 +5412,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedInt8) {
 				return canoto.ErrZeroValue
@@ -5442,7 +5442,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedInt16) {
 				return canoto.ErrZeroValue
@@ -5472,7 +5472,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedInt32) {
 				return canoto.ErrZeroValue
@@ -5502,7 +5502,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedInt64) {
 				return canoto.ErrZeroValue
@@ -5532,7 +5532,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedUint8) {
 				return canoto.ErrZeroValue
@@ -5562,7 +5562,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedUint16) {
 				return canoto.ErrZeroValue
@@ -5592,7 +5592,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedUint32) {
 				return canoto.ErrZeroValue
@@ -5622,7 +5622,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedUint64) {
 				return canoto.ErrZeroValue
@@ -5652,7 +5652,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedSint8) {
 				return canoto.ErrZeroValue
@@ -5682,7 +5682,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedSint16) {
 				return canoto.ErrZeroValue
@@ -5712,7 +5712,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedSint32) {
 				return canoto.ErrZeroValue
@@ -5742,7 +5742,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedSint64) {
 				return canoto.ErrZeroValue
@@ -5772,7 +5772,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedFixed32) {
 				return canoto.ErrZeroValue
@@ -5801,7 +5801,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedFixed64) {
 				return canoto.ErrZeroValue
@@ -5830,7 +5830,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedSfixed32) {
 				return canoto.ErrZeroValue
@@ -5859,7 +5859,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedSfixed64) {
 				return canoto.ErrZeroValue
@@ -5888,7 +5888,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedBool) {
 				return canoto.ErrZeroValue
@@ -6149,7 +6149,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 			}
 			if canoto.HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.ConstRepeatedUint64) {
 				return canoto.ErrZeroValue

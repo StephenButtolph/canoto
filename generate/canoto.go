@@ -737,7 +737,7 @@ func makeUnmarshal(m message) string {
 				}
 			}
 			if ${selector}HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return ${selector}ErrInvalidLength
 			}
 			if ${selector}IsZero(c.${fieldName}) {
 				return ${selector}ErrZeroValue
@@ -879,7 +879,7 @@ func makeUnmarshal(m message) string {
 				}
 			}
 			if ${selector}HasNext(&r) {
-				return io.ErrUnexpectedEOF
+				return ${selector}ErrInvalidLength
 			}
 			if ${selector}IsZero(c.${fieldName}) {
 				return ${selector}ErrZeroValue
