@@ -37,7 +37,7 @@ func (*LargestFieldNumber[T1]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(LargestFieldNumber[T1]{}))
 	var zero LargestFieldNumber[T1]
 	s := &canoto.Spec{
-		Name:   "LargestFieldNumber",
+		Name: "LargestFieldNumber",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
 				zero.Int32,
@@ -202,7 +202,7 @@ func (*OneOf) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(OneOf{}))
 	var zero OneOf
 	s := &canoto.Spec{
-		Name:   "OneOf",
+		Name: "OneOf",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
 				zero.A1,
@@ -558,7 +558,7 @@ func (*OnlyGenericField[T1]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(OnlyGenericField[T1]{}))
 	var zero OnlyGenericField[T1]
 	s := &canoto.Spec{
-		Name:   "OnlyGenericField",
+		Name: "OnlyGenericField",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromMaker(
 				zero.Field,
@@ -971,7 +971,7 @@ func (*LinkedList) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(LinkedList{}))
 	var zero LinkedList
 	s := &canoto.Spec{
-		Name:   "LinkedList",
+		Name: "LinkedList",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
 				zero.Int,
@@ -1178,7 +1178,7 @@ func (*RecursiveA) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(RecursiveA{}))
 	var zero RecursiveA
 	s := &canoto.Spec{
-		Name:   "RecursiveA",
+		Name: "RecursiveA",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromPointer(
 				(zero.Next),
@@ -1361,7 +1361,7 @@ func (*RecursiveB) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(RecursiveB{}))
 	var zero RecursiveB
 	s := &canoto.Spec{
-		Name:   "RecursiveB",
+		Name: "RecursiveB",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromPointer(
 				(zero.Next),
@@ -1552,7 +1552,7 @@ func (*GenericField[T1, T2, T3]) CanotoSpec(types ...reflect.Type) *canoto.Spec 
 	types = append(types, reflect.TypeOf(GenericField[T1, T2, T3]{}))
 	var zero GenericField[T1, T2, T3]
 	s := &canoto.Spec{
-		Name:   "GenericField",
+		Name: "GenericField",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromPointer(
 				T2(&zero.Value),
@@ -2383,7 +2383,7 @@ func (*NestedGenericField[T1, T2, T3]) CanotoSpec(types ...reflect.Type) *canoto
 	types = append(types, reflect.TypeOf(NestedGenericField[T1, T2, T3]{}))
 	var zero NestedGenericField[T1, T2, T3]
 	s := &canoto.Spec{
-		Name:   "NestedGenericField",
+		Name: "NestedGenericField",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromPointer(
 				(&zero.Value),
@@ -3208,7 +3208,7 @@ func (*Embedded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(Embedded{}))
 	var zero Embedded
 	s := &canoto.Spec{
-		Name:   "Embedded",
+		Name: "Embedded",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromPointer(
 				(&zero.OneOf),
@@ -3482,7 +3482,7 @@ func (*A) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(A{}))
 	var zero A
 	s := &canoto.Spec{
-		Name:   "A",
+		Name: "A",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
 				zero.B__C,
@@ -3639,7 +3639,7 @@ func (*A__B) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(A__B{}))
 	var zero A__B
 	s := &canoto.Spec{
-		Name:   "A__B",
+		Name: "A__B",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
 				zero.C,
@@ -3900,7 +3900,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(Scalars{}))
 	var zero Scalars
 	s := &canoto.Spec{
-		Name:   "Scalars",
+		Name: "Scalars",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
 				zero.Int8,

@@ -138,7 +138,7 @@ func (*${structName}${generics}) CanotoSpec(types ...reflect.Type) *${selector}S
 	types = append(types, reflect.TypeOf(${structName}${generics}{}))
 	var zero ${structName}${generics}
 	s := &${selector}Spec{
-		Name:   "${structName}",
+		Name: "${structName}",
 		Fields: []*${selector}FieldType{
 ${spec}		},
 	}

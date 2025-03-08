@@ -58,7 +58,7 @@ func (*testMessage) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(testMessage{}))
 	var zero testMessage
 	s := &canoto.Spec{
-		Name:   "testMessage",
+		Name: "testMessage",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
 				zero.Int8,
@@ -783,7 +783,7 @@ func (*testSimpleMessage) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(testSimpleMessage{}))
 	var zero testSimpleMessage
 	s := &canoto.Spec{
-		Name:   "testSimpleMessage",
+		Name: "testSimpleMessage",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
 				zero.Int8,

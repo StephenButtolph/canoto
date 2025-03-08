@@ -36,7 +36,7 @@ func (*Spec) CanotoSpec(types ...reflect.Type) *Spec {
 	types = append(types, reflect.TypeOf(Spec{}))
 	var zero Spec
 	s := &Spec{
-		Name:   "Spec",
+		Name: "Spec",
 		Fields: []*FieldType{
 			{
 				FieldNumber: 1,
@@ -298,7 +298,7 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 	types = append(types, reflect.TypeOf(FieldType{}))
 	var zero FieldType
 	s := &Spec{
-		Name:   "FieldType",
+		Name: "FieldType",
 		Fields: []*FieldType{
 			FieldTypeFromInt(
 				zero.FieldNumber,
