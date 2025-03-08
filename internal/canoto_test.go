@@ -1609,9 +1609,9 @@ func FuzzScalars_Spec(f *testing.F) {
 	f.Fuzz(func(t *testing.T, b []byte) {
 		var scalars Scalars
 		expectedErr := scalars.UnmarshalCanoto(b)
-
 		_, actualErr := canoto.Unmarshal(spec, b)
 		if !errors.Is(actualErr, expectedErr) {
+			expectedErr = scalars.UnmarshalCanoto(b)
 			_, actualErr = canoto.Unmarshal(spec, b)
 			require.ErrorIs(t, actualErr, expectedErr)
 		}

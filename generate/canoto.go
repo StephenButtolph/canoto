@@ -918,11 +918,11 @@ func makeUnmarshal(m message) string {
 			if err := ${selector}ReadInt(&r, &length); err != nil {
 				return err
 			}
-			if length != expectedLengthInt64 {
-				return ${selector}ErrInvalidLength
-			}
 			if expectedLength > len(r.B) {
 				return io.ErrUnexpectedEOF
+			}
+			if length != expectedLengthInt64 {
+				return ${selector}ErrInvalidLength
 			}
 
 			copy((&c.${fieldName})[:], r.B)
@@ -947,11 +947,11 @@ func makeUnmarshal(m message) string {
 			if err := ${selector}ReadInt(&r, &length); err != nil {
 				return err
 			}
-			if length != expectedLengthInt64 {
-				return ${selector}ErrInvalidLength
-			}
 			if expectedLength > len(r.B) {
 				return io.ErrUnexpectedEOF
+			}
+			if length != expectedLengthInt64 {
+				return ${selector}ErrInvalidLength
 			}
 
 			firstEntry := r.B[:expectedLength]
@@ -972,11 +972,11 @@ func makeUnmarshal(m message) string {
 				if err := ${selector}ReadInt(&r, &length); err != nil {
 					return err
 				}
-				if length != expectedLengthInt64 {
-					return ${selector}ErrInvalidLength
-				}
 				if expectedLength > len(r.B) {
 					return io.ErrUnexpectedEOF
+				}
+				if length != expectedLengthInt64 {
+					return ${selector}ErrInvalidLength
 				}
 
 				copy((&c.${fieldName}[1+i])[:], r.B)
@@ -1000,11 +1000,11 @@ func makeUnmarshal(m message) string {
 			if err := ${selector}ReadInt(&r, &length); err != nil {
 				return err
 			}
-			if length != expectedLengthInt64 {
-				return ${selector}ErrInvalidLength
-			}
 			if expectedLength > len(r.B) {
 				return io.ErrUnexpectedEOF
+			}
+			if length != expectedLengthInt64 {
+				return ${selector}ErrInvalidLength
 			}
 
 			copy((&(&c.${fieldName})[0])[:], r.B)
@@ -1021,11 +1021,11 @@ func makeUnmarshal(m message) string {
 				if err := ${selector}ReadInt(&r, &length); err != nil {
 					return err
 				}
-				if length != expectedLengthInt64 {
-					return ${selector}ErrInvalidLength
-				}
 				if expectedLength > len(r.B) {
 					return io.ErrUnexpectedEOF
+				}
+				if length != expectedLengthInt64 {
+					return ${selector}ErrInvalidLength
 				}
 
 				copy((&(&c.${fieldName})[1+i])[:], r.B)

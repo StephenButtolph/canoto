@@ -463,11 +463,11 @@ func (c *testMessage) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if err := canoto.ReadInt(&r, &length); err != nil {
 				return err
 			}
-			if length != expectedLengthInt64 {
-				return canoto.ErrInvalidLength
-			}
 			if expectedLength > len(r.B) {
 				return io.ErrUnexpectedEOF
+			}
+			if length != expectedLengthInt64 {
+				return canoto.ErrInvalidLength
 			}
 
 			copy((&c.FixedBytes)[:], r.B)
