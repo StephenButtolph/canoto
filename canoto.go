@@ -584,9 +584,9 @@ func FieldTypeFromInt[T Int](
 		OneOf:       oneOf,
 	}
 	if isSigned[T]() {
-		f.TypeInt = intSizeOf[T]()
+		f.TypeInt = sizeOf[T]()
 	} else {
-		f.TypeUint = intSizeOf[T]()
+		f.TypeUint = sizeOf[T]()
 	}
 	return f
 }
@@ -606,7 +606,7 @@ func FieldTypeFromSint[T Sint](
 		FixedLength: fixedLength,
 		Repeated:    repeated,
 		OneOf:       oneOf,
-		TypeSint:    intSizeOf[T](),
+		TypeSint:    sizeOf[T](),
 	}
 }
 
@@ -627,9 +627,9 @@ func FieldTypeFromFint[T Int](
 		OneOf:       oneOf,
 	}
 	if isSigned[T]() {
-		f.TypeSFint = intSizeOf[T]()
+		f.TypeSFint = sizeOf[T]()
 	} else {
-		f.TypeFint = intSizeOf[T]()
+		f.TypeFint = sizeOf[T]()
 	}
 	return f
 }
@@ -671,8 +671,8 @@ func isSigned[T Int]() bool {
 	return ^T(0) < T(0)
 }
 
-// intSizeOf returns the intSize of the integer type.
-func intSizeOf[T Int]() SizeEnum {
+// sizeOf returns the size of the integer type.
+func sizeOf[T Int]() SizeEnum {
 	for i := range SizeEnum64 {
 		bitLen := 1 << (i + 3)
 		if T(1)<<bitLen == T(0) {
