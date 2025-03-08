@@ -75,7 +75,7 @@ func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 			return Any{}, fmt.Errorf("wireType for %d: %w", fieldNumber, err)
 		}
 		if wireType != expectedWireType {
-			return Any{}, fmt.Errorf("fieldNumber %d: %w", fieldNumber, ErrInvalidWireType)
+			return Any{}, fmt.Errorf("fieldNumber %d: %w", fieldNumber, ErrUnexpectedWireType)
 		}
 
 		if fieldType.OneOf != "" {
@@ -255,7 +255,7 @@ func (f *FieldType) unmarshalFint(r *Reader, _ []*Spec) (any, error) {
 		f,
 		r,
 		func(r *Reader) (uint64, error) {
-			switch f.TypeSFint {
+			switch f.TypeFint {
 			case 3:
 				var v uint32
 				err := ReadFint32(r, &v)

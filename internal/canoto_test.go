@@ -1,6 +1,7 @@
 package examples
 
 import (
+	"errors"
 	"slices"
 	"strconv"
 	"testing"
@@ -1610,6 +1611,9 @@ func FuzzScalars_Spec(f *testing.F) {
 		expectedErr := scalars.UnmarshalCanoto(b)
 
 		_, actualErr := canoto.Unmarshal(spec, b)
-		require.Equal(t, expectedErr, actualErr)
+		if !errors.Is(actualErr, expectedErr) {
+			_, actualErr = canoto.Unmarshal(spec, b)
+			require.ErrorIs(t, actualErr, expectedErr)
+		}
 	})
 }
