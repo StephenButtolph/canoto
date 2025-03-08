@@ -341,7 +341,7 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 		f,
 		r,
 		func(msgBytes []byte) ([]byte, bool, error) {
-			if f.TypeFixedBytes != uint64(len(r.B)) {
+			if f.TypeFixedBytes != uint64(len(msgBytes)) {
 				return nil, false, ErrInvalidLength
 			}
 			return msgBytes, isBytesEmpty(msgBytes), nil
