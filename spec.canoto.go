@@ -42,7 +42,7 @@ func (*Spec) CanotoSpec(types ...reflect.Type) *Spec {
 				FieldNumber: 1,
 				Name:        "Name",
 				OneOf:       "",
-				TypeString:	 true,
+				TypeString:  true,
 			},
 			FieldTypeFromPointer(
 				(MakeEntry(zero.Fields)),
@@ -310,7 +310,7 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 				FieldNumber: 2,
 				Name:        "Name",
 				OneOf:       "",
-				TypeString:	 true,
+				TypeString:  true,
 			},
 			FieldTypeFromInt(
 				zero.FixedLength,
@@ -322,13 +322,13 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 				FieldNumber: 4,
 				Name:        "Repeated",
 				OneOf:       "",
-				TypeBool:	 true,
+				TypeBool:    true,
 			},
 			{
 				FieldNumber: 5,
 				Name:        "OneOf",
 				OneOf:       "",
-				TypeString:	 true,
+				TypeString:  true,
 			},
 			FieldTypeFromInt(
 				zero.TypeInt,
@@ -364,19 +364,19 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 				FieldNumber: 11,
 				Name:        "TypeBool",
 				OneOf:       "Type",
-				TypeBool:	 true,
+				TypeBool:    true,
 			},
 			{
 				FieldNumber: 12,
 				Name:        "TypeString",
 				OneOf:       "Type",
-				TypeBool:	 true,
+				TypeBool:    true,
 			},
 			{
 				FieldNumber: 13,
 				Name:        "TypeBytes",
 				OneOf:       "Type",
-				TypeBool:	 true,
+				TypeBool:    true,
 			},
 			FieldTypeFromInt(
 				zero.TypeFixedBytes,
