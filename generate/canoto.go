@@ -2220,10 +2220,7 @@ type typeTemplate struct {
 	fixedRepeated string
 }
 
-func writeMessage(
-	m message,
-	t messageTemplate,
-) string {
+func writeMessage(m message, t messageTemplate) string {
 	var s strings.Builder
 	for _, f := range m.fields {
 		_ = writeField(&s, f, t)
@@ -2231,11 +2228,7 @@ func writeMessage(
 	return s.String()
 }
 
-func writeField(
-	w io.Writer,
-	f field,
-	t messageTemplate,
-) error {
+func writeField(w io.Writer, f field, t messageTemplate) error {
 	var template string
 	switch c := f.canotoType; c {
 	case canotoInt, canotoSint:
@@ -2296,11 +2289,7 @@ func writeField(
 	return writeTemplate(w, template, f.templateArgs)
 }
 
-func writeTemplate(
-	w io.Writer,
-	template string,
-	args map[string]string,
-) error {
+func writeTemplate(w io.Writer, template string, args map[string]string) error {
 	s := os.Expand(template, func(key string) string {
 		return args[key]
 	})
