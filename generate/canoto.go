@@ -421,22 +421,26 @@ func makeSpec(m message) string {
 				zero.${fieldName},
 				${fieldNumber},
 				"${fieldName}",
+				0,
+				false,
 				"${oneOf}",
 			),
 `,
-			repeated: `			${selector}FieldTypeFromRepeated${suffix}(
-				zero.${fieldName},
+			repeated: `			${selector}FieldTypeFrom${suffix}(
+				${selector}MakeEntry(zero.${fieldName}),
 				${fieldNumber},
 				"${fieldName}",
 				0,
+				true,
 				"${oneOf}",
 			),
 `,
-			fixedRepeated: `			${selector}FieldTypeFromRepeated${suffix}(
-				zero.${fieldName}[:],
+			fixedRepeated: `			${selector}FieldTypeFrom${suffix}(
+				${selector}MakeEntry(zero.${fieldName}[:]),
 				${fieldNumber},
 				"${fieldName}",
 				uint64(len(zero.${fieldName})),
+				true,
 				"${oneOf}",
 			),
 `,
@@ -446,22 +450,26 @@ func makeSpec(m message) string {
 				zero.${fieldName},
 				${fieldNumber},
 				"${fieldName}",
+				0,
+				false,
 				"${oneOf}",
 			),
 `,
-			repeated: `			${selector}FieldTypeFromRepeatedFint(
-				zero.${fieldName},
+			repeated: `			${selector}FieldTypeFromFint(
+				${selector}MakeEntry(zero.${fieldName}),
 				${fieldNumber},
 				"${fieldName}",
 				0,
+				true,
 				"${oneOf}",
 			),
 `,
-			fixedRepeated: `			${selector}FieldTypeFromRepeatedFint(
-				zero.${fieldName}[:],
+			fixedRepeated: `			${selector}FieldTypeFromFint(
+				${selector}MakeEntry(zero.${fieldName}[:]),
 				${fieldNumber},
 				"${fieldName}",
 				uint64(len(zero.${fieldName})),
+				true,
 				"${oneOf}",
 			),
 `,
@@ -567,7 +575,7 @@ func makeSpec(m message) string {
 			},
 `,
 		values: typeTemplate{
-			single: `			${selector}FieldTypeFromPointer(
+			single: `			${selector}FieldTypeFromField(
 				${genericTypeCast}(&zero.${fieldName}),
 				${fieldNumber},
 				"${fieldName}",
@@ -577,7 +585,7 @@ func makeSpec(m message) string {
 				types,
 			),
 `,
-			repeated: `			${selector}FieldTypeFromPointer(
+			repeated: `			${selector}FieldTypeFromField(
 				${genericTypeCast}(${selector}MakeEntryPointer(zero.${fieldName})),
 				${fieldNumber},
 				"${fieldName}",
@@ -587,7 +595,7 @@ func makeSpec(m message) string {
 				types,
 			),
 `,
-			fixedRepeated: `			${selector}FieldTypeFromPointer(
+			fixedRepeated: `			${selector}FieldTypeFromField(
 				${genericTypeCast}(${selector}MakeEntryPointer(zero.${fieldName}[:])),
 				${fieldNumber},
 				"${fieldName}",
@@ -599,7 +607,7 @@ func makeSpec(m message) string {
 `,
 		},
 		pointers: typeTemplate{
-			single: `			${selector}FieldTypeFromPointer(
+			single: `			${selector}FieldTypeFromField(
 				${genericTypeCast}(zero.${fieldName}),
 				${fieldNumber},
 				"${fieldName}",
@@ -609,7 +617,7 @@ func makeSpec(m message) string {
 				types,
 			),
 `,
-			repeated: `			${selector}FieldTypeFromPointer(
+			repeated: `			${selector}FieldTypeFromField(
 				${genericTypeCast}(${selector}MakeEntry(zero.${fieldName})),
 				${fieldNumber},
 				"${fieldName}",
@@ -619,7 +627,7 @@ func makeSpec(m message) string {
 				types,
 			),
 `,
-			fixedRepeated: `			${selector}FieldTypeFromPointer(
+			fixedRepeated: `			${selector}FieldTypeFromField(
 				${genericTypeCast}(${selector}MakeEntry(zero.${fieldName}[:])),
 				${fieldNumber},
 				"${fieldName}",
@@ -631,7 +639,7 @@ func makeSpec(m message) string {
 `,
 		},
 		fields: typeTemplate{
-			single: `			${selector}FieldTypeFromMaker(
+			single: `			${selector}FieldTypeFromField(
 				zero.${fieldName},
 				${fieldNumber},
 				"${fieldName}",
@@ -641,7 +649,7 @@ func makeSpec(m message) string {
 				types,
 			),
 `,
-			repeated: `			${selector}FieldTypeFromMaker(
+			repeated: `			${selector}FieldTypeFromField(
 				${selector}MakeEntry(zero.${fieldName}),
 				${fieldNumber},
 				"${fieldName}",
@@ -652,7 +660,7 @@ func makeSpec(m message) string {
 			),
 `,
 
-			fixedRepeated: `			${selector}FieldTypeFromMaker(
+			fixedRepeated: `			${selector}FieldTypeFromField(
 				${selector}MakeEntry(zero.${fieldName}[:]),
 				${fieldNumber},
 				"${fieldName}",

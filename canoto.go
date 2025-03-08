@@ -558,11 +558,15 @@ func FieldTypeFromInt[T Int](
 	_ T,
 	fieldNumber uint32,
 	name string,
+	fixedLength uint64,
+	repeated bool,
 	oneOf string,
 ) *FieldType {
 	f := &FieldType{
 		FieldNumber: fieldNumber,
 		Name:        name,
+		FixedLength: fixedLength,
+		Repeated:    repeated,
 		OneOf:       oneOf,
 	}
 	if isSigned[T]() {
@@ -573,57 +577,37 @@ func FieldTypeFromInt[T Int](
 	return f
 }
 
-func FieldTypeFromRepeatedInt[S ~[]E, E Int](
-	_ S,
-	fieldNumber uint32,
-	name string,
-	fixedLength uint64,
-	oneOf string,
-) *FieldType {
-	var v E
-	f := FieldTypeFromInt(v, fieldNumber, name, oneOf)
-	f.FixedLength = fixedLength
-	f.Repeated = true
-	return f
-}
-
 func FieldTypeFromSint[T Sint](
 	_ T,
 	fieldNumber uint32,
 	name string,
+	fixedLength uint64,
+	repeated bool,
 	oneOf string,
 ) *FieldType {
 	return &FieldType{
 		FieldNumber: fieldNumber,
 		Name:        name,
+		FixedLength: fixedLength,
+		Repeated:    repeated,
 		OneOf:       oneOf,
 		TypeSint:    intSizeOf[T](),
 	}
-}
-
-func FieldTypeFromRepeatedSint[S ~[]E, E Sint](
-	_ S,
-	fieldNumber uint32,
-	name string,
-	fixedLength uint64,
-	oneOf string,
-) *FieldType {
-	var v E
-	f := FieldTypeFromSint(v, fieldNumber, name, oneOf)
-	f.FixedLength = fixedLength
-	f.Repeated = true
-	return f
 }
 
 func FieldTypeFromFint[T Int](
 	_ T,
 	fieldNumber uint32,
 	name string,
+	fixedLength uint64,
+	repeated bool,
 	oneOf string,
 ) *FieldType {
 	f := &FieldType{
 		FieldNumber: fieldNumber,
 		Name:        name,
+		FixedLength: fixedLength,
+		Repeated:    repeated,
 		OneOf:       oneOf,
 	}
 	if isSigned[T]() {
@@ -634,52 +618,7 @@ func FieldTypeFromFint[T Int](
 	return f
 }
 
-func FieldTypeFromRepeatedFint[S ~[]E, E Int](
-	_ S,
-	fieldNumber uint32,
-	name string,
-	fixedLength uint64,
-	oneOf string,
-) *FieldType {
-	var v E
-	f := FieldTypeFromFint(v, fieldNumber, name, oneOf)
-	f.FixedLength = fixedLength
-	f.Repeated = true
-	return f
-}
-
-func FieldTypeFromPointer[V any, P FieldPointer[V]](
-	field P,
-	fieldNumber uint32,
-	name string,
-	fixedLength uint64,
-	repeated bool,
-	oneOf string,
-	types []reflect.Type,
-) *FieldType {
-	var (
-		f = &FieldType{
-			FieldNumber: fieldNumber,
-			Name:        name,
-			FixedLength: fixedLength,
-			Repeated:    repeated,
-			OneOf:       oneOf,
-		}
-		fieldType = reflect.TypeOf(field).Elem()
-	)
-	if index := slices.Index(types, fieldType); index >= 0 {
-		f.TypeRecursive = uint64(len(types) - index)
-	} else {
-		f.TypeMessage = field.CanotoSpec(types...)
-		// If this does not have a valid spec, it is treated as bytes.
-		if f.TypeMessage == nil {
-			f.TypeBytes = true
-		}
-	}
-	return f
-}
-
-func FieldTypeFromMaker[T FieldMaker[T]](
+func FieldTypeFromField[T Field](
 	field T,
 	fieldNumber uint32,
 	name string,

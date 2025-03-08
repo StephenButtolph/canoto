@@ -44,7 +44,7 @@ func (*Spec) CanotoSpec(types ...reflect.Type) *Spec {
 				OneOf:       "",
 				TypeString:  true,
 			},
-			FieldTypeFromPointer(
+			FieldTypeFromField(
 				(MakeEntry(zero.Fields)),
 				2,
 				"Fields",
@@ -304,6 +304,8 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 				zero.FieldNumber,
 				1,
 				"FieldNumber",
+				0,
+				false,
 				"",
 			),
 			{
@@ -316,6 +318,8 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 				zero.FixedLength,
 				3,
 				"FixedLength",
+				0,
+				false,
 				"",
 			),
 			{
@@ -334,30 +338,40 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 				zero.TypeInt,
 				6,
 				"TypeInt",
+				0,
+				false,
 				"Type",
 			),
 			FieldTypeFromInt(
 				zero.TypeUint,
 				7,
 				"TypeUint",
+				0,
+				false,
 				"Type",
 			),
 			FieldTypeFromInt(
 				zero.TypeSint,
 				8,
 				"TypeSint",
+				0,
+				false,
 				"Type",
 			),
 			FieldTypeFromInt(
 				zero.TypeFint,
 				9,
 				"TypeFint",
+				0,
+				false,
 				"Type",
 			),
 			FieldTypeFromInt(
 				zero.TypeSFint,
 				10,
 				"TypeSFint",
+				0,
+				false,
 				"Type",
 			),
 			{
@@ -382,15 +396,19 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 				zero.TypeFixedBytes,
 				14,
 				"TypeFixedBytes",
+				0,
+				false,
 				"Type",
 			),
 			FieldTypeFromInt(
 				zero.TypeRecursive,
 				15,
 				"TypeRecursive",
+				0,
+				false,
 				"Type",
 			),
-			FieldTypeFromPointer(
+			FieldTypeFromField(
 				(zero.TypeMessage),
 				16,
 				"TypeMessage",
