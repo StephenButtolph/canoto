@@ -557,438 +557,27 @@ func (c *OneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 }
 
 const (
-	canoto__OnlyGenericField__Field__tag              = "\x0a" // canoto.Tag(1, canoto.Len)
-	canoto__OnlyGenericField__RepeatedField__tag      = "\x12" // canoto.Tag(2, canoto.Len)
-	canoto__OnlyGenericField__FixedRepeatedField__tag = "\x1a" // canoto.Tag(3, canoto.Len)
-	canoto__OnlyGenericField__Next__tag               = "\x22" // canoto.Tag(4, canoto.Len)
+	canoto__Node__Value__tag = "\x08" // canoto.Tag(1, canoto.Varint)
+	canoto__Node__Next__tag  = "\x12" // canoto.Tag(2, canoto.Len)
 )
 
-type canotoData_OnlyGenericField struct {
+type canotoData_Node struct {
 	size atomic.Int64
+
+	OneOfOneOf atomic.Uint32
 }
 
 // CanotoSpec returns the specification of this canoto message.
-func (*OnlyGenericField[T1]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
-	types = append(types, reflect.TypeOf(OnlyGenericField[T1]{}))
-	var zero OnlyGenericField[T1]
+func (*Node) CanotoSpec(types ...reflect.Type) *canoto.Spec {
+	types = append(types, reflect.TypeOf(Node{}))
+	var zero Node
 	s := &canoto.Spec{
-		Name: "OnlyGenericField",
-		Fields: []*canoto.FieldType{
-			canoto.FieldTypeFromField(
-				zero.Field,
-				1,
-				"Field",
-				0,
-				false,
-				"",
-				types,
-			),
-			canoto.FieldTypeFromField(
-				canoto.MakeEntry(zero.RepeatedField),
-				2,
-				"RepeatedField",
-				0,
-				true,
-				"",
-				types,
-			),
-			canoto.FieldTypeFromField(
-				canoto.MakeEntry(zero.FixedRepeatedField[:]),
-				3,
-				"FixedRepeatedField",
-				uint64(len(zero.FixedRepeatedField)),
-				true,
-				"",
-				types,
-			),
-			canoto.FieldTypeFromField(
-				(zero.Next),
-				4,
-				"Next",
-				0,
-				false,
-				"",
-				types,
-			),
-		},
-	}
-	s.CalculateCanotoCache()
-	return s
-}
-
-// MakeCanoto creates a new empty value.
-func (*OnlyGenericField[T1]) MakeCanoto() *OnlyGenericField[T1] {
-	return new(OnlyGenericField[T1])
-}
-
-// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
-//
-// During parsing, the canoto cache is saved.
-func (c *OnlyGenericField[T1]) UnmarshalCanoto(bytes []byte) error {
-	r := canoto.Reader{
-		B: bytes,
-	}
-	return c.UnmarshalCanotoFrom(r)
-}
-
-// UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
-// should just use UnmarshalCanoto.
-//
-// During parsing, the canoto cache is saved.
-//
-// This function enables configuration of reader options.
-func (c *OnlyGenericField[T1]) UnmarshalCanotoFrom(r canoto.Reader) error {
-	// Zero the struct before unmarshaling.
-	*c = OnlyGenericField[T1]{}
-	c.canotoData.size.Store(int64(len(r.B)))
-
-	var minField uint32
-	for canoto.HasNext(&r) {
-		field, wireType, err := canoto.ReadTag(&r)
-		if err != nil {
-			return err
-		}
-		if field < minField {
-			return canoto.ErrInvalidFieldOrder
-		}
-
-		switch field {
-		case 1:
-			if wireType != canoto.Len {
-				return canoto.ErrUnexpectedWireType
-			}
-
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
-				return err
-			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
-			}
-			r.Unsafe = originalUnsafe
-
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.Field = c.Field.MakeCanoto()
-			if err := c.Field.UnmarshalCanotoFrom(r); err != nil {
-				return err
-			}
-			r.B = remainingBytes
-		case 2:
-			if wireType != canoto.Len {
-				return canoto.ErrUnexpectedWireType
-			}
-
-			// Read the first entry manually because the tag is already
-			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
-				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			// Count the number of additional entries after the first entry.
-			countMinus1, err := canoto.CountBytes(r.B, canoto__OnlyGenericField__RepeatedField__tag)
-			if err != nil {
-				return err
-			}
-
-			c.RepeatedField = canoto.MakeSlice(c.RepeatedField, countMinus1+1)
-			if len(msgBytes) != 0 {
-				remainingBytes := r.B
-				r.B = msgBytes
-				c.RepeatedField[0] = c.RepeatedField[0].MakeCanoto()
-				if err := c.RepeatedField[0].UnmarshalCanotoFrom(r); err != nil {
-					return err
-				}
-				r.B = remainingBytes
-			}
-
-			// Read the rest of the entries, stripping the tag each time.
-			for i := range countMinus1 {
-				r.B = r.B[len(canoto__OnlyGenericField__RepeatedField__tag):]
-				r.Unsafe = true
-				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
-					return err
-				}
-				if len(msgBytes) == 0 {
-					continue
-				}
-				r.Unsafe = originalUnsafe
-
-				remainingBytes := r.B
-				r.B = msgBytes
-				c.RepeatedField[1+i] = c.RepeatedField[1+i].MakeCanoto()
-				if err := c.RepeatedField[1+i].UnmarshalCanotoFrom(r); err != nil {
-					return err
-				}
-				r.B = remainingBytes
-			}
-		case 3:
-			if wireType != canoto.Len {
-				return canoto.ErrUnexpectedWireType
-			}
-
-			// Read the first entry manually because the tag is already
-			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
-				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			isZero := len(msgBytes) == 0
-			if !isZero {
-				remainingBytes := r.B
-				r.B = msgBytes
-				c.FixedRepeatedField[0] = c.FixedRepeatedField[0].MakeCanoto()
-				if err := c.FixedRepeatedField[0].UnmarshalCanotoFrom(r); err != nil {
-					return err
-				}
-				r.B = remainingBytes
-			}
-
-			// Read the rest of the entries, stripping the tag each time.
-			const numToRead = uint(len(c.FixedRepeatedField) - 1)
-			for i := range numToRead {
-				if !canoto.HasPrefix(r.B, canoto__OnlyGenericField__FixedRepeatedField__tag) {
-					return canoto.ErrUnknownField
-				}
-				r.B = r.B[len(canoto__OnlyGenericField__FixedRepeatedField__tag):]
-				r.Unsafe = true
-				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
-					return err
-				}
-				if len(msgBytes) == 0 {
-					continue
-				}
-				r.Unsafe = originalUnsafe
-
-				remainingBytes := r.B
-				r.B = msgBytes
-				c.FixedRepeatedField[1+i] = c.FixedRepeatedField[1+i].MakeCanoto()
-				if err := c.FixedRepeatedField[1+i].UnmarshalCanotoFrom(r); err != nil {
-					return err
-				}
-				r.B = remainingBytes
-				isZero = false
-			}
-			if isZero {
-				return canoto.ErrZeroValue
-			}
-		case 4:
-			if wireType != canoto.Len {
-				return canoto.ErrUnexpectedWireType
-			}
-
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
-				return err
-			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
-			}
-			r.Unsafe = originalUnsafe
-
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.Next = canoto.MakePointer(c.Next)
-			if err := (c.Next).UnmarshalCanotoFrom(r); err != nil {
-				return err
-			}
-			r.B = remainingBytes
-		default:
-			return canoto.ErrUnknownField
-		}
-
-		minField = field + 1
-	}
-	return nil
-}
-
-// ValidCanoto validates that the struct can be correctly marshaled into the
-// Canoto format.
-//
-// Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
-func (c *OnlyGenericField[T1]) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
-	if !c.Field.ValidCanoto() {
-		return false
-	}
-	for i := range c.RepeatedField {
-		if !c.RepeatedField[i].ValidCanoto() {
-			return false
-		}
-	}
-	for i := range &c.FixedRepeatedField {
-		if !(&c.FixedRepeatedField)[i].ValidCanoto() {
-			return false
-		}
-	}
-	if c.Next != nil && !(c.Next).ValidCanoto() {
-		return false
-	}
-	return true
-}
-
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
-func (c *OnlyGenericField[T1]) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
-	var (
-		size int
-	)
-	c.Field.CalculateCanotoCache()
-	if fieldSize := c.Field.CachedCanotoSize(); fieldSize != 0 {
-		size += len(canoto__OnlyGenericField__Field__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-	}
-	for i := range c.RepeatedField {
-		c.RepeatedField[i].CalculateCanotoCache()
-		fieldSize := c.RepeatedField[i].CachedCanotoSize()
-		size += len(canoto__OnlyGenericField__RepeatedField__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-	}
-	{
-		var (
-			fieldSizeSum int
-			totalSize    int
-		)
-		for i := range c.FixedRepeatedField {
-			c.FixedRepeatedField[i].CalculateCanotoCache()
-			fieldSize := c.FixedRepeatedField[i].CachedCanotoSize()
-			fieldSizeSum += fieldSize
-			totalSize += len(canoto__OnlyGenericField__FixedRepeatedField__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		}
-		if fieldSizeSum != 0 {
-			size += totalSize
-		}
-	}
-	if c.Next != nil {
-		(c.Next).CalculateCanotoCache()
-		if fieldSize := (c.Next).CachedCanotoSize(); fieldSize != 0 {
-			size += len(canoto__OnlyGenericField__Next__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
-		}
-	}
-	c.canotoData.size.Store(int64(size))
-}
-
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
-//
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *OnlyGenericField[T1]) CachedCanotoSize() int {
-	if c == nil {
-		return 0
-	}
-	return int(c.canotoData.size.Load())
-}
-
-// MarshalCanoto returns the Canoto representation of this struct.
-//
-// It is assumed that this struct is ValidCanoto.
-func (c *OnlyGenericField[T1]) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
-	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
-	}
-	w = c.MarshalCanotoInto(w)
-	return w.B
-}
-
-// MarshalCanotoInto writes the struct into a canoto.Writer and returns the
-// resulting canoto.Writer. Most users should just use MarshalCanoto.
-//
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
-//
-// It is assumed that this struct is ValidCanoto.
-func (c *OnlyGenericField[T1]) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
-	if fieldSize := c.Field.CachedCanotoSize(); fieldSize != 0 {
-		canoto.Append(&w, canoto__OnlyGenericField__Field__tag)
-		canoto.AppendInt(&w, int64(fieldSize))
-		w = c.Field.MarshalCanotoInto(w)
-	}
-	for i := range c.RepeatedField {
-		canoto.Append(&w, canoto__OnlyGenericField__RepeatedField__tag)
-		fieldSize := c.RepeatedField[i].CachedCanotoSize()
-		canoto.AppendInt(&w, int64(fieldSize))
-		if fieldSize != 0 {
-			w = c.RepeatedField[i].MarshalCanotoInto(w)
-		}
-	}
-	{
-		isZero := true
-		for i := range c.FixedRepeatedField {
-			if c.FixedRepeatedField[i].CachedCanotoSize() != 0 {
-				isZero = false
-				break
-			}
-		}
-		if !isZero {
-			for i := range c.FixedRepeatedField {
-				canoto.Append(&w, canoto__OnlyGenericField__FixedRepeatedField__tag)
-				fieldSize := c.FixedRepeatedField[i].CachedCanotoSize()
-				canoto.AppendInt(&w, int64(fieldSize))
-				if fieldSize != 0 {
-					w = c.FixedRepeatedField[i].MarshalCanotoInto(w)
-				}
-			}
-		}
-	}
-	if c.Next != nil {
-		if fieldSize := (c.Next).CachedCanotoSize(); fieldSize != 0 {
-			canoto.Append(&w, canoto__OnlyGenericField__Next__tag)
-			canoto.AppendInt(&w, int64(fieldSize))
-			w = (c.Next).MarshalCanotoInto(w)
-		}
-	}
-	return w
-}
-
-const (
-	canoto__LinkedList__Int__tag  = "\x08" // canoto.Tag(1, canoto.Varint)
-	canoto__LinkedList__Next__tag = "\x12" // canoto.Tag(2, canoto.Len)
-)
-
-type canotoData_LinkedList struct {
-	size atomic.Int64
-}
-
-// CanotoSpec returns the specification of this canoto message.
-func (*LinkedList) CanotoSpec(types ...reflect.Type) *canoto.Spec {
-	types = append(types, reflect.TypeOf(LinkedList{}))
-	var zero LinkedList
-	s := &canoto.Spec{
-		Name: "LinkedList",
+		Name: "Node",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
-				zero.Int,
+				zero.Value,
 				1,
-				"Int",
+				"Value",
 				0,
 				false,
 				"",
@@ -999,7 +588,7 @@ func (*LinkedList) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				"Next",
 				0,
 				false,
-				"",
+				"OneOf",
 				types,
 			),
 		},
@@ -1009,14 +598,14 @@ func (*LinkedList) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 }
 
 // MakeCanoto creates a new empty value.
-func (*LinkedList) MakeCanoto() *LinkedList {
-	return new(LinkedList)
+func (*Node) MakeCanoto() *Node {
+	return new(Node)
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
-func (c *LinkedList) UnmarshalCanoto(bytes []byte) error {
+func (c *Node) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
 	}
@@ -1029,9 +618,9 @@ func (c *LinkedList) UnmarshalCanoto(bytes []byte) error {
 // During parsing, the canoto cache is saved.
 //
 // This function enables configuration of reader options.
-func (c *LinkedList) UnmarshalCanotoFrom(r canoto.Reader) error {
+func (c *Node) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
-	*c = LinkedList{}
+	*c = Node{}
 	c.canotoData.size.Store(int64(len(r.B)))
 
 	var minField uint32
@@ -1050,15 +639,18 @@ func (c *LinkedList) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.ReadInt(&r, &c.Int); err != nil {
+			if err := canoto.ReadInt(&r, &c.Value); err != nil {
 				return err
 			}
-			if canoto.IsZero(c.Int) {
+			if canoto.IsZero(c.Value) {
 				return canoto.ErrZeroValue
 			}
 		case 2:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
+			}
+			if c.canotoData.OneOfOneOf.Swap(2) != 0 {
+				return canoto.ErrDuplicateOneOf
 			}
 
 			// Read the bytes for the field.
@@ -1097,9 +689,21 @@ func (c *LinkedList) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 1. All OneOfs are specified at most once.
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
-func (c *LinkedList) ValidCanoto() bool {
+func (c *Node) ValidCanoto() bool {
 	if c == nil {
 		return true
+	}
+	var (
+		OneOfOneOf uint32
+	)
+	if c.Next != nil {
+		(c.Next).CalculateCanotoCache()
+		if (c.Next).CachedCanotoSize() != 0 {
+			if OneOfOneOf != 0 {
+				return false
+			}
+			OneOfOneOf = 2
+		}
 	}
 	if c.Next != nil && !(c.Next).ValidCanoto() {
 		return false
@@ -1109,23 +713,26 @@ func (c *LinkedList) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
-func (c *LinkedList) CalculateCanotoCache() {
+func (c *Node) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
 	var (
-		size int
+		size       int
+		OneOfOneOf uint32
 	)
-	if !canoto.IsZero(c.Int) {
-		size += len(canoto__LinkedList__Int__tag) + canoto.SizeInt(c.Int)
+	if !canoto.IsZero(c.Value) {
+		size += len(canoto__Node__Value__tag) + canoto.SizeInt(c.Value)
 	}
 	if c.Next != nil {
 		(c.Next).CalculateCanotoCache()
 		if fieldSize := (c.Next).CachedCanotoSize(); fieldSize != 0 {
-			size += len(canoto__LinkedList__Next__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+			size += len(canoto__Node__Next__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+			OneOfOneOf = 2
 		}
 	}
 	c.canotoData.size.Store(int64(size))
+	c.canotoData.OneOfOneOf.Store(OneOfOneOf)
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -1135,17 +742,31 @@ func (c *LinkedList) CalculateCanotoCache() {
 //
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
-func (c *LinkedList) CachedCanotoSize() int {
+func (c *Node) CachedCanotoSize() int {
 	if c == nil {
 		return 0
 	}
 	return int(c.canotoData.size.Load())
 }
 
+// CachedWhichOneOfOneOf returns the previously calculated field number used
+// to represent OneOf.
+//
+// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CalculateCanotoCache.
+//
+// If the field has not yet been cached, it will return 0.
+//
+// If the struct has been modified since the field was last cached, the returned
+// field number may be incorrect.
+func (c *Node) CachedWhichOneOfOneOf() uint32 {
+	return c.canotoData.OneOfOneOf.Load()
+}
+
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-func (c *LinkedList) MarshalCanoto() []byte {
+func (c *Node) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := canoto.Writer{
 		B: make([]byte, 0, c.CachedCanotoSize()),
@@ -1161,17 +782,17 @@ func (c *LinkedList) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-func (c *LinkedList) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+func (c *Node) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
 	}
-	if !canoto.IsZero(c.Int) {
-		canoto.Append(&w, canoto__LinkedList__Int__tag)
-		canoto.AppendInt(&w, c.Int)
+	if !canoto.IsZero(c.Value) {
+		canoto.Append(&w, canoto__Node__Value__tag)
+		canoto.AppendInt(&w, c.Value)
 	}
 	if c.Next != nil {
 		if fieldSize := (c.Next).CachedCanotoSize(); fieldSize != 0 {
-			canoto.Append(&w, canoto__LinkedList__Next__tag)
+			canoto.Append(&w, canoto__Node__Next__tag)
 			canoto.AppendInt(&w, int64(fieldSize))
 			w = (c.Next).MarshalCanotoInto(w)
 		}
