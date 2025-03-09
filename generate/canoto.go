@@ -992,7 +992,6 @@ func makeUnmarshal(m message) string {
 			}
 			r.Unsafe = originalUnsafe
 
-			c.${fieldName}[0] = nil
 			isZero := len(msgBytes) == 0
 			if !isZero {
 				remainingBytes := r.B
@@ -1016,7 +1015,6 @@ func makeUnmarshal(m message) string {
 					return err
 				}
 				if len(msgBytes) == 0 {
-					c.${fieldName}[1+i] = nil
 					continue
 				}
 				r.Unsafe = originalUnsafe
@@ -1130,7 +1128,6 @@ func makeUnmarshal(m message) string {
 			}
 			r.Unsafe = originalUnsafe
 
-			c.${fieldName}[0] = ${selector}Zero(c.${fieldName}[0])
 			isZero := len(msgBytes) == 0
 			if !isZero {
 				remainingBytes := r.B
@@ -1154,7 +1151,6 @@ func makeUnmarshal(m message) string {
 					return err
 				}
 				if len(msgBytes) == 0 {
-					c.${fieldName}[1+i] = ${selector}Zero(c.${fieldName}[1+i])
 					continue
 				}
 				r.Unsafe = originalUnsafe
