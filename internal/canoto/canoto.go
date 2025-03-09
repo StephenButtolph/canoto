@@ -99,6 +99,8 @@ var (
 	ErrInvalidWireType = errors.New("invalid wire type")
 	ErrInvalidBool     = errors.New("decoded bool is neither true nor false")
 	ErrStringNotUTF8   = errors.New("decoded string is not UTF-8")
+
+	_ json.Marshaler = Any{}
 )
 
 type (
