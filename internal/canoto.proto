@@ -20,11 +20,15 @@ message OneOf {
     int32 B1 = 3;
     int64 B2 = 4;
   }
-  oneof E {
-    OneOf E1 = 8;
-  }
   int32 C = 5;
   int64 D = 6;
+}
+
+message Node {
+  oneof OneOf {
+    Node Next = 2;
+  }
+  int32 Value = 1;
 }
 
 message GenericField {
