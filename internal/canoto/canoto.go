@@ -490,11 +490,6 @@ func MakeSlice[T any](_ []T, length int) []T {
 	return make([]T, length)
 }
 
-// Zero returns the zero value for its type.
-func Zero[T any](_ T) (_ T) {
-	return
-}
-
 // IsZero returns true if the value is the zero value for its type.
 func IsZero[T comparable](v T) bool {
 	var zero T
