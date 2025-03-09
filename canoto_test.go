@@ -11,7 +11,6 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"github.com/StephenButtolph/canoto/internal/canoto"
 	"github.com/stretchr/testify/require"
 	"github.com/thepudds/fzgen/fuzzer"
 )
@@ -1049,7 +1048,7 @@ type SpecFuzzer struct {
 	canotoData canotoData_SpecFuzzer
 }
 
-type LargestFieldNumberSpecFuzzer[T canoto.Int] struct {
+type LargestFieldNumberSpecFuzzer[T Int] struct {
 	Int32 T `canoto:"int,536870911" json:"Int32,omitempty"`
 
 	canotoData canotoData_LargestFieldNumberSpecFuzzer
