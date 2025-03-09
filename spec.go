@@ -364,11 +364,11 @@ func (f *FieldType) unmarshalBytes(r *Reader, _ []*Spec) (any, error) {
 
 func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 	// Read the first entry manually because the tag is already stripped.
-	var length int64
+	var length uint64
 	if err := ReadInt(r, &length); err != nil {
 		return nil, err
 	}
-	if length != int64(f.TypeFixedBytes) {
+	if length != f.TypeFixedBytes {
 		return nil, ErrInvalidLength
 	}
 	if f.TypeFixedBytes > uint64(len(r.B)) {
@@ -413,7 +413,7 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 		if err := ReadInt(r, &length); err != nil {
 			return nil, err
 		}
-		if length != int64(f.TypeFixedBytes) {
+		if length != f.TypeFixedBytes {
 			return nil, ErrInvalidLength
 		}
 		if f.TypeFixedBytes > uint64(len(r.B)) {
@@ -506,7 +506,6 @@ func unmarshalPackedVarint[T comparable](
 		if len(msgBytes) == 0 {
 			return nil, ErrZeroValue
 		}
-
 		count = uint64(CountInts(msgBytes))
 	}
 	values := make([]T, count)

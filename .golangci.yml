@@ -15,12 +15,11 @@ run:
   # By default, it isn't set.
   modules-download-mode: readonly
 
-output:
+issues:
   # Make issues output unique by line.
   # Default: true
   uniq-by-line: false
 
-issues:
   # Maximum issues count per one linter.
   # Set to 0 to disable.
   # Default: 50
@@ -45,7 +44,6 @@ linters:
     - err113
     - errcheck
     - errorlint
-    - exportloopref
     - forbidigo
     - gci
     - gocritic
