@@ -1826,7 +1826,7 @@ func makeSize(m message) string {
 		values: typeTemplate{
 			single: `	${genericTypeCast}(&c.${fieldName}).CalculateCanotoCache()
 	if fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
-		size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + ${selector}SizeInt(int64(fieldSize)) + fieldSize${sizeOneOfIndent}
+		size += len(canoto__${escapedStructName}__${escapedFieldName}__tag) + ${selector}SizeInt(int64(fieldSize)) + fieldSize${sizeOneOf}
 	}
 `,
 			repeated: `	for i := range c.${fieldName} {
