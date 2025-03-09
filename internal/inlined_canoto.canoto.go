@@ -40,12 +40,12 @@ func (*justAnInt) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 		Name: "justAnInt",
 		Fields: []*canoto.FieldType{
 			canoto.FieldTypeFromInt(
-				/*type:       */ zero.Int8,
-				/*FieldNumber:*/ 1,
-				/*Name:       */ "Int8",
-				/*FixedLength:*/ 0,
-				/*Repeated:   */ false,
-				/*OneOf:      */ "",
+				/*type inference:*/ zero.Int8,
+				/*FieldNumber:   */ 1,
+				/*Name:          */ "Int8",
+				/*FixedLength:   */ 0,
+				/*Repeated:      */ false,
+				/*OneOf:         */ "",
 			),
 		},
 	}
