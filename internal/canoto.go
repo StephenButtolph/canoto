@@ -45,7 +45,7 @@ type OneOf struct {
 	B2 int64  `canoto:"int,4,B"`
 	C  int32  `canoto:"int,5"`
 	D  int64  `canoto:"int,6"`
-	E  *OneOf `canoto:"pointer,8,E"`
+	E1 *OneOf `canoto:"pointer,8,E"`
 
 	canotoData canotoData_OneOf
 }

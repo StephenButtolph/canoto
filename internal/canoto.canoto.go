@@ -166,7 +166,7 @@ const (
 	canoto__OneOf__C__tag  = "\x28" // canoto.Tag(5, canoto.Varint)
 	canoto__OneOf__D__tag  = "\x30" // canoto.Tag(6, canoto.Varint)
 	canoto__OneOf__A2__tag = "\x38" // canoto.Tag(7, canoto.Varint)
-	canoto__OneOf__E__tag  = "\x42" // canoto.Tag(8, canoto.Len)
+	canoto__OneOf__E1__tag = "\x42" // canoto.Tag(8, canoto.Len)
 )
 
 type canotoData_OneOf struct {
@@ -315,8 +315,8 @@ func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 			// Unmarshal the field from the bytes.
 			remainingBytes := r.B
 			r.B = msgBytes
-			c.E = canoto.MakePointer(c.E)
-			if err := (c.E).UnmarshalCanotoFrom(r); err != nil {
+			c.E1 = canoto.MakePointer(c.E1)
+			if err := (c.E1).UnmarshalCanotoFrom(r); err != nil {
 				return err
 			}
 			r.B = remainingBytes
@@ -369,16 +369,16 @@ func (c *OneOf) ValidCanoto() bool {
 		}
 		AOneOf = 7
 	}
-	if c.E != nil {
-		(c.E).CalculateCanotoCache()
-		if (c.E).CachedCanotoSize() != 0 {
+	if c.E1 != nil {
+		(c.E1).CalculateCanotoCache()
+		if (c.E1).CachedCanotoSize() != 0 {
 			if EOneOf != 0 {
 				return false
 			}
 			EOneOf = 8
 		}
 	}
-	if c.E != nil && !(c.E).ValidCanoto() {
+	if c.E1 != nil && !(c.E1).ValidCanoto() {
 		return false
 	}
 	return true
@@ -418,10 +418,10 @@ func (c *OneOf) CalculateCanotoCache() {
 		size += len(canoto__OneOf__A2__tag) + canoto.SizeInt(c.A2)
 		AOneOf = 7
 	}
-	if c.E != nil {
-		(c.E).CalculateCanotoCache()
-		if fieldSize := (c.E).CachedCanotoSize(); fieldSize != 0 {
-			size += len(canoto__OneOf__E__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+	if c.E1 != nil {
+		(c.E1).CalculateCanotoCache()
+		if fieldSize := (c.E1).CachedCanotoSize(); fieldSize != 0 {
+			size += len(canoto__OneOf__E1__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
 			EOneOf = 8
 		}
 	}
@@ -534,11 +534,11 @@ func (c *OneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		canoto.Append(&w, canoto__OneOf__A2__tag)
 		canoto.AppendInt(&w, c.A2)
 	}
-	if c.E != nil {
-		if fieldSize := (c.E).CachedCanotoSize(); fieldSize != 0 {
-			canoto.Append(&w, canoto__OneOf__E__tag)
+	if c.E1 != nil {
+		if fieldSize := (c.E1).CachedCanotoSize(); fieldSize != 0 {
+			canoto.Append(&w, canoto__OneOf__E1__tag)
 			canoto.AppendInt(&w, int64(fieldSize))
-			w = (c.E).MarshalCanotoInto(w)
+			w = (c.E1).MarshalCanotoInto(w)
 		}
 	}
 	return w
