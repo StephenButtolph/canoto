@@ -39,12 +39,13 @@ type LargestFieldNumber[T canoto.Int] struct {
 }
 
 type OneOf struct {
-	A1 int32 `canoto:"int,1,A"`
-	A2 int64 `canoto:"int,7,A"`
-	B1 int32 `canoto:"int,3,B"`
-	B2 int64 `canoto:"int,4,B"`
-	C  int32 `canoto:"int,5"`
-	D  int64 `canoto:"int,6"`
+	A1 int32  `canoto:"int,1,A"`
+	A2 int64  `canoto:"int,7,A"`
+	B1 int32  `canoto:"int,3,B"`
+	B2 int64  `canoto:"int,4,B"`
+	C  int32  `canoto:"int,5"`
+	D  int64  `canoto:"int,6"`
+	E  *OneOf `canoto:"pointer,8,E"`
 
 	canotoData canotoData_OneOf
 }

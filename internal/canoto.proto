@@ -20,6 +20,9 @@ message OneOf {
     int32 B1 = 3;
     int64 B2 = 4;
   }
+  oneof E {
+    OneOf E = 8;
+  }
   int32 C = 5;
   int64 D = 6;
 }

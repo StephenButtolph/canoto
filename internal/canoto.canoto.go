@@ -166,6 +166,7 @@ const (
 	canoto__OneOf__C__tag  = "\x28" // canoto.Tag(5, canoto.Varint)
 	canoto__OneOf__D__tag  = "\x30" // canoto.Tag(6, canoto.Varint)
 	canoto__OneOf__A2__tag = "\x38" // canoto.Tag(7, canoto.Varint)
+	canoto__OneOf__E__tag  = "\x42" // canoto.Tag(8, canoto.Len)
 )
 
 type canotoData_OneOf struct {
@@ -173,6 +174,7 @@ type canotoData_OneOf struct {
 
 	AOneOf atomic.Uint32
 	BOneOf atomic.Uint32
+	EOneOf atomic.Uint32
 }
 
 // MakeCanoto creates a new empty value.
@@ -290,6 +292,34 @@ func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if canoto.IsZero(c.A2) {
 				return canoto.ErrZeroValue
 			}
+		case 8:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+			if c.canotoData.EOneOf.Swap(8) != 0 {
+				return canoto.ErrDuplicateOneOf
+			}
+
+			// Read the bytes for the field.
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return canoto.ErrZeroValue
+			}
+			r.Unsafe = originalUnsafe
+
+			// Unmarshal the field from the bytes.
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.E = canoto.MakePointer(c.E)
+			if err := (c.E).UnmarshalCanotoFrom(r); err != nil {
+				return err
+			}
+			r.B = remainingBytes
 		default:
 			return canoto.ErrUnknownField
 		}
@@ -313,6 +343,7 @@ func (c *OneOf) ValidCanoto() bool {
 	var (
 		AOneOf uint32
 		BOneOf uint32
+		EOneOf uint32
 	)
 	if !canoto.IsZero(c.A1) {
 		if AOneOf != 0 {
@@ -338,6 +369,18 @@ func (c *OneOf) ValidCanoto() bool {
 		}
 		AOneOf = 7
 	}
+	if c.E != nil {
+		(c.E).CalculateCanotoCache()
+		if (c.E).CachedCanotoSize() != 0 {
+			if EOneOf != 0 {
+				return false
+			}
+			EOneOf = 8
+		}
+	}
+	if c.E != nil && !(c.E).ValidCanoto() {
+		return false
+	}
 	return true
 }
 
@@ -351,6 +394,7 @@ func (c *OneOf) CalculateCanotoCache() {
 		size   int
 		AOneOf uint32
 		BOneOf uint32
+		EOneOf uint32
 	)
 	if !canoto.IsZero(c.A1) {
 		size += len(canoto__OneOf__A1__tag) + canoto.SizeInt(c.A1)
@@ -374,9 +418,17 @@ func (c *OneOf) CalculateCanotoCache() {
 		size += len(canoto__OneOf__A2__tag) + canoto.SizeInt(c.A2)
 		AOneOf = 7
 	}
+	if c.E != nil {
+		(c.E).CalculateCanotoCache()
+		if fieldSize := (c.E).CachedCanotoSize(); fieldSize != 0 {
+			size += len(canoto__OneOf__E__tag) + canoto.SizeInt(int64(fieldSize)) + fieldSize
+			EOneOf = 8
+		}
+	}
 	c.canotoData.size.Store(int64(size))
 	c.canotoData.AOneOf.Store(AOneOf)
 	c.canotoData.BOneOf.Store(BOneOf)
+	c.canotoData.EOneOf.Store(EOneOf)
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -419,6 +471,20 @@ func (c *OneOf) CachedWhichOneOfA() uint32 {
 // field number may be incorrect.
 func (c *OneOf) CachedWhichOneOfB() uint32 {
 	return c.canotoData.BOneOf.Load()
+}
+
+// CachedWhichOneOfE returns the previously calculated field number used
+// to represent E.
+//
+// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CalculateCanotoCache.
+//
+// If the field has not yet been cached, it will return 0.
+//
+// If the struct has been modified since the field was last cached, the returned
+// field number may be incorrect.
+func (c *OneOf) CachedWhichOneOfE() uint32 {
+	return c.canotoData.EOneOf.Load()
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -467,6 +533,13 @@ func (c *OneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.A2) {
 		canoto.Append(&w, canoto__OneOf__A2__tag)
 		canoto.AppendInt(&w, c.A2)
+	}
+	if c.E != nil {
+		if fieldSize := (c.E).CachedCanotoSize(); fieldSize != 0 {
+			canoto.Append(&w, canoto__OneOf__E__tag)
+			canoto.AppendInt(&w, int64(fieldSize))
+			w = (c.E).MarshalCanotoInto(w)
+		}
 	}
 	return w
 }
