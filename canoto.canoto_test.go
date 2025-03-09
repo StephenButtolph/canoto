@@ -1976,19 +1976,19 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 }
 
 const (
-	canoto__LargestFieldNumberSpecFuzzer__Int32__tag = "\xf8\xff\xff\xff\x0f" // canoto.Tag(536870911, canoto.Varint)
+	canoto__LargestFieldNumber__Int32__tag = "\xf8\xff\xff\xff\x0f" // canoto.Tag(536870911, canoto.Varint)
 )
 
-type canotoData_LargestFieldNumberSpecFuzzer struct {
+type canotoData_LargestFieldNumber struct {
 	size atomic.Int64
 }
 
 // CanotoSpec returns the specification of this canoto message.
-func (*LargestFieldNumberSpecFuzzer[T1]) CanotoSpec(types ...reflect.Type) *Spec {
-	types = append(types, reflect.TypeOf(LargestFieldNumberSpecFuzzer[T1]{}))
-	var zero LargestFieldNumberSpecFuzzer[T1]
+func (*LargestFieldNumber[T1]) CanotoSpec(types ...reflect.Type) *Spec {
+	types = append(types, reflect.TypeOf(LargestFieldNumber[T1]{}))
+	var zero LargestFieldNumber[T1]
 	s := &Spec{
-		Name: "LargestFieldNumberSpecFuzzer",
+		Name: "LargestFieldNumber",
 		Fields: []*FieldType{
 			FieldTypeFromInt(
 				/*type inference:*/ zero.Int32,
@@ -2005,14 +2005,14 @@ func (*LargestFieldNumberSpecFuzzer[T1]) CanotoSpec(types ...reflect.Type) *Spec
 }
 
 // MakeCanoto creates a new empty value.
-func (*LargestFieldNumberSpecFuzzer[T1]) MakeCanoto() *LargestFieldNumberSpecFuzzer[T1] {
-	return new(LargestFieldNumberSpecFuzzer[T1])
+func (*LargestFieldNumber[T1]) MakeCanoto() *LargestFieldNumber[T1] {
+	return new(LargestFieldNumber[T1])
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
-func (c *LargestFieldNumberSpecFuzzer[T1]) UnmarshalCanoto(bytes []byte) error {
+func (c *LargestFieldNumber[T1]) UnmarshalCanoto(bytes []byte) error {
 	r := Reader{
 		B: bytes,
 	}
@@ -2025,9 +2025,9 @@ func (c *LargestFieldNumberSpecFuzzer[T1]) UnmarshalCanoto(bytes []byte) error {
 // During parsing, the canoto cache is saved.
 //
 // This function enables configuration of reader options.
-func (c *LargestFieldNumberSpecFuzzer[T1]) UnmarshalCanotoFrom(r Reader) error {
+func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) error {
 	// Zero the struct before unmarshaling.
-	*c = LargestFieldNumberSpecFuzzer[T1]{}
+	*c = LargestFieldNumber[T1]{}
 	c.canotoData.size.Store(int64(len(r.B)))
 
 	var minField uint32
@@ -2068,7 +2068,7 @@ func (c *LargestFieldNumberSpecFuzzer[T1]) UnmarshalCanotoFrom(r Reader) error {
 // 1. All OneOfs are specified at most once.
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
-func (c *LargestFieldNumberSpecFuzzer[T1]) ValidCanoto() bool {
+func (c *LargestFieldNumber[T1]) ValidCanoto() bool {
 	if c == nil {
 		return true
 	}
@@ -2077,7 +2077,7 @@ func (c *LargestFieldNumberSpecFuzzer[T1]) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
-func (c *LargestFieldNumberSpecFuzzer[T1]) CalculateCanotoCache() {
+func (c *LargestFieldNumber[T1]) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
@@ -2085,7 +2085,7 @@ func (c *LargestFieldNumberSpecFuzzer[T1]) CalculateCanotoCache() {
 		size int
 	)
 	if !IsZero(c.Int32) {
-		size += len(canoto__LargestFieldNumberSpecFuzzer__Int32__tag) + SizeInt(c.Int32)
+		size += len(canoto__LargestFieldNumber__Int32__tag) + SizeInt(c.Int32)
 	}
 	c.canotoData.size.Store(int64(size))
 }
@@ -2097,7 +2097,7 @@ func (c *LargestFieldNumberSpecFuzzer[T1]) CalculateCanotoCache() {
 //
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
-func (c *LargestFieldNumberSpecFuzzer[T1]) CachedCanotoSize() int {
+func (c *LargestFieldNumber[T1]) CachedCanotoSize() int {
 	if c == nil {
 		return 0
 	}
@@ -2107,7 +2107,7 @@ func (c *LargestFieldNumberSpecFuzzer[T1]) CachedCanotoSize() int {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-func (c *LargestFieldNumberSpecFuzzer[T1]) MarshalCanoto() []byte {
+func (c *LargestFieldNumber[T1]) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := Writer{
 		B: make([]byte, 0, c.CachedCanotoSize()),
@@ -2123,27 +2123,27 @@ func (c *LargestFieldNumberSpecFuzzer[T1]) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-func (c *LargestFieldNumberSpecFuzzer[T1]) MarshalCanotoInto(w Writer) Writer {
+func (c *LargestFieldNumber[T1]) MarshalCanotoInto(w Writer) Writer {
 	if c == nil {
 		return w
 	}
 	if !IsZero(c.Int32) {
-		Append(&w, canoto__LargestFieldNumberSpecFuzzer__Int32__tag)
+		Append(&w, canoto__LargestFieldNumber__Int32__tag)
 		AppendInt(&w, c.Int32)
 	}
 	return w
 }
 
 const (
-	canoto__OneOfSpecFuzzer__A1__tag = "\x08" // canoto.Tag(1, canoto.Varint)
-	canoto__OneOfSpecFuzzer__B1__tag = "\x18" // canoto.Tag(3, canoto.Varint)
-	canoto__OneOfSpecFuzzer__B2__tag = "\x20" // canoto.Tag(4, canoto.Varint)
-	canoto__OneOfSpecFuzzer__C__tag  = "\x28" // canoto.Tag(5, canoto.Varint)
-	canoto__OneOfSpecFuzzer__D__tag  = "\x30" // canoto.Tag(6, canoto.Varint)
-	canoto__OneOfSpecFuzzer__A2__tag = "\x38" // canoto.Tag(7, canoto.Varint)
+	canoto__OneOf__A1__tag = "\x08" // canoto.Tag(1, canoto.Varint)
+	canoto__OneOf__B1__tag = "\x18" // canoto.Tag(3, canoto.Varint)
+	canoto__OneOf__B2__tag = "\x20" // canoto.Tag(4, canoto.Varint)
+	canoto__OneOf__C__tag  = "\x28" // canoto.Tag(5, canoto.Varint)
+	canoto__OneOf__D__tag  = "\x30" // canoto.Tag(6, canoto.Varint)
+	canoto__OneOf__A2__tag = "\x38" // canoto.Tag(7, canoto.Varint)
 )
 
-type canotoData_OneOfSpecFuzzer struct {
+type canotoData_OneOf struct {
 	size atomic.Int64
 
 	AOneOf atomic.Uint32
@@ -2151,11 +2151,11 @@ type canotoData_OneOfSpecFuzzer struct {
 }
 
 // CanotoSpec returns the specification of this canoto message.
-func (*OneOfSpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
-	types = append(types, reflect.TypeOf(OneOfSpecFuzzer{}))
-	var zero OneOfSpecFuzzer
+func (*OneOf) CanotoSpec(types ...reflect.Type) *Spec {
+	types = append(types, reflect.TypeOf(OneOf{}))
+	var zero OneOf
 	s := &Spec{
-		Name: "OneOfSpecFuzzer",
+		Name: "OneOf",
 		Fields: []*FieldType{
 			FieldTypeFromInt(
 				/*type inference:*/ zero.A1,
@@ -2212,14 +2212,14 @@ func (*OneOfSpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 }
 
 // MakeCanoto creates a new empty value.
-func (*OneOfSpecFuzzer) MakeCanoto() *OneOfSpecFuzzer {
-	return new(OneOfSpecFuzzer)
+func (*OneOf) MakeCanoto() *OneOf {
+	return new(OneOf)
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
-func (c *OneOfSpecFuzzer) UnmarshalCanoto(bytes []byte) error {
+func (c *OneOf) UnmarshalCanoto(bytes []byte) error {
 	r := Reader{
 		B: bytes,
 	}
@@ -2232,9 +2232,9 @@ func (c *OneOfSpecFuzzer) UnmarshalCanoto(bytes []byte) error {
 // During parsing, the canoto cache is saved.
 //
 // This function enables configuration of reader options.
-func (c *OneOfSpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
+func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
 	// Zero the struct before unmarshaling.
-	*c = OneOfSpecFuzzer{}
+	*c = OneOf{}
 	c.canotoData.size.Store(int64(len(r.B)))
 
 	var minField uint32
@@ -2342,7 +2342,7 @@ func (c *OneOfSpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 // 1. All OneOfs are specified at most once.
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
-func (c *OneOfSpecFuzzer) ValidCanoto() bool {
+func (c *OneOf) ValidCanoto() bool {
 	if c == nil {
 		return true
 	}
@@ -2379,7 +2379,7 @@ func (c *OneOfSpecFuzzer) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
-func (c *OneOfSpecFuzzer) CalculateCanotoCache() {
+func (c *OneOf) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
@@ -2389,25 +2389,25 @@ func (c *OneOfSpecFuzzer) CalculateCanotoCache() {
 		BOneOf uint32
 	)
 	if !IsZero(c.A1) {
-		size += len(canoto__OneOfSpecFuzzer__A1__tag) + SizeInt(c.A1)
+		size += len(canoto__OneOf__A1__tag) + SizeInt(c.A1)
 		AOneOf = 1
 	}
 	if !IsZero(c.B1) {
-		size += len(canoto__OneOfSpecFuzzer__B1__tag) + SizeInt(c.B1)
+		size += len(canoto__OneOf__B1__tag) + SizeInt(c.B1)
 		BOneOf = 3
 	}
 	if !IsZero(c.B2) {
-		size += len(canoto__OneOfSpecFuzzer__B2__tag) + SizeInt(c.B2)
+		size += len(canoto__OneOf__B2__tag) + SizeInt(c.B2)
 		BOneOf = 4
 	}
 	if !IsZero(c.C) {
-		size += len(canoto__OneOfSpecFuzzer__C__tag) + SizeInt(c.C)
+		size += len(canoto__OneOf__C__tag) + SizeInt(c.C)
 	}
 	if !IsZero(c.D) {
-		size += len(canoto__OneOfSpecFuzzer__D__tag) + SizeInt(c.D)
+		size += len(canoto__OneOf__D__tag) + SizeInt(c.D)
 	}
 	if !IsZero(c.A2) {
-		size += len(canoto__OneOfSpecFuzzer__A2__tag) + SizeInt(c.A2)
+		size += len(canoto__OneOf__A2__tag) + SizeInt(c.A2)
 		AOneOf = 7
 	}
 	c.canotoData.size.Store(int64(size))
@@ -2422,7 +2422,7 @@ func (c *OneOfSpecFuzzer) CalculateCanotoCache() {
 //
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
-func (c *OneOfSpecFuzzer) CachedCanotoSize() int {
+func (c *OneOf) CachedCanotoSize() int {
 	if c == nil {
 		return 0
 	}
@@ -2439,7 +2439,7 @@ func (c *OneOfSpecFuzzer) CachedCanotoSize() int {
 //
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
-func (c *OneOfSpecFuzzer) CachedWhichOneOfA() uint32 {
+func (c *OneOf) CachedWhichOneOfA() uint32 {
 	return c.canotoData.AOneOf.Load()
 }
 
@@ -2453,14 +2453,14 @@ func (c *OneOfSpecFuzzer) CachedWhichOneOfA() uint32 {
 //
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
-func (c *OneOfSpecFuzzer) CachedWhichOneOfB() uint32 {
+func (c *OneOf) CachedWhichOneOfB() uint32 {
 	return c.canotoData.BOneOf.Load()
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-func (c *OneOfSpecFuzzer) MarshalCanoto() []byte {
+func (c *OneOf) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := Writer{
 		B: make([]byte, 0, c.CachedCanotoSize()),
@@ -2476,32 +2476,32 @@ func (c *OneOfSpecFuzzer) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-func (c *OneOfSpecFuzzer) MarshalCanotoInto(w Writer) Writer {
+func (c *OneOf) MarshalCanotoInto(w Writer) Writer {
 	if c == nil {
 		return w
 	}
 	if !IsZero(c.A1) {
-		Append(&w, canoto__OneOfSpecFuzzer__A1__tag)
+		Append(&w, canoto__OneOf__A1__tag)
 		AppendInt(&w, c.A1)
 	}
 	if !IsZero(c.B1) {
-		Append(&w, canoto__OneOfSpecFuzzer__B1__tag)
+		Append(&w, canoto__OneOf__B1__tag)
 		AppendInt(&w, c.B1)
 	}
 	if !IsZero(c.B2) {
-		Append(&w, canoto__OneOfSpecFuzzer__B2__tag)
+		Append(&w, canoto__OneOf__B2__tag)
 		AppendInt(&w, c.B2)
 	}
 	if !IsZero(c.C) {
-		Append(&w, canoto__OneOfSpecFuzzer__C__tag)
+		Append(&w, canoto__OneOf__C__tag)
 		AppendInt(&w, c.C)
 	}
 	if !IsZero(c.D) {
-		Append(&w, canoto__OneOfSpecFuzzer__D__tag)
+		Append(&w, canoto__OneOf__D__tag)
 		AppendInt(&w, c.D)
 	}
 	if !IsZero(c.A2) {
-		Append(&w, canoto__OneOfSpecFuzzer__A2__tag)
+		Append(&w, canoto__OneOf__A2__tag)
 		AppendInt(&w, c.A2)
 	}
 	return w
