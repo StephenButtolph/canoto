@@ -648,6 +648,10 @@ func unsafeString(b []byte) string {
 
 // Unmarshal unmarshals the given bytes into a message based on the
 // specification.
+//
+// This function is significantly slower than calling UnmarshalCanoto on the
+// type directly. This function should only be used when the concrete type can
+// not be known ahead of time.
 func Unmarshal(s *Spec, b []byte) (Any, error) {
 	r := Reader{
 		B: b,
@@ -656,6 +660,10 @@ func Unmarshal(s *Spec, b []byte) (Any, error) {
 }
 
 // Marshal marshals the given message into bytes based on the specification.
+//
+// This function is significantly slower than calling MarshalCanoto on the type
+// directly. This function should only be used when the concrete type can not be
+// known ahead of time.
 func Marshal(s *Spec, a Any) ([]byte, error) {
 	// TODO: Implement size calculations to avoid quadratic marshalling
 	// complexity.

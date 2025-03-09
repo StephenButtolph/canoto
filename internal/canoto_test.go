@@ -1032,23 +1032,39 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 			Int32: 216457,
 		},
 	}
+	spec := (*Scalars)(nil).CanotoSpec()
+	fullBytes := full.MarshalCanoto()
+	simpleBytes := simple.MarshalCanoto()
+	fullAny, err := canoto.Unmarshal(spec, fullBytes)
+	require.NoError(b, err)
+	simpleAny, err := canoto.Unmarshal(spec, simpleBytes)
+	require.NoError(b, err)
+
 	marshalBenchmarks := []struct {
 		name string
 		s    *Scalars
+		a    canoto.Any
 	}{
 		{
 			name: "full",
 			s:    &full,
+			a:    fullAny,
 		},
 		{
 			name: "primitives",
 			s:    &simple,
+			a:    simpleAny,
 		},
 	}
 	for _, bm := range marshalBenchmarks {
 		b.Run("marshal/"+bm.name+"/heap", func(b *testing.B) {
 			for range b.N {
 				bm.s.MarshalCanoto()
+			}
+		})
+		b.Run("marshal/"+bm.name+"/any", func(b *testing.B) {
+			for range b.N {
+				_, _ = canoto.Marshal(spec, bm.a)
 			}
 		})
 	}
@@ -1059,11 +1075,11 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 	}{
 		{
 			name:  "full",
-			bytes: full.MarshalCanoto(),
+			bytes: fullBytes,
 		},
 		{
 			name:  "primitives",
-			bytes: simple.MarshalCanoto(),
+			bytes: simpleBytes,
 		},
 	}
 	for _, bm := range unmarshalBenchmarks {
@@ -1081,8 +1097,18 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 				}
 			})
 		}
+		b.Run("unmarshal/"+bm.name+"/any", func(b *testing.B) {
+			for range b.N {
+				_, _ = canoto.Unmarshal(spec, bm.bytes)
+			}
+		})
 	}
 
+	b.Run("spec", func(b *testing.B) {
+		for range b.N {
+			(*Scalars)(nil).CanotoSpec()
+		}
+	})
 	for _, bm := range marshalBenchmarks {
 		b.Run("calculateCache/"+bm.name, func(b *testing.B) {
 			for range b.N {
