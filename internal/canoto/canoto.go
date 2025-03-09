@@ -853,10 +853,17 @@ func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 
 func (s *Spec) marshal(w *Writer, a Any, specs []*Spec) error {
 	specs = append(specs, s)
+	var minField uint32
 	for _, f := range a.Fields {
 		ft, err := s.findFieldByName(f.Name)
 		if err != nil {
 			return err
+		}
+		if ft.FieldNumber == 0 || ft.FieldNumber > MaxFieldNumber {
+			return ErrUnknownField
+		}
+		if ft.FieldNumber < minField {
+			return ErrInvalidFieldOrder
 		}
 
 		wireType, err := ft.wireType()
@@ -864,15 +871,14 @@ func (s *Spec) marshal(w *Writer, a Any, specs []*Spec) error {
 			return err
 		}
 
-		if ft.FieldNumber > MaxFieldNumber {
-			return ErrUnknownField
-		}
 		tag := Tag(ft.FieldNumber, wireType)
 		Append(w, tag)
 
 		if err := ft.marshal(w, f.Value, specs); err != nil {
 			return err
 		}
+
+		minField = ft.FieldNumber + 1
 	}
 	return nil
 }
