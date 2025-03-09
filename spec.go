@@ -4,7 +4,6 @@ package canoto
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"slices"
@@ -435,7 +434,7 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 func (f *FieldType) unmarshalRecursive(r *Reader, specs []*Spec) (any, error) {
 	numSpecs := uint64(len(specs))
 	if f.TypeRecursive > numSpecs {
-		return nil, errors.New("invalid depth")
+		return nil, ErrInvalidRecursiveDepth
 	}
 	index := numSpecs - f.TypeRecursive
 	spec := specs[index]

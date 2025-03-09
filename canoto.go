@@ -65,15 +65,17 @@ var (
 	//go:embed canoto.go
 	Code string
 
-	ErrInvalidFieldOrder   = errors.New("invalid field order")
-	ErrUnexpectedWireType  = errors.New("unexpected wire type")
-	ErrDuplicateOneOf      = errors.New("duplicate oneof field")
-	ErrInvalidLength       = errors.New("decoded length is invalid")
-	ErrZeroValue           = errors.New("zero value")
-	ErrUnknownField        = errors.New("unknown field")
-	ErrPaddedZeroes        = errors.New("padded zeroes")
-	ErrUnknownFieldType    = errors.New("unknown field type")
-	ErrUnexpectedFieldSize = errors.New("unexpected field size")
+	ErrInvalidFieldOrder  = errors.New("invalid field order")
+	ErrUnexpectedWireType = errors.New("unexpected wire type")
+	ErrDuplicateOneOf     = errors.New("duplicate oneof field")
+	ErrInvalidLength      = errors.New("decoded length is invalid")
+	ErrZeroValue          = errors.New("zero value")
+	ErrUnknownField       = errors.New("unknown field")
+	ErrPaddedZeroes       = errors.New("padded zeroes")
+
+	ErrInvalidRecursiveDepth = errors.New("invalid recursive depth")
+	ErrUnknownFieldType      = errors.New("unknown field type")
+	ErrUnexpectedFieldSize   = errors.New("unexpected field size")
 
 	ErrOverflow        = errors.New("overflow")
 	ErrInvalidWireType = errors.New("invalid wire type")
