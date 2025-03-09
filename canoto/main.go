@@ -1,4 +1,5 @@
-// Canoto is command to generate code for reading and writing the canoto format.
+// Canoto is a command to generate code for reading and writing the canoto
+// format.
 package main
 
 import (
