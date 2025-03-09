@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"io"
 	"math"
+	"slices"
 	"strconv"
 	"testing"
 	"unicode/utf8"
@@ -1131,8 +1132,16 @@ func FuzzSpec(f *testing.F) {
 
 	spec := (*SpecFuzzer)(nil).CanotoSpec()
 	f.Fuzz(func(t *testing.T, b []byte) {
+		// Standardize the empty input for reflect based equality.
+		if len(b) == 0 {
+			b = nil
+		}
+		originalBytes := slices.Clone(b)
+
 		require := require.New(t)
 
+		// Verify that unmarshalling the message using [Unmarshal] returns the
+		// same error as the unmarshalling the message directly.
 		var msg SpecFuzzer
 		expectedErr := msg.UnmarshalCanoto(b)
 		anyMSG, actualErr := Unmarshal(spec, b)
@@ -1142,11 +1151,24 @@ func FuzzSpec(f *testing.F) {
 			return
 		}
 
+		// Modify the original bytes to ensure that [Unmarshal] does not hold a
+		// reference to the originally passed in slice.
+		for i := range b {
+			b[i]++
+		}
+
+		// Verify that the unmarshalled messages have the same json
+		// representation.
 		expectedJSON, err := json.Marshal(&msg)
 		require.NoError(err)
-
 		actualJSON, err := json.Marshal(anyMSG)
 		require.NoError(err)
 		require.JSONEq(string(expectedJSON), string(actualJSON))
+
+		// Verify that re-marshalling the unmarshalled message returns the same
+		// bytes as the original message.
+		actualBytes, err := Marshal(spec, anyMSG)
+		require.NoError(err)
+		require.Equal(originalBytes, actualBytes)
 	})
 }
