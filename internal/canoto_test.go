@@ -3,10 +3,7 @@
 package examples
 
 import (
-	"bytes"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"slices"
 	"strconv"
 	"testing"
@@ -1736,10 +1733,9 @@ func FuzzScalars_Spec(f *testing.F) {
 	fullBytes := full.MarshalCanoto()
 	f.Add(fullBytes)
 
-	var secondFull SpecFuzzer
-	require.NoError(f, secondFull.UnmarshalCanoto(fullBytes))
+	full.Recursive = new(SpecFuzzer)
+	require.NoError(f, full.Recursive.UnmarshalCanoto(fullBytes))
 
-	full.Recursive = &secondFull
 	recursiveFullBytes := full.MarshalCanoto()
 	f.Add(recursiveFullBytes)
 
@@ -1750,11 +1746,7 @@ func FuzzScalars_Spec(f *testing.F) {
 		var msg SpecFuzzer
 		expectedErr := msg.UnmarshalCanoto(b)
 		anyMSG, actualErr := canoto.Unmarshal(spec, b)
-		if !errors.Is(actualErr, expectedErr) {
-			expectedErr = msg.UnmarshalCanoto(b)
-			_, actualErr = canoto.Unmarshal(spec, b)
-			require.ErrorIs(actualErr, expectedErr)
-		}
+		require.Equal(expectedErr, actualErr)
 
 		if expectedErr != nil {
 			return
@@ -1765,30 +1757,6 @@ func FuzzScalars_Spec(f *testing.F) {
 
 		actualJSON, err := json.Marshal(anyMSG)
 		require.NoError(err)
-		if !bytes.Equal(expectedJSON, actualJSON) {
-			fmt.Println(string(expectedJSON))
-			fmt.Println(string(actualJSON))
-			t.FailNow()
-		}
+		require.JSONEq(string(expectedJSON), string(actualJSON))
 	})
-}
-
-func TestScalars_Spec(t *testing.T) {
-	full := SpecFuzzer{
-		Int8: 31,
-	}
-	fullBytes := full.MarshalCanoto()
-
-	spec := (*SpecFuzzer)(nil).CanotoSpec()
-	fullAny, err := canoto.Unmarshal(spec, fullBytes)
-	require.NoError(t, err)
-
-	expectedJSON, err := json.MarshalIndent(&full, "", "  ")
-	require.NoError(t, err)
-
-	actualJSON, err := json.MarshalIndent(fullAny, "", "  ")
-	require.NoError(t, err)
-	if !bytes.Equal(expectedJSON, actualJSON) {
-		require.JSONEq(t, string(expectedJSON), string(actualJSON))
-	}
 }

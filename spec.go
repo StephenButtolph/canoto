@@ -4,7 +4,6 @@ package canoto
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"slices"
 	"strings"
@@ -87,35 +86,35 @@ func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 	for HasNext(r) {
 		fieldNumber, wireType, err := ReadTag(r)
 		if err != nil {
-			return Any{}, fmt.Errorf("reading tag: %w", err)
+			return Any{}, err
 		}
 		if fieldNumber < minField {
-			return Any{}, fmt.Errorf("fieldNumber %d < minField %d: %w", fieldNumber, minField, ErrInvalidFieldOrder)
+			return Any{}, ErrInvalidFieldOrder
 		}
 
 		fieldType, err := s.findField(fieldNumber)
 		if err != nil {
-			return Any{}, fmt.Errorf("find field %d: %w", fieldNumber, err)
+			return Any{}, err
 		}
 
 		expectedWireType, err := fieldType.wireType()
 		if err != nil {
-			return Any{}, fmt.Errorf("wireType for %d: %w", fieldNumber, err)
+			return Any{}, err
 		}
 		if wireType != expectedWireType {
-			return Any{}, fmt.Errorf("fieldNumber %d: %w", fieldNumber, ErrUnexpectedWireType)
+			return Any{}, ErrUnexpectedWireType
 		}
 
 		if fieldType.OneOf != "" {
 			if _, ok := oneOfs[fieldType.OneOf]; ok {
-				return Any{}, fmt.Errorf("fieldNumber %d: %w", fieldNumber, ErrDuplicateOneOf)
+				return Any{}, ErrDuplicateOneOf
 			}
 			oneOfs[fieldType.OneOf] = struct{}{}
 		}
 
 		value, err := fieldType.unmarshal(r, specs)
 		if err != nil {
-			return Any{}, fmt.Errorf("unmarshal fieldNumber %d: %w", fieldNumber, err)
+			return Any{}, err
 		}
 		a.Fields = append(a.Fields, AnyField{
 			Name:  fieldType.Name,
@@ -189,7 +188,7 @@ func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 	}
 	value, err := unmarshal(f, r, specs)
 	if err != nil {
-		return nil, fmt.Errorf("%d: %w", whichOneOf, err)
+		return nil, err
 	}
 	return value, nil
 }
