@@ -258,7 +258,7 @@ type (
 		//   - bool,   []bool
 		//   - string, []string
 		//   - []byte, [][]byte
-		//   - [Any],  [][Any]
+		//   - Any,    []Any
 		Value any
 	}
 )
