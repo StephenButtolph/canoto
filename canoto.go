@@ -202,6 +202,13 @@ type (
 		B []byte
 	}
 
+	// Spec is the specification of a Canoto message.
+	//
+	// Given a message specification, [Unmarshal] can be used to parse bytes
+	// into an [Any].
+	//
+	// Spec is itself a message, to allow for implementations of universal
+	// canoto message interpreters.
 	Spec struct {
 		Name   string       `canoto:"string,1"           json:"name"`
 		Fields []*FieldType `canoto:"repeated pointer,2" json:"fields"`
@@ -209,6 +216,7 @@ type (
 		canotoData canotoData_Spec
 	}
 
+	// FieldType is the specification of a field in a Canoto message.
 	FieldType struct {
 		FieldNumber    uint32   `canoto:"int,1"           json:"fieldNumber"`
 		Name           string   `canoto:"string,2"        json:"name"`
@@ -233,11 +241,24 @@ type (
 	// SizeEnum indicate the size of an integer type in canoto specifications.
 	SizeEnum uint8
 
+	// Any is a generic representation of a Canoto message.
 	Any struct {
 		Fields []AnyField
 	}
+
+	// AnyField is a generic representation of a field in a Canoto message.
 	AnyField struct {
-		Name  string
+		Name string
+
+		// Value is the value of the field.
+		//
+		// It can be any of the following types:
+		//   - int64,  []int64
+		//   - uint64, []uint64
+		//   - bool,   []bool
+		//   - string, []string
+		//   - []byte, [][]byte
+		//   - [Any],  [][Any]
 		Value any
 	}
 )
