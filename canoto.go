@@ -226,8 +226,8 @@ type (
 		OneOf          string   `canoto:"string,5"        json:"oneOf,omitempty"`
 		TypeInt        SizeEnum `canoto:"uint,6,Type"     json:"typeInt,omitempty"`        // can be any of 8, 16, 32, or 64.
 		TypeUint       SizeEnum `canoto:"uint,7,Type"     json:"typeUint,omitempty"`       // can be any of 8, 16, 32, or 64.
-		TypeFint       SizeEnum `canoto:"uint,8,Type"     json:"typeFint,omitempty"`       // can be either 32 or 64.
-		TypeSFint      SizeEnum `canoto:"uint,9,Type"     json:"typeSFint,omitempty"`      // can be either 32 or 64.
+		TypeFixedInt   SizeEnum `canoto:"uint,8,Type"     json:"typeFixedInt,omitempty"`   // can be either 32 or 64.
+		TypeFixedUint  SizeEnum `canoto:"uint,9,Type"     json:"typeFixedUint,omitempty"`  // can be either 32 or 64.
 		TypeBool       bool     `canoto:"bool,10,Type"    json:"typeBool,omitempty"`       // can only be true.
 		TypeString     bool     `canoto:"bool,11,Type"    json:"typeString,omitempty"`     // can only be true.
 		TypeBytes      bool     `canoto:"bool,12,Type"    json:"typeBytes,omitempty"`      // can only be true.
@@ -736,9 +736,9 @@ func FieldTypeFromFint[T Int](
 		OneOf:       oneOf,
 	}
 	if isSigned[T]() {
-		f.TypeSFint = sizeOf[T]()
+		f.TypeFixedInt = sizeOf[T]()
 	} else {
-		f.TypeFint = sizeOf[T]()
+		f.TypeFixedUint = sizeOf[T]()
 	}
 	return f
 }
@@ -903,7 +903,7 @@ func (f *FieldType) wireType() (WireType, error) {
 		if f.Repeated {
 			return Len, nil
 		}
-		w, ok := f.TypeFint.FixedWireType()
+		w, ok := f.TypeFixedInt.FixedWireType()
 		if !ok {
 			return 0, ErrUnexpectedFieldSize
 		}
@@ -912,7 +912,7 @@ func (f *FieldType) wireType() (WireType, error) {
 		if f.Repeated {
 			return Len, nil
 		}
-		w, ok := f.TypeSFint.FixedWireType()
+		w, ok := f.TypeFixedUint.FixedWireType()
 		if !ok {
 			return 0, ErrUnexpectedFieldSize
 		}
@@ -929,8 +929,8 @@ func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 	unmarshal, ok := map[uint32]func(f *FieldType, r *Reader, specs []*Spec) (any, error){
 		6:  (*FieldType).unmarshalInt,
 		7:  (*FieldType).unmarshalUint,
-		8:  (*FieldType).unmarshalFint,
-		9:  (*FieldType).unmarshalSFint,
+		8:  (*FieldType).unmarshalFixedInt,
+		9:  (*FieldType).unmarshalFixedUint,
 		10: (*FieldType).unmarshalBool,
 		11: (*FieldType).unmarshalString,
 		12: (*FieldType).unmarshalBytes,
@@ -953,8 +953,8 @@ func (f *FieldType) marshal(w *Writer, value any, specs []*Spec) error {
 	marshal, ok := map[uint32]func(f *FieldType, w *Writer, value any, specs []*Spec) error{
 		6:  (*FieldType).marshalInt,
 		7:  (*FieldType).marshalUint,
-		8:  (*FieldType).marshalFint,
-		9:  (*FieldType).marshalSFint,
+		8:  (*FieldType).marshalFixedInt,
+		9:  (*FieldType).marshalFixedUint,
 		10: (*FieldType).marshalBool,
 		11: (*FieldType).marshalString,
 		12: (*FieldType).marshalBytes,
@@ -998,7 +998,7 @@ func (f *FieldType) unmarshalInt(r *Reader, _ []*Spec) (any, error) {
 }
 
 func (f *FieldType) marshalInt(w *Writer, value any, _ []*Spec) error {
-	return marshalPackedVarint(
+	return marshalPacked(
 		f,
 		w,
 		value,
@@ -1058,7 +1058,7 @@ func (f *FieldType) unmarshalUint(r *Reader, _ []*Spec) (any, error) {
 }
 
 func (f *FieldType) marshalUint(w *Writer, value any, _ []*Spec) error {
-	return marshalPackedVarint(
+	return marshalPacked(
 		f,
 		w,
 		value,
@@ -1085,56 +1085,12 @@ func (f *FieldType) marshalUint(w *Writer, value any, _ []*Spec) error {
 	)
 }
 
-func (f *FieldType) unmarshalFint(r *Reader, _ []*Spec) (any, error) {
-	return unmarshalPackedFixed(
-		f,
-		r,
-		func(r *Reader) (uint64, error) {
-			switch f.TypeFint {
-			case SizeEnum32:
-				var v uint32
-				err := ReadFint32(r, &v)
-				return uint64(v), err
-			case SizeEnum64:
-				var v uint64
-				err := ReadFint64(r, &v)
-				return v, err
-			default:
-				return 0, ErrUnexpectedFieldSize
-			}
-		},
-		f.TypeFint,
-	)
-}
-
-func (f *FieldType) marshalFint(w *Writer, value any, _ []*Spec) error {
-	return marshalPackedVarint(
-		f,
-		w,
-		value,
-		func(w *Writer, value uint64) error {
-			switch f.TypeFint {
-			case SizeEnum32:
-				if value > math.MaxUint32 {
-					return ErrOverflow
-				}
-				AppendFint32(w, uint32(value))
-			case SizeEnum64:
-				AppendFint64(w, value)
-			default:
-				return ErrUnexpectedFieldSize
-			}
-			return nil
-		},
-	)
-}
-
-func (f *FieldType) unmarshalSFint(r *Reader, _ []*Spec) (any, error) {
+func (f *FieldType) unmarshalFixedInt(r *Reader, _ []*Spec) (any, error) {
 	return unmarshalPackedFixed(
 		f,
 		r,
 		func(r *Reader) (int64, error) {
-			switch f.TypeSFint {
+			switch f.TypeFixedInt {
 			case SizeEnum32:
 				var v int32
 				err := ReadFint32(r, &v)
@@ -1147,22 +1103,66 @@ func (f *FieldType) unmarshalSFint(r *Reader, _ []*Spec) (any, error) {
 				return 0, ErrUnexpectedFieldSize
 			}
 		},
-		f.TypeSFint,
+		f.TypeFixedInt,
 	)
 }
 
-func (f *FieldType) marshalSFint(w *Writer, value any, _ []*Spec) error {
-	return marshalPackedVarint(
+func (f *FieldType) marshalFixedInt(w *Writer, value any, _ []*Spec) error {
+	return marshalPacked(
 		f,
 		w,
 		value,
 		func(w *Writer, value int64) error {
-			switch f.TypeSFint {
+			switch f.TypeFixedInt {
 			case SizeEnum32:
 				if value < math.MinInt32 || value > math.MaxInt32 {
 					return ErrOverflow
 				}
 				AppendFint32(w, int32(value))
+			case SizeEnum64:
+				AppendFint64(w, value)
+			default:
+				return ErrUnexpectedFieldSize
+			}
+			return nil
+		},
+	)
+}
+
+func (f *FieldType) unmarshalFixedUint(r *Reader, _ []*Spec) (any, error) {
+	return unmarshalPackedFixed(
+		f,
+		r,
+		func(r *Reader) (uint64, error) {
+			switch f.TypeFixedUint {
+			case SizeEnum32:
+				var v uint32
+				err := ReadFint32(r, &v)
+				return uint64(v), err
+			case SizeEnum64:
+				var v uint64
+				err := ReadFint64(r, &v)
+				return v, err
+			default:
+				return 0, ErrUnexpectedFieldSize
+			}
+		},
+		f.TypeFixedUint,
+	)
+}
+
+func (f *FieldType) marshalFixedUint(w *Writer, value any, _ []*Spec) error {
+	return marshalPacked(
+		f,
+		w,
+		value,
+		func(w *Writer, value uint64) error {
+			switch f.TypeFixedUint {
+			case SizeEnum32:
+				if value > math.MaxUint32 {
+					return ErrOverflow
+				}
+				AppendFint32(w, uint32(value))
 			case SizeEnum64:
 				AppendFint64(w, value)
 			default:
@@ -1187,7 +1187,7 @@ func (f *FieldType) unmarshalBool(r *Reader, _ []*Spec) (any, error) {
 }
 
 func (f *FieldType) marshalBool(w *Writer, value any, _ []*Spec) error {
-	return marshalPackedVarint(
+	return marshalPacked(
 		f,
 		w,
 		value,
@@ -1458,7 +1458,7 @@ func unmarshalPackedVarint[T comparable](
 	return values, nil
 }
 
-func marshalPackedVarint[T comparable](
+func marshalPacked[T comparable](
 	f *FieldType,
 	w *Writer,
 	value any,

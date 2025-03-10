@@ -276,8 +276,8 @@ const (
 	canoto__FieldType__OneOf__tag          = "\x2a" // canoto.Tag(5, canoto.Len)
 	canoto__FieldType__TypeInt__tag        = "\x30" // canoto.Tag(6, canoto.Varint)
 	canoto__FieldType__TypeUint__tag       = "\x38" // canoto.Tag(7, canoto.Varint)
-	canoto__FieldType__TypeFint__tag       = "\x40" // canoto.Tag(8, canoto.Varint)
-	canoto__FieldType__TypeSFint__tag      = "\x48" // canoto.Tag(9, canoto.Varint)
+	canoto__FieldType__TypeFixedInt__tag   = "\x40" // canoto.Tag(8, canoto.Varint)
+	canoto__FieldType__TypeFixedUint__tag  = "\x48" // canoto.Tag(9, canoto.Varint)
 	canoto__FieldType__TypeBool__tag       = "\x50" // canoto.Tag(10, canoto.Varint)
 	canoto__FieldType__TypeString__tag     = "\x58" // canoto.Tag(11, canoto.Varint)
 	canoto__FieldType__TypeBytes__tag      = "\x60" // canoto.Tag(12, canoto.Varint)
@@ -350,17 +350,17 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 				/*OneOf:         */ "Type",
 			),
 			FieldTypeFromUint(
-				/*type inference:*/ zero.TypeFint,
+				/*type inference:*/ zero.TypeFixedInt,
 				/*FieldNumber:   */ 8,
-				/*Name:          */ "TypeFint",
+				/*Name:          */ "TypeFixedInt",
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "Type",
 			),
 			FieldTypeFromUint(
-				/*type inference:*/ zero.TypeSFint,
+				/*type inference:*/ zero.TypeFixedUint,
 				/*FieldNumber:   */ 9,
-				/*Name:          */ "TypeSFint",
+				/*Name:          */ "TypeFixedUint",
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "Type",
@@ -542,10 +542,10 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 				return ErrDuplicateOneOf
 			}
 
-			if err := ReadUint(&r, &c.TypeFint); err != nil {
+			if err := ReadUint(&r, &c.TypeFixedInt); err != nil {
 				return err
 			}
-			if IsZero(c.TypeFint) {
+			if IsZero(c.TypeFixedInt) {
 				return ErrZeroValue
 			}
 		case 9:
@@ -556,10 +556,10 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 				return ErrDuplicateOneOf
 			}
 
-			if err := ReadUint(&r, &c.TypeSFint); err != nil {
+			if err := ReadUint(&r, &c.TypeFixedUint); err != nil {
 				return err
 			}
-			if IsZero(c.TypeSFint) {
+			if IsZero(c.TypeFixedUint) {
 				return ErrZeroValue
 			}
 		case 10:
@@ -695,13 +695,13 @@ func (c *FieldType) ValidCanoto() bool {
 		}
 		TypeOneOf = 7
 	}
-	if !IsZero(c.TypeFint) {
+	if !IsZero(c.TypeFixedInt) {
 		if TypeOneOf != 0 {
 			return false
 		}
 		TypeOneOf = 8
 	}
-	if !IsZero(c.TypeSFint) {
+	if !IsZero(c.TypeFixedUint) {
 		if TypeOneOf != 0 {
 			return false
 		}
@@ -791,12 +791,12 @@ func (c *FieldType) CalculateCanotoCache() {
 		size += len(canoto__FieldType__TypeUint__tag) + SizeUint(c.TypeUint)
 		TypeOneOf = 7
 	}
-	if !IsZero(c.TypeFint) {
-		size += len(canoto__FieldType__TypeFint__tag) + SizeUint(c.TypeFint)
+	if !IsZero(c.TypeFixedInt) {
+		size += len(canoto__FieldType__TypeFixedInt__tag) + SizeUint(c.TypeFixedInt)
 		TypeOneOf = 8
 	}
-	if !IsZero(c.TypeSFint) {
-		size += len(canoto__FieldType__TypeSFint__tag) + SizeUint(c.TypeSFint)
+	if !IsZero(c.TypeFixedUint) {
+		size += len(canoto__FieldType__TypeFixedUint__tag) + SizeUint(c.TypeFixedUint)
 		TypeOneOf = 9
 	}
 	if !IsZero(c.TypeBool) {
@@ -909,13 +909,13 @@ func (c *FieldType) MarshalCanotoInto(w Writer) Writer {
 		Append(&w, canoto__FieldType__TypeUint__tag)
 		AppendUint(&w, c.TypeUint)
 	}
-	if !IsZero(c.TypeFint) {
-		Append(&w, canoto__FieldType__TypeFint__tag)
-		AppendUint(&w, c.TypeFint)
+	if !IsZero(c.TypeFixedInt) {
+		Append(&w, canoto__FieldType__TypeFixedInt__tag)
+		AppendUint(&w, c.TypeFixedInt)
 	}
-	if !IsZero(c.TypeSFint) {
-		Append(&w, canoto__FieldType__TypeSFint__tag)
-		AppendUint(&w, c.TypeSFint)
+	if !IsZero(c.TypeFixedUint) {
+		Append(&w, canoto__FieldType__TypeFixedUint__tag)
+		AppendUint(&w, c.TypeFixedUint)
 	}
 	if !IsZero(c.TypeBool) {
 		Append(&w, canoto__FieldType__TypeBool__tag)
