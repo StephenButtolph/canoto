@@ -728,7 +728,7 @@ func FieldTypeFromField[T Field](
 		fieldType = reflect.TypeOf(field).Elem()
 	)
 	if index := slices.Index(types, fieldType); index >= 0 {
-		f.TypeRecursive = uint64(len(types) - index)
+		f.TypeRecursive = uint64(len(types) - index) //#nosec G115 // False positive
 	} else {
 		f.TypeMessage = field.CanotoSpec(types...)
 		// If this does not have a valid spec, it is treated as bytes.
@@ -1242,7 +1242,7 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		count = uint64(countMinus1 + 1)
+		count = uint64(countMinus1 + 1) //#nosec G115 // False positive
 	}
 
 	values := make([][]byte, count)
@@ -1398,7 +1398,7 @@ func unmarshalPackedVarint[T comparable](
 		if len(msgBytes) == 0 {
 			return nil, ErrZeroValue
 		}
-		count = uint64(CountInts(msgBytes))
+		count = uint64(CountInts(msgBytes)) //#nosec G115 // False positive
 	}
 	values := make([]T, count)
 	r = &Reader{
@@ -1546,7 +1546,7 @@ func unmarshalUnpacked[T any](
 		if err != nil {
 			return nil, err
 		}
-		count = uint64(countMinus1 + 1)
+		count = uint64(countMinus1 + 1) //#nosec G115 // False positive
 	}
 
 	values := make([]T, count)
