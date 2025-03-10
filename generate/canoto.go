@@ -416,33 +416,49 @@ func makeOneOfCache(m message) string {
 
 func makeSpec(m message) string {
 	return writeMessage(m, messageTemplate{
+		// 		ints: typeTemplate{
+		// 			repeated: `			{
+		// 				FieldNumber: ${fieldNumber},
+		// 				Name:        "${fieldName}",
+		// 				Repeated:    true,
+		// 				OneOf:       "${oneOf}",
+		// 				TypeBool:    true,
+		// 			},
+		// `,
+		// 			fixedRepeated: `			{
+		// 				FieldNumber: ${fieldNumber},
+		// 				Name:        "${fieldName}",
+		// 				FixedLength: uint64(len(zero.${fieldName})),
+		// 				Repeated:    true,
+		// 				OneOf:       "${oneOf}",
+		// 				TypeBool:    true,
+		// 			},
+		// `,
+		// 		},
 		ints: typeTemplate{
-			single: `			${selector}FieldTypeFrom${suffix}(
-				/*type inference:*/ zero.${fieldName},
-				/*FieldNumber:   */ ${fieldNumber},
-				/*Name:          */ "${fieldName}",
-				/*FixedLength:   */ 0,
-				/*Repeated:      */ false,
-				/*OneOf:         */ "${oneOf}",
-			),
+			single: `			{
+				FieldNumber: ${fieldNumber},
+				Name:        "${fieldName}",
+				OneOf:       "${oneOf}",
+				Type${suffix}:    ${selector}SizeOf(zero.${fieldName}),
+			},
 `,
-			repeated: `			${selector}FieldTypeFrom${suffix}(
-				/*type inference:*/ ${selector}MakeEntry(zero.${fieldName}),
-				/*FieldNumber:   */ ${fieldNumber},
-				/*Name:          */ "${fieldName}",
-				/*FixedLength:   */ 0,
-				/*Repeated:      */ true,
-				/*OneOf:         */ "${oneOf}",
-			),
+			repeated: `			{
+				FieldNumber: ${fieldNumber},
+				Name:        "${fieldName}",
+				Repeated:    true,
+				OneOf:       "${oneOf}",
+				Type${suffix}:    ${selector}SizeOf(${selector}MakeEntry(zero.${fieldName})),
+			},
 `,
-			fixedRepeated: `			${selector}FieldTypeFrom${suffix}(
-				/*type inference:*/ ${selector}MakeEntry(zero.${fieldName}[:]),
-				/*FieldNumber:   */ ${fieldNumber},
-				/*Name:          */ "${fieldName}",
-				/*FixedLength:   */ uint64(len(zero.${fieldName})),
-				/*Repeated:      */ true,
-				/*OneOf:         */ "${oneOf}",
-			),
+			fixedRepeated: `			{
+				FieldNumber: ${fieldNumber},
+				Name:        "${fieldName}",
+				FixedLength: uint64(len(zero.${fieldName})),
+				Repeated:    true,
+				OneOf:       "${oneOf}",
+				Type${suffix}:    ${selector}SizeOf(${selector}MakeEntry(zero.${fieldName}[:])),
+			},
 `,
 		},
 		fints: typeTemplate{

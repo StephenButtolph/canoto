@@ -681,47 +681,9 @@ func (a Any) MarshalJSON() ([]byte, error) {
 	return []byte(sb.String()), nil
 }
 
-// FieldTypeFromInt creates a FieldType from a signed integer.
-func FieldTypeFromInt[T Sint](
-	_ T,
-	fieldNumber uint32,
-	name string,
-	fixedLength uint64,
-	repeated bool,
-	oneOf string,
-) *FieldType {
-	return &FieldType{
-		FieldNumber: fieldNumber,
-		Name:        name,
-		FixedLength: fixedLength,
-		Repeated:    repeated,
-		OneOf:       oneOf,
-		TypeInt:     sizeOf[T](),
-	}
-}
-
-// FieldTypeFromUint creates a FieldType from an unsigned integer.
-func FieldTypeFromUint[T Uint](
-	_ T,
-	fieldNumber uint32,
-	name string,
-	fixedLength uint64,
-	repeated bool,
-	oneOf string,
-) *FieldType {
-	return &FieldType{
-		FieldNumber: fieldNumber,
-		Name:        name,
-		FixedLength: fixedLength,
-		Repeated:    repeated,
-		OneOf:       oneOf,
-		TypeUint:    sizeOf[T](),
-	}
-}
-
 // FieldTypeFromFint creates a FieldType from a fixed-length integer.
 func FieldTypeFromFint[T Int](
-	_ T,
+	field T,
 	fieldNumber uint32,
 	name string,
 	fixedLength uint64,
@@ -736,9 +698,9 @@ func FieldTypeFromFint[T Int](
 		OneOf:       oneOf,
 	}
 	if isSigned[T]() {
-		f.TypeFixedInt = sizeOf[T]()
+		f.TypeFixedInt = SizeOf(field)
 	} else {
-		f.TypeFixedUint = sizeOf[T]()
+		f.TypeFixedUint = SizeOf(field)
 	}
 	return f
 }
@@ -780,8 +742,8 @@ func isSigned[T Int]() bool {
 	return ^T(0) < T(0)
 }
 
-// sizeOf returns the size of the integer type.
-func sizeOf[T Int]() SizeEnum {
+// SizeOf returns the size of the integer type.
+func SizeOf[T Int](_ T) SizeEnum {
 	for i := range SizeEnum64 {
 		bitLen := 1 << (i + 3)
 		if T(1)<<bitLen == T(0) {

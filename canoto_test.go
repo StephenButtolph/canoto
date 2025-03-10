@@ -823,17 +823,17 @@ func TestIsSigned(t *testing.T) {
 func TestSizeOf(t *testing.T) {
 	require := require.New(t)
 
-	require.Equal(SizeEnum8, sizeOf[int8]())
-	require.Equal(SizeEnum8, sizeOf[uint8]())
+	require.Equal(SizeEnum8, SizeOf[int8](0))
+	require.Equal(SizeEnum8, SizeOf[uint8](0))
 
-	require.Equal(SizeEnum16, sizeOf[int16]())
-	require.Equal(SizeEnum16, sizeOf[uint16]())
+	require.Equal(SizeEnum16, SizeOf[int16](0))
+	require.Equal(SizeEnum16, SizeOf[uint16](0))
 
-	require.Equal(SizeEnum32, sizeOf[int32]())
-	require.Equal(SizeEnum32, sizeOf[uint32]())
+	require.Equal(SizeEnum32, SizeOf[int32](0))
+	require.Equal(SizeEnum32, SizeOf[uint32](0))
 
-	require.Equal(SizeEnum64, sizeOf[int64]())
-	require.Equal(SizeEnum64, sizeOf[uint64]())
+	require.Equal(SizeEnum64, SizeOf[int64](0))
+	require.Equal(SizeEnum64, SizeOf[uint64](0))
 }
 
 func TestIsBytesEmpty(t *testing.T) {
