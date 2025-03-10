@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	canotoInt        canotoType = "uint"
-	canotoSint       canotoType = "sint"   // signed int
+	canotoUint       canotoType = "uint"
+	canotoInt        canotoType = "int"    // signed int
 	canotoFint32     canotoType = "fint32" // fixed 32-bit int
 	canotoFint64     canotoType = "fint64" // fixed 64-bit int
 	canotoBool       canotoType = "bool"
@@ -20,8 +20,8 @@ const (
 	canotoPointer    canotoType = "pointer"
 	canotoField      canotoType = "field"
 
+	canotoRepeatedUint       = "repeated " + canotoUint
 	canotoRepeatedInt        = "repeated " + canotoInt
-	canotoRepeatedSint       = "repeated " + canotoSint
 	canotoRepeatedFint32     = "repeated " + canotoFint32
 	canotoRepeatedFint64     = "repeated " + canotoFint64
 	canotoRepeatedBool       = "repeated " + canotoBool
@@ -32,8 +32,8 @@ const (
 	canotoRepeatedPointer    = "repeated " + canotoPointer
 	canotoRepeatedField      = "repeated " + canotoField
 
+	canotoFixedRepeatedUint       = "fixed " + canotoRepeatedUint
 	canotoFixedRepeatedInt        = "fixed " + canotoRepeatedInt
-	canotoFixedRepeatedSint       = "fixed " + canotoRepeatedSint
 	canotoFixedRepeatedFint32     = "fixed " + canotoRepeatedFint32
 	canotoFixedRepeatedFint64     = "fixed " + canotoRepeatedFint64
 	canotoFixedRepeatedBool       = "fixed " + canotoRepeatedBool
@@ -47,8 +47,8 @@ const (
 
 var (
 	canotoTypes = []canotoType{
+		canotoUint,
 		canotoInt,
-		canotoSint,
 		canotoFint32,
 		canotoFint64,
 		canotoBool,
@@ -59,8 +59,8 @@ var (
 		canotoPointer,
 		canotoField,
 
+		canotoRepeatedUint,
 		canotoRepeatedInt,
-		canotoRepeatedSint,
 		canotoRepeatedFint32,
 		canotoRepeatedFint64,
 		canotoRepeatedBool,
@@ -71,8 +71,8 @@ var (
 		canotoRepeatedPointer,
 		canotoRepeatedField,
 
+		canotoFixedRepeatedUint,
 		canotoFixedRepeatedInt,
-		canotoFixedRepeatedSint,
 		canotoFixedRepeatedFint32,
 		canotoFixedRepeatedFint64,
 		canotoFixedRepeatedBool,
@@ -84,19 +84,19 @@ var (
 		canotoFixedRepeatedField,
 	}
 	canotoVarintTypes = []canotoType{
+		canotoUint,
 		canotoInt,
-		canotoSint,
 
+		canotoRepeatedUint,
 		canotoRepeatedInt,
-		canotoRepeatedSint,
 
+		canotoFixedRepeatedUint,
 		canotoFixedRepeatedInt,
-		canotoFixedRepeatedSint,
 	}
 	canotoRepeatedTypes = append(
 		[]canotoType{
+			canotoRepeatedUint,
 			canotoRepeatedInt,
-			canotoRepeatedSint,
 			canotoRepeatedFint32,
 			canotoRepeatedFint64,
 			canotoRepeatedBool,
@@ -110,8 +110,8 @@ var (
 		canotoFixedRepeatedTypes...,
 	)
 	canotoFixedRepeatedTypes = []canotoType{
+		canotoFixedRepeatedUint,
 		canotoFixedRepeatedInt,
-		canotoFixedRepeatedSint,
 		canotoFixedRepeatedFint32,
 		canotoFixedRepeatedFint64,
 		canotoFixedRepeatedBool,
@@ -123,30 +123,25 @@ var (
 		canotoFixedRepeatedField,
 	}
 
-	goIntToProtoInt = map[string]string{
-		"int8":   "int32",
-		"int16":  "int32",
-		"int32":  "int32",
-		"int64":  "int64",
-		"uint8":  "uint32",
-		"uint16": "uint32",
-		"uint32": "uint32",
-		"uint64": "uint64",
-		"byte":   "uint32",
-		"rune":   "int32",
-	}
-	goSintToProtoSint = map[string]string{
+	goIntToProto = map[string]string{
 		"int8":  "sint32",
 		"int16": "sint32",
 		"int32": "sint32",
 		"int64": "sint64",
 		"rune":  "sint32",
 	}
-	goFint32ToProtoSint = map[string]string{
+	goUintToProto = map[string]string{
+		"uint8":  "uint32",
+		"uint16": "uint32",
+		"uint32": "uint32",
+		"uint64": "uint64",
+		"byte":   "uint32",
+	}
+	goFint32ToProto = map[string]string{
 		"int32":  "sfixed32",
 		"uint32": "fixed32",
 	}
-	goFint64ToProtoSint = map[string]string{
+	goFint64ToProto = map[string]string{
 		"int64":  "sfixed64",
 		"uint64": "fixed64",
 	}
@@ -174,7 +169,7 @@ func (c canotoType) IsFixed() bool {
 
 func (c canotoType) WireType() canoto.WireType {
 	switch c {
-	case canotoInt, canotoSint, canotoBool:
+	case canotoUint, canotoInt, canotoBool:
 		return canoto.Varint
 	case canotoFint32:
 		return canoto.I32
@@ -188,13 +183,13 @@ func (c canotoType) WireType() canoto.WireType {
 func (c canotoType) ProtoType(goType string) string {
 	switch c {
 	case canotoInt, canotoRepeatedInt, canotoFixedRepeatedInt:
-		return goIntToProtoInt[goType]
-	case canotoSint, canotoRepeatedSint, canotoFixedRepeatedSint:
-		return goSintToProtoSint[goType]
+		return goIntToProto[goType]
+	case canotoUint, canotoRepeatedUint, canotoFixedRepeatedUint:
+		return goUintToProto[goType]
 	case canotoFint32, canotoRepeatedFint32, canotoFixedRepeatedFint32:
-		return goFint32ToProtoSint[goType]
+		return goFint32ToProto[goType]
 	case canotoFint64, canotoRepeatedFint64, canotoFixedRepeatedFint64:
-		return goFint64ToProtoSint[goType]
+		return goFint64ToProto[goType]
 	default:
 		return ""
 	}
@@ -202,7 +197,7 @@ func (c canotoType) ProtoType(goType string) string {
 
 func (c canotoType) ProtoTypePrefix() string {
 	switch c {
-	case canotoInt, canotoSint, canotoFint32, canotoFint64, canotoBool, canotoString, canotoBytes, canotoFixedBytes, canotoValue, canotoPointer, canotoField:
+	case canotoUint, canotoInt, canotoFint32, canotoFint64, canotoBool, canotoString, canotoBytes, canotoFixedBytes, canotoValue, canotoPointer, canotoField:
 		return ""
 	default:
 		return "repeated "
@@ -212,9 +207,9 @@ func (c canotoType) ProtoTypePrefix() string {
 func (c canotoType) ProtoTypeSuffix() string {
 	switch c {
 	case canotoInt, canotoRepeatedInt, canotoFixedRepeatedInt:
-		return "uint64"
-	case canotoSint, canotoRepeatedSint, canotoFixedRepeatedSint:
 		return "sint64"
+	case canotoUint, canotoRepeatedUint, canotoFixedRepeatedUint:
+		return "uint64"
 	case canotoFint32, canotoRepeatedFint32, canotoFixedRepeatedFint32:
 		return "fixed32"
 	case canotoFint64, canotoRepeatedFint64, canotoFixedRepeatedFint64:
@@ -231,9 +226,9 @@ func (c canotoType) ProtoTypeSuffix() string {
 func (c canotoType) Suffix() string {
 	switch c {
 	case canotoInt, canotoRepeatedInt, canotoFixedRepeatedInt:
+		return "Int"
+	case canotoUint, canotoRepeatedUint, canotoFixedRepeatedUint:
 		return "Uint"
-	case canotoSint, canotoRepeatedSint, canotoFixedRepeatedSint:
-		return "Sint"
 	case canotoFint32, canotoRepeatedFint32, canotoFixedRepeatedFint32:
 		return "Fint32"
 	case canotoFint64, canotoRepeatedFint64, canotoFixedRepeatedFint64:

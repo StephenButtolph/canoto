@@ -110,7 +110,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
 			),
-			FieldTypeFromSint(
+			FieldTypeFromInt(
 				/*type inference:*/ zero.Sint8,
 				/*FieldNumber:   */ 9,
 				/*Name:          */ "Sint8",
@@ -118,7 +118,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
 			),
-			FieldTypeFromSint(
+			FieldTypeFromInt(
 				/*type inference:*/ zero.Sint16,
 				/*FieldNumber:   */ 10,
 				/*Name:          */ "Sint16",
@@ -126,7 +126,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
 			),
-			FieldTypeFromSint(
+			FieldTypeFromInt(
 				/*type inference:*/ zero.Sint32,
 				/*FieldNumber:   */ 11,
 				/*Name:          */ "Sint32",
@@ -134,7 +134,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
 			),
-			FieldTypeFromSint(
+			FieldTypeFromInt(
 				/*type inference:*/ zero.Sint64,
 				/*FieldNumber:   */ 12,
 				/*Name:          */ "Sint64",
@@ -225,7 +225,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
 			),
-			FieldTypeFromSint(
+			FieldTypeFromInt(
 				/*type inference:*/ MakeEntry(zero.RepeatedSint8),
 				/*FieldNumber:   */ 29,
 				/*Name:          */ "RepeatedSint8",
@@ -233,7 +233,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
 			),
-			FieldTypeFromSint(
+			FieldTypeFromInt(
 				/*type inference:*/ MakeEntry(zero.RepeatedSint16),
 				/*FieldNumber:   */ 30,
 				/*Name:          */ "RepeatedSint16",
@@ -241,7 +241,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
 			),
-			FieldTypeFromSint(
+			FieldTypeFromInt(
 				/*type inference:*/ MakeEntry(zero.RepeatedSint32),
 				/*FieldNumber:   */ 31,
 				/*Name:          */ "RepeatedSint32",
@@ -249,7 +249,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
 			),
-			FieldTypeFromSint(
+			FieldTypeFromInt(
 				/*type inference:*/ MakeEntry(zero.RepeatedSint64),
 				/*FieldNumber:   */ 32,
 				/*Name:          */ "RepeatedSint64",
@@ -447,7 +447,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			if err := ReadSint(&r, &c.Sint8); err != nil {
+			if err := ReadInt(&r, &c.Sint8); err != nil {
 				return err
 			}
 			if IsZero(c.Sint8) {
@@ -458,7 +458,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			if err := ReadSint(&r, &c.Sint16); err != nil {
+			if err := ReadInt(&r, &c.Sint16); err != nil {
 				return err
 			}
 			if IsZero(c.Sint16) {
@@ -469,7 +469,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			if err := ReadSint(&r, &c.Sint32); err != nil {
+			if err := ReadInt(&r, &c.Sint32); err != nil {
 				return err
 			}
 			if IsZero(c.Sint32) {
@@ -480,7 +480,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			if err := ReadSint(&r, &c.Sint64); err != nil {
+			if err := ReadInt(&r, &c.Sint64); err != nil {
 				return err
 			}
 			if IsZero(c.Sint64) {
@@ -703,7 +703,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			r.B = msgBytes
 			c.RepeatedSint8 = MakeSlice(c.RepeatedSint8, CountInts(msgBytes))
 			for i := range c.RepeatedSint8 {
-				if err := ReadSint(&r, &c.RepeatedSint8[i]); err != nil {
+				if err := ReadInt(&r, &c.RepeatedSint8[i]); err != nil {
 					return err
 				}
 			}
@@ -734,7 +734,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			r.B = msgBytes
 			c.RepeatedSint16 = MakeSlice(c.RepeatedSint16, CountInts(msgBytes))
 			for i := range c.RepeatedSint16 {
-				if err := ReadSint(&r, &c.RepeatedSint16[i]); err != nil {
+				if err := ReadInt(&r, &c.RepeatedSint16[i]); err != nil {
 					return err
 				}
 			}
@@ -765,7 +765,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			r.B = msgBytes
 			c.RepeatedSint32 = MakeSlice(c.RepeatedSint32, CountInts(msgBytes))
 			for i := range c.RepeatedSint32 {
-				if err := ReadSint(&r, &c.RepeatedSint32[i]); err != nil {
+				if err := ReadInt(&r, &c.RepeatedSint32[i]); err != nil {
 					return err
 				}
 			}
@@ -796,7 +796,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			r.B = msgBytes
 			c.RepeatedSint64 = MakeSlice(c.RepeatedSint64, CountInts(msgBytes))
 			for i := range c.RepeatedSint64 {
-				if err := ReadSint(&r, &c.RepeatedSint64[i]); err != nil {
+				if err := ReadInt(&r, &c.RepeatedSint64[i]); err != nil {
 					return err
 				}
 			}
@@ -1263,16 +1263,16 @@ func (c *SpecFuzzer) CalculateCanotoCache() {
 		size += len(canoto__SpecFuzzer__Uint64__tag) + SizeUint(c.Uint64)
 	}
 	if !IsZero(c.Sint8) {
-		size += len(canoto__SpecFuzzer__Sint8__tag) + SizeSint(c.Sint8)
+		size += len(canoto__SpecFuzzer__Sint8__tag) + SizeInt(c.Sint8)
 	}
 	if !IsZero(c.Sint16) {
-		size += len(canoto__SpecFuzzer__Sint16__tag) + SizeSint(c.Sint16)
+		size += len(canoto__SpecFuzzer__Sint16__tag) + SizeInt(c.Sint16)
 	}
 	if !IsZero(c.Sint32) {
-		size += len(canoto__SpecFuzzer__Sint32__tag) + SizeSint(c.Sint32)
+		size += len(canoto__SpecFuzzer__Sint32__tag) + SizeInt(c.Sint32)
 	}
 	if !IsZero(c.Sint64) {
-		size += len(canoto__SpecFuzzer__Sint64__tag) + SizeSint(c.Sint64)
+		size += len(canoto__SpecFuzzer__Sint64__tag) + SizeInt(c.Sint64)
 	}
 	if !IsZero(c.Fixed32) {
 		size += len(canoto__SpecFuzzer__Fixed32__tag) + SizeFint32
@@ -1328,7 +1328,7 @@ func (c *SpecFuzzer) CalculateCanotoCache() {
 	if len(c.RepeatedSint8) != 0 {
 		var fieldSize int
 		for _, v := range c.RepeatedSint8 {
-			fieldSize += SizeSint(v)
+			fieldSize += SizeInt(v)
 		}
 		size += len(canoto__SpecFuzzer__RepeatedSint8__tag) + SizeUint(uint64(fieldSize)) + fieldSize
 		c.canotoData.RepeatedSint8Size.Store(int64(fieldSize))
@@ -1336,7 +1336,7 @@ func (c *SpecFuzzer) CalculateCanotoCache() {
 	if len(c.RepeatedSint16) != 0 {
 		var fieldSize int
 		for _, v := range c.RepeatedSint16 {
-			fieldSize += SizeSint(v)
+			fieldSize += SizeInt(v)
 		}
 		size += len(canoto__SpecFuzzer__RepeatedSint16__tag) + SizeUint(uint64(fieldSize)) + fieldSize
 		c.canotoData.RepeatedSint16Size.Store(int64(fieldSize))
@@ -1344,7 +1344,7 @@ func (c *SpecFuzzer) CalculateCanotoCache() {
 	if len(c.RepeatedSint32) != 0 {
 		var fieldSize int
 		for _, v := range c.RepeatedSint32 {
-			fieldSize += SizeSint(v)
+			fieldSize += SizeInt(v)
 		}
 		size += len(canoto__SpecFuzzer__RepeatedSint32__tag) + SizeUint(uint64(fieldSize)) + fieldSize
 		c.canotoData.RepeatedSint32Size.Store(int64(fieldSize))
@@ -1352,7 +1352,7 @@ func (c *SpecFuzzer) CalculateCanotoCache() {
 	if len(c.RepeatedSint64) != 0 {
 		var fieldSize int
 		for _, v := range c.RepeatedSint64 {
-			fieldSize += SizeSint(v)
+			fieldSize += SizeInt(v)
 		}
 		size += len(canoto__SpecFuzzer__RepeatedSint64__tag) + SizeUint(uint64(fieldSize)) + fieldSize
 		c.canotoData.RepeatedSint64Size.Store(int64(fieldSize))
@@ -1468,19 +1468,19 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 	}
 	if !IsZero(c.Sint8) {
 		Append(&w, canoto__SpecFuzzer__Sint8__tag)
-		AppendSint(&w, c.Sint8)
+		AppendInt(&w, c.Sint8)
 	}
 	if !IsZero(c.Sint16) {
 		Append(&w, canoto__SpecFuzzer__Sint16__tag)
-		AppendSint(&w, c.Sint16)
+		AppendInt(&w, c.Sint16)
 	}
 	if !IsZero(c.Sint32) {
 		Append(&w, canoto__SpecFuzzer__Sint32__tag)
-		AppendSint(&w, c.Sint32)
+		AppendInt(&w, c.Sint32)
 	}
 	if !IsZero(c.Sint64) {
 		Append(&w, canoto__SpecFuzzer__Sint64__tag)
-		AppendSint(&w, c.Sint64)
+		AppendInt(&w, c.Sint64)
 	}
 	if !IsZero(c.Fixed32) {
 		Append(&w, canoto__SpecFuzzer__Fixed32__tag)
@@ -1542,28 +1542,28 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 		Append(&w, canoto__SpecFuzzer__RepeatedSint8__tag)
 		AppendUint(&w, uint64(c.canotoData.RepeatedSint8Size.Load()))
 		for _, v := range c.RepeatedSint8 {
-			AppendSint(&w, v)
+			AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedSint16) != 0 {
 		Append(&w, canoto__SpecFuzzer__RepeatedSint16__tag)
 		AppendUint(&w, uint64(c.canotoData.RepeatedSint16Size.Load()))
 		for _, v := range c.RepeatedSint16 {
-			AppendSint(&w, v)
+			AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedSint32) != 0 {
 		Append(&w, canoto__SpecFuzzer__RepeatedSint32__tag)
 		AppendUint(&w, uint64(c.canotoData.RepeatedSint32Size.Load()))
 		for _, v := range c.RepeatedSint32 {
-			AppendSint(&w, v)
+			AppendInt(&w, v)
 		}
 	}
 	if len(c.RepeatedSint64) != 0 {
 		Append(&w, canoto__SpecFuzzer__RepeatedSint64__tag)
 		AppendUint(&w, uint64(c.canotoData.RepeatedSint64Size.Load()))
 		for _, v := range c.RepeatedSint64 {
-			AppendSint(&w, v)
+			AppendInt(&w, v)
 		}
 	}
 	if num := len(c.RepeatedFixed32); num != 0 {
@@ -1825,7 +1825,7 @@ func (*OneOf) CanotoSpec(types ...reflect.Type) *Spec {
 	s := &Spec{
 		Name: "OneOf",
 		Fields: []*FieldType{
-			FieldTypeFromSint(
+			FieldTypeFromInt(
 				/*type inference:*/ zero.A1,
 				/*FieldNumber:   */ 1,
 				/*Name:          */ "A1",
@@ -1833,7 +1833,7 @@ func (*OneOf) CanotoSpec(types ...reflect.Type) *Spec {
 				/*Repeated:      */ false,
 				/*OneOf:         */ "A",
 			),
-			FieldTypeFromSint(
+			FieldTypeFromInt(
 				/*type inference:*/ zero.B1,
 				/*FieldNumber:   */ 3,
 				/*Name:          */ "B1",
@@ -1841,7 +1841,7 @@ func (*OneOf) CanotoSpec(types ...reflect.Type) *Spec {
 				/*Repeated:      */ false,
 				/*OneOf:         */ "B",
 			),
-			FieldTypeFromSint(
+			FieldTypeFromInt(
 				/*type inference:*/ zero.B2,
 				/*FieldNumber:   */ 4,
 				/*Name:          */ "B2",
@@ -1849,7 +1849,7 @@ func (*OneOf) CanotoSpec(types ...reflect.Type) *Spec {
 				/*Repeated:      */ false,
 				/*OneOf:         */ "B",
 			),
-			FieldTypeFromSint(
+			FieldTypeFromInt(
 				/*type inference:*/ zero.C,
 				/*FieldNumber:   */ 5,
 				/*Name:          */ "C",
@@ -1857,7 +1857,7 @@ func (*OneOf) CanotoSpec(types ...reflect.Type) *Spec {
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
 			),
-			FieldTypeFromSint(
+			FieldTypeFromInt(
 				/*type inference:*/ zero.D,
 				/*FieldNumber:   */ 6,
 				/*Name:          */ "D",
@@ -1865,7 +1865,7 @@ func (*OneOf) CanotoSpec(types ...reflect.Type) *Spec {
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
 			),
-			FieldTypeFromSint(
+			FieldTypeFromInt(
 				/*type inference:*/ zero.A2,
 				/*FieldNumber:   */ 7,
 				/*Name:          */ "A2",
@@ -1924,7 +1924,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
 				return ErrDuplicateOneOf
 			}
 
-			if err := ReadSint(&r, &c.A1); err != nil {
+			if err := ReadInt(&r, &c.A1); err != nil {
 				return err
 			}
 			if IsZero(c.A1) {
@@ -1938,7 +1938,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
 				return ErrDuplicateOneOf
 			}
 
-			if err := ReadSint(&r, &c.B1); err != nil {
+			if err := ReadInt(&r, &c.B1); err != nil {
 				return err
 			}
 			if IsZero(c.B1) {
@@ -1952,7 +1952,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
 				return ErrDuplicateOneOf
 			}
 
-			if err := ReadSint(&r, &c.B2); err != nil {
+			if err := ReadInt(&r, &c.B2); err != nil {
 				return err
 			}
 			if IsZero(c.B2) {
@@ -1963,7 +1963,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			if err := ReadSint(&r, &c.C); err != nil {
+			if err := ReadInt(&r, &c.C); err != nil {
 				return err
 			}
 			if IsZero(c.C) {
@@ -1974,7 +1974,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			if err := ReadSint(&r, &c.D); err != nil {
+			if err := ReadInt(&r, &c.D); err != nil {
 				return err
 			}
 			if IsZero(c.D) {
@@ -1988,7 +1988,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
 				return ErrDuplicateOneOf
 			}
 
-			if err := ReadSint(&r, &c.A2); err != nil {
+			if err := ReadInt(&r, &c.A2); err != nil {
 				return err
 			}
 			if IsZero(c.A2) {
@@ -2057,25 +2057,25 @@ func (c *OneOf) CalculateCanotoCache() {
 		BOneOf uint32
 	)
 	if !IsZero(c.A1) {
-		size += len(canoto__OneOf__A1__tag) + SizeSint(c.A1)
+		size += len(canoto__OneOf__A1__tag) + SizeInt(c.A1)
 		AOneOf = 1
 	}
 	if !IsZero(c.B1) {
-		size += len(canoto__OneOf__B1__tag) + SizeSint(c.B1)
+		size += len(canoto__OneOf__B1__tag) + SizeInt(c.B1)
 		BOneOf = 3
 	}
 	if !IsZero(c.B2) {
-		size += len(canoto__OneOf__B2__tag) + SizeSint(c.B2)
+		size += len(canoto__OneOf__B2__tag) + SizeInt(c.B2)
 		BOneOf = 4
 	}
 	if !IsZero(c.C) {
-		size += len(canoto__OneOf__C__tag) + SizeSint(c.C)
+		size += len(canoto__OneOf__C__tag) + SizeInt(c.C)
 	}
 	if !IsZero(c.D) {
-		size += len(canoto__OneOf__D__tag) + SizeSint(c.D)
+		size += len(canoto__OneOf__D__tag) + SizeInt(c.D)
 	}
 	if !IsZero(c.A2) {
-		size += len(canoto__OneOf__A2__tag) + SizeSint(c.A2)
+		size += len(canoto__OneOf__A2__tag) + SizeInt(c.A2)
 		AOneOf = 7
 	}
 	c.canotoData.size.Store(int64(size))
@@ -2150,27 +2150,27 @@ func (c *OneOf) MarshalCanotoInto(w Writer) Writer {
 	}
 	if !IsZero(c.A1) {
 		Append(&w, canoto__OneOf__A1__tag)
-		AppendSint(&w, c.A1)
+		AppendInt(&w, c.A1)
 	}
 	if !IsZero(c.B1) {
 		Append(&w, canoto__OneOf__B1__tag)
-		AppendSint(&w, c.B1)
+		AppendInt(&w, c.B1)
 	}
 	if !IsZero(c.B2) {
 		Append(&w, canoto__OneOf__B2__tag)
-		AppendSint(&w, c.B2)
+		AppendInt(&w, c.B2)
 	}
 	if !IsZero(c.C) {
 		Append(&w, canoto__OneOf__C__tag)
-		AppendSint(&w, c.C)
+		AppendInt(&w, c.C)
 	}
 	if !IsZero(c.D) {
 		Append(&w, canoto__OneOf__D__tag)
-		AppendSint(&w, c.D)
+		AppendInt(&w, c.D)
 	}
 	if !IsZero(c.A2) {
 		Append(&w, canoto__OneOf__A2__tag)
-		AppendSint(&w, c.A2)
+		AppendInt(&w, c.A2)
 	}
 	return w
 }

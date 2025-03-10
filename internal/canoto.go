@@ -39,18 +39,18 @@ type LargestFieldNumber[T canoto.Uint] struct {
 }
 
 type OneOf struct {
-	A1 int32 `canoto:"sint,1,A"`
-	A2 int64 `canoto:"sint,7,A"`
-	B1 int32 `canoto:"sint,3,B"`
-	B2 int64 `canoto:"sint,4,B"`
-	C  int32 `canoto:"sint,5"`
-	D  int64 `canoto:"sint,6"`
+	A1 int32 `canoto:"int,1,A"`
+	A2 int64 `canoto:"int,7,A"`
+	B1 int32 `canoto:"int,3,B"`
+	B2 int64 `canoto:"int,4,B"`
+	C  int32 `canoto:"int,5"`
+	D  int64 `canoto:"int,6"`
 
 	canotoData canotoData_OneOf
 }
 
 type Node struct {
-	Value int32 `canoto:"sint,1"`
+	Value int32 `canoto:"int,1"`
 	Next  *Node `canoto:"pointer,2,OneOf"`
 
 	canotoData canotoData_Node
@@ -109,14 +109,14 @@ type Embedded struct {
 //
 //nolint:stylecheck // This is checking for name collisions.
 type A struct {
-	B__C int32 `canoto:"sint,1"`
+	B__C int32 `canoto:"int,1"`
 
 	canotoData canotoData_A
 }
 
 //nolint:stylecheck // This is checking for name collisions.
 type A__B struct {
-	C int32 `canoto:"sint,1"`
+	C int32 `canoto:"int,1"`
 
 	canotoData canotoData_A__B
 }
@@ -126,10 +126,10 @@ type Scalars struct {
 	Uint16                          uint16                         `canoto:"uint,6"`
 	Uint32                          uint32                         `canoto:"uint,7"`
 	Uint64                          uint64                         `canoto:"uint,8"`
-	Sint8                           int8                           `canoto:"sint,9"`
-	Sint16                          int16                          `canoto:"sint,10"`
-	Sint32                          int32                          `canoto:"sint,11"`
-	Sint64                          int64                          `canoto:"sint,12"`
+	Sint8                           int8                           `canoto:"int,9"`
+	Sint16                          int16                          `canoto:"int,10"`
+	Sint32                          int32                          `canoto:"int,11"`
+	Sint64                          int64                          `canoto:"int,12"`
 	Fixed32                         uint32                         `canoto:"fint32,13"`
 	Fixed64                         uint64                         `canoto:"fint64,14"`
 	Sfixed32                        int32                          `canoto:"fint32,15"`
@@ -142,10 +142,10 @@ type Scalars struct {
 	RepeatedUint16                  []uint16                       `canoto:"repeated uint,26"`
 	RepeatedUint32                  []uint32                       `canoto:"repeated uint,27"`
 	RepeatedUint64                  []uint64                       `canoto:"repeated uint,28"`
-	RepeatedSint8                   []int8                         `canoto:"repeated sint,29"`
-	RepeatedSint16                  []int16                        `canoto:"repeated sint,30"`
-	RepeatedSint32                  []int32                        `canoto:"repeated sint,31"`
-	RepeatedSint64                  []int64                        `canoto:"repeated sint,32"`
+	RepeatedSint8                   []int8                         `canoto:"repeated int,29"`
+	RepeatedSint16                  []int16                        `canoto:"repeated int,30"`
+	RepeatedSint32                  []int32                        `canoto:"repeated int,31"`
+	RepeatedSint64                  []int64                        `canoto:"repeated int,32"`
 	RepeatedFixed32                 []uint32                       `canoto:"repeated fint32,33"`
 	RepeatedFixed64                 []uint64                       `canoto:"repeated fint64,34"`
 	RepeatedSfixed32                []int32                        `canoto:"repeated fint32,35"`
@@ -158,10 +158,10 @@ type Scalars struct {
 	FixedRepeatedUint16             [3]uint16                      `canoto:"fixed repeated uint,46"`
 	FixedRepeatedUint32             [3]uint32                      `canoto:"fixed repeated uint,47"`
 	FixedRepeatedUint64             [3]uint64                      `canoto:"fixed repeated uint,48"`
-	FixedRepeatedSint8              [3]int8                        `canoto:"fixed repeated sint,49"`
-	FixedRepeatedSint16             [3]int16                       `canoto:"fixed repeated sint,50"`
-	FixedRepeatedSint32             [3]int32                       `canoto:"fixed repeated sint,51"`
-	FixedRepeatedSint64             [3]int64                       `canoto:"fixed repeated sint,52"`
+	FixedRepeatedSint8              [3]int8                        `canoto:"fixed repeated int,49"`
+	FixedRepeatedSint16             [3]int16                       `canoto:"fixed repeated int,50"`
+	FixedRepeatedSint32             [3]int32                       `canoto:"fixed repeated int,51"`
+	FixedRepeatedSint64             [3]int64                       `canoto:"fixed repeated int,52"`
 	FixedRepeatedFixed32            [3]uint32                      `canoto:"fixed repeated fint32,53"`
 	FixedRepeatedFixed64            [3]uint64                      `canoto:"fixed repeated fint64,54"`
 	FixedRepeatedSfixed32           [3]int32                       `canoto:"fixed repeated fint32,55"`

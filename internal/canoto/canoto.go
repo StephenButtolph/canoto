@@ -227,8 +227,8 @@ type (
 		FixedLength    uint64   `canoto:"uint,3"          json:"fixedLength,omitempty"`
 		Repeated       bool     `canoto:"bool,4"          json:"repeated,omitempty"`
 		OneOf          string   `canoto:"string,5"        json:"oneOf,omitempty"`
-		TypeUint       SizeEnum `canoto:"uint,6,Type"     json:"typeUint,omitempty"`       // can be any of 8, 16, 32, or 64.
-		TypeSint       SizeEnum `canoto:"uint,7,Type"     json:"typeSint,omitempty"`       // can be any of 8, 16, 32, or 64.
+		TypeInt        SizeEnum `canoto:"uint,6,Type"     json:"typeInt,omitempty"`        // can be any of 8, 16, 32, or 64.
+		TypeUint       SizeEnum `canoto:"uint,7,Type"     json:"typeUint,omitempty"`       // can be any of 8, 16, 32, or 64.
 		TypeFint       SizeEnum `canoto:"uint,8,Type"     json:"typeFint,omitempty"`       // can be either 32 or 64.
 		TypeSFint      SizeEnum `canoto:"uint,9,Type"     json:"typeSFint,omitempty"`      // can be either 32 or 64.
 		TypeBool       bool     `canoto:"bool,10,Type"    json:"typeBool,omitempty"`       // can only be true.
@@ -397,8 +397,8 @@ func AppendUint[T Uint](w *Writer, v T) {
 	w.B = binary.AppendUvarint(w.B, uint64(v))
 }
 
-// SizeSint calculates the size of an integer when zigzag encoded as a varint.
-func SizeSint[T Sint](v T) int {
+// SizeInt calculates the size of an integer when zigzag encoded as a varint.
+func SizeInt[T Sint](v T) int {
 	if v == 0 {
 		return 1
 	}
@@ -412,8 +412,8 @@ func SizeSint[T Sint](v T) int {
 	return (bits.Len64(uv) + 6) / 7
 }
 
-// ReadSint reads a zigzag encoded integer from the reader.
-func ReadSint[T Sint](r *Reader, v *T) error {
+// ReadInt reads a zigzag encoded integer from the reader.
+func ReadInt[T Sint](r *Reader, v *T) error {
 	var largeVal uint64
 	if err := ReadUint(r, &largeVal); err != nil {
 		return err
@@ -435,8 +435,8 @@ func ReadSint[T Sint](r *Reader, v *T) error {
 	return nil
 }
 
-// AppendSint writes an integer to the writer as a zigzag encoded varint.
-func AppendSint[T Sint](w *Writer, v T) {
+// AppendInt writes an integer to the writer as a zigzag encoded varint.
+func AppendInt[T Sint](w *Writer, v T) {
 	if v >= 0 {
 		w.B = binary.AppendUvarint(w.B, uint64(v)<<1)
 	} else {
@@ -684,6 +684,25 @@ func (a Any) MarshalJSON() ([]byte, error) {
 	return []byte(sb.String()), nil
 }
 
+// FieldTypeFromInt creates a FieldType from a signed integer.
+func FieldTypeFromInt[T Sint](
+	_ T,
+	fieldNumber uint32,
+	name string,
+	fixedLength uint64,
+	repeated bool,
+	oneOf string,
+) *FieldType {
+	return &FieldType{
+		FieldNumber: fieldNumber,
+		Name:        name,
+		FixedLength: fixedLength,
+		Repeated:    repeated,
+		OneOf:       oneOf,
+		TypeInt:     sizeOf[T](),
+	}
+}
+
 // FieldTypeFromUint creates a FieldType from an unsigned integer.
 func FieldTypeFromUint[T Uint](
 	_ T,
@@ -700,25 +719,6 @@ func FieldTypeFromUint[T Uint](
 		Repeated:    repeated,
 		OneOf:       oneOf,
 		TypeUint:    sizeOf[T](),
-	}
-}
-
-// FieldTypeFromSint creates a FieldType from a signed integer.
-func FieldTypeFromSint[T Sint](
-	_ T,
-	fieldNumber uint32,
-	name string,
-	fixedLength uint64,
-	repeated bool,
-	oneOf string,
-) *FieldType {
-	return &FieldType{
-		FieldNumber: fieldNumber,
-		Name:        name,
-		FixedLength: fixedLength,
-		Repeated:    repeated,
-		OneOf:       oneOf,
-		TypeSint:    sizeOf[T](),
 	}
 }
 
@@ -930,8 +930,8 @@ func (f *FieldType) wireType() (WireType, error) {
 func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 	whichOneOf := f.CachedWhichOneOfType()
 	unmarshal, ok := map[uint32]func(f *FieldType, r *Reader, specs []*Spec) (any, error){
-		6:  (*FieldType).unmarshalUint,
-		7:  (*FieldType).unmarshalSint,
+		6:  (*FieldType).unmarshalInt,
+		7:  (*FieldType).unmarshalUint,
 		8:  (*FieldType).unmarshalFint,
 		9:  (*FieldType).unmarshalSFint,
 		10: (*FieldType).unmarshalBool,
@@ -954,8 +954,8 @@ func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 func (f *FieldType) marshal(w *Writer, value any, specs []*Spec) error {
 	whichOneOf := f.CachedWhichOneOfType()
 	marshal, ok := map[uint32]func(f *FieldType, w *Writer, value any, specs []*Spec) error{
-		6:  (*FieldType).marshalUint,
-		7:  (*FieldType).marshalSint,
+		6:  (*FieldType).marshalInt,
+		7:  (*FieldType).marshalUint,
 		8:  (*FieldType).marshalFint,
 		9:  (*FieldType).marshalSFint,
 		10: (*FieldType).marshalBool,
@@ -969,6 +969,66 @@ func (f *FieldType) marshal(w *Writer, value any, specs []*Spec) error {
 		return ErrUnknownFieldType
 	}
 	return marshal(f, w, value, specs)
+}
+
+func (f *FieldType) unmarshalInt(r *Reader, _ []*Spec) (any, error) {
+	return unmarshalPackedVarint(
+		f,
+		r,
+		func(r *Reader) (int64, error) {
+			switch f.TypeInt {
+			case SizeEnum8:
+				var v int8
+				err := ReadInt(r, &v)
+				return int64(v), err
+			case SizeEnum16:
+				var v int16
+				err := ReadInt(r, &v)
+				return int64(v), err
+			case SizeEnum32:
+				var v int32
+				err := ReadInt(r, &v)
+				return int64(v), err
+			case SizeEnum64:
+				var v int64
+				err := ReadInt(r, &v)
+				return v, err
+			default:
+				return 0, ErrUnexpectedFieldSize
+			}
+		},
+	)
+}
+
+func (f *FieldType) marshalInt(w *Writer, value any, _ []*Spec) error {
+	return marshalPackedVarint(
+		f,
+		w,
+		value,
+		func(w *Writer, value int64) error {
+			var (
+				minimum int64
+				maximum int64
+			)
+			switch f.TypeInt {
+			case SizeEnum8:
+				minimum, maximum = math.MinInt8, math.MaxInt8
+			case SizeEnum16:
+				minimum, maximum = math.MinInt16, math.MaxInt16
+			case SizeEnum32:
+				minimum, maximum = math.MinInt32, math.MaxInt32
+			case SizeEnum64:
+				minimum, maximum = math.MinInt64, math.MaxInt64
+			default:
+				return ErrUnexpectedFieldSize
+			}
+			if value < minimum || value > maximum {
+				return ErrOverflow
+			}
+			AppendInt(w, value)
+			return nil
+		},
+	)
 }
 
 func (f *FieldType) unmarshalUint(r *Reader, _ []*Spec) (any, error) {
@@ -1023,66 +1083,6 @@ func (f *FieldType) marshalUint(w *Writer, value any, _ []*Spec) error {
 				return ErrOverflow
 			}
 			AppendUint(w, value)
-			return nil
-		},
-	)
-}
-
-func (f *FieldType) unmarshalSint(r *Reader, _ []*Spec) (any, error) {
-	return unmarshalPackedVarint(
-		f,
-		r,
-		func(r *Reader) (int64, error) {
-			switch f.TypeSint {
-			case SizeEnum8:
-				var v int8
-				err := ReadSint(r, &v)
-				return int64(v), err
-			case SizeEnum16:
-				var v int16
-				err := ReadSint(r, &v)
-				return int64(v), err
-			case SizeEnum32:
-				var v int32
-				err := ReadSint(r, &v)
-				return int64(v), err
-			case SizeEnum64:
-				var v int64
-				err := ReadSint(r, &v)
-				return v, err
-			default:
-				return 0, ErrUnexpectedFieldSize
-			}
-		},
-	)
-}
-
-func (f *FieldType) marshalSint(w *Writer, value any, _ []*Spec) error {
-	return marshalPackedVarint(
-		f,
-		w,
-		value,
-		func(w *Writer, value int64) error {
-			var (
-				minimum int64
-				maximum int64
-			)
-			switch f.TypeSint {
-			case SizeEnum8:
-				minimum, maximum = math.MinInt8, math.MaxInt8
-			case SizeEnum16:
-				minimum, maximum = math.MinInt16, math.MaxInt16
-			case SizeEnum32:
-				minimum, maximum = math.MinInt32, math.MaxInt32
-			case SizeEnum64:
-				minimum, maximum = math.MinInt64, math.MaxInt64
-			default:
-				return ErrUnexpectedFieldSize
-			}
-			if value < minimum || value > maximum {
-				return ErrOverflow
-			}
-			AppendSint(w, value)
 			return nil
 		},
 	)

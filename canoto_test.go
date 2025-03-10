@@ -290,9 +290,9 @@ func FuzzSizeSint_int64(f *testing.F) { f.Fuzz(testSizeSint[int64]) }
 
 func testSizeSint[T Sint](t *testing.T, v T) {
 	w := &Writer{}
-	AppendSint(w, v)
+	AppendInt(w, v)
 
-	size := SizeSint(v)
+	size := SizeInt(v)
 	require.Len(t, w.B, size)
 }
 
@@ -319,7 +319,7 @@ func TestReadSint_int32(t *testing.T) {
 
 			r := &Reader{B: test.Bytes(t)}
 			var got int32
-			require.NoError(ReadSint(r, &got))
+			require.NoError(ReadInt(r, &got))
 			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
@@ -354,7 +354,7 @@ func TestReadSint_int32(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			err := ReadSint(r, new(int32))
+			err := ReadInt(r, new(int32))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
@@ -383,7 +383,7 @@ func TestReadSint_int64(t *testing.T) {
 
 			r := &Reader{B: test.Bytes(t)}
 			var got int64
-			require.NoError(ReadSint(r, &got))
+			require.NoError(ReadInt(r, &got))
 			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
@@ -417,7 +417,7 @@ func TestReadSint_int64(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			err := ReadSint(r, new(int64))
+			err := ReadInt(r, new(int64))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
@@ -432,11 +432,11 @@ func testAppendSint[T Sint](t *testing.T, v T) {
 	require := require.New(t)
 
 	w := &Writer{}
-	AppendSint(w, v)
+	AppendInt(w, v)
 
 	r := &Reader{B: w.B}
 	var got T
-	require.NoError(ReadSint(r, &got))
+	require.NoError(ReadInt(r, &got))
 	require.Equal(v, got)
 	require.Empty(r.B)
 }
@@ -727,7 +727,7 @@ func TestReadString(t *testing.T) {
 	invalidTests := []invalidTest{
 		{"", io.ErrUnexpectedEOF},
 		{"870074657374696e67", ErrPaddedZeroes},
-		{"ffffffffffffffffff01", ErrInvalidLength},
+		{"ffffffffffffffffff01", io.ErrUnexpectedEOF},
 		{"01", io.ErrUnexpectedEOF},
 		{"01C2", ErrStringNotUTF8},
 	}
@@ -760,7 +760,7 @@ func TestReadBytes(t *testing.T) {
 	invalidTests := []invalidTest{
 		{"", io.ErrUnexpectedEOF},
 		{"870074657374696e67", ErrPaddedZeroes},
-		{"ffffffffffffffffff01", ErrInvalidLength},
+		{"ffffffffffffffffff01", io.ErrUnexpectedEOF},
 		{"01", io.ErrUnexpectedEOF},
 	}
 	for _, test := range invalidTests {
@@ -851,10 +851,10 @@ type SpecFuzzer struct {
 	Uint16                     uint16                       `canoto:"uint,6"             json:"Uint16,omitempty"`
 	Uint32                     uint32                       `canoto:"uint,7"             json:"Uint32,omitempty"`
 	Uint64                     uint64                       `canoto:"uint,8"             json:"Uint64,omitempty"`
-	Sint8                      int8                         `canoto:"sint,9"             json:"Sint8,omitempty"`
-	Sint16                     int16                        `canoto:"sint,10"            json:"Sint16,omitempty"`
-	Sint32                     int32                        `canoto:"sint,11"            json:"Sint32,omitempty"`
-	Sint64                     int64                        `canoto:"sint,12"            json:"Sint64,omitempty"`
+	Sint8                      int8                         `canoto:"int,9"              json:"Sint8,omitempty"`
+	Sint16                     int16                        `canoto:"int,10"             json:"Sint16,omitempty"`
+	Sint32                     int32                        `canoto:"int,11"             json:"Sint32,omitempty"`
+	Sint64                     int64                        `canoto:"int,12"             json:"Sint64,omitempty"`
 	Fixed32                    uint32                       `canoto:"fint32,13"          json:"Fixed32,omitempty"`
 	Fixed64                    uint64                       `canoto:"fint64,14"          json:"Fixed64,omitempty"`
 	Sfixed32                   int32                        `canoto:"fint32,15"          json:"Sfixed32,omitempty"`
@@ -866,10 +866,10 @@ type SpecFuzzer struct {
 	RepeatedUint16             []uint16                     `canoto:"repeated uint,26"   json:"RepeatedUint16,omitempty"`
 	RepeatedUint32             []uint32                     `canoto:"repeated uint,27"   json:"RepeatedUint32,omitempty"`
 	RepeatedUint64             []uint64                     `canoto:"repeated uint,28"   json:"RepeatedUint64,omitempty"`
-	RepeatedSint8              []int8                       `canoto:"repeated sint,29"   json:"RepeatedSint8,omitempty"`
-	RepeatedSint16             []int16                      `canoto:"repeated sint,30"   json:"RepeatedSint16,omitempty"`
-	RepeatedSint32             []int32                      `canoto:"repeated sint,31"   json:"RepeatedSint32,omitempty"`
-	RepeatedSint64             []int64                      `canoto:"repeated sint,32"   json:"RepeatedSint64,omitempty"`
+	RepeatedSint8              []int8                       `canoto:"repeated int,29"    json:"RepeatedSint8,omitempty"`
+	RepeatedSint16             []int16                      `canoto:"repeated int,30"    json:"RepeatedSint16,omitempty"`
+	RepeatedSint32             []int32                      `canoto:"repeated int,31"    json:"RepeatedSint32,omitempty"`
+	RepeatedSint64             []int64                      `canoto:"repeated int,32"    json:"RepeatedSint64,omitempty"`
 	RepeatedFixed32            []uint32                     `canoto:"repeated fint32,33" json:"RepeatedFixed32,omitempty"`
 	RepeatedFixed64            []uint64                     `canoto:"repeated fint64,34" json:"RepeatedFixed64,omitempty"`
 	RepeatedSfixed32           []int32                      `canoto:"repeated fint32,35" json:"RepeatedSfixed32,omitempty"`
@@ -893,12 +893,12 @@ type LargestFieldNumber[T Uint] struct {
 }
 
 type OneOf struct {
-	A1 int32 `canoto:"sint,1,A" json:"A1,omitempty"`
-	B1 int32 `canoto:"sint,3,B" json:"B1,omitempty"`
-	B2 int64 `canoto:"sint,4,B" json:"B2,omitempty"`
-	C  int32 `canoto:"sint,5"   json:"C,omitempty"`
-	D  int64 `canoto:"sint,6"   json:"D,omitempty"`
-	A2 int64 `canoto:"sint,7,A" json:"A2,omitempty"`
+	A1 int32 `canoto:"int,1,A" json:"A1,omitempty"`
+	B1 int32 `canoto:"int,3,B" json:"B1,omitempty"`
+	B2 int64 `canoto:"int,4,B" json:"B2,omitempty"`
+	C  int32 `canoto:"int,5"   json:"C,omitempty"`
+	D  int64 `canoto:"int,6"   json:"D,omitempty"`
+	A2 int64 `canoto:"int,7,A" json:"A2,omitempty"`
 
 	canotoData canotoData_OneOf
 }
