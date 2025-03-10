@@ -683,44 +683,6 @@ func (a Any) MarshalJSON() ([]byte, error) {
 	return []byte(sb.String()), nil
 }
 
-// FieldTypeFromInt creates a FieldType from a signed integer.
-func FieldTypeFromInt[T Sint](
-	field T,
-	fieldNumber uint32,
-	name string,
-	fixedLength uint64,
-	repeated bool,
-	oneOf string,
-) *FieldType {
-	return &FieldType{
-		FieldNumber: fieldNumber,
-		Name:        name,
-		FixedLength: fixedLength,
-		Repeated:    repeated,
-		OneOf:       oneOf,
-		TypeInt:     SizeOf(field),
-	}
-}
-
-// FieldTypeFromUint creates a FieldType from an unsigned integer.
-func FieldTypeFromUint[T Uint](
-	field T,
-	fieldNumber uint32,
-	name string,
-	fixedLength uint64,
-	repeated bool,
-	oneOf string,
-) *FieldType {
-	return &FieldType{
-		FieldNumber: fieldNumber,
-		Name:        name,
-		FixedLength: fixedLength,
-		Repeated:    repeated,
-		OneOf:       oneOf,
-		TypeUint:    SizeOf(field),
-	}
-}
-
 // FieldTypeFromFint creates a FieldType from a fixed-length integer.
 func FieldTypeFromFint[T Int](
 	field T,
