@@ -12,7 +12,7 @@ var (
 )
 
 type justAnInt struct {
-	Int8 uint8 `canoto:"uint,1"`
+	Int8 int8 `canoto:"int,1"`
 
 	canotoData canotoData_justAnInt `canoto:"noatomic"`
 }

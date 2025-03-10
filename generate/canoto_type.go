@@ -8,8 +8,8 @@ import (
 )
 
 const (
+	canotoInt        canotoType = "int" // signed int
 	canotoUint       canotoType = "uint"
-	canotoInt        canotoType = "int"    // signed int
 	canotoFint32     canotoType = "fint32" // fixed 32-bit int
 	canotoFint64     canotoType = "fint64" // fixed 64-bit int
 	canotoBool       canotoType = "bool"
@@ -20,8 +20,8 @@ const (
 	canotoPointer    canotoType = "pointer"
 	canotoField      canotoType = "field"
 
-	canotoRepeatedUint       = "repeated " + canotoUint
 	canotoRepeatedInt        = "repeated " + canotoInt
+	canotoRepeatedUint       = "repeated " + canotoUint
 	canotoRepeatedFint32     = "repeated " + canotoFint32
 	canotoRepeatedFint64     = "repeated " + canotoFint64
 	canotoRepeatedBool       = "repeated " + canotoBool
@@ -32,8 +32,8 @@ const (
 	canotoRepeatedPointer    = "repeated " + canotoPointer
 	canotoRepeatedField      = "repeated " + canotoField
 
-	canotoFixedRepeatedUint       = "fixed " + canotoRepeatedUint
 	canotoFixedRepeatedInt        = "fixed " + canotoRepeatedInt
+	canotoFixedRepeatedUint       = "fixed " + canotoRepeatedUint
 	canotoFixedRepeatedFint32     = "fixed " + canotoRepeatedFint32
 	canotoFixedRepeatedFint64     = "fixed " + canotoRepeatedFint64
 	canotoFixedRepeatedBool       = "fixed " + canotoRepeatedBool
@@ -47,8 +47,8 @@ const (
 
 var (
 	canotoTypes = []canotoType{
-		canotoUint,
 		canotoInt,
+		canotoUint,
 		canotoFint32,
 		canotoFint64,
 		canotoBool,
@@ -59,8 +59,8 @@ var (
 		canotoPointer,
 		canotoField,
 
-		canotoRepeatedUint,
 		canotoRepeatedInt,
+		canotoRepeatedUint,
 		canotoRepeatedFint32,
 		canotoRepeatedFint64,
 		canotoRepeatedBool,
@@ -71,8 +71,8 @@ var (
 		canotoRepeatedPointer,
 		canotoRepeatedField,
 
-		canotoFixedRepeatedUint,
 		canotoFixedRepeatedInt,
+		canotoFixedRepeatedUint,
 		canotoFixedRepeatedFint32,
 		canotoFixedRepeatedFint64,
 		canotoFixedRepeatedBool,
@@ -84,19 +84,19 @@ var (
 		canotoFixedRepeatedField,
 	}
 	canotoVarintTypes = []canotoType{
-		canotoUint,
 		canotoInt,
+		canotoUint,
 
-		canotoRepeatedUint,
 		canotoRepeatedInt,
+		canotoRepeatedUint,
 
-		canotoFixedRepeatedUint,
 		canotoFixedRepeatedInt,
+		canotoFixedRepeatedUint,
 	}
 	canotoRepeatedTypes = append(
 		[]canotoType{
-			canotoRepeatedUint,
 			canotoRepeatedInt,
+			canotoRepeatedUint,
 			canotoRepeatedFint32,
 			canotoRepeatedFint64,
 			canotoRepeatedBool,
@@ -110,8 +110,8 @@ var (
 		canotoFixedRepeatedTypes...,
 	)
 	canotoFixedRepeatedTypes = []canotoType{
-		canotoFixedRepeatedUint,
 		canotoFixedRepeatedInt,
+		canotoFixedRepeatedUint,
 		canotoFixedRepeatedFint32,
 		canotoFixedRepeatedFint64,
 		canotoFixedRepeatedBool,
@@ -169,7 +169,7 @@ func (c canotoType) IsFixed() bool {
 
 func (c canotoType) WireType() canoto.WireType {
 	switch c {
-	case canotoUint, canotoInt, canotoBool:
+	case canotoInt, canotoUint, canotoBool:
 		return canoto.Varint
 	case canotoFint32:
 		return canoto.I32
@@ -197,7 +197,7 @@ func (c canotoType) ProtoType(goType string) string {
 
 func (c canotoType) ProtoTypePrefix() string {
 	switch c {
-	case canotoUint, canotoInt, canotoFint32, canotoFint64, canotoBool, canotoString, canotoBytes, canotoFixedBytes, canotoValue, canotoPointer, canotoField:
+	case canotoInt, canotoUint, canotoFint32, canotoFint64, canotoBool, canotoString, canotoBytes, canotoFixedBytes, canotoValue, canotoPointer, canotoField:
 		return ""
 	default:
 		return "repeated "
