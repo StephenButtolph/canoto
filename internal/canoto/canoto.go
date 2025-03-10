@@ -227,17 +227,16 @@ type (
 		FixedLength    uint64   `canoto:"int,3"           json:"fixedLength,omitempty"`
 		Repeated       bool     `canoto:"bool,4"          json:"repeated,omitempty"`
 		OneOf          string   `canoto:"string,5"        json:"oneOf,omitempty"`
-		TypeInt        SizeEnum `canoto:"int,6,Type"      json:"typeInt,omitempty"`        // can be any of 8, 16, 32, or 64.
-		TypeUint       SizeEnum `canoto:"int,7,Type"      json:"typeUint,omitempty"`       // can be any of 8, 16, 32, or 64.
-		TypeSint       SizeEnum `canoto:"int,8,Type"      json:"typeSint,omitempty"`       // can be any of 8, 16, 32, or 64.
-		TypeFint       SizeEnum `canoto:"int,9,Type"      json:"typeFint,omitempty"`       // can be either 32 or 64.
-		TypeSFint      SizeEnum `canoto:"int,10,Type"     json:"typeSFint,omitempty"`      // can be either 32 or 64.
-		TypeBool       bool     `canoto:"bool,11,Type"    json:"typeBool,omitempty"`       // can only be true.
-		TypeString     bool     `canoto:"bool,12,Type"    json:"typeString,omitempty"`     // can only be true.
-		TypeBytes      bool     `canoto:"bool,13,Type"    json:"typeBytes,omitempty"`      // can only be true.
-		TypeFixedBytes uint64   `canoto:"int,14,Type"     json:"typeFixedBytes,omitempty"` // length of the fixed bytes.
-		TypeRecursive  uint64   `canoto:"int,15,Type"     json:"typeRecursive,omitempty"`  // depth of the recursion.
-		TypeMessage    *Spec    `canoto:"pointer,16,Type" json:"typeMessage,omitempty"`
+		TypeUint       SizeEnum `canoto:"int,6,Type"      json:"typeUint,omitempty"`       // can be any of 8, 16, 32, or 64.
+		TypeSint       SizeEnum `canoto:"int,7,Type"      json:"typeSint,omitempty"`       // can be any of 8, 16, 32, or 64.
+		TypeFint       SizeEnum `canoto:"int,8,Type"      json:"typeFint,omitempty"`       // can be either 32 or 64.
+		TypeSFint      SizeEnum `canoto:"int,9,Type"     json:"typeSFint,omitempty"`       // can be either 32 or 64.
+		TypeBool       bool     `canoto:"bool,10,Type"    json:"typeBool,omitempty"`       // can only be true.
+		TypeString     bool     `canoto:"bool,11,Type"    json:"typeString,omitempty"`     // can only be true.
+		TypeBytes      bool     `canoto:"bool,12,Type"    json:"typeBytes,omitempty"`      // can only be true.
+		TypeFixedBytes uint64   `canoto:"int,13,Type"     json:"typeFixedBytes,omitempty"` // length of the fixed bytes.
+		TypeRecursive  uint64   `canoto:"int,14,Type"     json:"typeRecursive,omitempty"`  // depth of the recursion.
+		TypeMessage    *Spec    `canoto:"pointer,15,Type" json:"typeMessage,omitempty"`
 
 		canotoData canotoData_FieldType
 	}
@@ -353,7 +352,7 @@ func ReadTag(r *Reader) (uint32, WireType, error) {
 }
 
 // SizeInt calculates the size of an integer when encoded as a varint.
-func SizeInt[T Int](v T) int {
+func SizeInt[T Uint](v T) int {
 	if v == 0 {
 		return 1
 	}
@@ -372,7 +371,7 @@ func CountInts(bytes []byte) int {
 }
 
 // ReadInt reads a varint encoded integer from the reader.
-func ReadInt[T Int](r *Reader, v *T) error {
+func ReadInt[T Uint](r *Reader, v *T) error {
 	val, bytesRead := binary.Uvarint(r.B)
 	switch {
 	case bytesRead == 0:
@@ -394,7 +393,7 @@ func ReadInt[T Int](r *Reader, v *T) error {
 }
 
 // AppendInt writes an integer to the writer as a varint.
-func AppendInt[T Int](w *Writer, v T) {
+func AppendInt[T Uint](w *Writer, v T) {
 	w.B = binary.AppendUvarint(w.B, uint64(v))
 }
 
@@ -503,7 +502,7 @@ func AppendBool[T ~bool](w *Writer, b T) {
 // SizeBytes calculates the size the length-prefixed bytes would take if
 // written.
 func SizeBytes[T Bytes](v T) int {
-	return SizeInt(int64(len(v))) + len(v)
+	return SizeInt(uint64(len(v))) + len(v)
 }
 
 // CountBytes counts the consecutive number of length-prefixed fields with the
@@ -515,14 +514,11 @@ func CountBytes(bytes []byte, tag string) (int, error) {
 	)
 	for HasPrefix(r.B, tag) {
 		r.B = r.B[len(tag):]
-		var length int64
+		var length uint64
 		if err := ReadInt(&r, &length); err != nil {
 			return 0, err
 		}
-		if length < 0 {
-			return 0, ErrInvalidLength
-		}
-		if length > int64(len(r.B)) {
+		if length > uint64(len(r.B)) {
 			return 0, io.ErrUnexpectedEOF
 		}
 		r.B = r.B[length:]
@@ -539,14 +535,11 @@ func HasPrefix(bytes []byte, prefix string) bool {
 // ReadString reads a string from the reader. The string is verified to be valid
 // UTF-8.
 func ReadString[T ~string](r *Reader, v *T) error {
-	var length int64
+	var length uint64
 	if err := ReadInt(r, &length); err != nil {
 		return err
 	}
-	if length < 0 {
-		return ErrInvalidLength
-	}
-	if length > int64(len(r.B)) {
+	if length > uint64(len(r.B)) {
 		return io.ErrUnexpectedEOF
 	}
 
@@ -566,14 +559,11 @@ func ReadString[T ~string](r *Reader, v *T) error {
 
 // ReadBytes reads a byte slice from the reader.
 func ReadBytes[T ~[]byte](r *Reader, v *T) error {
-	var length int64
+	var length uint64
 	if err := ReadInt(r, &length); err != nil {
 		return err
 	}
-	if length < 0 {
-		return ErrInvalidLength
-	}
-	if length > int64(len(r.B)) {
+	if length > uint64(len(r.B)) {
 		return io.ErrUnexpectedEOF
 	}
 
@@ -588,7 +578,7 @@ func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 
 // AppendBytes writes a length-prefixed byte slice to the writer.
 func AppendBytes[T Bytes](w *Writer, v T) {
-	AppendInt(w, int64(len(v)))
+	AppendInt(w, uint64(len(v)))
 	w.B = append(w.B, v...)
 }
 
@@ -703,19 +693,14 @@ func FieldTypeFromInt[T Int](
 	repeated bool,
 	oneOf string,
 ) *FieldType {
-	f := &FieldType{
+	return &FieldType{
 		FieldNumber: fieldNumber,
 		Name:        name,
 		FixedLength: fixedLength,
 		Repeated:    repeated,
 		OneOf:       oneOf,
+		TypeUint:    sizeOf[T](),
 	}
-	if isSigned[T]() {
-		f.TypeInt = sizeOf[T]()
-	} else {
-		f.TypeUint = sizeOf[T]()
-	}
-	return f
 }
 
 // FieldTypeFromSint creates a FieldType from a signed integer.
@@ -912,12 +897,12 @@ func (s *Spec) findFieldByName(name string) (*FieldType, error) {
 func (f *FieldType) wireType() (WireType, error) {
 	whichOneOf := f.CachedWhichOneOfType()
 	switch whichOneOf {
-	case 6, 7, 8, 11:
+	case 6, 7, 10:
 		if f.Repeated {
 			return Len, nil
 		}
 		return Varint, nil
-	case 9:
+	case 8:
 		if f.Repeated {
 			return Len, nil
 		}
@@ -926,7 +911,7 @@ func (f *FieldType) wireType() (WireType, error) {
 			return 0, ErrUnexpectedFieldSize
 		}
 		return w, nil
-	case 10:
+	case 9:
 		if f.Repeated {
 			return Len, nil
 		}
@@ -935,7 +920,7 @@ func (f *FieldType) wireType() (WireType, error) {
 			return 0, ErrUnexpectedFieldSize
 		}
 		return w, nil
-	case 12, 13, 14, 15, 16:
+	case 11, 12, 13, 14, 15:
 		return Len, nil
 	default:
 		return 0, ErrUnknownFieldType
@@ -945,17 +930,16 @@ func (f *FieldType) wireType() (WireType, error) {
 func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 	whichOneOf := f.CachedWhichOneOfType()
 	unmarshal, ok := map[uint32]func(f *FieldType, r *Reader, specs []*Spec) (any, error){
-		6:  (*FieldType).unmarshalInt,
-		7:  (*FieldType).unmarshalUint,
-		8:  (*FieldType).unmarshalSint,
-		9:  (*FieldType).unmarshalFint,
-		10: (*FieldType).unmarshalSFint,
-		11: (*FieldType).unmarshalBool,
-		12: (*FieldType).unmarshalString,
-		13: (*FieldType).unmarshalBytes,
-		14: (*FieldType).unmarshalFixedBytes,
-		15: (*FieldType).unmarshalRecursive,
-		16: (*FieldType).unmarshalSpec,
+		6:  (*FieldType).unmarshalUint,
+		7:  (*FieldType).unmarshalSint,
+		8:  (*FieldType).unmarshalFint,
+		9:  (*FieldType).unmarshalSFint,
+		10: (*FieldType).unmarshalBool,
+		11: (*FieldType).unmarshalString,
+		12: (*FieldType).unmarshalBytes,
+		13: (*FieldType).unmarshalFixedBytes,
+		14: (*FieldType).unmarshalRecursive,
+		15: (*FieldType).unmarshalSpec,
 	}[whichOneOf]
 	if !ok {
 		return nil, ErrUnknownFieldType
@@ -970,82 +954,21 @@ func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 func (f *FieldType) marshal(w *Writer, value any, specs []*Spec) error {
 	whichOneOf := f.CachedWhichOneOfType()
 	marshal, ok := map[uint32]func(f *FieldType, w *Writer, value any, specs []*Spec) error{
-		6:  (*FieldType).marshalInt,
-		7:  (*FieldType).marshalUint,
-		8:  (*FieldType).marshalSint,
-		9:  (*FieldType).marshalFint,
-		10: (*FieldType).marshalSFint,
-		11: (*FieldType).marshalBool,
-		12: (*FieldType).marshalString,
+		6:  (*FieldType).marshalUint,
+		7:  (*FieldType).marshalSint,
+		8:  (*FieldType).marshalFint,
+		9:  (*FieldType).marshalSFint,
+		10: (*FieldType).marshalBool,
+		11: (*FieldType).marshalString,
+		12: (*FieldType).marshalBytes,
 		13: (*FieldType).marshalBytes,
-		14: (*FieldType).marshalBytes,
-		15: (*FieldType).marshalRecursive,
-		16: (*FieldType).marshalSpec,
+		14: (*FieldType).marshalRecursive,
+		15: (*FieldType).marshalSpec,
 	}[whichOneOf]
 	if !ok {
 		return ErrUnknownFieldType
 	}
 	return marshal(f, w, value, specs)
-}
-
-func (f *FieldType) unmarshalInt(r *Reader, _ []*Spec) (any, error) {
-	return unmarshalPackedVarint(
-		f,
-		r,
-		func(r *Reader) (int64, error) {
-			switch f.TypeInt {
-			case SizeEnum8:
-				var v int8
-				err := ReadInt(r, &v)
-				return int64(v), err
-			case SizeEnum16:
-				var v int16
-				err := ReadInt(r, &v)
-				return int64(v), err
-			case SizeEnum32:
-				var v int32
-				err := ReadInt(r, &v)
-				return int64(v), err
-			case SizeEnum64:
-				var v int64
-				err := ReadInt(r, &v)
-				return v, err
-			default:
-				return 0, ErrUnexpectedFieldSize
-			}
-		},
-	)
-}
-
-func (f *FieldType) marshalInt(w *Writer, value any, _ []*Spec) error {
-	return marshalPackedVarint(
-		f,
-		w,
-		value,
-		func(w *Writer, value int64) error {
-			var (
-				minimum int64
-				maximum int64
-			)
-			switch f.TypeInt {
-			case SizeEnum8:
-				minimum, maximum = math.MinInt8, math.MaxInt8
-			case SizeEnum16:
-				minimum, maximum = math.MinInt16, math.MaxInt16
-			case SizeEnum32:
-				minimum, maximum = math.MinInt32, math.MaxInt32
-			case SizeEnum64:
-				minimum, maximum = math.MinInt64, math.MaxInt64
-			default:
-				return ErrUnexpectedFieldSize
-			}
-			if value < minimum || value > maximum {
-				return ErrOverflow
-			}
-			AppendInt(w, value)
-			return nil
-		},
-	)
 }
 
 func (f *FieldType) unmarshalUint(r *Reader, _ []*Spec) (any, error) {

@@ -13,22 +13,22 @@ message LargestFieldNumber {
 
 message OneOf {
   oneof A {
-    int32 A1 = 1;
-    int64 A2 = 7;
+    sint32 A1 = 1;
+    sint64 A2 = 7;
   }
   oneof B {
-    int32 B1 = 3;
-    int64 B2 = 4;
+    sint32 B1 = 3;
+    sint64 B2 = 4;
   }
-  int32 C = 5;
-  int64 D = 6;
+  sint32 C = 5;
+  sint64 D = 6;
 }
 
 message Node {
   oneof OneOf {
     Node Next = 2;
   }
-  int32 Value = 1;
+  sint32 Value = 1;
 }
 
 message RecursiveA {
@@ -70,18 +70,14 @@ message Embedded {
 }
 
 message A {
-  int32 B__C = 1;
+  sint32 B__C = 1;
 }
 
 message A__B {
-  int32 C = 1;
+  sint32 C = 1;
 }
 
 message Scalars {
-  int32 Int8 = 1;
-  int32 Int16 = 2;
-  int32 Int32 = 3;
-  int64 Int64 = 4;
   uint32 Uint8 = 5;
   uint32 Uint16 = 6;
   uint32 Uint32 = 7;
@@ -98,10 +94,6 @@ message Scalars {
   string String = 18;
   bytes Bytes = 19;
   LargestFieldNumber LargestFieldNumber = 20;
-  repeated int32 RepeatedInt8 = 21;
-  repeated int32 RepeatedInt16 = 22;
-  repeated int32 RepeatedInt32 = 23;
-  repeated int64 RepeatedInt64 = 24;
   repeated uint32 RepeatedUint8 = 25;
   repeated uint32 RepeatedUint16 = 26;
   repeated uint32 RepeatedUint32 = 27;
@@ -118,10 +110,6 @@ message Scalars {
   repeated string RepeatedString = 38;
   repeated bytes RepeatedBytes = 39;
   repeated LargestFieldNumber RepeatedLargestFieldNumber = 40;
-  repeated int32 FixedRepeatedInt8 = 41;
-  repeated int32 FixedRepeatedInt16 = 42;
-  repeated int32 FixedRepeatedInt32 = 43;
-  repeated int64 FixedRepeatedInt64 = 44;
   repeated uint32 FixedRepeatedUint8 = 45;
   repeated uint32 FixedRepeatedUint16 = 46;
   repeated uint32 FixedRepeatedUint32 = 47;

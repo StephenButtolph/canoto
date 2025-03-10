@@ -234,10 +234,6 @@ Will generate the canoto library in `./internal/canoto` and will import `"github
 
 | go type           | canoto type                  | proto type          | wire type |
 |-------------------|------------------------------|---------------------|-----------|
-| `int8`            | `int`                        | `int32`             | `varint`  |
-| `int16`           | `int`                        | `int32`             | `varint`  |
-| `int32`           | `int`                        | `int32`             | `varint`  |
-| `int64`           | `int`                        | `int64`             | `varint`  |
 | `uint8`           | `int`                        | `uint32`            | `varint`  |
 | `uint16`          | `int`                        | `uint32`            | `varint`  |
 | `uint32`          | `int`                        | `uint32`            | `varint`  |
@@ -257,10 +253,6 @@ Will generate the canoto library in `./internal/canoto` and will import `"github
 | `T Message`       | `value`                      | `message`           | `len`     |
 | `*T Message`      | `pointer`                    | `message`           | `len`     |
 | `T FieldMaker`    | `field`                      | `message`           | `len`     |
-| `[]int8`          | `repeated int`               | `repeated int32`    | `len`     |
-| `[]int16`         | `repeated int`               | `repeated int32`    | `len`     |
-| `[]int32`         | `repeated int`               | `repeated int32`    | `len`     |
-| `[]int64`         | `repeated int`               | `repeated int64`    | `len`     |
 | `[]uint8`         | `repeated int`               | `repeated uint32`   | `len`     |
 | `[]uint16`        | `repeated int`               | `repeated uint32`   | `len`     |
 | `[]uint32`        | `repeated int`               | `repeated uint32`   | `len`     |
@@ -280,10 +272,6 @@ Will generate the canoto library in `./internal/canoto` and will import `"github
 | `[]T Message`     | `repeated value`             | `repeated message`  | `len`     |
 | `[]*T Message`    | `repeated pointer`           | `repeated message`  | `len`     |
 | `[]T FieldMaker`  | `repeated field`             | `repeated message`  | `len`     |
-| `[x]int8`         | `fixed repeated int`         | `repeated int32`    | `len`     |
-| `[x]int16`        | `fixed repeated int`         | `repeated int32`    | `len`     |
-| `[x]int32`        | `fixed repeated int`         | `repeated int32`    | `len`     |
-| `[x]int64`        | `fixed repeated int`         | `repeated int64`    | `len`     |
 | `[x]uint8`        | `fixed repeated int`         | `repeated uint32`   | `len`     |
 | `[x]uint16`       | `fixed repeated int`         | `repeated uint32`   | `len`     |
 | `[x]uint32`       | `fixed repeated int`         | `repeated uint32`   | `len`     |

@@ -10,12 +10,12 @@ import (
 const constRepeatedUint64Len = 3
 
 var (
-	_ canoto.Message = (*LargestFieldNumber[int32])(nil)
+	_ canoto.Message = (*LargestFieldNumber[uint32])(nil)
 	_ canoto.Message = (*OneOf)(nil)
 	_ canoto.Message = (*GenericField[OneOf, *OneOf, *OneOf])(nil)
 	_ canoto.Message = (*Scalars)(nil)
 
-	_ canoto.FieldMaker[*LargestFieldNumber[int32]]           = (*LargestFieldNumber[int32])(nil)
+	_ canoto.FieldMaker[*LargestFieldNumber[uint32]]          = (*LargestFieldNumber[uint32])(nil)
 	_ canoto.FieldMaker[*OneOf]                               = (*OneOf)(nil)
 	_ canoto.FieldMaker[*GenericField[OneOf, *OneOf, *OneOf]] = (*GenericField[OneOf, *OneOf, *OneOf])(nil)
 	_ canoto.FieldMaker[*Scalars]                             = (*Scalars)(nil)
@@ -32,25 +32,25 @@ type (
 	customFixedRepeatedFixedBytes [3][32]byte
 )
 
-type LargestFieldNumber[T canoto.Int] struct {
+type LargestFieldNumber[T canoto.Uint] struct {
 	Int32 T `canoto:"int,536870911"`
 
 	canotoData canotoData_LargestFieldNumber
 }
 
 type OneOf struct {
-	A1 int32 `canoto:"int,1,A"`
-	A2 int64 `canoto:"int,7,A"`
-	B1 int32 `canoto:"int,3,B"`
-	B2 int64 `canoto:"int,4,B"`
-	C  int32 `canoto:"int,5"`
-	D  int64 `canoto:"int,6"`
+	A1 int32 `canoto:"sint,1,A"`
+	A2 int64 `canoto:"sint,7,A"`
+	B1 int32 `canoto:"sint,3,B"`
+	B2 int64 `canoto:"sint,4,B"`
+	C  int32 `canoto:"sint,5"`
+	D  int64 `canoto:"sint,6"`
 
 	canotoData canotoData_OneOf
 }
 
 type Node struct {
-	Value int32 `canoto:"int,1"`
+	Value int32 `canoto:"sint,1"`
 	Next  *Node `canoto:"pointer,2,OneOf"`
 
 	canotoData canotoData_Node
@@ -98,7 +98,7 @@ type NestedGenericField[V any, P canoto.FieldPointer[V], T canoto.FieldMaker[T]]
 
 type Embedded struct {
 	OneOf                                `canoto:"value,1"`
-	*LargestFieldNumber[int32]           `canoto:"pointer,2"`
+	*LargestFieldNumber[uint32]          `canoto:"pointer,2"`
 	*GenericField[OneOf, *OneOf, *OneOf] `canoto:"field,3"`
 
 	canotoData canotoData_Embedded
@@ -109,23 +109,19 @@ type Embedded struct {
 //
 //nolint:stylecheck // This is checking for name collisions.
 type A struct {
-	B__C int32 `canoto:"int,1"`
+	B__C int32 `canoto:"sint,1"`
 
 	canotoData canotoData_A
 }
 
 //nolint:stylecheck // This is checking for name collisions.
 type A__B struct {
-	C int32 `canoto:"int,1"`
+	C int32 `canoto:"sint,1"`
 
 	canotoData canotoData_A__B
 }
 
 type Scalars struct {
-	Int8                            int8                           `canoto:"int,1"`
-	Int16                           int16                          `canoto:"int,2"`
-	Int32                           int32                          `canoto:"int,3"`
-	Int64                           int64                          `canoto:"int,4"`
 	Uint8                           uint8                          `canoto:"int,5"`
 	Uint16                          uint16                         `canoto:"int,6"`
 	Uint32                          uint32                         `canoto:"int,7"`
@@ -141,11 +137,7 @@ type Scalars struct {
 	Bool                            bool                           `canoto:"bool,17"`
 	String                          string                         `canoto:"string,18"`
 	Bytes                           []byte                         `canoto:"bytes,19"`
-	LargestFieldNumber              LargestFieldNumber[int32]      `canoto:"value,20"`
-	RepeatedInt8                    []int8                         `canoto:"repeated int,21"`
-	RepeatedInt16                   []int16                        `canoto:"repeated int,22"`
-	RepeatedInt32                   []int32                        `canoto:"repeated int,23"`
-	RepeatedInt64                   []int64                        `canoto:"repeated int,24"`
+	LargestFieldNumber              LargestFieldNumber[uint32]     `canoto:"value,20"`
 	RepeatedUint8                   []uint8                        `canoto:"repeated int,25"`
 	RepeatedUint16                  []uint16                       `canoto:"repeated int,26"`
 	RepeatedUint32                  []uint32                       `canoto:"repeated int,27"`
@@ -161,11 +153,7 @@ type Scalars struct {
 	RepeatedBool                    []bool                         `canoto:"repeated bool,37"`
 	RepeatedString                  []string                       `canoto:"repeated string,38"`
 	RepeatedBytes                   [][]byte                       `canoto:"repeated bytes,39"`
-	RepeatedLargestFieldNumber      []LargestFieldNumber[int32]    `canoto:"repeated value,40"`
-	FixedRepeatedInt8               [3]int8                        `canoto:"fixed repeated int,41"`
-	FixedRepeatedInt16              [3]int16                       `canoto:"fixed repeated int,42"`
-	FixedRepeatedInt32              [3]int32                       `canoto:"fixed repeated int,43"`
-	FixedRepeatedInt64              [3]int64                       `canoto:"fixed repeated int,44"`
+	RepeatedLargestFieldNumber      []LargestFieldNumber[uint32]   `canoto:"repeated value,40"`
 	FixedRepeatedUint8              [3]uint8                       `canoto:"fixed repeated int,45"`
 	FixedRepeatedUint16             [3]uint16                      `canoto:"fixed repeated int,46"`
 	FixedRepeatedUint32             [3]uint32                      `canoto:"fixed repeated int,47"`
@@ -184,7 +172,7 @@ type Scalars struct {
 	RepeatedFixedBytes              [][32]byte                     `canoto:"repeated fixed bytes,60"`
 	FixedRepeatedBytes              [3][]byte                      `canoto:"fixed repeated bytes,61"`
 	FixedRepeatedFixedBytes         [3][32]byte                    `canoto:"fixed repeated fixed bytes,62"`
-	FixedRepeatedLargestFieldNumber [3]LargestFieldNumber[int32]   `canoto:"fixed repeated value,63"`
+	FixedRepeatedLargestFieldNumber [3]LargestFieldNumber[uint32]  `canoto:"fixed repeated value,63"`
 	ConstRepeatedUint64             [constRepeatedUint64Len]uint64 `canoto:"fixed repeated int,64"`
 	CustomType                      big.Int                        `canoto:"value,65"`
 	CustomUint32                    customUint32                   `canoto:"fint32,66"`
