@@ -1,5 +1,5 @@
 package testdata
 
 type missingFieldNumber struct {
-	Int int64 `canoto:"sint"`
+	Int int64 `canoto:"int"`
 }
