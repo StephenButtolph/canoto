@@ -20,20 +20,18 @@ Canoto messages are defined as normal golang structs:
 type ExampleStruct0 struct {
 	Int32              int32           `canoto:"int,1"`
 	Int64              int64           `canoto:"int,2"`
-	Uint32             uint32          `canoto:"int,3"`
-	Uint64             uint64          `canoto:"int,4"`
-	Sint32             int32           `canoto:"sint,5"`
-	Sint64             int64           `canoto:"sint,6"`
-	Fixed32            uint32          `canoto:"fint32,7"`
+	Uint32             uint32          `canoto:"uint,3"`
+	Uint64             uint64          `canoto:"uint,4"`
+	Sfixed32           int32           `canoto:"fint32,5"`
+	Fixed32            uint32          `canoto:"fint32,6"`
+	Sfixed64           int64           `canoto:"fint64,7"`
 	Fixed64            uint64          `canoto:"fint64,8"`
-	Sfixed32           int32           `canoto:"fint32,9"`
-	Sfixed64           int64           `canoto:"fint64,10"`
-	Bool               bool            `canoto:"bool,11"`
-	String             string          `canoto:"string,12"`
-	Bytes              []byte          `canoto:"bytes,13"`
-	OtherStruct        ExampleStruct1  `canoto:"value,14"`
-	OtherStructPointer *ExampleStruct1 `canoto:"pointer,15"`
-	OtherStructField   *ExampleStruct1 `canoto:"field,16"`
+	Bool               bool            `canoto:"bool,9"`
+	String             string          `canoto:"string,10"`
+	Bytes              []byte          `canoto:"bytes,11"`
+	OtherStruct        ExampleStruct1  `canoto:"value,12"`
+	OtherStructPointer *ExampleStruct1 `canoto:"pointer,13"`
+	OtherStructField   *ExampleStruct1 `canoto:"field,14"`
 
 	canotoData canotoData_ExampleStruct0
 }
@@ -65,6 +63,10 @@ type Message interface {
 
 // Field defines a type that can be included inside of a Canoto message.
 type Field interface {
+	// CanotoSpec returns the specification of this canoto message.
+	//
+	// If there is not a valid specification of this type, it returns nil.
+	CanotoSpec(types ...reflect.Type) *Spec
 	// MarshalCanotoInto writes the field into a canoto.Writer and returns the
 	// resulting canoto.Writer.
 	//
@@ -164,7 +166,7 @@ If `canoto.FieldPointer` is aliased to a different type or is otherwise re-imple
 Because using multiple types to constrain a single type is clunky, there is support for `canoto.FieldMaker`s. `canoto.FieldMaker`s can be used to allocate new messages during parsing. In order for `canoto.FieldMaker`s to work safely, the implementing type must have a useful zero value.
 
 > [!WARNING]
-> `MakeCanoto`, `CalculateCanotoCache`, `CachedCanotoSize`, `ValidCanoto` and `MarshalCanotoInto` _must_ be able to be called with the zero value of the type implementing `canoto.FieldMaker` to avoid runtime panics. It is _never_ safe to pass an interface as the `canoto.FieldMaker` type.
+> `CanotoSpec`, `MakeCanoto`, `CalculateCanotoCache`, `CachedCanotoSize`, `ValidCanoto` and `MarshalCanotoInto` _must_ be able to be called with the zero value of the type implementing `canoto.FieldMaker` to avoid runtime panics. It is _never_ safe to pass an interface as the `canoto.FieldMaker` type.
 
 An example of correctly using `canoto.FieldMaker`:
 ```golang

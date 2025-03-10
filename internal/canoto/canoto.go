@@ -135,7 +135,6 @@ type (
 		//
 		// If there is not a valid specification of this type, it returns nil.
 		CanotoSpec(types ...reflect.Type) *Spec
-
 		// MarshalCanotoInto writes the field into a canoto.Writer and returns
 		// the resulting canoto.Writer.
 		//
