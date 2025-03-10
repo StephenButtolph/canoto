@@ -2236,11 +2236,11 @@ func writeMessage(m message, t messageTemplate) string {
 func writeField(w io.Writer, f field, t messageTemplate) error {
 	var template string
 	switch c := f.canotoType; c {
-	case canotoUint, canotoInt:
+	case canotoInt, canotoUint:
 		template = t.ints.single
-	case canotoRepeatedUint, canotoRepeatedInt:
+	case canotoRepeatedInt, canotoRepeatedUint:
 		template = t.ints.repeated
-	case canotoFixedRepeatedUint, canotoFixedRepeatedInt:
+	case canotoFixedRepeatedInt, canotoFixedRepeatedUint:
 		template = t.ints.fixedRepeated
 	case canotoFint32, canotoFint64:
 		template = t.fints.single
