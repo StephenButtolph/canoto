@@ -7,6 +7,6 @@ if ! [[ "$0" =~ scripts/lint-golang.sh ]]; then
   exit 255
 fi
 
-go install -v github.com/golangci/golangci-lint/cmd/golangci-lint@v1.59.1
+go install -v github.com/golangci/golangci-lint/cmd/golangci-lint@v1.63.0
 
 golangci-lint run --config .golangci.yml ./...
