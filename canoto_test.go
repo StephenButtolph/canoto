@@ -867,28 +867,27 @@ type SpecFuzzer struct {
 	RepeatedInt16              []int16                      `canoto:"repeated int,18"    json:"RepeatedInt16,omitempty"`
 	RepeatedInt32              []int32                      `canoto:"repeated int,19"    json:"RepeatedInt32,omitempty"`
 	RepeatedInt64              []int64                      `canoto:"repeated int,20"    json:"RepeatedInt64,omitempty"`
-	RepeatedUint8              []uint8                      `canoto:"repeated uint,21"   json:"RepeatedUint8,omitempty"`
-	RepeatedUint16             []uint16                     `canoto:"repeated uint,22"   json:"RepeatedUint16,omitempty"`
-	RepeatedUint32             []uint32                     `canoto:"repeated uint,23"   json:"RepeatedUint32,omitempty"`
-	RepeatedUint64             []uint64                     `canoto:"repeated uint,24"   json:"RepeatedUint64,omitempty"`
-	RepeatedSfixed32           []int32                      `canoto:"repeated fint32,25" json:"RepeatedSfixed32,omitempty"`
-	RepeatedFixed32            []uint32                     `canoto:"repeated fint32,26" json:"RepeatedFixed32,omitempty"`
-	RepeatedSfixed64           []int64                      `canoto:"repeated fint64,27" json:"RepeatedSfixed64,omitempty"`
-	RepeatedFixed64            []uint64                     `canoto:"repeated fint64,28" json:"RepeatedFixed64,omitempty"`
-	RepeatedBool               []bool                       `canoto:"repeated bool,29"   json:"RepeatedBool,omitempty"`
-	RepeatedString             []string                     `canoto:"repeated string,30" json:"RepeatedString,omitempty"`
-	RepeatedBytes              [][]byte                     `canoto:"repeated bytes,31"  json:"RepeatedBytes,omitempty"`
-	RepeatedLargestFieldNumber []LargestFieldNumber[uint32] `canoto:"repeated value,32"  json:"RepeatedLargestFieldNumber,omitempty"`
-	OneOf                      *OneOf                       `canoto:"pointer,33"         json:"OneOf,omitempty"`
-	Pointer                    *LargestFieldNumber[uint32]  `canoto:"pointer,34"         json:"Pointer,omitempty"`
-	Field                      *LargestFieldNumber[uint32]  `canoto:"field,35"           json:"Field,omitempty"`
-	Recursive                  *SpecFuzzer                  `canoto:"pointer,36"         json:"Recursive,omitempty"`
+	RepeatedUint16             []uint16                     `canoto:"repeated uint,21"   json:"RepeatedUint16,omitempty"`
+	RepeatedUint32             []uint32                     `canoto:"repeated uint,22"   json:"RepeatedUint32,omitempty"`
+	RepeatedUint64             []uint64                     `canoto:"repeated uint,23"   json:"RepeatedUint64,omitempty"`
+	RepeatedSfixed32           []int32                      `canoto:"repeated fint32,24" json:"RepeatedSfixed32,omitempty"`
+	RepeatedFixed32            []uint32                     `canoto:"repeated fint32,25" json:"RepeatedFixed32,omitempty"`
+	RepeatedSfixed64           []int64                      `canoto:"repeated fint64,26" json:"RepeatedSfixed64,omitempty"`
+	RepeatedFixed64            []uint64                     `canoto:"repeated fint64,27" json:"RepeatedFixed64,omitempty"`
+	RepeatedBool               []bool                       `canoto:"repeated bool,28"   json:"RepeatedBool,omitempty"`
+	RepeatedString             []string                     `canoto:"repeated string,29" json:"RepeatedString,omitempty"`
+	RepeatedBytes              [][]byte                     `canoto:"repeated bytes,30"  json:"RepeatedBytes,omitempty"`
+	RepeatedLargestFieldNumber []LargestFieldNumber[uint32] `canoto:"repeated value,31"  json:"RepeatedLargestFieldNumber,omitempty"`
+	OneOf                      *OneOf                       `canoto:"pointer,32"         json:"OneOf,omitempty"`
+	Pointer                    *LargestFieldNumber[uint32]  `canoto:"pointer,33"         json:"Pointer,omitempty"`
+	Field                      *LargestFieldNumber[uint32]  `canoto:"field,34"           json:"Field,omitempty"`
+	Recursive                  *SpecFuzzer                  `canoto:"pointer,35"         json:"Recursive,omitempty"`
 
 	canotoData canotoData_SpecFuzzer
 }
 
 type LargestFieldNumber[T Uint] struct {
-	Uint T `canoto:"uint,536870911" json:"Int32,omitempty"`
+	Uint T `canoto:"uint,536870911" json:"Uint,omitempty"`
 
 	canotoData canotoData_LargestFieldNumber
 }
@@ -929,7 +928,6 @@ func FuzzSpec(f *testing.F) {
 		RepeatedInt16:    []int16{1, 2, 3},
 		RepeatedInt32:    []int32{1, 2, 3},
 		RepeatedInt64:    []int64{1, 2, 3},
-		RepeatedUint8:    []uint8{1, 2, 3},
 		RepeatedUint16:   []uint16{1, 2, 3},
 		RepeatedUint32:   []uint32{1, 2, 3},
 		RepeatedUint64:   []uint64{1, 2, 3},
