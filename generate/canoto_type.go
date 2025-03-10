@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	canotoInt        canotoType = "int" // signed int
+	canotoInt        canotoType = "int"
 	canotoUint       canotoType = "uint"
-	canotoFint32     canotoType = "fint32" // fixed 32-bit int
-	canotoFint64     canotoType = "fint64" // fixed 64-bit int
+	canotoFint32     canotoType = "fint32"
+	canotoFint64     canotoType = "fint64"
 	canotoBool       canotoType = "bool"
 	canotoString     canotoType = "string"
 	canotoBytes      canotoType = "bytes"
