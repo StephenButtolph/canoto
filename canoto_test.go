@@ -98,16 +98,16 @@ func TestReadTag(t *testing.T) {
 	}
 }
 
-func FuzzSizeInt_uint8(f *testing.F)  { f.Fuzz(testSizeInt[uint8]) }
-func FuzzSizeInt_uint16(f *testing.F) { f.Fuzz(testSizeInt[uint16]) }
-func FuzzSizeInt_uint32(f *testing.F) { f.Fuzz(testSizeInt[uint32]) }
-func FuzzSizeInt_uint64(f *testing.F) { f.Fuzz(testSizeInt[uint64]) }
+func FuzzSizeUint_uint8(f *testing.F)  { f.Fuzz(testSizeUint[uint8]) }
+func FuzzSizeUint_uint16(f *testing.F) { f.Fuzz(testSizeUint[uint16]) }
+func FuzzSizeUint_uint32(f *testing.F) { f.Fuzz(testSizeUint[uint32]) }
+func FuzzSizeUint_uint64(f *testing.F) { f.Fuzz(testSizeUint[uint64]) }
 
-func testSizeInt[T Uint](t *testing.T, v T) {
+func testSizeUint[T Uint](t *testing.T, v T) {
 	w := &Writer{}
-	AppendInt(w, v)
+	AppendUint(w, v)
 
-	size := SizeInt(v)
+	size := SizeUint(v)
 	require.Len(t, w.B, size)
 }
 
@@ -125,14 +125,14 @@ func testCountInts[T Uint](t *testing.T, data []byte) {
 
 	w := &Writer{}
 	for _, num := range nums {
-		AppendInt(w, num)
+		AppendUint(w, num)
 	}
 
 	count := CountInts(w.B)
 	require.Len(nums, count)
 }
 
-func TestReadInt_uint32(t *testing.T) {
+func TestReadUint_uint32(t *testing.T) {
 	validTests := []validTest[uint32]{
 		{"00", 0},
 		{"01", 1},
@@ -153,7 +153,7 @@ func TestReadInt_uint32(t *testing.T) {
 
 			r := &Reader{B: test.Bytes(t)}
 			var got uint32
-			require.NoError(ReadInt(r, &got))
+			require.NoError(ReadUint(r, &got))
 			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
@@ -188,13 +188,13 @@ func TestReadInt_uint32(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			err := ReadInt(r, new(uint32))
+			err := ReadUint(r, new(uint32))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
 }
 
-func TestReadInt_uint64(t *testing.T) {
+func TestReadUint_uint64(t *testing.T) {
 	validTests := []validTest[uint64]{
 		{"00", 0},
 		{"01", 1},
@@ -225,7 +225,7 @@ func TestReadInt_uint64(t *testing.T) {
 
 			r := &Reader{B: test.Bytes(t)}
 			var got uint64
-			require.NoError(ReadInt(r, &got))
+			require.NoError(ReadUint(r, &got))
 			require.Equal(test.want, got)
 			require.Empty(r.B)
 		})
@@ -259,26 +259,26 @@ func TestReadInt_uint64(t *testing.T) {
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
 			r := &Reader{B: test.Bytes(t)}
-			err := ReadInt(r, new(uint64))
+			err := ReadUint(r, new(uint64))
 			require.ErrorIs(t, err, test.want)
 		})
 	}
 }
 
-func FuzzAppendInt_uint8(f *testing.F)  { f.Fuzz(testAppendInt[uint8]) }
-func FuzzAppendInt_uint16(f *testing.F) { f.Fuzz(testAppendInt[uint16]) }
-func FuzzAppendInt_uint32(f *testing.F) { f.Fuzz(testAppendInt[uint32]) }
-func FuzzAppendInt_uint64(f *testing.F) { f.Fuzz(testAppendInt[uint64]) }
+func FuzzAppendInt_uint8(f *testing.F)  { f.Fuzz(testAppendUint[uint8]) }
+func FuzzAppendInt_uint16(f *testing.F) { f.Fuzz(testAppendUint[uint16]) }
+func FuzzAppendInt_uint32(f *testing.F) { f.Fuzz(testAppendUint[uint32]) }
+func FuzzAppendInt_uint64(f *testing.F) { f.Fuzz(testAppendUint[uint64]) }
 
-func testAppendInt[T Uint](t *testing.T, v T) {
+func testAppendUint[T Uint](t *testing.T, v T) {
 	require := require.New(t)
 
 	w := &Writer{}
-	AppendInt(w, v)
+	AppendUint(w, v)
 
 	r := &Reader{B: w.B}
 	var got T
-	require.NoError(ReadInt(r, &got))
+	require.NoError(ReadUint(r, &got))
 	require.Equal(v, got)
 	require.Empty(r.B)
 }
@@ -847,10 +847,10 @@ func TestIsBytesEmpty(t *testing.T) {
 }
 
 type SpecFuzzer struct {
-	Uint8                      uint8                        `canoto:"int,5"              json:"Uint8,omitempty"`
-	Uint16                     uint16                       `canoto:"int,6"              json:"Uint16,omitempty"`
-	Uint32                     uint32                       `canoto:"int,7"              json:"Uint32,omitempty"`
-	Uint64                     uint64                       `canoto:"int,8"              json:"Uint64,omitempty"`
+	Uint8                      uint8                        `canoto:"uint,5"             json:"Uint8,omitempty"`
+	Uint16                     uint16                       `canoto:"uint,6"             json:"Uint16,omitempty"`
+	Uint32                     uint32                       `canoto:"uint,7"             json:"Uint32,omitempty"`
+	Uint64                     uint64                       `canoto:"uint,8"             json:"Uint64,omitempty"`
 	Sint8                      int8                         `canoto:"sint,9"             json:"Sint8,omitempty"`
 	Sint16                     int16                        `canoto:"sint,10"            json:"Sint16,omitempty"`
 	Sint32                     int32                        `canoto:"sint,11"            json:"Sint32,omitempty"`
@@ -863,9 +863,9 @@ type SpecFuzzer struct {
 	String                     string                       `canoto:"string,18"          json:"String,omitempty"`
 	Bytes                      []byte                       `canoto:"bytes,19"           json:"Bytes,omitempty"`
 	LargestFieldNumber         *LargestFieldNumber[uint32]  `canoto:"pointer,20"         json:"LargestFieldNumber,omitempty"`
-	RepeatedUint16             []uint16                     `canoto:"repeated int,26"    json:"RepeatedUint16,omitempty"`
-	RepeatedUint32             []uint32                     `canoto:"repeated int,27"    json:"RepeatedUint32,omitempty"`
-	RepeatedUint64             []uint64                     `canoto:"repeated int,28"    json:"RepeatedUint64,omitempty"`
+	RepeatedUint16             []uint16                     `canoto:"repeated uint,26"   json:"RepeatedUint16,omitempty"`
+	RepeatedUint32             []uint32                     `canoto:"repeated uint,27"   json:"RepeatedUint32,omitempty"`
+	RepeatedUint64             []uint64                     `canoto:"repeated uint,28"   json:"RepeatedUint64,omitempty"`
 	RepeatedSint8              []int8                       `canoto:"repeated sint,29"   json:"RepeatedSint8,omitempty"`
 	RepeatedSint16             []int16                      `canoto:"repeated sint,30"   json:"RepeatedSint16,omitempty"`
 	RepeatedSint32             []int32                      `canoto:"repeated sint,31"   json:"RepeatedSint32,omitempty"`
@@ -887,7 +887,7 @@ type SpecFuzzer struct {
 }
 
 type LargestFieldNumber[T Uint] struct {
-	Int32 T `canoto:"int,536870911" json:"Int32,omitempty"`
+	Int32 T `canoto:"uint,536870911" json:"Int32,omitempty"`
 
 	canotoData canotoData_LargestFieldNumber
 }

@@ -222,20 +222,20 @@ type (
 
 	// FieldType is the specification of a field in a Canoto message.
 	FieldType struct {
-		FieldNumber    uint32   `canoto:"int,1"           json:"fieldNumber"`
+		FieldNumber    uint32   `canoto:"uint,1"          json:"fieldNumber"`
 		Name           string   `canoto:"string,2"        json:"name"`
-		FixedLength    uint64   `canoto:"int,3"           json:"fixedLength,omitempty"`
+		FixedLength    uint64   `canoto:"uint,3"          json:"fixedLength,omitempty"`
 		Repeated       bool     `canoto:"bool,4"          json:"repeated,omitempty"`
 		OneOf          string   `canoto:"string,5"        json:"oneOf,omitempty"`
-		TypeUint       SizeEnum `canoto:"int,6,Type"      json:"typeUint,omitempty"`       // can be any of 8, 16, 32, or 64.
-		TypeSint       SizeEnum `canoto:"int,7,Type"      json:"typeSint,omitempty"`       // can be any of 8, 16, 32, or 64.
-		TypeFint       SizeEnum `canoto:"int,8,Type"      json:"typeFint,omitempty"`       // can be either 32 or 64.
-		TypeSFint      SizeEnum `canoto:"int,9,Type"     json:"typeSFint,omitempty"`       // can be either 32 or 64.
+		TypeUint       SizeEnum `canoto:"uint,6,Type"     json:"typeUint,omitempty"`       // can be any of 8, 16, 32, or 64.
+		TypeSint       SizeEnum `canoto:"uint,7,Type"     json:"typeSint,omitempty"`       // can be any of 8, 16, 32, or 64.
+		TypeFint       SizeEnum `canoto:"uint,8,Type"     json:"typeFint,omitempty"`       // can be either 32 or 64.
+		TypeSFint      SizeEnum `canoto:"uint,9,Type"     json:"typeSFint,omitempty"`      // can be either 32 or 64.
 		TypeBool       bool     `canoto:"bool,10,Type"    json:"typeBool,omitempty"`       // can only be true.
 		TypeString     bool     `canoto:"bool,11,Type"    json:"typeString,omitempty"`     // can only be true.
 		TypeBytes      bool     `canoto:"bool,12,Type"    json:"typeBytes,omitempty"`      // can only be true.
-		TypeFixedBytes uint64   `canoto:"int,13,Type"     json:"typeFixedBytes,omitempty"` // length of the fixed bytes.
-		TypeRecursive  uint64   `canoto:"int,14,Type"     json:"typeRecursive,omitempty"`  // depth of the recursion.
+		TypeFixedBytes uint64   `canoto:"uint,13,Type"    json:"typeFixedBytes,omitempty"` // length of the fixed bytes.
+		TypeRecursive  uint64   `canoto:"uint,14,Type"    json:"typeRecursive,omitempty"`  // depth of the recursion.
 		TypeMessage    *Spec    `canoto:"pointer,15,Type" json:"typeMessage,omitempty"`
 
 		canotoData canotoData_FieldType
@@ -332,14 +332,14 @@ func Append[T Bytes](w *Writer, v T) {
 // precomputed.
 func Tag(fieldNumber uint32, wireType WireType) []byte {
 	w := Writer{}
-	AppendInt(&w, fieldNumber<<wireTypeLength|uint32(wireType))
+	AppendUint(&w, fieldNumber<<wireTypeLength|uint32(wireType))
 	return w.B
 }
 
 // ReadTag reads the next field number and wire type from the reader.
 func ReadTag(r *Reader) (uint32, WireType, error) {
 	var val uint32
-	if err := ReadInt(r, &val); err != nil {
+	if err := ReadUint(r, &val); err != nil {
 		return 0, 0, err
 	}
 
@@ -351,8 +351,8 @@ func ReadTag(r *Reader) (uint32, WireType, error) {
 	return val >> wireTypeLength, wireType, nil
 }
 
-// SizeInt calculates the size of an integer when encoded as a varint.
-func SizeInt[T Uint](v T) int {
+// SizeUint calculates the size of an unsigned integer when encoded as a varint.
+func SizeUint[T Uint](v T) int {
 	if v == 0 {
 		return 1
 	}
@@ -370,8 +370,8 @@ func CountInts(bytes []byte) int {
 	return count
 }
 
-// ReadInt reads a varint encoded integer from the reader.
-func ReadInt[T Uint](r *Reader, v *T) error {
+// ReadUint reads a varint encoded unsigned integer from the reader.
+func ReadUint[T Uint](r *Reader, v *T) error {
 	val, bytesRead := binary.Uvarint(r.B)
 	switch {
 	case bytesRead == 0:
@@ -392,8 +392,8 @@ func ReadInt[T Uint](r *Reader, v *T) error {
 	}
 }
 
-// AppendInt writes an integer to the writer as a varint.
-func AppendInt[T Uint](w *Writer, v T) {
+// AppendUint writes an unsigned integer to the writer as a varint.
+func AppendUint[T Uint](w *Writer, v T) {
 	w.B = binary.AppendUvarint(w.B, uint64(v))
 }
 
@@ -415,7 +415,7 @@ func SizeSint[T Sint](v T) int {
 // ReadSint reads a zigzag encoded integer from the reader.
 func ReadSint[T Sint](r *Reader, v *T) error {
 	var largeVal uint64
-	if err := ReadInt(r, &largeVal); err != nil {
+	if err := ReadUint(r, &largeVal); err != nil {
 		return err
 	}
 
@@ -502,7 +502,7 @@ func AppendBool[T ~bool](w *Writer, b T) {
 // SizeBytes calculates the size the length-prefixed bytes would take if
 // written.
 func SizeBytes[T Bytes](v T) int {
-	return SizeInt(uint64(len(v))) + len(v)
+	return SizeUint(uint64(len(v))) + len(v)
 }
 
 // CountBytes counts the consecutive number of length-prefixed fields with the
@@ -515,7 +515,7 @@ func CountBytes(bytes []byte, tag string) (int, error) {
 	for HasPrefix(r.B, tag) {
 		r.B = r.B[len(tag):]
 		var length uint64
-		if err := ReadInt(&r, &length); err != nil {
+		if err := ReadUint(&r, &length); err != nil {
 			return 0, err
 		}
 		if length > uint64(len(r.B)) {
@@ -536,7 +536,7 @@ func HasPrefix(bytes []byte, prefix string) bool {
 // UTF-8.
 func ReadString[T ~string](r *Reader, v *T) error {
 	var length uint64
-	if err := ReadInt(r, &length); err != nil {
+	if err := ReadUint(r, &length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -560,7 +560,7 @@ func ReadString[T ~string](r *Reader, v *T) error {
 // ReadBytes reads a byte slice from the reader.
 func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 	var length uint64
-	if err := ReadInt(r, &length); err != nil {
+	if err := ReadUint(r, &length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -578,7 +578,7 @@ func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 
 // AppendBytes writes a length-prefixed byte slice to the writer.
 func AppendBytes[T Bytes](w *Writer, v T) {
-	AppendInt(w, uint64(len(v)))
+	AppendUint(w, uint64(len(v)))
 	w.B = append(w.B, v...)
 }
 
@@ -684,8 +684,8 @@ func (a Any) MarshalJSON() ([]byte, error) {
 	return []byte(sb.String()), nil
 }
 
-// FieldTypeFromInt creates a FieldType from an integer.
-func FieldTypeFromInt[T Int](
+// FieldTypeFromUint creates a FieldType from an unsigned integer.
+func FieldTypeFromUint[T Uint](
 	_ T,
 	fieldNumber uint32,
 	name string,
@@ -979,19 +979,19 @@ func (f *FieldType) unmarshalUint(r *Reader, _ []*Spec) (any, error) {
 			switch f.TypeUint {
 			case SizeEnum8:
 				var v uint8
-				err := ReadInt(r, &v)
+				err := ReadUint(r, &v)
 				return uint64(v), err
 			case SizeEnum16:
 				var v uint16
-				err := ReadInt(r, &v)
+				err := ReadUint(r, &v)
 				return uint64(v), err
 			case SizeEnum32:
 				var v uint32
-				err := ReadInt(r, &v)
+				err := ReadUint(r, &v)
 				return uint64(v), err
 			case SizeEnum64:
 				var v uint64
-				err := ReadInt(r, &v)
+				err := ReadUint(r, &v)
 				return v, err
 			default:
 				return 0, ErrUnexpectedFieldSize
@@ -1022,7 +1022,7 @@ func (f *FieldType) marshalUint(w *Writer, value any, _ []*Spec) error {
 			if value > maximum {
 				return ErrOverflow
 			}
-			AppendInt(w, value)
+			AppendUint(w, value)
 			return nil
 		},
 	)
@@ -1251,7 +1251,7 @@ func (f *FieldType) marshalBytes(w *Writer, value any, _ []*Spec) error {
 func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 	// Read the first entry manually because the tag is already stripped.
 	var length uint64
-	if err := ReadInt(r, &length); err != nil {
+	if err := ReadUint(r, &length); err != nil {
 		return nil, err
 	}
 	if length != f.TypeFixedBytes {
@@ -1296,7 +1296,7 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 		}
 		r.B = r.B[len(expectedTag):]
 
-		if err := ReadInt(r, &length); err != nil {
+		if err := ReadUint(r, &length); err != nil {
 			return nil, err
 		}
 		if length != f.TypeFixedBytes {

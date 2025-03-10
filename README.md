@@ -234,10 +234,10 @@ Will generate the canoto library in `./internal/canoto` and will import `"github
 
 | go type           | canoto type                  | proto type          | wire type |
 |-------------------|------------------------------|---------------------|-----------|
-| `uint8`           | `int`                        | `uint32`            | `varint`  |
-| `uint16`          | `int`                        | `uint32`            | `varint`  |
-| `uint32`          | `int`                        | `uint32`            | `varint`  |
-| `uint64`          | `int`                        | `uint64`            | `varint`  |
+| `uint8`           | `uint`                       | `uint32`            | `varint`  |
+| `uint16`          | `uint`                       | `uint32`            | `varint`  |
+| `uint32`          | `uint`                       | `uint32`            | `varint`  |
+| `uint64`          | `uint`                       | `uint64`            | `varint`  |
 | `int8`            | `sint`                       | `sint32`            | `varint`  |
 | `int16`           | `sint`                       | `sint32`            | `varint`  |
 | `int32`           | `sint`                       | `sint32`            | `varint`  |
@@ -253,10 +253,10 @@ Will generate the canoto library in `./internal/canoto` and will import `"github
 | `T Message`       | `value`                      | `message`           | `len`     |
 | `*T Message`      | `pointer`                    | `message`           | `len`     |
 | `T FieldMaker`    | `field`                      | `message`           | `len`     |
-| `[]uint8`         | `repeated int`               | `repeated uint32`   | `len`     |
-| `[]uint16`        | `repeated int`               | `repeated uint32`   | `len`     |
-| `[]uint32`        | `repeated int`               | `repeated uint32`   | `len`     |
-| `[]uint64`        | `repeated int`               | `repeated uint64`   | `len`     |
+| `[]uint8`         | `repeated uint`              | `repeated uint32`   | `len`     |
+| `[]uint16`        | `repeated uint`              | `repeated uint32`   | `len`     |
+| `[]uint32`        | `repeated uint`              | `repeated uint32`   | `len`     |
+| `[]uint64`        | `repeated uint`              | `repeated uint64`   | `len`     |
 | `[]int8`          | `repeated sint`              | `repeated sint32`   | `len`     |
 | `[]int16`         | `repeated sint`              | `repeated sint32`   | `len`     |
 | `[]int32`         | `repeated sint`              | `repeated sint32`   | `len`     |
@@ -272,10 +272,10 @@ Will generate the canoto library in `./internal/canoto` and will import `"github
 | `[]T Message`     | `repeated value`             | `repeated message`  | `len`     |
 | `[]*T Message`    | `repeated pointer`           | `repeated message`  | `len`     |
 | `[]T FieldMaker`  | `repeated field`             | `repeated message`  | `len`     |
-| `[x]uint8`        | `fixed repeated int`         | `repeated uint32`   | `len`     |
-| `[x]uint16`       | `fixed repeated int`         | `repeated uint32`   | `len`     |
-| `[x]uint32`       | `fixed repeated int`         | `repeated uint32`   | `len`     |
-| `[x]uint64`       | `fixed repeated int`         | `repeated uint64`   | `len`     |
+| `[x]uint8`        | `fixed repeated uint`        | `repeated uint32`   | `len`     |
+| `[x]uint16`       | `fixed repeated uint`        | `repeated uint32`   | `len`     |
+| `[x]uint32`       | `fixed repeated uint`        | `repeated uint32`   | `len`     |
+| `[x]uint64`       | `fixed repeated uint`        | `repeated uint64`   | `len`     |
 | `[x]int8`         | `fixed repeated sint`        | `repeated sint32`   | `len`     |
 | `[x]int16`        | `fixed repeated sint`        | `repeated sint32`   | `len`     |
 | `[x]int32`        | `fixed repeated sint`        | `repeated sint32`   | `len`     |

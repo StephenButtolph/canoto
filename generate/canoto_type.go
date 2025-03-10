@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	canotoInt        canotoType = "int"
+	canotoInt        canotoType = "uint"
 	canotoSint       canotoType = "sint"   // signed int
 	canotoFint32     canotoType = "fint32" // fixed 32-bit int
 	canotoFint64     canotoType = "fint64" // fixed 64-bit int
@@ -231,7 +231,7 @@ func (c canotoType) ProtoTypeSuffix() string {
 func (c canotoType) Suffix() string {
 	switch c {
 	case canotoInt, canotoRepeatedInt, canotoFixedRepeatedInt:
-		return "Int"
+		return "Uint"
 	case canotoSint, canotoRepeatedSint, canotoFixedRepeatedSint:
 		return "Sint"
 	case canotoFint32, canotoRepeatedFint32, canotoFixedRepeatedFint32:

@@ -39,7 +39,7 @@ func (*justAnInt) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	s := &canoto.Spec{
 		Name: "justAnInt",
 		Fields: []*canoto.FieldType{
-			canoto.FieldTypeFromInt(
+			canoto.FieldTypeFromUint(
 				/*type inference:*/ zero.Int8,
 				/*FieldNumber:   */ 1,
 				/*Name:          */ "Int8",
@@ -95,7 +95,7 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.ReadInt(&r, &c.Int8); err != nil {
+			if err := canoto.ReadUint(&r, &c.Int8); err != nil {
 				return err
 			}
 			if canoto.IsZero(c.Int8) {
@@ -136,7 +136,7 @@ func (c *justAnInt) CalculateCanotoCache() {
 		size int
 	)
 	if !canoto.IsZero(c.Int8) {
-		size += len(canoto__justAnInt__Int8__tag) + canoto.SizeInt(c.Int8)
+		size += len(canoto__justAnInt__Int8__tag) + canoto.SizeUint(c.Int8)
 	}
 	c.canotoData.size = size
 }
@@ -184,7 +184,7 @@ func (c *justAnInt) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	}
 	if !canoto.IsZero(c.Int8) {
 		canoto.Append(&w, canoto__justAnInt__Int8__tag)
-		canoto.AppendInt(&w, c.Int8)
+		canoto.AppendUint(&w, c.Int8)
 	}
 	return w
 }

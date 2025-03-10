@@ -1355,7 +1355,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 			},
 			f: func(w *canoto.Writer) {
 				canoto.Append(w, canoto.Tag(5, canoto.Varint))
-				canoto.AppendInt[uint8](w, 9)
+				canoto.AppendUint[uint8](w, 9)
 			},
 		},
 		{
@@ -1365,7 +1365,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 			},
 			f: func(w *canoto.Writer) {
 				canoto.Append(w, canoto.Tag(6, canoto.Varint))
-				canoto.AppendInt[uint16](w, 1234)
+				canoto.AppendUint[uint16](w, 1234)
 			},
 		},
 		{
@@ -1375,7 +1375,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 			},
 			f: func(w *canoto.Writer) {
 				canoto.Append(w, canoto.Tag(7, canoto.Varint))
-				canoto.AppendInt[uint32](w, 1234)
+				canoto.AppendUint[uint32](w, 1234)
 			},
 		},
 		{
@@ -1385,7 +1385,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 			},
 			f: func(w *canoto.Writer) {
 				canoto.Append(w, canoto.Tag(8, canoto.Varint))
-				canoto.AppendInt[uint64](w, 2938567)
+				canoto.AppendUint[uint64](w, 2938567)
 			},
 		},
 		{
@@ -1505,7 +1505,7 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 			},
 			f: func(w *canoto.Writer) {
 				canoto.Append(w, canoto.Tag(canoto.MaxFieldNumber, canoto.Varint))
-				canoto.AppendInt[uint32](w, 1)
+				canoto.AppendUint[uint32](w, 1)
 			},
 		},
 	}
