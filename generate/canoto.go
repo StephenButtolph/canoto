@@ -416,25 +416,6 @@ func makeOneOfCache(m message) string {
 
 func makeSpec(m message) string {
 	return writeMessage(m, messageTemplate{
-		// 		ints: typeTemplate{
-		// 			repeated: `			{
-		// 				FieldNumber: ${fieldNumber},
-		// 				Name:        "${fieldName}",
-		// 				Repeated:    true,
-		// 				OneOf:       "${oneOf}",
-		// 				TypeBool:    true,
-		// 			},
-		// `,
-		// 			fixedRepeated: `			{
-		// 				FieldNumber: ${fieldNumber},
-		// 				Name:        "${fieldName}",
-		// 				FixedLength: uint64(len(zero.${fieldName})),
-		// 				Repeated:    true,
-		// 				OneOf:       "${oneOf}",
-		// 				TypeBool:    true,
-		// 			},
-		// `,
-		// 		},
 		ints: typeTemplate{
 			single: `			{
 				FieldNumber: ${fieldNumber},
