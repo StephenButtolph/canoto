@@ -104,16 +104,16 @@ var (
 )
 
 type (
-	Sint interface {
+	Int interface {
 		~int8 | ~int16 | ~int32 | ~int64
 	}
 	Uint interface {
 		~uint8 | ~uint16 | ~uint32 | ~uint64
 	}
-	Int   interface{ Sint | Uint }
-	Int32 interface{ ~int32 | ~uint32 }
-	Int64 interface{ ~int64 | ~uint64 }
-	Bytes interface{ ~string | ~[]byte }
+	integer interface{ Int | Uint }
+	Int32   interface{ ~int32 | ~uint32 }
+	Int64   interface{ ~int64 | ~uint64 }
+	Bytes   interface{ ~string | ~[]byte }
 
 	// Message defines a type that can be a stand-alone Canoto message.
 	Message interface {
@@ -395,7 +395,7 @@ func AppendUint[T Uint](w *Writer, v T) {
 }
 
 // SizeInt calculates the size of an integer when zigzag encoded as a varint.
-func SizeInt[T Sint](v T) int {
+func SizeInt[T Int](v T) int {
 	if v == 0 {
 		return 1
 	}
@@ -410,7 +410,7 @@ func SizeInt[T Sint](v T) int {
 }
 
 // ReadInt reads a zigzag encoded integer from the reader.
-func ReadInt[T Sint](r *Reader, v *T) error {
+func ReadInt[T Int](r *Reader, v *T) error {
 	var largeVal uint64
 	if err := ReadUint(r, &largeVal); err != nil {
 		return err
@@ -433,7 +433,7 @@ func ReadInt[T Sint](r *Reader, v *T) error {
 }
 
 // AppendInt writes an integer to the writer as a zigzag encoded varint.
-func AppendInt[T Sint](w *Writer, v T) {
+func AppendInt[T Int](w *Writer, v T) {
 	if v >= 0 {
 		w.B = binary.AppendUvarint(w.B, uint64(v)<<1)
 	} else {
@@ -682,7 +682,7 @@ func (a Any) MarshalJSON() ([]byte, error) {
 }
 
 // FieldTypeFromFint creates a FieldType from a fixed-length integer.
-func FieldTypeFromFint[T Int](
+func FieldTypeFromFint[T integer](
 	field T,
 	fieldNumber uint32,
 	name string,
@@ -738,12 +738,12 @@ func FieldTypeFromField[T Field](
 }
 
 // isSigned returns true if the integer type is signed.
-func isSigned[T Int]() bool {
+func isSigned[T integer]() bool {
 	return ^T(0) < T(0)
 }
 
 // SizeOf returns the size of the integer type.
-func SizeOf[T Int](_ T) SizeEnum {
+func SizeOf[T integer](_ T) SizeEnum {
 	for i := range SizeEnum64 {
 		bitLen := 1 << (i + 3)
 		if T(1)<<bitLen == T(0) {

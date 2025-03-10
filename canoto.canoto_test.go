@@ -23,52 +23,54 @@ var (
 )
 
 const (
+	canoto__SpecFuzzer__Int8__tag                       = "\x08"     // canoto.Tag(1, canoto.Varint)
+	canoto__SpecFuzzer__Int16__tag                      = "\x10"     // canoto.Tag(2, canoto.Varint)
+	canoto__SpecFuzzer__Int32__tag                      = "\x18"     // canoto.Tag(3, canoto.Varint)
+	canoto__SpecFuzzer__Int64__tag                      = "\x20"     // canoto.Tag(4, canoto.Varint)
 	canoto__SpecFuzzer__Uint8__tag                      = "\x28"     // canoto.Tag(5, canoto.Varint)
 	canoto__SpecFuzzer__Uint16__tag                     = "\x30"     // canoto.Tag(6, canoto.Varint)
 	canoto__SpecFuzzer__Uint32__tag                     = "\x38"     // canoto.Tag(7, canoto.Varint)
 	canoto__SpecFuzzer__Uint64__tag                     = "\x40"     // canoto.Tag(8, canoto.Varint)
-	canoto__SpecFuzzer__Sint8__tag                      = "\x48"     // canoto.Tag(9, canoto.Varint)
-	canoto__SpecFuzzer__Sint16__tag                     = "\x50"     // canoto.Tag(10, canoto.Varint)
-	canoto__SpecFuzzer__Sint32__tag                     = "\x58"     // canoto.Tag(11, canoto.Varint)
-	canoto__SpecFuzzer__Sint64__tag                     = "\x60"     // canoto.Tag(12, canoto.Varint)
-	canoto__SpecFuzzer__Fixed32__tag                    = "\x6d"     // canoto.Tag(13, canoto.I32)
-	canoto__SpecFuzzer__Fixed64__tag                    = "\x71"     // canoto.Tag(14, canoto.I64)
-	canoto__SpecFuzzer__Sfixed32__tag                   = "\x7d"     // canoto.Tag(15, canoto.I32)
-	canoto__SpecFuzzer__Sfixed64__tag                   = "\x81\x01" // canoto.Tag(16, canoto.I64)
-	canoto__SpecFuzzer__Bool__tag                       = "\x88\x01" // canoto.Tag(17, canoto.Varint)
-	canoto__SpecFuzzer__String__tag                     = "\x92\x01" // canoto.Tag(18, canoto.Len)
-	canoto__SpecFuzzer__Bytes__tag                      = "\x9a\x01" // canoto.Tag(19, canoto.Len)
-	canoto__SpecFuzzer__LargestFieldNumber__tag         = "\xa2\x01" // canoto.Tag(20, canoto.Len)
-	canoto__SpecFuzzer__RepeatedUint16__tag             = "\xd2\x01" // canoto.Tag(26, canoto.Len)
-	canoto__SpecFuzzer__RepeatedUint32__tag             = "\xda\x01" // canoto.Tag(27, canoto.Len)
-	canoto__SpecFuzzer__RepeatedUint64__tag             = "\xe2\x01" // canoto.Tag(28, canoto.Len)
-	canoto__SpecFuzzer__RepeatedSint8__tag              = "\xea\x01" // canoto.Tag(29, canoto.Len)
-	canoto__SpecFuzzer__RepeatedSint16__tag             = "\xf2\x01" // canoto.Tag(30, canoto.Len)
-	canoto__SpecFuzzer__RepeatedSint32__tag             = "\xfa\x01" // canoto.Tag(31, canoto.Len)
-	canoto__SpecFuzzer__RepeatedSint64__tag             = "\x82\x02" // canoto.Tag(32, canoto.Len)
-	canoto__SpecFuzzer__RepeatedFixed32__tag            = "\x8a\x02" // canoto.Tag(33, canoto.Len)
-	canoto__SpecFuzzer__RepeatedFixed64__tag            = "\x92\x02" // canoto.Tag(34, canoto.Len)
-	canoto__SpecFuzzer__RepeatedSfixed32__tag           = "\x9a\x02" // canoto.Tag(35, canoto.Len)
-	canoto__SpecFuzzer__RepeatedSfixed64__tag           = "\xa2\x02" // canoto.Tag(36, canoto.Len)
-	canoto__SpecFuzzer__RepeatedBool__tag               = "\xaa\x02" // canoto.Tag(37, canoto.Len)
-	canoto__SpecFuzzer__RepeatedString__tag             = "\xb2\x02" // canoto.Tag(38, canoto.Len)
-	canoto__SpecFuzzer__RepeatedBytes__tag              = "\xba\x02" // canoto.Tag(39, canoto.Len)
-	canoto__SpecFuzzer__RepeatedLargestFieldNumber__tag = "\xc2\x02" // canoto.Tag(40, canoto.Len)
-	canoto__SpecFuzzer__OneOf__tag                      = "\xd2\x04" // canoto.Tag(74, canoto.Len)
-	canoto__SpecFuzzer__Pointer__tag                    = "\xda\x04" // canoto.Tag(75, canoto.Len)
-	canoto__SpecFuzzer__Field__tag                      = "\xf2\x04" // canoto.Tag(78, canoto.Len)
-	canoto__SpecFuzzer__Recursive__tag                  = "\xfa\x04" // canoto.Tag(79, canoto.Len)
+	canoto__SpecFuzzer__Sfixed32__tag                   = "\x4d"     // canoto.Tag(9, canoto.I32)
+	canoto__SpecFuzzer__Fixed32__tag                    = "\x55"     // canoto.Tag(10, canoto.I32)
+	canoto__SpecFuzzer__Sfixed64__tag                   = "\x59"     // canoto.Tag(11, canoto.I64)
+	canoto__SpecFuzzer__Fixed64__tag                    = "\x61"     // canoto.Tag(12, canoto.I64)
+	canoto__SpecFuzzer__Bool__tag                       = "\x68"     // canoto.Tag(13, canoto.Varint)
+	canoto__SpecFuzzer__String__tag                     = "\x72"     // canoto.Tag(14, canoto.Len)
+	canoto__SpecFuzzer__Bytes__tag                      = "\x7a"     // canoto.Tag(15, canoto.Len)
+	canoto__SpecFuzzer__LargestFieldNumber__tag         = "\x82\x01" // canoto.Tag(16, canoto.Len)
+	canoto__SpecFuzzer__RepeatedInt8__tag               = "\x8a\x01" // canoto.Tag(17, canoto.Len)
+	canoto__SpecFuzzer__RepeatedInt16__tag              = "\x92\x01" // canoto.Tag(18, canoto.Len)
+	canoto__SpecFuzzer__RepeatedInt32__tag              = "\x9a\x01" // canoto.Tag(19, canoto.Len)
+	canoto__SpecFuzzer__RepeatedInt64__tag              = "\xa2\x01" // canoto.Tag(20, canoto.Len)
+	canoto__SpecFuzzer__RepeatedUint8__tag              = "\xaa\x01" // canoto.Tag(21, canoto.Len)
+	canoto__SpecFuzzer__RepeatedUint16__tag             = "\xb2\x01" // canoto.Tag(22, canoto.Len)
+	canoto__SpecFuzzer__RepeatedUint32__tag             = "\xba\x01" // canoto.Tag(23, canoto.Len)
+	canoto__SpecFuzzer__RepeatedUint64__tag             = "\xc2\x01" // canoto.Tag(24, canoto.Len)
+	canoto__SpecFuzzer__RepeatedSfixed32__tag           = "\xca\x01" // canoto.Tag(25, canoto.Len)
+	canoto__SpecFuzzer__RepeatedFixed32__tag            = "\xd2\x01" // canoto.Tag(26, canoto.Len)
+	canoto__SpecFuzzer__RepeatedSfixed64__tag           = "\xda\x01" // canoto.Tag(27, canoto.Len)
+	canoto__SpecFuzzer__RepeatedFixed64__tag            = "\xe2\x01" // canoto.Tag(28, canoto.Len)
+	canoto__SpecFuzzer__RepeatedBool__tag               = "\xea\x01" // canoto.Tag(29, canoto.Len)
+	canoto__SpecFuzzer__RepeatedString__tag             = "\xf2\x01" // canoto.Tag(30, canoto.Len)
+	canoto__SpecFuzzer__RepeatedBytes__tag              = "\xfa\x01" // canoto.Tag(31, canoto.Len)
+	canoto__SpecFuzzer__RepeatedLargestFieldNumber__tag = "\x82\x02" // canoto.Tag(32, canoto.Len)
+	canoto__SpecFuzzer__OneOf__tag                      = "\x8a\x02" // canoto.Tag(33, canoto.Len)
+	canoto__SpecFuzzer__Pointer__tag                    = "\x92\x02" // canoto.Tag(34, canoto.Len)
+	canoto__SpecFuzzer__Field__tag                      = "\x9a\x02" // canoto.Tag(35, canoto.Len)
+	canoto__SpecFuzzer__Recursive__tag                  = "\xa2\x02" // canoto.Tag(36, canoto.Len)
 )
 
 type canotoData_SpecFuzzer struct {
 	size               atomic.Int64
+	RepeatedInt8Size   atomic.Int64
+	RepeatedInt16Size  atomic.Int64
+	RepeatedInt32Size  atomic.Int64
+	RepeatedInt64Size  atomic.Int64
+	RepeatedUint8Size  atomic.Int64
 	RepeatedUint16Size atomic.Int64
 	RepeatedUint32Size atomic.Int64
 	RepeatedUint64Size atomic.Int64
-	RepeatedSint8Size  atomic.Int64
-	RepeatedSint16Size atomic.Int64
-	RepeatedSint32Size atomic.Int64
-	RepeatedSint64Size atomic.Int64
 }
 
 // CanotoSpec returns the specification of this canoto message.
@@ -78,6 +80,30 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 	s := &Spec{
 		Name: "SpecFuzzer",
 		Fields: []*FieldType{
+			{
+				FieldNumber: 1,
+				Name:        "Int8",
+				OneOf:       "",
+				TypeInt:    SizeOf(zero.Int8),
+			},
+			{
+				FieldNumber: 2,
+				Name:        "Int16",
+				OneOf:       "",
+				TypeInt:    SizeOf(zero.Int16),
+			},
+			{
+				FieldNumber: 3,
+				Name:        "Int32",
+				OneOf:       "",
+				TypeInt:    SizeOf(zero.Int32),
+			},
+			{
+				FieldNumber: 4,
+				Name:        "Int64",
+				OneOf:       "",
+				TypeInt:    SizeOf(zero.Int64),
+			},
 			{
 				FieldNumber: 5,
 				Name:        "Uint8",
@@ -102,83 +128,59 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				OneOf:       "",
 				TypeUint:    SizeOf(zero.Uint64),
 			},
-			{
-				FieldNumber: 9,
-				Name:        "Sint8",
-				OneOf:       "",
-				TypeInt:    SizeOf(zero.Sint8),
-			},
-			{
-				FieldNumber: 10,
-				Name:        "Sint16",
-				OneOf:       "",
-				TypeInt:    SizeOf(zero.Sint16),
-			},
-			{
-				FieldNumber: 11,
-				Name:        "Sint32",
-				OneOf:       "",
-				TypeInt:    SizeOf(zero.Sint32),
-			},
-			{
-				FieldNumber: 12,
-				Name:        "Sint64",
-				OneOf:       "",
-				TypeInt:    SizeOf(zero.Sint64),
-			},
-			FieldTypeFromFint(
-				/*type inference:*/ zero.Fixed32,
-				/*FieldNumber:   */ 13,
-				/*Name:          */ "Fixed32",
-				/*FixedLength:   */ 0,
-				/*Repeated:      */ false,
-				/*OneOf:         */ "",
-			),
-			FieldTypeFromFint(
-				/*type inference:*/ zero.Fixed64,
-				/*FieldNumber:   */ 14,
-				/*Name:          */ "Fixed64",
-				/*FixedLength:   */ 0,
-				/*Repeated:      */ false,
-				/*OneOf:         */ "",
-			),
 			FieldTypeFromFint(
 				/*type inference:*/ zero.Sfixed32,
-				/*FieldNumber:   */ 15,
+				/*FieldNumber:   */ 9,
 				/*Name:          */ "Sfixed32",
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
 			),
 			FieldTypeFromFint(
+				/*type inference:*/ zero.Fixed32,
+				/*FieldNumber:   */ 10,
+				/*Name:          */ "Fixed32",
+				/*FixedLength:   */ 0,
+				/*Repeated:      */ false,
+				/*OneOf:         */ "",
+			),
+			FieldTypeFromFint(
 				/*type inference:*/ zero.Sfixed64,
-				/*FieldNumber:   */ 16,
+				/*FieldNumber:   */ 11,
 				/*Name:          */ "Sfixed64",
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
 			),
+			FieldTypeFromFint(
+				/*type inference:*/ zero.Fixed64,
+				/*FieldNumber:   */ 12,
+				/*Name:          */ "Fixed64",
+				/*FixedLength:   */ 0,
+				/*Repeated:      */ false,
+				/*OneOf:         */ "",
+			),
 			{
-				FieldNumber: 17,
+				FieldNumber: 13,
 				Name:        "Bool",
 				OneOf:       "",
 				TypeBool:    true,
 			},
 			{
-				FieldNumber: 18,
+				FieldNumber: 14,
 				Name:        "String",
 				OneOf:       "",
 				TypeString:  true,
 			},
 			{
-				FieldNumber: 19,
+				FieldNumber: 15,
 				Name:        "Bytes",
 				OneOf:       "",
 				TypeBytes:   true,
 			},
 			FieldTypeFromField(
 				/*type inference:*/ (zero.LargestFieldNumber),
-				/*FieldNumber:   */ 20,
+				/*FieldNumber:   */ 16,
 				/*Name:          */ "LargestFieldNumber",
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
@@ -186,102 +188,109 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*types:         */ types,
 			),
 			{
-				FieldNumber: 26,
+				FieldNumber: 17,
+				Name:        "RepeatedInt8",
+				Repeated:    true,
+				OneOf:       "",
+				TypeInt:    SizeOf(MakeEntry(zero.RepeatedInt8)),
+			},
+			{
+				FieldNumber: 18,
+				Name:        "RepeatedInt16",
+				Repeated:    true,
+				OneOf:       "",
+				TypeInt:    SizeOf(MakeEntry(zero.RepeatedInt16)),
+			},
+			{
+				FieldNumber: 19,
+				Name:        "RepeatedInt32",
+				Repeated:    true,
+				OneOf:       "",
+				TypeInt:    SizeOf(MakeEntry(zero.RepeatedInt32)),
+			},
+			{
+				FieldNumber: 20,
+				Name:        "RepeatedInt64",
+				Repeated:    true,
+				OneOf:       "",
+				TypeInt:    SizeOf(MakeEntry(zero.RepeatedInt64)),
+			},
+			{
+				FieldNumber: 21,
+				Name:        "RepeatedUint8",
+				Repeated:    true,
+				OneOf:       "",
+				TypeUint:    SizeOf(MakeEntry(zero.RepeatedUint8)),
+			},
+			{
+				FieldNumber: 22,
 				Name:        "RepeatedUint16",
 				Repeated:    true,
 				OneOf:       "",
 				TypeUint:    SizeOf(MakeEntry(zero.RepeatedUint16)),
 			},
 			{
-				FieldNumber: 27,
+				FieldNumber: 23,
 				Name:        "RepeatedUint32",
 				Repeated:    true,
 				OneOf:       "",
 				TypeUint:    SizeOf(MakeEntry(zero.RepeatedUint32)),
 			},
 			{
-				FieldNumber: 28,
+				FieldNumber: 24,
 				Name:        "RepeatedUint64",
 				Repeated:    true,
 				OneOf:       "",
 				TypeUint:    SizeOf(MakeEntry(zero.RepeatedUint64)),
 			},
-			{
-				FieldNumber: 29,
-				Name:        "RepeatedSint8",
-				Repeated:    true,
-				OneOf:       "",
-				TypeInt:    SizeOf(MakeEntry(zero.RepeatedSint8)),
-			},
-			{
-				FieldNumber: 30,
-				Name:        "RepeatedSint16",
-				Repeated:    true,
-				OneOf:       "",
-				TypeInt:    SizeOf(MakeEntry(zero.RepeatedSint16)),
-			},
-			{
-				FieldNumber: 31,
-				Name:        "RepeatedSint32",
-				Repeated:    true,
-				OneOf:       "",
-				TypeInt:    SizeOf(MakeEntry(zero.RepeatedSint32)),
-			},
-			{
-				FieldNumber: 32,
-				Name:        "RepeatedSint64",
-				Repeated:    true,
-				OneOf:       "",
-				TypeInt:    SizeOf(MakeEntry(zero.RepeatedSint64)),
-			},
-			FieldTypeFromFint(
-				/*type inference:*/ MakeEntry(zero.RepeatedFixed32),
-				/*FieldNumber:   */ 33,
-				/*Name:          */ "RepeatedFixed32",
-				/*FixedLength:   */ 0,
-				/*Repeated:      */ true,
-				/*OneOf:         */ "",
-			),
-			FieldTypeFromFint(
-				/*type inference:*/ MakeEntry(zero.RepeatedFixed64),
-				/*FieldNumber:   */ 34,
-				/*Name:          */ "RepeatedFixed64",
-				/*FixedLength:   */ 0,
-				/*Repeated:      */ true,
-				/*OneOf:         */ "",
-			),
 			FieldTypeFromFint(
 				/*type inference:*/ MakeEntry(zero.RepeatedSfixed32),
-				/*FieldNumber:   */ 35,
+				/*FieldNumber:   */ 25,
 				/*Name:          */ "RepeatedSfixed32",
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
 			),
 			FieldTypeFromFint(
+				/*type inference:*/ MakeEntry(zero.RepeatedFixed32),
+				/*FieldNumber:   */ 26,
+				/*Name:          */ "RepeatedFixed32",
+				/*FixedLength:   */ 0,
+				/*Repeated:      */ true,
+				/*OneOf:         */ "",
+			),
+			FieldTypeFromFint(
 				/*type inference:*/ MakeEntry(zero.RepeatedSfixed64),
-				/*FieldNumber:   */ 36,
+				/*FieldNumber:   */ 27,
 				/*Name:          */ "RepeatedSfixed64",
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
 			),
+			FieldTypeFromFint(
+				/*type inference:*/ MakeEntry(zero.RepeatedFixed64),
+				/*FieldNumber:   */ 28,
+				/*Name:          */ "RepeatedFixed64",
+				/*FixedLength:   */ 0,
+				/*Repeated:      */ true,
+				/*OneOf:         */ "",
+			),
 			{
-				FieldNumber: 37,
+				FieldNumber: 29,
 				Name:        "RepeatedBool",
 				Repeated:    true,
 				OneOf:       "",
 				TypeBool:    true,
 			},
 			{
-				FieldNumber: 38,
+				FieldNumber: 30,
 				Name:        "RepeatedString",
 				Repeated:    true,
 				OneOf:       "",
 				TypeString:  true,
 			},
 			{
-				FieldNumber: 39,
+				FieldNumber: 31,
 				Name:        "RepeatedBytes",
 				Repeated:    true,
 				OneOf:       "",
@@ -289,7 +298,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 			},
 			FieldTypeFromField(
 				/*type inference:*/ (MakeEntryPointer(zero.RepeatedLargestFieldNumber)),
-				/*FieldNumber:   */ 40,
+				/*FieldNumber:   */ 32,
 				/*Name:          */ "RepeatedLargestFieldNumber",
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ true,
@@ -298,7 +307,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 			),
 			FieldTypeFromField(
 				/*type inference:*/ (zero.OneOf),
-				/*FieldNumber:   */ 74,
+				/*FieldNumber:   */ 33,
 				/*Name:          */ "OneOf",
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
@@ -307,7 +316,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 			),
 			FieldTypeFromField(
 				/*type inference:*/ (zero.Pointer),
-				/*FieldNumber:   */ 75,
+				/*FieldNumber:   */ 34,
 				/*Name:          */ "Pointer",
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
@@ -316,7 +325,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 			),
 			FieldTypeFromField(
 				/*type inference:*/ zero.Field,
-				/*FieldNumber:   */ 78,
+				/*FieldNumber:   */ 35,
 				/*Name:          */ "Field",
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
@@ -325,7 +334,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 			),
 			FieldTypeFromField(
 				/*type inference:*/ (zero.Recursive),
-				/*FieldNumber:   */ 79,
+				/*FieldNumber:   */ 36,
 				/*Name:          */ "Recursive",
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
@@ -375,6 +384,50 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 		}
 
 		switch field {
+		case 1:
+			if wireType != Varint {
+				return ErrUnexpectedWireType
+			}
+
+			if err := ReadInt(&r, &c.Int8); err != nil {
+				return err
+			}
+			if IsZero(c.Int8) {
+				return ErrZeroValue
+			}
+		case 2:
+			if wireType != Varint {
+				return ErrUnexpectedWireType
+			}
+
+			if err := ReadInt(&r, &c.Int16); err != nil {
+				return err
+			}
+			if IsZero(c.Int16) {
+				return ErrZeroValue
+			}
+		case 3:
+			if wireType != Varint {
+				return ErrUnexpectedWireType
+			}
+
+			if err := ReadInt(&r, &c.Int32); err != nil {
+				return err
+			}
+			if IsZero(c.Int32) {
+				return ErrZeroValue
+			}
+		case 4:
+			if wireType != Varint {
+				return ErrUnexpectedWireType
+			}
+
+			if err := ReadInt(&r, &c.Int64); err != nil {
+				return err
+			}
+			if IsZero(c.Int64) {
+				return ErrZeroValue
+			}
 		case 5:
 			if wireType != Varint {
 				return ErrUnexpectedWireType
@@ -420,72 +473,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return ErrZeroValue
 			}
 		case 9:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-
-			if err := ReadInt(&r, &c.Sint8); err != nil {
-				return err
-			}
-			if IsZero(c.Sint8) {
-				return ErrZeroValue
-			}
-		case 10:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-
-			if err := ReadInt(&r, &c.Sint16); err != nil {
-				return err
-			}
-			if IsZero(c.Sint16) {
-				return ErrZeroValue
-			}
-		case 11:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-
-			if err := ReadInt(&r, &c.Sint32); err != nil {
-				return err
-			}
-			if IsZero(c.Sint32) {
-				return ErrZeroValue
-			}
-		case 12:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-
-			if err := ReadInt(&r, &c.Sint64); err != nil {
-				return err
-			}
-			if IsZero(c.Sint64) {
-				return ErrZeroValue
-			}
-		case 13:
-			if wireType != I32 {
-				return ErrUnexpectedWireType
-			}
-
-			if err := ReadFint32(&r, &c.Fixed32); err != nil {
-				return err
-			}
-			if IsZero(c.Fixed32) {
-				return ErrZeroValue
-			}
-		case 14:
-			if wireType != I64 {
-				return ErrUnexpectedWireType
-			}
-
-			if err := ReadFint64(&r, &c.Fixed64); err != nil {
-				return err
-			}
-			if IsZero(c.Fixed64) {
-				return ErrZeroValue
-			}
-		case 15:
 			if wireType != I32 {
 				return ErrUnexpectedWireType
 			}
@@ -496,7 +483,18 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			if IsZero(c.Sfixed32) {
 				return ErrZeroValue
 			}
-		case 16:
+		case 10:
+			if wireType != I32 {
+				return ErrUnexpectedWireType
+			}
+
+			if err := ReadFint32(&r, &c.Fixed32); err != nil {
+				return err
+			}
+			if IsZero(c.Fixed32) {
+				return ErrZeroValue
+			}
+		case 11:
 			if wireType != I64 {
 				return ErrUnexpectedWireType
 			}
@@ -507,7 +505,18 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			if IsZero(c.Sfixed64) {
 				return ErrZeroValue
 			}
-		case 17:
+		case 12:
+			if wireType != I64 {
+				return ErrUnexpectedWireType
+			}
+
+			if err := ReadFint64(&r, &c.Fixed64); err != nil {
+				return err
+			}
+			if IsZero(c.Fixed64) {
+				return ErrZeroValue
+			}
+		case 13:
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
@@ -518,7 +527,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			if IsZero(c.Bool) {
 				return ErrZeroValue
 			}
-		case 18:
+		case 14:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
@@ -529,7 +538,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			if len(c.String) == 0 {
 				return ErrZeroValue
 			}
-		case 19:
+		case 15:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
@@ -540,7 +549,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			if len(c.Bytes) == 0 {
 				return ErrZeroValue
 			}
-		case 20:
+		case 16:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
@@ -565,7 +574,162 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return err
 			}
 			r.B = remainingBytes
-		case 26:
+		case 17:
+			if wireType != Len {
+				return ErrUnexpectedWireType
+			}
+
+			// Read the packed field bytes.
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			if err := ReadBytes(&r, &msgBytes); err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return ErrZeroValue
+			}
+			r.Unsafe = originalUnsafe
+
+			// Read each value from the packed field bytes into the array.
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.RepeatedInt8 = MakeSlice(c.RepeatedInt8, CountInts(msgBytes))
+			for i := range c.RepeatedInt8 {
+				if err := ReadInt(&r, &c.RepeatedInt8[i]); err != nil {
+					return err
+				}
+			}
+			if HasNext(&r) {
+				return ErrInvalidLength
+			}
+			r.B = remainingBytes
+			c.canotoData.RepeatedInt8Size.Store(int64(len(msgBytes)))
+		case 18:
+			if wireType != Len {
+				return ErrUnexpectedWireType
+			}
+
+			// Read the packed field bytes.
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			if err := ReadBytes(&r, &msgBytes); err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return ErrZeroValue
+			}
+			r.Unsafe = originalUnsafe
+
+			// Read each value from the packed field bytes into the array.
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.RepeatedInt16 = MakeSlice(c.RepeatedInt16, CountInts(msgBytes))
+			for i := range c.RepeatedInt16 {
+				if err := ReadInt(&r, &c.RepeatedInt16[i]); err != nil {
+					return err
+				}
+			}
+			if HasNext(&r) {
+				return ErrInvalidLength
+			}
+			r.B = remainingBytes
+			c.canotoData.RepeatedInt16Size.Store(int64(len(msgBytes)))
+		case 19:
+			if wireType != Len {
+				return ErrUnexpectedWireType
+			}
+
+			// Read the packed field bytes.
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			if err := ReadBytes(&r, &msgBytes); err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return ErrZeroValue
+			}
+			r.Unsafe = originalUnsafe
+
+			// Read each value from the packed field bytes into the array.
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.RepeatedInt32 = MakeSlice(c.RepeatedInt32, CountInts(msgBytes))
+			for i := range c.RepeatedInt32 {
+				if err := ReadInt(&r, &c.RepeatedInt32[i]); err != nil {
+					return err
+				}
+			}
+			if HasNext(&r) {
+				return ErrInvalidLength
+			}
+			r.B = remainingBytes
+			c.canotoData.RepeatedInt32Size.Store(int64(len(msgBytes)))
+		case 20:
+			if wireType != Len {
+				return ErrUnexpectedWireType
+			}
+
+			// Read the packed field bytes.
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			if err := ReadBytes(&r, &msgBytes); err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return ErrZeroValue
+			}
+			r.Unsafe = originalUnsafe
+
+			// Read each value from the packed field bytes into the array.
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.RepeatedInt64 = MakeSlice(c.RepeatedInt64, CountInts(msgBytes))
+			for i := range c.RepeatedInt64 {
+				if err := ReadInt(&r, &c.RepeatedInt64[i]); err != nil {
+					return err
+				}
+			}
+			if HasNext(&r) {
+				return ErrInvalidLength
+			}
+			r.B = remainingBytes
+			c.canotoData.RepeatedInt64Size.Store(int64(len(msgBytes)))
+		case 21:
+			if wireType != Len {
+				return ErrUnexpectedWireType
+			}
+
+			// Read the packed field bytes.
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			if err := ReadBytes(&r, &msgBytes); err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return ErrZeroValue
+			}
+			r.Unsafe = originalUnsafe
+
+			// Read each value from the packed field bytes into the array.
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.RepeatedUint8 = MakeSlice(c.RepeatedUint8, CountInts(msgBytes))
+			for i := range c.RepeatedUint8 {
+				if err := ReadUint(&r, &c.RepeatedUint8[i]); err != nil {
+					return err
+				}
+			}
+			if HasNext(&r) {
+				return ErrInvalidLength
+			}
+			r.B = remainingBytes
+			c.canotoData.RepeatedUint8Size.Store(int64(len(msgBytes)))
+		case 22:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
@@ -596,7 +760,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			}
 			r.B = remainingBytes
 			c.canotoData.RepeatedUint16Size.Store(int64(len(msgBytes)))
-		case 27:
+		case 23:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
@@ -627,7 +791,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			}
 			r.B = remainingBytes
 			c.canotoData.RepeatedUint32Size.Store(int64(len(msgBytes)))
-		case 28:
+		case 24:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
@@ -658,197 +822,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			}
 			r.B = remainingBytes
 			c.canotoData.RepeatedUint64Size.Store(int64(len(msgBytes)))
-		case 29:
-			if wireType != Len {
-				return ErrUnexpectedWireType
-			}
-
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
-				return err
-			}
-			if len(msgBytes) == 0 {
-				return ErrZeroValue
-			}
-			r.Unsafe = originalUnsafe
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedSint8 = MakeSlice(c.RepeatedSint8, CountInts(msgBytes))
-			for i := range c.RepeatedSint8 {
-				if err := ReadInt(&r, &c.RepeatedSint8[i]); err != nil {
-					return err
-				}
-			}
-			if HasNext(&r) {
-				return ErrInvalidLength
-			}
-			r.B = remainingBytes
-			c.canotoData.RepeatedSint8Size.Store(int64(len(msgBytes)))
-		case 30:
-			if wireType != Len {
-				return ErrUnexpectedWireType
-			}
-
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
-				return err
-			}
-			if len(msgBytes) == 0 {
-				return ErrZeroValue
-			}
-			r.Unsafe = originalUnsafe
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedSint16 = MakeSlice(c.RepeatedSint16, CountInts(msgBytes))
-			for i := range c.RepeatedSint16 {
-				if err := ReadInt(&r, &c.RepeatedSint16[i]); err != nil {
-					return err
-				}
-			}
-			if HasNext(&r) {
-				return ErrInvalidLength
-			}
-			r.B = remainingBytes
-			c.canotoData.RepeatedSint16Size.Store(int64(len(msgBytes)))
-		case 31:
-			if wireType != Len {
-				return ErrUnexpectedWireType
-			}
-
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
-				return err
-			}
-			if len(msgBytes) == 0 {
-				return ErrZeroValue
-			}
-			r.Unsafe = originalUnsafe
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedSint32 = MakeSlice(c.RepeatedSint32, CountInts(msgBytes))
-			for i := range c.RepeatedSint32 {
-				if err := ReadInt(&r, &c.RepeatedSint32[i]); err != nil {
-					return err
-				}
-			}
-			if HasNext(&r) {
-				return ErrInvalidLength
-			}
-			r.B = remainingBytes
-			c.canotoData.RepeatedSint32Size.Store(int64(len(msgBytes)))
-		case 32:
-			if wireType != Len {
-				return ErrUnexpectedWireType
-			}
-
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
-				return err
-			}
-			if len(msgBytes) == 0 {
-				return ErrZeroValue
-			}
-			r.Unsafe = originalUnsafe
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedSint64 = MakeSlice(c.RepeatedSint64, CountInts(msgBytes))
-			for i := range c.RepeatedSint64 {
-				if err := ReadInt(&r, &c.RepeatedSint64[i]); err != nil {
-					return err
-				}
-			}
-			if HasNext(&r) {
-				return ErrInvalidLength
-			}
-			r.B = remainingBytes
-			c.canotoData.RepeatedSint64Size.Store(int64(len(msgBytes)))
-		case 33:
-			if wireType != Len {
-				return ErrUnexpectedWireType
-			}
-
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
-				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			// Verify the length of the packed field bytes.
-			numMsgBytes := uint(len(msgBytes))
-			if numMsgBytes == 0 {
-				return ErrZeroValue
-			}
-			if numMsgBytes%SizeFint32 != 0 {
-				return ErrInvalidLength
-			}
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedFixed32 = MakeSlice(c.RepeatedFixed32, int(numMsgBytes/SizeFint32))
-			for i := range c.RepeatedFixed32 {
-				if err := ReadFint32(&r, &c.RepeatedFixed32[i]); err != nil {
-					return err
-				}
-			}
-			r.B = remainingBytes
-		case 34:
-			if wireType != Len {
-				return ErrUnexpectedWireType
-			}
-
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
-				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			// Verify the length of the packed field bytes.
-			numMsgBytes := uint(len(msgBytes))
-			if numMsgBytes == 0 {
-				return ErrZeroValue
-			}
-			if numMsgBytes%SizeFint64 != 0 {
-				return ErrInvalidLength
-			}
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedFixed64 = MakeSlice(c.RepeatedFixed64, int(numMsgBytes/SizeFint64))
-			for i := range c.RepeatedFixed64 {
-				if err := ReadFint64(&r, &c.RepeatedFixed64[i]); err != nil {
-					return err
-				}
-			}
-			r.B = remainingBytes
-		case 35:
+		case 25:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
@@ -881,7 +855,40 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				}
 			}
 			r.B = remainingBytes
-		case 36:
+		case 26:
+			if wireType != Len {
+				return ErrUnexpectedWireType
+			}
+
+			// Read the packed field bytes.
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			if err := ReadBytes(&r, &msgBytes); err != nil {
+				return err
+			}
+			r.Unsafe = originalUnsafe
+
+			// Verify the length of the packed field bytes.
+			numMsgBytes := uint(len(msgBytes))
+			if numMsgBytes == 0 {
+				return ErrZeroValue
+			}
+			if numMsgBytes%SizeFint32 != 0 {
+				return ErrInvalidLength
+			}
+
+			// Read each value from the packed field bytes into the array.
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.RepeatedFixed32 = MakeSlice(c.RepeatedFixed32, int(numMsgBytes/SizeFint32))
+			for i := range c.RepeatedFixed32 {
+				if err := ReadFint32(&r, &c.RepeatedFixed32[i]); err != nil {
+					return err
+				}
+			}
+			r.B = remainingBytes
+		case 27:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
@@ -914,7 +921,40 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				}
 			}
 			r.B = remainingBytes
-		case 37:
+		case 28:
+			if wireType != Len {
+				return ErrUnexpectedWireType
+			}
+
+			// Read the packed field bytes.
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			if err := ReadBytes(&r, &msgBytes); err != nil {
+				return err
+			}
+			r.Unsafe = originalUnsafe
+
+			// Verify the length of the packed field bytes.
+			numMsgBytes := uint(len(msgBytes))
+			if numMsgBytes == 0 {
+				return ErrZeroValue
+			}
+			if numMsgBytes%SizeFint64 != 0 {
+				return ErrInvalidLength
+			}
+
+			// Read each value from the packed field bytes into the array.
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.RepeatedFixed64 = MakeSlice(c.RepeatedFixed64, int(numMsgBytes/SizeFint64))
+			for i := range c.RepeatedFixed64 {
+				if err := ReadFint64(&r, &c.RepeatedFixed64[i]); err != nil {
+					return err
+				}
+			}
+			r.B = remainingBytes
+		case 29:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
@@ -947,7 +987,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				}
 			}
 			r.B = remainingBytes
-		case 38:
+		case 30:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
@@ -982,7 +1022,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					return err
 				}
 			}
-		case 39:
+		case 31:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
@@ -1017,7 +1057,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					return err
 				}
 			}
-		case 40:
+		case 32:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
@@ -1067,7 +1107,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				}
 				r.B = remainingBytes
 			}
-		case 74:
+		case 33:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
@@ -1092,7 +1132,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return err
 			}
 			r.B = remainingBytes
-		case 75:
+		case 34:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
@@ -1117,7 +1157,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return err
 			}
 			r.B = remainingBytes
-		case 78:
+		case 35:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
@@ -1142,7 +1182,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return err
 			}
 			r.B = remainingBytes
-		case 79:
+		case 36:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
@@ -1227,6 +1267,18 @@ func (c *SpecFuzzer) CalculateCanotoCache() {
 	var (
 		size int
 	)
+	if !IsZero(c.Int8) {
+		size += len(canoto__SpecFuzzer__Int8__tag) + SizeInt(c.Int8)
+	}
+	if !IsZero(c.Int16) {
+		size += len(canoto__SpecFuzzer__Int16__tag) + SizeInt(c.Int16)
+	}
+	if !IsZero(c.Int32) {
+		size += len(canoto__SpecFuzzer__Int32__tag) + SizeInt(c.Int32)
+	}
+	if !IsZero(c.Int64) {
+		size += len(canoto__SpecFuzzer__Int64__tag) + SizeInt(c.Int64)
+	}
 	if !IsZero(c.Uint8) {
 		size += len(canoto__SpecFuzzer__Uint8__tag) + SizeUint(c.Uint8)
 	}
@@ -1239,29 +1291,17 @@ func (c *SpecFuzzer) CalculateCanotoCache() {
 	if !IsZero(c.Uint64) {
 		size += len(canoto__SpecFuzzer__Uint64__tag) + SizeUint(c.Uint64)
 	}
-	if !IsZero(c.Sint8) {
-		size += len(canoto__SpecFuzzer__Sint8__tag) + SizeInt(c.Sint8)
-	}
-	if !IsZero(c.Sint16) {
-		size += len(canoto__SpecFuzzer__Sint16__tag) + SizeInt(c.Sint16)
-	}
-	if !IsZero(c.Sint32) {
-		size += len(canoto__SpecFuzzer__Sint32__tag) + SizeInt(c.Sint32)
-	}
-	if !IsZero(c.Sint64) {
-		size += len(canoto__SpecFuzzer__Sint64__tag) + SizeInt(c.Sint64)
+	if !IsZero(c.Sfixed32) {
+		size += len(canoto__SpecFuzzer__Sfixed32__tag) + SizeFint32
 	}
 	if !IsZero(c.Fixed32) {
 		size += len(canoto__SpecFuzzer__Fixed32__tag) + SizeFint32
 	}
-	if !IsZero(c.Fixed64) {
-		size += len(canoto__SpecFuzzer__Fixed64__tag) + SizeFint64
-	}
-	if !IsZero(c.Sfixed32) {
-		size += len(canoto__SpecFuzzer__Sfixed32__tag) + SizeFint32
-	}
 	if !IsZero(c.Sfixed64) {
 		size += len(canoto__SpecFuzzer__Sfixed64__tag) + SizeFint64
+	}
+	if !IsZero(c.Fixed64) {
+		size += len(canoto__SpecFuzzer__Fixed64__tag) + SizeFint64
 	}
 	if !IsZero(c.Bool) {
 		size += len(canoto__SpecFuzzer__Bool__tag) + SizeBool
@@ -1277,6 +1317,46 @@ func (c *SpecFuzzer) CalculateCanotoCache() {
 		if fieldSize := (c.LargestFieldNumber).CachedCanotoSize(); fieldSize != 0 {
 			size += len(canoto__SpecFuzzer__LargestFieldNumber__tag) + SizeUint(uint64(fieldSize)) + fieldSize
 		}
+	}
+	if len(c.RepeatedInt8) != 0 {
+		var fieldSize int
+		for _, v := range c.RepeatedInt8 {
+			fieldSize += SizeInt(v)
+		}
+		size += len(canoto__SpecFuzzer__RepeatedInt8__tag) + SizeUint(uint64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedInt8Size.Store(int64(fieldSize))
+	}
+	if len(c.RepeatedInt16) != 0 {
+		var fieldSize int
+		for _, v := range c.RepeatedInt16 {
+			fieldSize += SizeInt(v)
+		}
+		size += len(canoto__SpecFuzzer__RepeatedInt16__tag) + SizeUint(uint64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedInt16Size.Store(int64(fieldSize))
+	}
+	if len(c.RepeatedInt32) != 0 {
+		var fieldSize int
+		for _, v := range c.RepeatedInt32 {
+			fieldSize += SizeInt(v)
+		}
+		size += len(canoto__SpecFuzzer__RepeatedInt32__tag) + SizeUint(uint64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedInt32Size.Store(int64(fieldSize))
+	}
+	if len(c.RepeatedInt64) != 0 {
+		var fieldSize int
+		for _, v := range c.RepeatedInt64 {
+			fieldSize += SizeInt(v)
+		}
+		size += len(canoto__SpecFuzzer__RepeatedInt64__tag) + SizeUint(uint64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedInt64Size.Store(int64(fieldSize))
+	}
+	if len(c.RepeatedUint8) != 0 {
+		var fieldSize int
+		for _, v := range c.RepeatedUint8 {
+			fieldSize += SizeUint(v)
+		}
+		size += len(canoto__SpecFuzzer__RepeatedUint8__tag) + SizeUint(uint64(fieldSize)) + fieldSize
+		c.canotoData.RepeatedUint8Size.Store(int64(fieldSize))
 	}
 	if len(c.RepeatedUint16) != 0 {
 		var fieldSize int
@@ -1302,53 +1382,21 @@ func (c *SpecFuzzer) CalculateCanotoCache() {
 		size += len(canoto__SpecFuzzer__RepeatedUint64__tag) + SizeUint(uint64(fieldSize)) + fieldSize
 		c.canotoData.RepeatedUint64Size.Store(int64(fieldSize))
 	}
-	if len(c.RepeatedSint8) != 0 {
-		var fieldSize int
-		for _, v := range c.RepeatedSint8 {
-			fieldSize += SizeInt(v)
-		}
-		size += len(canoto__SpecFuzzer__RepeatedSint8__tag) + SizeUint(uint64(fieldSize)) + fieldSize
-		c.canotoData.RepeatedSint8Size.Store(int64(fieldSize))
-	}
-	if len(c.RepeatedSint16) != 0 {
-		var fieldSize int
-		for _, v := range c.RepeatedSint16 {
-			fieldSize += SizeInt(v)
-		}
-		size += len(canoto__SpecFuzzer__RepeatedSint16__tag) + SizeUint(uint64(fieldSize)) + fieldSize
-		c.canotoData.RepeatedSint16Size.Store(int64(fieldSize))
-	}
-	if len(c.RepeatedSint32) != 0 {
-		var fieldSize int
-		for _, v := range c.RepeatedSint32 {
-			fieldSize += SizeInt(v)
-		}
-		size += len(canoto__SpecFuzzer__RepeatedSint32__tag) + SizeUint(uint64(fieldSize)) + fieldSize
-		c.canotoData.RepeatedSint32Size.Store(int64(fieldSize))
-	}
-	if len(c.RepeatedSint64) != 0 {
-		var fieldSize int
-		for _, v := range c.RepeatedSint64 {
-			fieldSize += SizeInt(v)
-		}
-		size += len(canoto__SpecFuzzer__RepeatedSint64__tag) + SizeUint(uint64(fieldSize)) + fieldSize
-		c.canotoData.RepeatedSint64Size.Store(int64(fieldSize))
+	if num := len(c.RepeatedSfixed32); num != 0 {
+		fieldSize := num * SizeFint32
+		size += len(canoto__SpecFuzzer__RepeatedSfixed32__tag) + SizeUint(uint64(fieldSize)) + fieldSize
 	}
 	if num := len(c.RepeatedFixed32); num != 0 {
 		fieldSize := num * SizeFint32
 		size += len(canoto__SpecFuzzer__RepeatedFixed32__tag) + SizeUint(uint64(fieldSize)) + fieldSize
 	}
-	if num := len(c.RepeatedFixed64); num != 0 {
-		fieldSize := num * SizeFint64
-		size += len(canoto__SpecFuzzer__RepeatedFixed64__tag) + SizeUint(uint64(fieldSize)) + fieldSize
-	}
-	if num := len(c.RepeatedSfixed32); num != 0 {
-		fieldSize := num * SizeFint32
-		size += len(canoto__SpecFuzzer__RepeatedSfixed32__tag) + SizeUint(uint64(fieldSize)) + fieldSize
-	}
 	if num := len(c.RepeatedSfixed64); num != 0 {
 		fieldSize := num * SizeFint64
 		size += len(canoto__SpecFuzzer__RepeatedSfixed64__tag) + SizeUint(uint64(fieldSize)) + fieldSize
+	}
+	if num := len(c.RepeatedFixed64); num != 0 {
+		fieldSize := num * SizeFint64
+		size += len(canoto__SpecFuzzer__RepeatedFixed64__tag) + SizeUint(uint64(fieldSize)) + fieldSize
 	}
 	if num := len(c.RepeatedBool); num != 0 {
 		fieldSize := num * SizeBool
@@ -1427,6 +1475,22 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 	if c == nil {
 		return w
 	}
+	if !IsZero(c.Int8) {
+		Append(&w, canoto__SpecFuzzer__Int8__tag)
+		AppendInt(&w, c.Int8)
+	}
+	if !IsZero(c.Int16) {
+		Append(&w, canoto__SpecFuzzer__Int16__tag)
+		AppendInt(&w, c.Int16)
+	}
+	if !IsZero(c.Int32) {
+		Append(&w, canoto__SpecFuzzer__Int32__tag)
+		AppendInt(&w, c.Int32)
+	}
+	if !IsZero(c.Int64) {
+		Append(&w, canoto__SpecFuzzer__Int64__tag)
+		AppendInt(&w, c.Int64)
+	}
 	if !IsZero(c.Uint8) {
 		Append(&w, canoto__SpecFuzzer__Uint8__tag)
 		AppendUint(&w, c.Uint8)
@@ -1443,37 +1507,21 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 		Append(&w, canoto__SpecFuzzer__Uint64__tag)
 		AppendUint(&w, c.Uint64)
 	}
-	if !IsZero(c.Sint8) {
-		Append(&w, canoto__SpecFuzzer__Sint8__tag)
-		AppendInt(&w, c.Sint8)
-	}
-	if !IsZero(c.Sint16) {
-		Append(&w, canoto__SpecFuzzer__Sint16__tag)
-		AppendInt(&w, c.Sint16)
-	}
-	if !IsZero(c.Sint32) {
-		Append(&w, canoto__SpecFuzzer__Sint32__tag)
-		AppendInt(&w, c.Sint32)
-	}
-	if !IsZero(c.Sint64) {
-		Append(&w, canoto__SpecFuzzer__Sint64__tag)
-		AppendInt(&w, c.Sint64)
+	if !IsZero(c.Sfixed32) {
+		Append(&w, canoto__SpecFuzzer__Sfixed32__tag)
+		AppendFint32(&w, c.Sfixed32)
 	}
 	if !IsZero(c.Fixed32) {
 		Append(&w, canoto__SpecFuzzer__Fixed32__tag)
 		AppendFint32(&w, c.Fixed32)
 	}
-	if !IsZero(c.Fixed64) {
-		Append(&w, canoto__SpecFuzzer__Fixed64__tag)
-		AppendFint64(&w, c.Fixed64)
-	}
-	if !IsZero(c.Sfixed32) {
-		Append(&w, canoto__SpecFuzzer__Sfixed32__tag)
-		AppendFint32(&w, c.Sfixed32)
-	}
 	if !IsZero(c.Sfixed64) {
 		Append(&w, canoto__SpecFuzzer__Sfixed64__tag)
 		AppendFint64(&w, c.Sfixed64)
+	}
+	if !IsZero(c.Fixed64) {
+		Append(&w, canoto__SpecFuzzer__Fixed64__tag)
+		AppendFint64(&w, c.Fixed64)
 	}
 	if !IsZero(c.Bool) {
 		Append(&w, canoto__SpecFuzzer__Bool__tag)
@@ -1492,6 +1540,41 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 			Append(&w, canoto__SpecFuzzer__LargestFieldNumber__tag)
 			AppendUint(&w, uint64(fieldSize))
 			w = (c.LargestFieldNumber).MarshalCanotoInto(w)
+		}
+	}
+	if len(c.RepeatedInt8) != 0 {
+		Append(&w, canoto__SpecFuzzer__RepeatedInt8__tag)
+		AppendUint(&w, uint64(c.canotoData.RepeatedInt8Size.Load()))
+		for _, v := range c.RepeatedInt8 {
+			AppendInt(&w, v)
+		}
+	}
+	if len(c.RepeatedInt16) != 0 {
+		Append(&w, canoto__SpecFuzzer__RepeatedInt16__tag)
+		AppendUint(&w, uint64(c.canotoData.RepeatedInt16Size.Load()))
+		for _, v := range c.RepeatedInt16 {
+			AppendInt(&w, v)
+		}
+	}
+	if len(c.RepeatedInt32) != 0 {
+		Append(&w, canoto__SpecFuzzer__RepeatedInt32__tag)
+		AppendUint(&w, uint64(c.canotoData.RepeatedInt32Size.Load()))
+		for _, v := range c.RepeatedInt32 {
+			AppendInt(&w, v)
+		}
+	}
+	if len(c.RepeatedInt64) != 0 {
+		Append(&w, canoto__SpecFuzzer__RepeatedInt64__tag)
+		AppendUint(&w, uint64(c.canotoData.RepeatedInt64Size.Load()))
+		for _, v := range c.RepeatedInt64 {
+			AppendInt(&w, v)
+		}
+	}
+	if len(c.RepeatedUint8) != 0 {
+		Append(&w, canoto__SpecFuzzer__RepeatedUint8__tag)
+		AppendUint(&w, uint64(c.canotoData.RepeatedUint8Size.Load()))
+		for _, v := range c.RepeatedUint8 {
+			AppendUint(&w, v)
 		}
 	}
 	if len(c.RepeatedUint16) != 0 {
@@ -1515,32 +1598,11 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 			AppendUint(&w, v)
 		}
 	}
-	if len(c.RepeatedSint8) != 0 {
-		Append(&w, canoto__SpecFuzzer__RepeatedSint8__tag)
-		AppendUint(&w, uint64(c.canotoData.RepeatedSint8Size.Load()))
-		for _, v := range c.RepeatedSint8 {
-			AppendInt(&w, v)
-		}
-	}
-	if len(c.RepeatedSint16) != 0 {
-		Append(&w, canoto__SpecFuzzer__RepeatedSint16__tag)
-		AppendUint(&w, uint64(c.canotoData.RepeatedSint16Size.Load()))
-		for _, v := range c.RepeatedSint16 {
-			AppendInt(&w, v)
-		}
-	}
-	if len(c.RepeatedSint32) != 0 {
-		Append(&w, canoto__SpecFuzzer__RepeatedSint32__tag)
-		AppendUint(&w, uint64(c.canotoData.RepeatedSint32Size.Load()))
-		for _, v := range c.RepeatedSint32 {
-			AppendInt(&w, v)
-		}
-	}
-	if len(c.RepeatedSint64) != 0 {
-		Append(&w, canoto__SpecFuzzer__RepeatedSint64__tag)
-		AppendUint(&w, uint64(c.canotoData.RepeatedSint64Size.Load()))
-		for _, v := range c.RepeatedSint64 {
-			AppendInt(&w, v)
+	if num := len(c.RepeatedSfixed32); num != 0 {
+		Append(&w, canoto__SpecFuzzer__RepeatedSfixed32__tag)
+		AppendUint(&w, uint64(num*SizeFint32))
+		for _, v := range c.RepeatedSfixed32 {
+			AppendFint32(&w, v)
 		}
 	}
 	if num := len(c.RepeatedFixed32); num != 0 {
@@ -1550,24 +1612,17 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 			AppendFint32(&w, v)
 		}
 	}
-	if num := len(c.RepeatedFixed64); num != 0 {
-		Append(&w, canoto__SpecFuzzer__RepeatedFixed64__tag)
-		AppendUint(&w, uint64(num*SizeFint64))
-		for _, v := range c.RepeatedFixed64 {
-			AppendFint64(&w, v)
-		}
-	}
-	if num := len(c.RepeatedSfixed32); num != 0 {
-		Append(&w, canoto__SpecFuzzer__RepeatedSfixed32__tag)
-		AppendUint(&w, uint64(num*SizeFint32))
-		for _, v := range c.RepeatedSfixed32 {
-			AppendFint32(&w, v)
-		}
-	}
 	if num := len(c.RepeatedSfixed64); num != 0 {
 		Append(&w, canoto__SpecFuzzer__RepeatedSfixed64__tag)
 		AppendUint(&w, uint64(num*SizeFint64))
 		for _, v := range c.RepeatedSfixed64 {
+			AppendFint64(&w, v)
+		}
+	}
+	if num := len(c.RepeatedFixed64); num != 0 {
+		Append(&w, canoto__SpecFuzzer__RepeatedFixed64__tag)
+		AppendUint(&w, uint64(num*SizeFint64))
+		for _, v := range c.RepeatedFixed64 {
 			AppendFint64(&w, v)
 		}
 	}
@@ -1621,7 +1676,7 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 }
 
 const (
-	canoto__LargestFieldNumber__Int32__tag = "\xf8\xff\xff\xff\x0f" // canoto.Tag(536870911, canoto.Varint)
+	canoto__LargestFieldNumber__Uint__tag = "\xf8\xff\xff\xff\x0f" // canoto.Tag(536870911, canoto.Varint)
 )
 
 type canotoData_LargestFieldNumber struct {
@@ -1637,9 +1692,9 @@ func (*LargestFieldNumber[T1]) CanotoSpec(types ...reflect.Type) *Spec {
 		Fields: []*FieldType{
 			{
 				FieldNumber: 536870911,
-				Name:        "Int32",
+				Name:        "Uint",
 				OneOf:       "",
-				TypeUint:    SizeOf(zero.Int32),
+				TypeUint:    SizeOf(zero.Uint),
 			},
 		},
 	}
@@ -1689,10 +1744,10 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			if err := ReadUint(&r, &c.Int32); err != nil {
+			if err := ReadUint(&r, &c.Uint); err != nil {
 				return err
 			}
-			if IsZero(c.Int32) {
+			if IsZero(c.Uint) {
 				return ErrZeroValue
 			}
 		default:
@@ -1727,8 +1782,8 @@ func (c *LargestFieldNumber[T1]) CalculateCanotoCache() {
 	var (
 		size int
 	)
-	if !IsZero(c.Int32) {
-		size += len(canoto__LargestFieldNumber__Int32__tag) + SizeUint(c.Int32)
+	if !IsZero(c.Uint) {
+		size += len(canoto__LargestFieldNumber__Uint__tag) + SizeUint(c.Uint)
 	}
 	c.canotoData.size.Store(int64(size))
 }
@@ -1770,9 +1825,9 @@ func (c *LargestFieldNumber[T1]) MarshalCanotoInto(w Writer) Writer {
 	if c == nil {
 		return w
 	}
-	if !IsZero(c.Int32) {
-		Append(&w, canoto__LargestFieldNumber__Int32__tag)
-		AppendUint(&w, c.Int32)
+	if !IsZero(c.Uint) {
+		Append(&w, canoto__LargestFieldNumber__Uint__tag)
+		AppendUint(&w, c.Uint)
 	}
 	return w
 }

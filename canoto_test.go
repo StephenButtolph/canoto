@@ -283,12 +283,12 @@ func testAppendUint[T Uint](t *testing.T, v T) {
 	require.Empty(r.B)
 }
 
-func FuzzSizeSint_int8(f *testing.F)  { f.Fuzz(testSizeSint[int8]) }
-func FuzzSizeSint_int16(f *testing.F) { f.Fuzz(testSizeSint[int16]) }
-func FuzzSizeSint_int32(f *testing.F) { f.Fuzz(testSizeSint[int32]) }
-func FuzzSizeSint_int64(f *testing.F) { f.Fuzz(testSizeSint[int64]) }
+func FuzzSizeInt_int8(f *testing.F)  { f.Fuzz(testSizeInt[int8]) }
+func FuzzSizeInt_int16(f *testing.F) { f.Fuzz(testSizeInt[int16]) }
+func FuzzSizeInt_int32(f *testing.F) { f.Fuzz(testSizeInt[int32]) }
+func FuzzSizeInt_int64(f *testing.F) { f.Fuzz(testSizeInt[int64]) }
 
-func testSizeSint[T Sint](t *testing.T, v T) {
+func testSizeInt[T Int](t *testing.T, v T) {
 	w := &Writer{}
 	AppendInt(w, v)
 
@@ -296,7 +296,7 @@ func testSizeSint[T Sint](t *testing.T, v T) {
 	require.Len(t, w.B, size)
 }
 
-func TestReadSint_int32(t *testing.T) {
+func TestReadInt_int32(t *testing.T) {
 	validTests := []validTest[int32]{
 		{"00", 0},
 		{"01", -1},
@@ -360,7 +360,7 @@ func TestReadSint_int32(t *testing.T) {
 	}
 }
 
-func TestReadSint_int64(t *testing.T) {
+func TestReadInt_int64(t *testing.T) {
 	validTests := []validTest[int64]{
 		{"00", 0},
 		{"01", -1},
@@ -423,12 +423,12 @@ func TestReadSint_int64(t *testing.T) {
 	}
 }
 
-func FuzzAppendSint_int8(f *testing.F)  { f.Fuzz(testAppendSint[int8]) }
-func FuzzAppendSint_int16(f *testing.F) { f.Fuzz(testAppendSint[int16]) }
-func FuzzAppendSint_int32(f *testing.F) { f.Fuzz(testAppendSint[int32]) }
-func FuzzAppendSint_int64(f *testing.F) { f.Fuzz(testAppendSint[int64]) }
+func FuzzAppendInt_int8(f *testing.F)  { f.Fuzz(testAppendInt[int8]) }
+func FuzzAppendInt_int16(f *testing.F) { f.Fuzz(testAppendInt[int16]) }
+func FuzzAppendInt_int32(f *testing.F) { f.Fuzz(testAppendInt[int32]) }
+func FuzzAppendInt_int64(f *testing.F) { f.Fuzz(testAppendInt[int64]) }
 
-func testAppendSint[T Sint](t *testing.T, v T) {
+func testAppendInt[T Int](t *testing.T, v T) {
 	require := require.New(t)
 
 	w := &Writer{}
@@ -847,47 +847,48 @@ func TestIsBytesEmpty(t *testing.T) {
 }
 
 type SpecFuzzer struct {
+	Int8                       int8                         `canoto:"int,1"              json:"Int8,omitempty"`
+	Int16                      int16                        `canoto:"int,2"              json:"Int16,omitempty"`
+	Int32                      int32                        `canoto:"int,3"              json:"Int32,omitempty"`
+	Int64                      int64                        `canoto:"int,4"              json:"Int64,omitempty"`
 	Uint8                      uint8                        `canoto:"uint,5"             json:"Uint8,omitempty"`
 	Uint16                     uint16                       `canoto:"uint,6"             json:"Uint16,omitempty"`
 	Uint32                     uint32                       `canoto:"uint,7"             json:"Uint32,omitempty"`
 	Uint64                     uint64                       `canoto:"uint,8"             json:"Uint64,omitempty"`
-	Sint8                      int8                         `canoto:"int,9"              json:"Sint8,omitempty"`
-	Sint16                     int16                        `canoto:"int,10"             json:"Sint16,omitempty"`
-	Sint32                     int32                        `canoto:"int,11"             json:"Sint32,omitempty"`
-	Sint64                     int64                        `canoto:"int,12"             json:"Sint64,omitempty"`
-	Fixed32                    uint32                       `canoto:"fint32,13"          json:"Fixed32,omitempty"`
-	Fixed64                    uint64                       `canoto:"fint64,14"          json:"Fixed64,omitempty"`
-	Sfixed32                   int32                        `canoto:"fint32,15"          json:"Sfixed32,omitempty"`
-	Sfixed64                   int64                        `canoto:"fint64,16"          json:"Sfixed64,omitempty"`
-	Bool                       bool                         `canoto:"bool,17"            json:"Bool,omitempty"`
-	String                     string                       `canoto:"string,18"          json:"String,omitempty"`
-	Bytes                      []byte                       `canoto:"bytes,19"           json:"Bytes,omitempty"`
-	LargestFieldNumber         *LargestFieldNumber[uint32]  `canoto:"pointer,20"         json:"LargestFieldNumber,omitempty"`
-	RepeatedUint16             []uint16                     `canoto:"repeated uint,26"   json:"RepeatedUint16,omitempty"`
-	RepeatedUint32             []uint32                     `canoto:"repeated uint,27"   json:"RepeatedUint32,omitempty"`
-	RepeatedUint64             []uint64                     `canoto:"repeated uint,28"   json:"RepeatedUint64,omitempty"`
-	RepeatedSint8              []int8                       `canoto:"repeated int,29"    json:"RepeatedSint8,omitempty"`
-	RepeatedSint16             []int16                      `canoto:"repeated int,30"    json:"RepeatedSint16,omitempty"`
-	RepeatedSint32             []int32                      `canoto:"repeated int,31"    json:"RepeatedSint32,omitempty"`
-	RepeatedSint64             []int64                      `canoto:"repeated int,32"    json:"RepeatedSint64,omitempty"`
-	RepeatedFixed32            []uint32                     `canoto:"repeated fint32,33" json:"RepeatedFixed32,omitempty"`
-	RepeatedFixed64            []uint64                     `canoto:"repeated fint64,34" json:"RepeatedFixed64,omitempty"`
-	RepeatedSfixed32           []int32                      `canoto:"repeated fint32,35" json:"RepeatedSfixed32,omitempty"`
-	RepeatedSfixed64           []int64                      `canoto:"repeated fint64,36" json:"RepeatedSfixed64,omitempty"`
-	RepeatedBool               []bool                       `canoto:"repeated bool,37"   json:"RepeatedBool,omitempty"`
-	RepeatedString             []string                     `canoto:"repeated string,38" json:"RepeatedString,omitempty"`
-	RepeatedBytes              [][]byte                     `canoto:"repeated bytes,39"  json:"RepeatedBytes,omitempty"`
-	RepeatedLargestFieldNumber []LargestFieldNumber[uint32] `canoto:"repeated value,40"  json:"RepeatedLargestFieldNumber,omitempty"`
-	OneOf                      *OneOf                       `canoto:"pointer,74"         json:"OneOf,omitempty"`
-	Pointer                    *LargestFieldNumber[uint32]  `canoto:"pointer,75"         json:"Pointer,omitempty"`
-	Field                      *LargestFieldNumber[uint32]  `canoto:"field,78"           json:"Field,omitempty"`
-	Recursive                  *SpecFuzzer                  `canoto:"pointer,79"         json:"Recursive,omitempty"`
+	Sfixed32                   int32                        `canoto:"fint32,9"           json:"Sfixed32,omitempty"`
+	Fixed32                    uint32                       `canoto:"fint32,10"          json:"Fixed32,omitempty"`
+	Sfixed64                   int64                        `canoto:"fint64,11"          json:"Sfixed64,omitempty"`
+	Fixed64                    uint64                       `canoto:"fint64,12"          json:"Fixed64,omitempty"`
+	Bool                       bool                         `canoto:"bool,13"            json:"Bool,omitempty"`
+	String                     string                       `canoto:"string,14"          json:"String,omitempty"`
+	Bytes                      []byte                       `canoto:"bytes,15"           json:"Bytes,omitempty"`
+	LargestFieldNumber         *LargestFieldNumber[uint32]  `canoto:"pointer,16"         json:"LargestFieldNumber,omitempty"`
+	RepeatedInt8               []int8                       `canoto:"repeated int,17"    json:"RepeatedInt8,omitempty"`
+	RepeatedInt16              []int16                      `canoto:"repeated int,18"    json:"RepeatedInt16,omitempty"`
+	RepeatedInt32              []int32                      `canoto:"repeated int,19"    json:"RepeatedInt32,omitempty"`
+	RepeatedInt64              []int64                      `canoto:"repeated int,20"    json:"RepeatedInt64,omitempty"`
+	RepeatedUint8              []uint8                      `canoto:"repeated uint,21"   json:"RepeatedUint8,omitempty"`
+	RepeatedUint16             []uint16                     `canoto:"repeated uint,22"   json:"RepeatedUint16,omitempty"`
+	RepeatedUint32             []uint32                     `canoto:"repeated uint,23"   json:"RepeatedUint32,omitempty"`
+	RepeatedUint64             []uint64                     `canoto:"repeated uint,24"   json:"RepeatedUint64,omitempty"`
+	RepeatedSfixed32           []int32                      `canoto:"repeated fint32,25" json:"RepeatedSfixed32,omitempty"`
+	RepeatedFixed32            []uint32                     `canoto:"repeated fint32,26" json:"RepeatedFixed32,omitempty"`
+	RepeatedSfixed64           []int64                      `canoto:"repeated fint64,27" json:"RepeatedSfixed64,omitempty"`
+	RepeatedFixed64            []uint64                     `canoto:"repeated fint64,28" json:"RepeatedFixed64,omitempty"`
+	RepeatedBool               []bool                       `canoto:"repeated bool,29"   json:"RepeatedBool,omitempty"`
+	RepeatedString             []string                     `canoto:"repeated string,30" json:"RepeatedString,omitempty"`
+	RepeatedBytes              [][]byte                     `canoto:"repeated bytes,31"  json:"RepeatedBytes,omitempty"`
+	RepeatedLargestFieldNumber []LargestFieldNumber[uint32] `canoto:"repeated value,32"  json:"RepeatedLargestFieldNumber,omitempty"`
+	OneOf                      *OneOf                       `canoto:"pointer,33"         json:"OneOf,omitempty"`
+	Pointer                    *LargestFieldNumber[uint32]  `canoto:"pointer,34"         json:"Pointer,omitempty"`
+	Field                      *LargestFieldNumber[uint32]  `canoto:"field,35"           json:"Field,omitempty"`
+	Recursive                  *SpecFuzzer                  `canoto:"pointer,36"         json:"Recursive,omitempty"`
 
 	canotoData canotoData_SpecFuzzer
 }
 
 type LargestFieldNumber[T Uint] struct {
-	Int32 T `canoto:"uint,536870911" json:"Int32,omitempty"`
+	Uint T `canoto:"uint,536870911" json:"Int32,omitempty"`
 
 	canotoData canotoData_LargestFieldNumber
 }
@@ -905,14 +906,14 @@ type OneOf struct {
 
 func FuzzSpec(f *testing.F) {
 	full := SpecFuzzer{
+		Int8:     -31,
+		Int16:    -2164,
+		Int32:    -12786345,
+		Int64:    98761243,
 		Uint8:    254,
 		Uint16:   21645,
 		Uint32:   32485976,
 		Uint64:   287634,
-		Sint8:    -31,
-		Sint16:   -2164,
-		Sint32:   -12786345,
-		Sint64:   98761243,
 		Fixed32:  98765234,
 		Fixed64:  1234576,
 		Sfixed32: -21348976,
@@ -921,16 +922,17 @@ func FuzzSpec(f *testing.F) {
 		String:   "hi my name is Bob",
 		Bytes:    []byte("hi my name is Bob too"),
 		LargestFieldNumber: &LargestFieldNumber[uint32]{
-			Int32: 216457,
+			Uint: 216457,
 		},
 
+		RepeatedInt8:     []int8{1, 2, 3},
+		RepeatedInt16:    []int16{1, 2, 3},
+		RepeatedInt32:    []int32{1, 2, 3},
+		RepeatedInt64:    []int64{1, 2, 3},
+		RepeatedUint8:    []uint8{1, 2, 3},
 		RepeatedUint16:   []uint16{1, 2, 3},
 		RepeatedUint32:   []uint32{1, 2, 3},
 		RepeatedUint64:   []uint64{1, 2, 3},
-		RepeatedSint8:    []int8{1, 2, 3},
-		RepeatedSint16:   []int16{1, 2, 3},
-		RepeatedSint32:   []int32{1, 2, 3},
-		RepeatedSint64:   []int64{1, 2, 3},
 		RepeatedFixed32:  []uint32{1, 2, 3},
 		RepeatedFixed64:  []uint64{1, 2, 3},
 		RepeatedSfixed32: []int32{1, 2, 3},
@@ -939,8 +941,8 @@ func FuzzSpec(f *testing.F) {
 		RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
 		RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
 		RepeatedLargestFieldNumber: []LargestFieldNumber[uint32]{
-			{Int32: 123455},
-			{Int32: 876523},
+			{Uint: 123455},
+			{Uint: 876523},
 		},
 
 		OneOf: &OneOf{
