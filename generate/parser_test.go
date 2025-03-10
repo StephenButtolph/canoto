@@ -21,6 +21,12 @@ func TestParse(t *testing.T) {
 		wantErr         error
 	}{
 		{
+			name:            "duplicate field name",
+			filePath:        "testdata/duplicate_field_name.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidOneOfName,
+		},
+		{
 			name:            "duplicate field number",
 			filePath:        "testdata/duplicate_field_number.go",
 			wantPackageName: "testdata",

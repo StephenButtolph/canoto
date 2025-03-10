@@ -182,6 +182,21 @@ func parse(
 			return false
 		}
 
+		oneOfNames := make(map[string]struct{})
+		for _, f := range message.fields {
+			oneOfNames[f.oneOfName] = struct{}{}
+		}
+		for _, f := range message.fields {
+			if _, ok := oneOfNames[f.name]; ok {
+				err = fmt.Errorf("%w %q conflicts with oneOf at %s",
+					errInvalidOneOfName,
+					f.name,
+					fs.Position(st.Pos()),
+				)
+				return false
+			}
+		}
+
 		slices.SortFunc(message.fields, field.Compare)
 		if !isUniquelySorted(message.fields, field.Compare) {
 			err = fmt.Errorf("%w at %s",
