@@ -7,7 +7,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/thepudds/fzgen/fuzzer"
-	"golang.org/x/exp/constraints"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
@@ -22,7 +21,7 @@ func canonicalizeSlice[T any](s []T) []T {
 	return s
 }
 
-func castSlice[I, O constraints.Integer](s []I) []O {
+func castSlice[I ~int8 | ~int16 | ~uint8 | ~uint16, O ~int32 | ~uint32](s []I) []O {
 	if len(s) == 0 {
 		return nil
 	}

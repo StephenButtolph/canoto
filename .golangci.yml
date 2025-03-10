@@ -44,6 +44,7 @@ linters:
     - err113
     - errcheck
     - errorlint
+    - exptostd
     - forbidigo
     - gci
     - gocritic

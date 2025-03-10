@@ -1,9 +1,8 @@
 package generate
 
 import (
+	"maps"
 	"slices"
-
-	"golang.org/x/exp/maps"
 )
 
 type message struct {
@@ -22,7 +21,5 @@ func (m *message) OneOfs() []string {
 		}
 	}
 
-	oneOfsSlice := maps.Keys(oneOfs)
-	slices.Sort(oneOfsSlice)
-	return oneOfsSlice
+	return slices.Sorted(maps.Keys(oneOfs))
 }
