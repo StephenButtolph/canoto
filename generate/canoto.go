@@ -299,12 +299,17 @@ ${marshal}	return w
 }
 
 func makeZeroVarName(m message, generics string) string {
-	needBetterName := []canotoType{
-		canotoBool, canotoRepeatedBool, canotoString, canotoRepeatedString, canotoBytes, canotoRepeatedBytes,
+	staticTypes := []canotoType{
+		canotoBool,
+		canotoRepeatedBool,
+		canotoString,
+		canotoRepeatedString,
+		canotoBytes,
+		canotoRepeatedBytes,
 	}
 
 	for _, f := range m.fields {
-		if !slices.Contains(needBetterName, f.canotoType) {
+		if !slices.Contains(staticTypes, f.canotoType) {
 			return makeTemplate(`	var zero ${structName}${generics}`, map[string]string{
 				"structName": m.name,
 				"generics":   generics,
