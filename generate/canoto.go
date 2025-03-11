@@ -137,8 +137,7 @@ ${sizeCache}${oneOfCache}}
 // CanotoSpec returns the specification of this canoto message.
 func (*${structName}${generics}) CanotoSpec(types ...reflect.Type) *${selector}Spec {
 	types = append(types, reflect.TypeOf(${structName}${generics}{}))
-${zero}
-	s := &${selector}Spec{
+${zero}	s := &${selector}Spec{
 		Name: "${structName}",
 		Fields: []*${selector}FieldType{
 ${spec}		},
@@ -299,7 +298,7 @@ ${marshal}	return w
 }
 
 func makeZeroVarName(m message, generics string) string {
-	staticTypes := []canotoType{
+	zeroIsUnusedTypes := []canotoType{
 		canotoBool,
 		canotoRepeatedBool,
 		canotoString,
@@ -309,8 +308,9 @@ func makeZeroVarName(m message, generics string) string {
 	}
 
 	for _, f := range m.fields {
-		if !slices.Contains(staticTypes, f.canotoType) {
-			return makeTemplate(`	var zero ${structName}${generics}`, map[string]string{
+		if !slices.Contains(zeroIsUnusedTypes, f.canotoType) {
+			return makeTemplate(`	var zero ${structName}${generics}
+`, map[string]string{
 				"structName": m.name,
 				"generics":   generics,
 			})

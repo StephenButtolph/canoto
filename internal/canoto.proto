@@ -148,7 +148,7 @@ message Scalars {
   repeated LargestFieldNumber FixedRepeatedField = 68;
 }
 
-message CanotoSpecZeroVarUnneeded {
+message SpecUnusedZero {
   bool Bool = 1;
   repeated bool RepeatedBool = 2;
   string String = 3;

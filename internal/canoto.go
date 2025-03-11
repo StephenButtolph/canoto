@@ -194,7 +194,7 @@ type Scalars struct {
 	canotoData canotoData_Scalars
 }
 
-type CanotoSpecZeroVarUnneeded struct {
+type SpecUnusedZero struct {
 	Bool           bool     `canoto:"bool,1"`
 	RepeatedBool   []bool   `canoto:"repeated bool,2"`
 	String         string   `canoto:"string,3"`
@@ -202,5 +202,5 @@ type CanotoSpecZeroVarUnneeded struct {
 	Bytes          []byte   `canoto:"bytes,5"`
 	RepeatedBytes  [][]byte `canoto:"repeated bytes,6"`
 
-	canotoData canotoData_CanotoSpecZeroVarUnneeded
+	canotoData canotoData_SpecUnusedZero
 }
