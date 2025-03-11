@@ -6916,3 +6916,370 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	}
 	return w
 }
+
+const (
+	canoto__CanotoSpecZeroVarUnneeded__Bool__tag           = "\x08" // canoto.Tag(1, canoto.Varint)
+	canoto__CanotoSpecZeroVarUnneeded__RepeatedBool__tag   = "\x12" // canoto.Tag(2, canoto.Len)
+	canoto__CanotoSpecZeroVarUnneeded__String__tag         = "\x1a" // canoto.Tag(3, canoto.Len)
+	canoto__CanotoSpecZeroVarUnneeded__RepeatedString__tag = "\x22" // canoto.Tag(4, canoto.Len)
+	canoto__CanotoSpecZeroVarUnneeded__Bytes__tag          = "\x2a" // canoto.Tag(5, canoto.Len)
+	canoto__CanotoSpecZeroVarUnneeded__RepeatedBytes__tag  = "\x32" // canoto.Tag(6, canoto.Len)
+)
+
+type canotoData_CanotoSpecZeroVarUnneeded struct {
+	size atomic.Int64
+}
+
+// CanotoSpec returns the specification of this canoto message.
+func (*CanotoSpecZeroVarUnneeded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
+	types = append(types, reflect.TypeOf(CanotoSpecZeroVarUnneeded{}))
+	var _ CanotoSpecZeroVarUnneeded
+	s := &canoto.Spec{
+		Name: "CanotoSpecZeroVarUnneeded",
+		Fields: []*canoto.FieldType{
+			{
+				FieldNumber: 1,
+				Name:        "Bool",
+				OneOf:       "",
+				TypeBool:    true,
+			},
+			{
+				FieldNumber: 2,
+				Name:        "RepeatedBool",
+				Repeated:    true,
+				OneOf:       "",
+				TypeBool:    true,
+			},
+			{
+				FieldNumber: 3,
+				Name:        "String",
+				OneOf:       "",
+				TypeString:  true,
+			},
+			{
+				FieldNumber: 4,
+				Name:        "RepeatedString",
+				Repeated:    true,
+				OneOf:       "",
+				TypeString:  true,
+			},
+			{
+				FieldNumber: 5,
+				Name:        "Bytes",
+				OneOf:       "",
+				TypeBytes:   true,
+			},
+			{
+				FieldNumber: 6,
+				Name:        "RepeatedBytes",
+				Repeated:    true,
+				OneOf:       "",
+				TypeBytes:   true,
+			},
+		},
+	}
+	s.CalculateCanotoCache()
+	return s
+}
+
+// MakeCanoto creates a new empty value.
+func (*CanotoSpecZeroVarUnneeded) MakeCanoto() *CanotoSpecZeroVarUnneeded {
+	return new(CanotoSpecZeroVarUnneeded)
+}
+
+// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
+func (c *CanotoSpecZeroVarUnneeded) UnmarshalCanoto(bytes []byte) error {
+	r := canoto.Reader{
+		B: bytes,
+	}
+	return c.UnmarshalCanotoFrom(r)
+}
+
+// UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
+// should just use UnmarshalCanoto.
+//
+// During parsing, the canoto cache is saved.
+//
+// This function enables configuration of reader options.
+func (c *CanotoSpecZeroVarUnneeded) UnmarshalCanotoFrom(r canoto.Reader) error {
+	// Zero the struct before unmarshaling.
+	*c = CanotoSpecZeroVarUnneeded{}
+	c.canotoData.size.Store(int64(len(r.B)))
+
+	var minField uint32
+	for canoto.HasNext(&r) {
+		field, wireType, err := canoto.ReadTag(&r)
+		if err != nil {
+			return err
+		}
+		if field < minField {
+			return canoto.ErrInvalidFieldOrder
+		}
+
+		switch field {
+		case 1:
+			if wireType != canoto.Varint {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			if err := canoto.ReadBool(&r, &c.Bool); err != nil {
+				return err
+			}
+			if canoto.IsZero(c.Bool) {
+				return canoto.ErrZeroValue
+			}
+		case 2:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			// Read the packed field bytes.
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				return err
+			}
+			r.Unsafe = originalUnsafe
+
+			// Verify the length of the packed field bytes.
+			numMsgBytes := uint(len(msgBytes))
+			if numMsgBytes == 0 {
+				return canoto.ErrZeroValue
+			}
+			if numMsgBytes%canoto.SizeBool != 0 {
+				return canoto.ErrInvalidLength
+			}
+
+			// Read each value from the packed field bytes into the array.
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.RepeatedBool = canoto.MakeSlice(c.RepeatedBool, int(numMsgBytes/canoto.SizeBool))
+			for i := range c.RepeatedBool {
+				if err := canoto.ReadBool(&r, &c.RepeatedBool[i]); err != nil {
+					return err
+				}
+			}
+			r.B = remainingBytes
+		case 3:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			if err := canoto.ReadString(&r, &c.String); err != nil {
+				return err
+			}
+			if len(c.String) == 0 {
+				return canoto.ErrZeroValue
+			}
+		case 4:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			// Skip the first entry because we have already stripped the tag.
+			remainingBytes := r.B
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			if err := canoto.ReadBytes(&r, new([]byte)); err != nil {
+				return err
+			}
+			r.Unsafe = originalUnsafe
+
+			// Count the number of additional entries after the first entry.
+			countMinus1, err := canoto.CountBytes(r.B, canoto__CanotoSpecZeroVarUnneeded__RepeatedString__tag)
+			if err != nil {
+				return err
+			}
+			c.RepeatedString = canoto.MakeSlice(c.RepeatedString, countMinus1+1)
+
+			// Read the first entry manually because the tag is still already
+			// stripped.
+			r.B = remainingBytes
+			if err := canoto.ReadString(&r, &c.RepeatedString[0]); err != nil {
+				return err
+			}
+
+			// Read the rest of the entries, stripping the tag each time.
+			for i := range countMinus1 {
+				r.B = r.B[len(canoto__CanotoSpecZeroVarUnneeded__RepeatedString__tag):]
+				if err := canoto.ReadString(&r, &c.RepeatedString[1+i]); err != nil {
+					return err
+				}
+			}
+		case 5:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			if err := canoto.ReadBytes(&r, &c.Bytes); err != nil {
+				return err
+			}
+			if len(c.Bytes) == 0 {
+				return canoto.ErrZeroValue
+			}
+		case 6:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			// Skip the first entry because we have already stripped the tag.
+			remainingBytes := r.B
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			if err := canoto.ReadBytes(&r, new([]byte)); err != nil {
+				return err
+			}
+			r.Unsafe = originalUnsafe
+
+			// Count the number of additional entries after the first entry.
+			countMinus1, err := canoto.CountBytes(r.B, canoto__CanotoSpecZeroVarUnneeded__RepeatedBytes__tag)
+			if err != nil {
+				return err
+			}
+			c.RepeatedBytes = canoto.MakeSlice(c.RepeatedBytes, countMinus1+1)
+
+			// Read the first entry manually because the tag is still already
+			// stripped.
+			r.B = remainingBytes
+			if err := canoto.ReadBytes(&r, &c.RepeatedBytes[0]); err != nil {
+				return err
+			}
+
+			// Read the rest of the entries, stripping the tag each time.
+			for i := range countMinus1 {
+				r.B = r.B[len(canoto__CanotoSpecZeroVarUnneeded__RepeatedBytes__tag):]
+				if err := canoto.ReadBytes(&r, &c.RepeatedBytes[1+i]); err != nil {
+					return err
+				}
+			}
+		default:
+			return canoto.ErrUnknownField
+		}
+
+		minField = field + 1
+	}
+	return nil
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// Specifically, ValidCanoto ensures:
+// 1. All OneOfs are specified at most once.
+// 2. All strings are valid utf-8.
+// 3. All custom fields are ValidCanoto.
+func (c *CanotoSpecZeroVarUnneeded) ValidCanoto() bool {
+	if c == nil {
+		return true
+	}
+	if !utf8.ValidString(string(c.String)) {
+		return false
+	}
+	for _, v := range c.RepeatedString {
+		if !utf8.ValidString(string(v)) {
+			return false
+		}
+	}
+	return true
+}
+
+// CalculateCanotoCache populates size and OneOf caches based on the current
+// values in the struct.
+func (c *CanotoSpecZeroVarUnneeded) CalculateCanotoCache() {
+	if c == nil {
+		return
+	}
+	var (
+		size int
+	)
+	if !canoto.IsZero(c.Bool) {
+		size += len(canoto__CanotoSpecZeroVarUnneeded__Bool__tag) + canoto.SizeBool
+	}
+	if num := len(c.RepeatedBool); num != 0 {
+		fieldSize := num * canoto.SizeBool
+		size += len(canoto__CanotoSpecZeroVarUnneeded__RepeatedBool__tag) + canoto.SizeUint(uint64(fieldSize)) + fieldSize
+	}
+	if len(c.String) != 0 {
+		size += len(canoto__CanotoSpecZeroVarUnneeded__String__tag) + canoto.SizeBytes(c.String)
+	}
+	for _, v := range c.RepeatedString {
+		size += len(canoto__CanotoSpecZeroVarUnneeded__RepeatedString__tag) + canoto.SizeBytes(v)
+	}
+	if len(c.Bytes) != 0 {
+		size += len(canoto__CanotoSpecZeroVarUnneeded__Bytes__tag) + canoto.SizeBytes(c.Bytes)
+	}
+	for _, v := range c.RepeatedBytes {
+		size += len(canoto__CanotoSpecZeroVarUnneeded__RepeatedBytes__tag) + canoto.SizeBytes(v)
+	}
+	c.canotoData.size.Store(int64(size))
+}
+
+// CachedCanotoSize returns the previously calculated size of the Canoto
+// representation from CalculateCanotoCache.
+//
+// If CalculateCanotoCache has not yet been called, it will return 0.
+//
+// If the struct has been modified since the last call to CalculateCanotoCache,
+// the returned size may be incorrect.
+func (c *CanotoSpecZeroVarUnneeded) CachedCanotoSize() int {
+	if c == nil {
+		return 0
+	}
+	return int(c.canotoData.size.Load())
+}
+
+// MarshalCanoto returns the Canoto representation of this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+func (c *CanotoSpecZeroVarUnneeded) MarshalCanoto() []byte {
+	c.CalculateCanotoCache()
+	w := canoto.Writer{
+		B: make([]byte, 0, c.CachedCanotoSize()),
+	}
+	w = c.MarshalCanotoInto(w)
+	return w.B
+}
+
+// MarshalCanotoInto writes the struct into a canoto.Writer and returns the
+// resulting canoto.Writer. Most users should just use MarshalCanoto.
+//
+// It is assumed that CalculateCanotoCache has been called since the last
+// modification to this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+func (c *CanotoSpecZeroVarUnneeded) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+	if c == nil {
+		return w
+	}
+	if !canoto.IsZero(c.Bool) {
+		canoto.Append(&w, canoto__CanotoSpecZeroVarUnneeded__Bool__tag)
+		canoto.AppendBool(&w, true)
+	}
+	if num := len(c.RepeatedBool); num != 0 {
+		canoto.Append(&w, canoto__CanotoSpecZeroVarUnneeded__RepeatedBool__tag)
+		canoto.AppendUint(&w, uint64(num*canoto.SizeBool))
+		for _, v := range c.RepeatedBool {
+			canoto.AppendBool(&w, v)
+		}
+	}
+	if len(c.String) != 0 {
+		canoto.Append(&w, canoto__CanotoSpecZeroVarUnneeded__String__tag)
+		canoto.AppendBytes(&w, c.String)
+	}
+	for _, v := range c.RepeatedString {
+		canoto.Append(&w, canoto__CanotoSpecZeroVarUnneeded__RepeatedString__tag)
+		canoto.AppendBytes(&w, v)
+	}
+	if len(c.Bytes) != 0 {
+		canoto.Append(&w, canoto__CanotoSpecZeroVarUnneeded__Bytes__tag)
+		canoto.AppendBytes(&w, c.Bytes)
+	}
+	for _, v := range c.RepeatedBytes {
+		canoto.Append(&w, canoto__CanotoSpecZeroVarUnneeded__RepeatedBytes__tag)
+		canoto.AppendBytes(&w, v)
+	}
+	return w
+}

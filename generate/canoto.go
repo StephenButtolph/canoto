@@ -8,6 +8,7 @@ import (
 	"go/token"
 	"io"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/StephenButtolph/canoto"
@@ -136,7 +137,7 @@ ${sizeCache}${oneOfCache}}
 // CanotoSpec returns the specification of this canoto message.
 func (*${structName}${generics}) CanotoSpec(types ...reflect.Type) *${selector}Spec {
 	types = append(types, reflect.TypeOf(${structName}${generics}{}))
-	var zero ${structName}${generics}
+	var ${zero} ${structName}${generics}
 	s := &${selector}Spec{
 		Name: "${structName}",
 		Fields: []*${selector}FieldType{
@@ -291,7 +292,22 @@ ${marshal}	return w
 		"storeSuffix":         storeSuffix,
 		"oneOfCacheAccessors": makeOneOfCacheAccessors(m),
 		"marshal":             makeMarshal(m),
+		"zero":                makeZeroVarName(m),
 	})
+}
+
+func makeZeroVarName(m message) string {
+	needBetterName := []canotoType{
+		canotoBool, canotoRepeatedBool, canotoString, canotoRepeatedString, canotoBytes, canotoRepeatedBytes,
+	}
+
+	for _, f := range m.fields {
+		if !slices.Contains(needBetterName, f.canotoType) {
+			return "zero"
+		}
+	}
+
+	return "_"
 }
 
 func makeGenerics(m message) string {
