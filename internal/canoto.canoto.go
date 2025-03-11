@@ -6933,7 +6933,7 @@ type canotoData_CanotoSpecZeroVarUnneeded struct {
 // CanotoSpec returns the specification of this canoto message.
 func (*CanotoSpecZeroVarUnneeded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeOf(CanotoSpecZeroVarUnneeded{}))
-	var _ CanotoSpecZeroVarUnneeded
+
 	s := &canoto.Spec{
 		Name: "CanotoSpecZeroVarUnneeded",
 		Fields: []*canoto.FieldType{
