@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-if ! [[ "$0" =~ scripts/lint-golang.sh ]]; then
+if ! [[ "$0" =~ .github/workflows/lint-golang.sh ]]; then
   echo "must be run from repository root"
   exit 255
 fi
