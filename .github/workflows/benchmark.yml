@@ -24,8 +24,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ (github.event.inputs.new != '') && github.event.inputs.new || github.event.ref }}
-      - uses: ./.github/actions/setup-go-for-project
 
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
 
       - name: Install benchstat
         run: go install golang.org/x/perf/cmd/benchstat@latest

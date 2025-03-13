@@ -23,23 +23,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-go-for-project
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
       - name: Run actionlint
         shell: bash
-        run: scripts/lint-actions.sh
+        run: .github/workflows/lint-actions.sh
   lint-golang:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-go-for-project
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
       - name: Run golangci-lint
         shell: bash
-        run: scripts/lint-golang.sh
+        run: .github/workflows/lint-golang.sh
   lint-go-mod:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-go-for-project
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
       - shell: bash
         run: go mod tidy
       - shell: bash
@@ -48,7 +54,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-go-for-project
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
       - shell: bash
         run: go install ./canoto
       - shell: bash
@@ -59,6 +67,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-go-for-project
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
       - shell: bash
         run: go test -cover -race -shuffle=on ./...
