@@ -625,7 +625,7 @@ func MakeEntry[S ~[]E, E any](_ S) (_ E) {
 // be a slice, but we do not know the type of the elements, we can use this
 // function to leverage golang's type inference to create an element.
 func MakeEntryPointer[S ~[]E, E any](_ S) *E {
-	return new(E)
+	return nil
 }
 
 // IsZero returns true if the value is the zero value for its type.
