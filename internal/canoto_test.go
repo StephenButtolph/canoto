@@ -607,7 +607,7 @@ func FuzzScalars_MarshalCanoto(f *testing.F) {
 			B: make([]byte, 0, size),
 		}
 		w = canotoScalars.MarshalCanotoInto(w)
-		require.Len(w.B, size)
+		require.Len(w.B, int(size)) //#nosec G115 // False positive
 
 		var pbScalars pb.Scalars
 		require.NoError(proto.Unmarshal(w.B, &pbScalars))
@@ -630,7 +630,7 @@ func FuzzScalars_Canonical(f *testing.F) {
 
 		scalars.CalculateCanotoCache()
 		size := scalars.CachedCanotoSize()
-		require.Len(b, size)
+		require.Len(b, int(size)) //#nosec G115 // False positive
 
 		w := canoto.Writer{
 			B: make([]byte, 0, size),

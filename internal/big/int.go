@@ -31,7 +31,7 @@ func (i *Int) UnmarshalCanotoFrom(r canoto.Reader) error {
 		i.Int = new(big.Int)
 	}
 	i.Int.SetBytes(r.B)
-	if i.CachedCanotoSize() != len(r.B) {
+	if i.CachedCanotoSize() != uint64(len(r.B)) {
 		return canoto.ErrPaddedZeroes
 	}
 	return nil
@@ -40,11 +40,11 @@ func (i *Int) UnmarshalCanotoFrom(r canoto.Reader) error {
 func (*Int) ValidCanoto() bool     { return true }
 func (*Int) CalculateCanotoCache() {}
 
-func (i *Int) CachedCanotoSize() int {
+func (i *Int) CachedCanotoSize() uint64 {
 	if i == nil || i.Int == nil {
 		return 0
 	}
-	return (i.Int.BitLen() + 7) / 8
+	return uint64(i.Int.BitLen()+7) / 8 //#nosec G115 // False positive
 }
 
 func (i *Int) MarshalCanotoInto(w canoto.Writer) canoto.Writer {

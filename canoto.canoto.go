@@ -14,7 +14,7 @@ import (
 
 // Ensure that unused imports do not error
 var (
-	_ atomic.Int64
+	_ atomic.Uint64
 
 	_ = slices.Index[[]reflect.Type, reflect.Type]
 	_ = io.ErrUnexpectedEOF
@@ -26,7 +26,7 @@ const (
 )
 
 type canotoData_Spec struct {
-	size atomic.Int64
+	size atomic.Uint64
 }
 
 // CanotoSpec returns the specification of this canoto message.
@@ -81,7 +81,7 @@ func (c *Spec) UnmarshalCanoto(bytes []byte) error {
 func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = Spec{}
-	c.canotoData.size.Store(int64(len(r.B)))
+	c.canotoData.size.Store(uint64(len(r.B)))
 
 	var minField uint32
 	for HasNext(&r) {
@@ -194,19 +194,19 @@ func (c *Spec) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var size int
+	var size uint64
 	if len(c.Name) != 0 {
-		size += len(canoto__Spec__Name__tag) + SizeBytes(c.Name)
+		size += uint64(len(canoto__Spec__Name__tag)) + SizeBytes(c.Name)
 	}
 	for i := range c.Fields {
-		var fieldSize int
+		var fieldSize uint64
 		if c.Fields[i] != nil {
 			(c.Fields[i]).CalculateCanotoCache()
 			fieldSize = (c.Fields[i]).CachedCanotoSize()
 		}
-		size += len(canoto__Spec__Fields__tag) + SizeUint(uint64(fieldSize)) + fieldSize
+		size += uint64(len(canoto__Spec__Fields__tag)) + SizeUint(fieldSize) + fieldSize
 	}
-	c.canotoData.size.Store(int64(size))
+	c.canotoData.size.Store(size)
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -216,11 +216,11 @@ func (c *Spec) CalculateCanotoCache() {
 //
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
-func (c *Spec) CachedCanotoSize() int {
+func (c *Spec) CachedCanotoSize() uint64 {
 	if c == nil {
 		return 0
 	}
-	return int(c.canotoData.size.Load())
+	return c.canotoData.size.Load()
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -252,11 +252,11 @@ func (c *Spec) MarshalCanotoInto(w Writer) Writer {
 	}
 	for i := range c.Fields {
 		Append(&w, canoto__Spec__Fields__tag)
-		var fieldSize int
+		var fieldSize uint64
 		if c.Fields[i] != nil {
 			fieldSize = (c.Fields[i]).CachedCanotoSize()
 		}
-		AppendUint(&w, uint64(fieldSize))
+		AppendUint(&w, fieldSize)
 		if fieldSize != 0 {
 			w = (c.Fields[i]).MarshalCanotoInto(w)
 		}
@@ -283,7 +283,7 @@ const (
 )
 
 type canotoData_FieldType struct {
-	size atomic.Int64
+	size atomic.Uint64
 
 	TypeOneOf atomic.Uint32
 }
@@ -418,7 +418,7 @@ func (c *FieldType) UnmarshalCanoto(bytes []byte) error {
 func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = FieldType{}
-	c.canotoData.size.Store(int64(len(r.B)))
+	c.canotoData.size.Store(uint64(len(r.B)))
 
 	var minField uint32
 	for HasNext(&r) {
@@ -742,67 +742,67 @@ func (c *FieldType) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var size int
+	var size uint64
 	var TypeOneOf uint32
 	if !IsZero(c.FieldNumber) {
-		size += len(canoto__FieldType__FieldNumber__tag) + SizeUint(c.FieldNumber)
+		size += uint64(len(canoto__FieldType__FieldNumber__tag)) + SizeUint(c.FieldNumber)
 	}
 	if len(c.Name) != 0 {
-		size += len(canoto__FieldType__Name__tag) + SizeBytes(c.Name)
+		size += uint64(len(canoto__FieldType__Name__tag)) + SizeBytes(c.Name)
 	}
 	if !IsZero(c.FixedLength) {
-		size += len(canoto__FieldType__FixedLength__tag) + SizeUint(c.FixedLength)
+		size += uint64(len(canoto__FieldType__FixedLength__tag)) + SizeUint(c.FixedLength)
 	}
 	if !IsZero(c.Repeated) {
-		size += len(canoto__FieldType__Repeated__tag) + SizeBool
+		size += uint64(len(canoto__FieldType__Repeated__tag)) + SizeBool
 	}
 	if len(c.OneOf) != 0 {
-		size += len(canoto__FieldType__OneOf__tag) + SizeBytes(c.OneOf)
+		size += uint64(len(canoto__FieldType__OneOf__tag)) + SizeBytes(c.OneOf)
 	}
 	if !IsZero(c.TypeInt) {
-		size += len(canoto__FieldType__TypeInt__tag) + SizeUint(c.TypeInt)
+		size += uint64(len(canoto__FieldType__TypeInt__tag)) + SizeUint(c.TypeInt)
 		TypeOneOf = 6
 	}
 	if !IsZero(c.TypeUint) {
-		size += len(canoto__FieldType__TypeUint__tag) + SizeUint(c.TypeUint)
+		size += uint64(len(canoto__FieldType__TypeUint__tag)) + SizeUint(c.TypeUint)
 		TypeOneOf = 7
 	}
 	if !IsZero(c.TypeFixedInt) {
-		size += len(canoto__FieldType__TypeFixedInt__tag) + SizeUint(c.TypeFixedInt)
+		size += uint64(len(canoto__FieldType__TypeFixedInt__tag)) + SizeUint(c.TypeFixedInt)
 		TypeOneOf = 8
 	}
 	if !IsZero(c.TypeFixedUint) {
-		size += len(canoto__FieldType__TypeFixedUint__tag) + SizeUint(c.TypeFixedUint)
+		size += uint64(len(canoto__FieldType__TypeFixedUint__tag)) + SizeUint(c.TypeFixedUint)
 		TypeOneOf = 9
 	}
 	if !IsZero(c.TypeBool) {
-		size += len(canoto__FieldType__TypeBool__tag) + SizeBool
+		size += uint64(len(canoto__FieldType__TypeBool__tag)) + SizeBool
 		TypeOneOf = 10
 	}
 	if !IsZero(c.TypeString) {
-		size += len(canoto__FieldType__TypeString__tag) + SizeBool
+		size += uint64(len(canoto__FieldType__TypeString__tag)) + SizeBool
 		TypeOneOf = 11
 	}
 	if !IsZero(c.TypeBytes) {
-		size += len(canoto__FieldType__TypeBytes__tag) + SizeBool
+		size += uint64(len(canoto__FieldType__TypeBytes__tag)) + SizeBool
 		TypeOneOf = 12
 	}
 	if !IsZero(c.TypeFixedBytes) {
-		size += len(canoto__FieldType__TypeFixedBytes__tag) + SizeUint(c.TypeFixedBytes)
+		size += uint64(len(canoto__FieldType__TypeFixedBytes__tag)) + SizeUint(c.TypeFixedBytes)
 		TypeOneOf = 13
 	}
 	if !IsZero(c.TypeRecursive) {
-		size += len(canoto__FieldType__TypeRecursive__tag) + SizeUint(c.TypeRecursive)
+		size += uint64(len(canoto__FieldType__TypeRecursive__tag)) + SizeUint(c.TypeRecursive)
 		TypeOneOf = 14
 	}
 	if c.TypeMessage != nil {
 		(c.TypeMessage).CalculateCanotoCache()
 		if fieldSize := (c.TypeMessage).CachedCanotoSize(); fieldSize != 0 {
-			size += len(canoto__FieldType__TypeMessage__tag) + SizeUint(uint64(fieldSize)) + fieldSize
+			size += uint64(len(canoto__FieldType__TypeMessage__tag)) + SizeUint(fieldSize) + fieldSize
 			TypeOneOf = 15
 		}
 	}
-	c.canotoData.size.Store(int64(size))
+	c.canotoData.size.Store(size)
 	c.canotoData.TypeOneOf.Store(TypeOneOf)
 }
 
@@ -813,11 +813,11 @@ func (c *FieldType) CalculateCanotoCache() {
 //
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
-func (c *FieldType) CachedCanotoSize() int {
+func (c *FieldType) CachedCanotoSize() uint64 {
 	if c == nil {
 		return 0
 	}
-	return int(c.canotoData.size.Load())
+	return c.canotoData.size.Load()
 }
 
 // CachedWhichOneOfType returns the previously calculated field number used

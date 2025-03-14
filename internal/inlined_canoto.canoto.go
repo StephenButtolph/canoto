@@ -16,7 +16,7 @@ import (
 
 // Ensure that unused imports do not error
 var (
-	_ atomic.Int64
+	_ atomic.Uint64
 
 	_ = slices.Index[[]reflect.Type, reflect.Type]
 	_ = io.ErrUnexpectedEOF
@@ -27,7 +27,7 @@ const (
 )
 
 type canotoData_justAnInt struct {
-	size int
+	size uint64
 }
 
 // CanotoSpec returns the specification of this canoto message.
@@ -73,7 +73,7 @@ func (c *justAnInt) UnmarshalCanoto(bytes []byte) error {
 func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = justAnInt{}
-	c.canotoData.size = len(r.B)
+	c.canotoData.size = uint64(len(r.B))
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -128,9 +128,9 @@ func (c *justAnInt) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var size int
+	var size uint64
 	if !canoto.IsZero(c.Int8) {
-		size += len(canoto__justAnInt__Int8__tag) + canoto.SizeInt(c.Int8)
+		size += uint64(len(canoto__justAnInt__Int8__tag)) + canoto.SizeInt(c.Int8)
 	}
 	c.canotoData.size = size
 }
@@ -142,11 +142,11 @@ func (c *justAnInt) CalculateCanotoCache() {
 //
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
-func (c *justAnInt) CachedCanotoSize() int {
+func (c *justAnInt) CachedCanotoSize() uint64 {
 	if c == nil {
 		return 0
 	}
-	return int(c.canotoData.size)
+	return c.canotoData.size
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.

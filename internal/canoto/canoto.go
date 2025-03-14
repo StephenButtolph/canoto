@@ -152,7 +152,7 @@ type (
 		// If CalculateCanotoCache has not yet been called, or the field has
 		// been modified since the last call to CalculateCanotoCache, the
 		// returned size may be incorrect.
-		CachedCanotoSize() int
+		CachedCanotoSize() uint64
 		// UnmarshalCanotoFrom populates the field from a canoto.Reader.
 		UnmarshalCanotoFrom(r Reader) error
 		// ValidCanoto validates that the field can be correctly marshaled into
@@ -351,16 +351,16 @@ func ReadTag(r *Reader) (uint32, WireType, error) {
 }
 
 // SizeUint calculates the size of an unsigned integer when encoded as a varint.
-func SizeUint[T Uint](v T) int {
+func SizeUint[T Uint](v T) uint64 {
 	if v == 0 {
 		return 1
 	}
-	return (bits.Len64(uint64(v)) + 6) / 7
+	return uint64((bits.Len64(uint64(v)) + 6)) / 7
 }
 
 // CountInts counts the number of varints that are encoded in bytes.
-func CountInts(bytes []byte) int {
-	var count int
+func CountInts(bytes []byte) uint64 {
+	var count uint64
 	for _, b := range bytes {
 		if b < continuationMask {
 			count++
@@ -397,7 +397,7 @@ func AppendUint[T Uint](w *Writer, v T) {
 }
 
 // SizeInt calculates the size of an integer when zigzag encoded as a varint.
-func SizeInt[T Int](v T) int {
+func SizeInt[T Int](v T) uint64 {
 	if v == 0 {
 		return 1
 	}
@@ -408,7 +408,7 @@ func SizeInt[T Int](v T) int {
 	} else {
 		uv = ^uint64(v)<<1 | 1
 	}
-	return (bits.Len64(uv) + 6) / 7
+	return uint64((bits.Len64(uv) + 6)) / 7
 }
 
 // ReadInt reads a zigzag encoded integer from the reader.
@@ -500,16 +500,17 @@ func AppendBool[T ~bool](w *Writer, b T) {
 
 // SizeBytes calculates the size the length-prefixed bytes would take if
 // written.
-func SizeBytes[T Bytes](v T) int {
-	return SizeUint(uint64(len(v))) + len(v)
+func SizeBytes[T Bytes](v T) uint64 {
+	length := uint64(len(v))
+	return SizeUint(length) + length
 }
 
 // CountBytes counts the consecutive number of length-prefixed fields with the
 // given tag.
-func CountBytes(bytes []byte, tag string) (int, error) {
+func CountBytes(bytes []byte, tag string) (uint64, error) {
 	var (
 		r     = Reader{B: bytes}
-		count = 0
+		count uint64
 	)
 	for HasPrefix(r.B, tag) {
 		r.B = r.B[len(tag):]
@@ -604,7 +605,7 @@ func MakePointer[T any](_ *T) *T {
 // variable is unknown. For example, if we have a variable `v` which we know to
 // be a slice, but we do not know the type of the elements, we can use this
 // function to leverage golang's type inference to create the new slice.
-func MakeSlice[T any](_ []T, length int) []T {
+func MakeSlice[T any](_ []T, length uint64) []T {
 	return make([]T, length)
 }
 

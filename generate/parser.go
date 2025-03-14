@@ -270,8 +270,8 @@ func parseField(
 	)
 	if useAtomic {
 		load = ".Load()"
-		storePrefix = ".Store(int64("
-		storeSuffix = "))"
+		storePrefix = ".Store("
+		storeSuffix = ")"
 	}
 
 	var selector string
