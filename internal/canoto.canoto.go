@@ -8,7 +8,6 @@ package examples
 import (
 	"io"
 	"reflect"
-	"slices"
 	"sync/atomic"
 
 	"github.com/StephenButtolph/canoto"
@@ -18,7 +17,6 @@ import (
 var (
 	_ atomic.Uint64
 
-	_ = slices.Index[[]reflect.Type, reflect.Type]
 	_ = io.ErrUnexpectedEOF
 )
 

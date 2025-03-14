@@ -84,7 +84,6 @@ package ${package}
 import (
 	"io"
 	"reflect"
-	"slices"
 	"sync/atomic"
 ${canotoImport})
 
@@ -92,7 +91,6 @@ ${canotoImport})
 var (
 	_ atomic.Uint64
 
-	_ = slices.Index[[]reflect.Type, reflect.Type]
 	_ = io.ErrUnexpectedEOF
 )
 `
