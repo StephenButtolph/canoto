@@ -10,7 +10,6 @@ import (
 	"reflect"
 	"slices"
 	"sync/atomic"
-	"unicode/utf8"
 )
 
 // Ensure that unused imports do not error
@@ -19,7 +18,6 @@ var (
 
 	_ = slices.Index[[]reflect.Type, reflect.Type]
 	_ = io.ErrUnexpectedEOF
-	_ = utf8.ValidString
 )
 
 const (
@@ -179,7 +177,7 @@ func (c *Spec) ValidCanoto() bool {
 	if c == nil {
 		return true
 	}
-	if !utf8.ValidString(string(c.Name)) {
+	if !ValidString(c.Name) {
 		return false
 	}
 	for i := range c.Fields {
@@ -730,10 +728,10 @@ func (c *FieldType) ValidCanoto() bool {
 			TypeOneOf = 15
 		}
 	}
-	if !utf8.ValidString(string(c.Name)) {
+	if !ValidString(c.Name) {
 		return false
 	}
-	if !utf8.ValidString(string(c.OneOf)) {
+	if !ValidString(c.OneOf) {
 		return false
 	}
 	if c.TypeMessage != nil && !(c.TypeMessage).ValidCanoto() {

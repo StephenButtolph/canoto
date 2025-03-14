@@ -10,7 +10,6 @@ import (
 	"reflect"
 	"slices"
 	"sync/atomic"
-	"unicode/utf8"
 
 	"github.com/StephenButtolph/canoto/internal/canoto"
 )
@@ -21,7 +20,6 @@ var (
 
 	_ = slices.Index[[]reflect.Type, reflect.Type]
 	_ = io.ErrUnexpectedEOF
-	_ = utf8.ValidString
 )
 
 const (

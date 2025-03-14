@@ -86,7 +86,6 @@ import (
 	"reflect"
 	"slices"
 	"sync/atomic"
-	"unicode/utf8"
 ${canotoImport})
 
 // Ensure that unused imports do not error
@@ -95,7 +94,6 @@ var (
 
 	_ = slices.Index[[]reflect.Type, reflect.Type]
 	_ = io.ErrUnexpectedEOF
-	_ = utf8.ValidString
 )
 `
 	// Only include the import for canoto if this is not an internal file.
@@ -1647,18 +1645,18 @@ func makeValidOneOf(m message) string {
 func makeValid(m message) string {
 	return writeMessage(m, messageTemplate{
 		strings: typeTemplate{
-			single: `	if !utf8.ValidString(string(c.${fieldName})) {
+			single: `	if !${selector}ValidString(c.${fieldName}) {
 		return false
 	}
 `,
 			repeated: `	for _, v := range c.${fieldName} {
-		if !utf8.ValidString(string(v)) {
+		if !${selector}ValidString(v) {
 			return false
 		}
 	}
 `,
 			fixedRepeated: `	for _, v := range &c.${fieldName} {
-		if !utf8.ValidString(string(v)) {
+		if !${selector}ValidString(v) {
 			return false
 		}
 	}

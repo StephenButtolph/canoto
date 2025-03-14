@@ -16,6 +16,14 @@ run:
   modules-download-mode: readonly
 
 issues:
+  # Whether to exclude issues in generated files.
+  # Default: enable
+  exclude-generated: disable
+
+  # Disable linting of generated proto files.
+  exclude-files:
+    - .*\.pb\.go
+
   # Make issues output unique by line.
   # Default: true
   uniq-by-line: false

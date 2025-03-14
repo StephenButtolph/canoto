@@ -554,6 +554,12 @@ func ReadString[T ~string](r *Reader, v *T) error {
 	return nil
 }
 
+// ValidString returns true if it is valid to encode the provided string. A
+// string is valid to encode if it is valid UTF-8.
+func ValidString[T ~string](v T) bool {
+	return utf8.ValidString(string(v))
+}
+
 // ReadBytes reads a byte slice from the reader.
 func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 	var length uint64

@@ -10,7 +10,6 @@ import (
 	"reflect"
 	"slices"
 	"sync/atomic"
-	"unicode/utf8"
 )
 
 // Ensure that unused imports do not error
@@ -19,7 +18,6 @@ var (
 
 	_ = slices.Index[[]reflect.Type, reflect.Type]
 	_ = io.ErrUnexpectedEOF
-	_ = utf8.ValidString
 )
 
 const (
@@ -1187,14 +1185,14 @@ func (c *SpecFuzzer) ValidCanoto() bool {
 	if c == nil {
 		return true
 	}
-	if !utf8.ValidString(string(c.String)) {
+	if !ValidString(c.String) {
 		return false
 	}
 	if c.LargestFieldNumber != nil && !(c.LargestFieldNumber).ValidCanoto() {
 		return false
 	}
 	for _, v := range c.RepeatedString {
-		if !utf8.ValidString(string(v)) {
+		if !ValidString(v) {
 			return false
 		}
 	}

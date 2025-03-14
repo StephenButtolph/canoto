@@ -10,7 +10,6 @@ import (
 	"reflect"
 	"slices"
 	"sync/atomic"
-	"unicode/utf8"
 
 	"github.com/StephenButtolph/canoto"
 )
@@ -21,7 +20,6 @@ var (
 
 	_ = slices.Index[[]reflect.Type, reflect.Type]
 	_ = io.ErrUnexpectedEOF
-	_ = utf8.ValidString
 )
 
 const (
@@ -5967,14 +5965,14 @@ func (c *Scalars) ValidCanoto() bool {
 	if c == nil {
 		return true
 	}
-	if !utf8.ValidString(string(c.String)) {
+	if !canoto.ValidString(c.String) {
 		return false
 	}
 	if !(&c.LargestFieldNumber).ValidCanoto() {
 		return false
 	}
 	for _, v := range c.RepeatedString {
-		if !utf8.ValidString(string(v)) {
+		if !canoto.ValidString(v) {
 			return false
 		}
 	}
@@ -5984,7 +5982,7 @@ func (c *Scalars) ValidCanoto() bool {
 		}
 	}
 	for _, v := range &c.FixedRepeatedString {
-		if !utf8.ValidString(string(v)) {
+		if !canoto.ValidString(v) {
 			return false
 		}
 	}
@@ -5996,7 +5994,7 @@ func (c *Scalars) ValidCanoto() bool {
 	if !(&c.CustomType).ValidCanoto() {
 		return false
 	}
-	if !utf8.ValidString(string(c.CustomString)) {
+	if !canoto.ValidString(c.CustomString) {
 		return false
 	}
 	if !(&c.OneOf).ValidCanoto() {
@@ -7174,11 +7172,11 @@ func (c *SpecUnusedZero) ValidCanoto() bool {
 	if c == nil {
 		return true
 	}
-	if !utf8.ValidString(string(c.String)) {
+	if !canoto.ValidString(c.String) {
 		return false
 	}
 	for _, v := range c.RepeatedString {
-		if !utf8.ValidString(string(v)) {
+		if !canoto.ValidString(v) {
 			return false
 		}
 	}
