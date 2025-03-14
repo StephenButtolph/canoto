@@ -31,8 +31,7 @@ type canotoData_LargestFieldNumber struct {
 }
 
 // CanotoSpec returns the specification of this canoto message.
-func (*LargestFieldNumber[T1]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
-	types = append(types, reflect.TypeOf(LargestFieldNumber[T1]{}))
+func (*LargestFieldNumber[T1]) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero LargestFieldNumber[T1]
 	s := &canoto.Spec{
 		Name: "LargestFieldNumber",
@@ -194,8 +193,7 @@ type canotoData_OneOf struct {
 }
 
 // CanotoSpec returns the specification of this canoto message.
-func (*OneOf) CanotoSpec(types ...reflect.Type) *canoto.Spec {
-	types = append(types, reflect.TypeOf(OneOf{}))
+func (*OneOf) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero OneOf
 	s := &canoto.Spec{
 		Name: "OneOf",
@@ -3067,8 +3065,7 @@ type canotoData_A struct {
 }
 
 // CanotoSpec returns the specification of this canoto message.
-func (*A) CanotoSpec(types ...reflect.Type) *canoto.Spec {
-	types = append(types, reflect.TypeOf(A{}))
+func (*A) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero A
 	s := &canoto.Spec{
 		Name: "A",
@@ -3222,8 +3219,7 @@ type canotoData_A__B struct {
 }
 
 // CanotoSpec returns the specification of this canoto message.
-func (*A__B) CanotoSpec(types ...reflect.Type) *canoto.Spec {
-	types = append(types, reflect.TypeOf(A__B{}))
+func (*A__B) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero A__B
 	s := &canoto.Spec{
 		Name: "A__B",
@@ -6903,8 +6899,7 @@ type canotoData_SpecUnusedZero struct {
 }
 
 // CanotoSpec returns the specification of this canoto message.
-func (*SpecUnusedZero) CanotoSpec(types ...reflect.Type) *canoto.Spec {
-	types = append(types, reflect.TypeOf(SpecUnusedZero{}))
+func (*SpecUnusedZero) CanotoSpec(...reflect.Type) *canoto.Spec {
 	s := &canoto.Spec{
 		Name: "SpecUnusedZero",
 		Fields: []*canoto.FieldType{

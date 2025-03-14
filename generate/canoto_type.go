@@ -122,6 +122,19 @@ var (
 		canotoFixedRepeatedPointer,
 		canotoFixedRepeatedField,
 	}
+	canotoMessageTypes = []canotoType{
+		canotoValue,
+		canotoPointer,
+		canotoField,
+
+		canotoRepeatedValue,
+		canotoRepeatedPointer,
+		canotoRepeatedField,
+
+		canotoFixedRepeatedValue,
+		canotoFixedRepeatedPointer,
+		canotoFixedRepeatedField,
+	}
 
 	goIntToProto = map[string]string{
 		"int8":  "sint32",
@@ -165,6 +178,10 @@ func (c canotoType) IsRepeated() bool {
 
 func (c canotoType) IsFixed() bool {
 	return slices.Contains(canotoFixedRepeatedTypes, c)
+}
+
+func (c canotoType) IsMessage() bool {
+	return slices.Contains(canotoMessageTypes, c)
 }
 
 func (c canotoType) WireType() canoto.WireType {

@@ -1625,8 +1625,7 @@ type canotoData_LargestFieldNumber struct {
 }
 
 // CanotoSpec returns the specification of this canoto message.
-func (*LargestFieldNumber[T1]) CanotoSpec(types ...reflect.Type) *Spec {
-	types = append(types, reflect.TypeOf(LargestFieldNumber[T1]{}))
+func (*LargestFieldNumber[T1]) CanotoSpec(...reflect.Type) *Spec {
 	var zero LargestFieldNumber[T1]
 	s := &Spec{
 		Name: "LargestFieldNumber",
@@ -1788,8 +1787,7 @@ type canotoData_OneOf struct {
 }
 
 // CanotoSpec returns the specification of this canoto message.
-func (*OneOf) CanotoSpec(types ...reflect.Type) *Spec {
-	types = append(types, reflect.TypeOf(OneOf{}))
+func (*OneOf) CanotoSpec(...reflect.Type) *Spec {
 	var zero OneOf
 	s := &Spec{
 		Name: "OneOf",

@@ -289,7 +289,7 @@ type canotoData_FieldType struct {
 }
 
 // CanotoSpec returns the specification of this canoto message.
-func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
+func (*FieldType) CanotoSpec(types...reflect.Type) *Spec {
 	types = append(types, reflect.TypeOf(FieldType{}))
 	var zero FieldType
 	s := &Spec{

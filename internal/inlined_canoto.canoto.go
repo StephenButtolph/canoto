@@ -31,8 +31,7 @@ type canotoData_justAnInt struct {
 }
 
 // CanotoSpec returns the specification of this canoto message.
-func (*justAnInt) CanotoSpec(types ...reflect.Type) *canoto.Spec {
-	types = append(types, reflect.TypeOf(justAnInt{}))
+func (*justAnInt) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero justAnInt
 	s := &canoto.Spec{
 		Name: "justAnInt",

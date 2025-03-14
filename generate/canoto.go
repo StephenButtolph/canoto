@@ -268,9 +268,25 @@ ${marshal}	return w
 	}
 
 	generics := makeGenerics(m)
+
+	var (
+		typesDecl   string
+		appendTypes string
+	)
+	hasSubMessages := false
+	for _, f := range m.fields {
+		if f.canotoType.IsMessage() {
+			hasSubMessages = true
+		}
+	}
+	if hasSubMessages {
+		typesDecl = "types "
+		appendTypes = fmt.Sprintf("\ttypes = append(types, reflect.TypeOf(%s%s{}))\n", m.name, generics)
+	}
+
 	return writeTemplate(w, structTemplate, map[string]string{
-		"typesDecl":           "types ",
-		"appendTypes":         fmt.Sprintf("\ttypes = append(types, reflect.TypeOf(%s%s{}))\n", m.name, generics),
+		"typesDecl":           typesDecl,
+		"appendTypes":         appendTypes,
 		"tagConstants":        makeTagConstants(m),
 		"structName":          m.name,
 		"generics":            generics,
