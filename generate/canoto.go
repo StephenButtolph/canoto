@@ -460,7 +460,7 @@ func makeSpec(m message) string {
 				FieldNumber: ${fieldNumber},
 				Name:        "${fieldName}",
 				OneOf:       "${oneOf}",
-				Type${suffix}:    ${selector}SizeOf(zero.${fieldName}),
+				Type${suffix}:${signedSpace}    ${selector}SizeOf(zero.${fieldName}),
 			},
 `,
 			repeated: `			{
@@ -468,7 +468,7 @@ func makeSpec(m message) string {
 				Name:        "${fieldName}",
 				Repeated:    true,
 				OneOf:       "${oneOf}",
-				Type${suffix}:    ${selector}SizeOf(${selector}MakeEntry(zero.${fieldName})),
+				Type${suffix}:${signedSpace}    ${selector}SizeOf(${selector}MakeEntry(zero.${fieldName})),
 			},
 `,
 			fixedRepeated: `			{
@@ -477,7 +477,7 @@ func makeSpec(m message) string {
 				FixedLength: uint64(len(zero.${fieldName})),
 				Repeated:    true,
 				OneOf:       "${oneOf}",
-				Type${suffix}:    ${selector}SizeOf(${selector}MakeEntry(zero.${fieldName}[:])),
+				Type${suffix}:${signedSpace}    ${selector}SizeOf(${selector}MakeEntry(zero.${fieldName}[:])),
 			},
 `,
 		},

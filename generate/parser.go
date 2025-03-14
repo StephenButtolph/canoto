@@ -364,6 +364,11 @@ func parseField(
 
 	canonicalizedName := canonicalizeName(name)
 	protoType := canotoType.ProtoType(goType)
+
+	var signedSpace string
+	if canotoType.IsInt() {
+		signedSpace = " "
+	}
 	return field{
 		name:              name,
 		canonicalizedName: canonicalizedName,
@@ -392,6 +397,7 @@ func parseField(
 			"unmarshalOneOf":    unmarshalOneOf,
 			"sizeOneOf":         sizeOneOf,
 			"sizeOneOfIndent":   sizeOneOfIndent,
+			"signedSpace":       signedSpace,
 		},
 	}, true, nil
 }

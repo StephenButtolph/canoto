@@ -40,7 +40,7 @@ func (*justAnInt) CanotoSpec(...reflect.Type) *canoto.Spec {
 				FieldNumber: 1,
 				Name:        "Int8",
 				OneOf:       "",
-				TypeInt:    canoto.SizeOf(zero.Int8),
+				TypeInt:     canoto.SizeOf(zero.Int8),
 			},
 		},
 	}

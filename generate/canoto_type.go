@@ -83,16 +83,17 @@ var (
 		canotoFixedRepeatedPointer,
 		canotoFixedRepeatedField,
 	}
-	canotoVarintTypes = []canotoType{
+	canotoIntTypes = []canotoType{
 		canotoInt,
-		canotoUint,
-
 		canotoRepeatedInt,
-		canotoRepeatedUint,
-
 		canotoFixedRepeatedInt,
+	}
+	canotoUintTypes = []canotoType{
+		canotoUint,
+		canotoRepeatedUint,
 		canotoFixedRepeatedUint,
 	}
+	canotoVarintTypes   = append(canotoIntTypes, canotoUintTypes...)
 	canotoRepeatedTypes = append(
 		[]canotoType{
 			canotoRepeatedInt,
@@ -166,6 +167,10 @@ type canotoType string
 
 func (c canotoType) IsValid() bool {
 	return slices.Contains(canotoTypes, c)
+}
+
+func (c canotoType) IsInt() bool {
+	return slices.Contains(canotoIntTypes, c)
 }
 
 func (c canotoType) IsVarint() bool {
