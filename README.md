@@ -84,7 +84,7 @@ type Field interface {
 	// If CalculateCanotoCache has not yet been called, or the field has been
 	// modified since the last call to CalculateCanotoCache, the returned size
 	// may be incorrect.
-	CachedCanotoSize() int
+	CachedCanotoSize() uint64
 	// UnmarshalCanotoFrom populates the field from a canoto.Reader.
 	UnmarshalCanotoFrom(r Reader) error
 	// ValidCanoto validates that the field can be correctly marshaled into the
