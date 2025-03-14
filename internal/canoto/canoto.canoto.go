@@ -41,7 +41,7 @@ func (*Spec) CanotoSpec(types ...reflect.Type) *Spec {
 				TypeString:  true,
 			},
 			FieldTypeFromField(
-				/*type inference:*/ (MakeEntryPointer(zero.Fields)),
+				/*type inference:*/ (MakeEntryNilPointer(zero.Fields)),
 				/*FieldNumber:   */ 2,
 				/*Name:          */ "Fields",
 				/*FixedLength:   */ 0,

@@ -1163,7 +1163,7 @@ func (*GenericField[T1, T2, T3]) CanotoSpec(types ...reflect.Type) *canoto.Spec 
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
-				/*type inference:*/ T2(canoto.MakeEntryPointer(zero.RepeatedValue)),
+				/*type inference:*/ T2(canoto.MakeEntryNilPointer(zero.RepeatedValue)),
 				/*FieldNumber:   */ 2,
 				/*Name:          */ "RepeatedValue",
 				/*FixedLength:   */ 0,
@@ -1172,7 +1172,7 @@ func (*GenericField[T1, T2, T3]) CanotoSpec(types ...reflect.Type) *canoto.Spec 
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
-				/*type inference:*/ T2(canoto.MakeEntryPointer(zero.FixedRepeatedValue[:])),
+				/*type inference:*/ T2(canoto.MakeEntryNilPointer(zero.FixedRepeatedValue[:])),
 				/*FieldNumber:   */ 3,
 				/*Name:          */ "FixedRepeatedValue",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedValue)),
@@ -1988,7 +1988,7 @@ func (*NestedGenericField[T1, T2, T3]) CanotoSpec(types ...reflect.Type) *canoto
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
-				/*type inference:*/ (canoto.MakeEntryPointer(zero.RepeatedValue)),
+				/*type inference:*/ (canoto.MakeEntryNilPointer(zero.RepeatedValue)),
 				/*FieldNumber:   */ 2,
 				/*Name:          */ "RepeatedValue",
 				/*FixedLength:   */ 0,
@@ -1997,7 +1997,7 @@ func (*NestedGenericField[T1, T2, T3]) CanotoSpec(types ...reflect.Type) *canoto
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
-				/*type inference:*/ (canoto.MakeEntryPointer(zero.FixedRepeatedValue[:])),
+				/*type inference:*/ (canoto.MakeEntryNilPointer(zero.FixedRepeatedValue[:])),
 				/*FieldNumber:   */ 3,
 				/*Name:          */ "FixedRepeatedValue",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedValue)),
@@ -3678,7 +3678,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				TypeBytes:   true,
 			},
 			canoto.FieldTypeFromField(
-				/*type inference:*/ (canoto.MakeEntryPointer(zero.RepeatedLargestFieldNumber)),
+				/*type inference:*/ (canoto.MakeEntryNilPointer(zero.RepeatedLargestFieldNumber)),
 				/*FieldNumber:   */ 32,
 				/*Name:          */ "RepeatedLargestFieldNumber",
 				/*FixedLength:   */ 0,
@@ -3828,7 +3828,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				TypeFixedBytes: uint64(len(zero.FixedRepeatedFixedBytes[0])),
 			},
 			canoto.FieldTypeFromField(
-				/*type inference:*/ (canoto.MakeEntryPointer(zero.FixedRepeatedLargestFieldNumber[:])),
+				/*type inference:*/ (canoto.MakeEntryNilPointer(zero.FixedRepeatedLargestFieldNumber[:])),
 				/*FieldNumber:   */ 51,
 				/*Name:          */ "FixedRepeatedLargestFieldNumber",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedLargestFieldNumber)),

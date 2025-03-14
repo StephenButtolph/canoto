@@ -284,7 +284,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				TypeBytes:   true,
 			},
 			FieldTypeFromField(
-				/*type inference:*/ (MakeEntryPointer(zero.RepeatedLargestFieldNumber)),
+				/*type inference:*/ (MakeEntryNilPointer(zero.RepeatedLargestFieldNumber)),
 				/*FieldNumber:   */ 31,
 				/*Name:          */ "RepeatedLargestFieldNumber",
 				/*FixedLength:   */ 0,

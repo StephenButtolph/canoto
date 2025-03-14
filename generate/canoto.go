@@ -620,7 +620,7 @@ func makeSpec(m message) string {
 			),
 `,
 			repeated: `			${selector}FieldTypeFromField(
-				/*type inference:*/ ${genericTypeCast}(${selector}MakeEntryPointer(zero.${fieldName})),
+				/*type inference:*/ ${genericTypeCast}(${selector}MakeEntryNilPointer(zero.${fieldName})),
 				/*FieldNumber:   */ ${fieldNumber},
 				/*Name:          */ "${fieldName}",
 				/*FixedLength:   */ 0,
@@ -630,7 +630,7 @@ func makeSpec(m message) string {
 			),
 `,
 			fixedRepeated: `			${selector}FieldTypeFromField(
-				/*type inference:*/ ${genericTypeCast}(${selector}MakeEntryPointer(zero.${fieldName}[:])),
+				/*type inference:*/ ${genericTypeCast}(${selector}MakeEntryNilPointer(zero.${fieldName}[:])),
 				/*FieldNumber:   */ ${fieldNumber},
 				/*Name:          */ "${fieldName}",
 				/*FixedLength:   */ uint64(len(zero.${fieldName})),

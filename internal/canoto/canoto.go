@@ -619,15 +619,15 @@ func MakeEntry[S ~[]E, E any](_ S) (_ E) {
 	return
 }
 
-// MakeEntry returns a pointer to the zero value of an element in the provided
+// MakeEntryNilPointer returns a nil pointer to an element in the provided
 // slice.
 //
 // This function is useful to use in auto-generated code, when the type of a
 // variable is unknown. For example, if we have a variable `v` which we know to
 // be a slice, but we do not know the type of the elements, we can use this
-// function to leverage golang's type inference to create an element.
-func MakeEntryPointer[S ~[]E, E any](_ S) *E {
-	return new(E)
+// function to leverage golang's type inference to create the pointer.
+func MakeEntryNilPointer[S ~[]E, E any](_ S) *E {
+	return nil
 }
 
 // IsZero returns true if the value is the zero value for its type.
