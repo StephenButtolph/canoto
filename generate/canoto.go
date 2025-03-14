@@ -210,9 +210,7 @@ func (c *${structName}${generics}) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-${sizeVars}	)
-${size}${assignSizeVars}}
+${sizeVars}${size}${assignSizeVars}}
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
 // representation from CalculateCanotoCache.
@@ -1471,26 +1469,14 @@ func makeUnmarshal(m message) string {
 }
 
 func makeValidOneOf(m message) string {
-	oneOfs := m.OneOfs()
-	if len(oneOfs) == 0 {
-		return ""
-	}
-
-	var largestNameSize int
-	for _, oneOf := range oneOfs {
-		largestNameSize = max(largestNameSize, len(oneOf))
-	}
-
 	const oneOfSuffix = "OneOf"
 	var (
-		template = fmt.Sprintf("\t\t%%-%ds uint32\n", largestNameSize+len(oneOfSuffix))
+		template = "\tvar %s uint32\n"
 		s        strings.Builder
 	)
-	_, _ = s.WriteString("\tvar (\n")
-	for _, oneOf := range oneOfs {
+	for _, oneOf := range m.OneOfs() {
 		_, _ = fmt.Fprintf(&s, template, oneOf+oneOfSuffix)
 	}
-	_, _ = s.WriteString("\t)\n")
 
 	const (
 		functionTemplate = `	if !${selector}IsZero(c.${fieldName}) {
@@ -1720,23 +1706,17 @@ func makeValid(m message) string {
 }
 
 func makeSizeVars(m message) string {
-	oneOfs := m.OneOfs()
 	const (
 		sizeName    = "size"
 		oneOfSuffix = "OneOf"
-	)
-	largestNameSize := len(sizeName)
-	for _, oneOf := range oneOfs {
-		largestNameSize = max(largestNameSize, len(oneOf)+len(oneOfSuffix))
-	}
 
-	var (
-		sizeTemplate  = fmt.Sprintf("\t\t%%-%ds int\n", largestNameSize)
-		oneOfTemplate = fmt.Sprintf("\t\t%%-%ds uint32\n", largestNameSize)
-		s             strings.Builder
+		sizeTemplate  = "\tvar %s int\n"
+		oneOfTemplate = "\tvar %s uint32\n"
 	)
+
+	var s strings.Builder
 	_, _ = fmt.Fprintf(&s, sizeTemplate, sizeName)
-	for _, oneOf := range oneOfs {
+	for _, oneOf := range m.OneOfs() {
 		_, _ = fmt.Fprintf(&s, oneOfTemplate, oneOf+oneOfSuffix)
 	}
 	return s.String()

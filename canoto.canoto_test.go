@@ -1222,9 +1222,7 @@ func (c *SpecFuzzer) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size int
-	)
+	var size int
 	if !IsZero(c.Int8) {
 		size += len(canoto__SpecFuzzer__Int8__tag) + SizeInt(c.Int8)
 	}
@@ -1722,9 +1720,7 @@ func (c *LargestFieldNumber[T1]) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size int
-	)
+	var size int
 	if !IsZero(c.Uint) {
 		size += len(canoto__LargestFieldNumber__Uint__tag) + SizeUint(c.Uint)
 	}
@@ -1975,10 +1971,8 @@ func (c *OneOf) ValidCanoto() bool {
 	if c == nil {
 		return true
 	}
-	var (
-		AOneOf uint32
-		BOneOf uint32
-	)
+	var AOneOf uint32
+	var BOneOf uint32
 	if !IsZero(c.A1) {
 		if AOneOf != 0 {
 			return false
@@ -2012,11 +2006,9 @@ func (c *OneOf) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size   int
-		AOneOf uint32
-		BOneOf uint32
-	)
+	var size int
+	var AOneOf uint32
+	var BOneOf uint32
 	if !IsZero(c.A1) {
 		size += len(canoto__OneOf__A1__tag) + SizeInt(c.A1)
 		AOneOf = 1

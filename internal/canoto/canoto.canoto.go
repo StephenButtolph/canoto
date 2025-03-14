@@ -194,9 +194,7 @@ func (c *Spec) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size int
-	)
+	var size int
 	if len(c.Name) != 0 {
 		size += len(canoto__Spec__Name__tag) + SizeBytes(c.Name)
 	}
@@ -746,10 +744,8 @@ func (c *FieldType) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size      int
-		TypeOneOf uint32
-	)
+	var size int
+	var TypeOneOf uint32
 	if !IsZero(c.FieldNumber) {
 		size += len(canoto__FieldType__FieldNumber__tag) + SizeUint(c.FieldNumber)
 	}

@@ -126,9 +126,7 @@ func (c *LargestFieldNumber[T1]) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size int
-	)
+	var size int
 	if !canoto.IsZero(c.Uint) {
 		size += len(canoto__LargestFieldNumber__Uint__tag) + canoto.SizeUint(c.Uint)
 	}
@@ -379,10 +377,8 @@ func (c *OneOf) ValidCanoto() bool {
 	if c == nil {
 		return true
 	}
-	var (
-		AOneOf uint32
-		BOneOf uint32
-	)
+	var AOneOf uint32
+	var BOneOf uint32
 	if !canoto.IsZero(c.A1) {
 		if AOneOf != 0 {
 			return false
@@ -416,11 +412,9 @@ func (c *OneOf) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size   int
-		AOneOf uint32
-		BOneOf uint32
-	)
+	var size int
+	var AOneOf uint32
+	var BOneOf uint32
 	if !canoto.IsZero(c.A1) {
 		size += len(canoto__OneOf__A1__tag) + canoto.SizeInt(c.A1)
 		AOneOf = 1
@@ -675,9 +669,7 @@ func (c *Node) ValidCanoto() bool {
 	if c == nil {
 		return true
 	}
-	var (
-		OneOfOneOf uint32
-	)
+	var OneOfOneOf uint32
 	if c.Next != nil {
 		(c.Next).CalculateCanotoCache()
 		if (c.Next).CachedCanotoSize() != 0 {
@@ -699,10 +691,8 @@ func (c *Node) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size       int
-		OneOfOneOf uint32
-	)
+	var size int
+	var OneOfOneOf uint32
 	if !canoto.IsZero(c.Value) {
 		size += len(canoto__Node__Value__tag) + canoto.SizeInt(c.Value)
 	}
@@ -906,9 +896,7 @@ func (c *RecursiveA) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size int
-	)
+	var size int
 	if c.Next != nil {
 		(c.Next).CalculateCanotoCache()
 		if fieldSize := (c.Next).CachedCanotoSize(); fieldSize != 0 {
@@ -1089,9 +1077,7 @@ func (c *RecursiveB) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size int
-	)
+	var size int
 	if c.Next != nil {
 		(c.Next).CalculateCanotoCache()
 		if fieldSize := (c.Next).CachedCanotoSize(); fieldSize != 0 {
@@ -1751,9 +1737,7 @@ func (c *GenericField[T1, T2, T3]) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size int
-	)
+	var size int
 	T2(&c.Value).CalculateCanotoCache()
 	if fieldSize := T2(&c.Value).CachedCanotoSize(); fieldSize != 0 {
 		size += len(canoto__GenericField__Value__tag) + canoto.SizeUint(uint64(fieldSize)) + fieldSize
@@ -2578,9 +2562,7 @@ func (c *NestedGenericField[T1, T2, T3]) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size int
-	)
+	var size int
 	(&c.Value).CalculateCanotoCache()
 	if fieldSize := (&c.Value).CachedCanotoSize(); fieldSize != 0 {
 		size += len(canoto__NestedGenericField__Value__tag) + canoto.SizeUint(uint64(fieldSize)) + fieldSize
@@ -3001,9 +2983,7 @@ func (c *Embedded) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size int
-	)
+	var size int
 	(&c.OneOf).CalculateCanotoCache()
 	if fieldSize := (&c.OneOf).CachedCanotoSize(); fieldSize != 0 {
 		size += len(canoto__Embedded__OneOf__tag) + canoto.SizeUint(uint64(fieldSize)) + fieldSize
@@ -3182,9 +3162,7 @@ func (c *A) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size int
-	)
+	var size int
 	if !canoto.IsZero(c.B__C) {
 		size += len(canoto__A__B_1_1C__tag) + canoto.SizeInt(c.B__C)
 	}
@@ -3339,9 +3317,7 @@ func (c *A__B) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size int
-	)
+	var size int
 	if !canoto.IsZero(c.C) {
 		size += len(canoto__A_1_1B__C__tag) + canoto.SizeInt(c.C)
 	}
@@ -6035,9 +6011,7 @@ func (c *Scalars) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size int
-	)
+	var size int
 	if !canoto.IsZero(c.Int8) {
 		size += len(canoto__Scalars__Int8__tag) + canoto.SizeInt(c.Int8)
 	}
@@ -7189,9 +7163,7 @@ func (c *SpecUnusedZero) CalculateCanotoCache() {
 	if c == nil {
 		return
 	}
-	var (
-		size int
-	)
+	var size int
 	if !canoto.IsZero(c.Bool) {
 		size += len(canoto__SpecUnusedZero__Bool__tag) + canoto.SizeBool
 	}
