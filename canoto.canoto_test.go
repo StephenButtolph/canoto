@@ -73,7 +73,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 	var zero SpecFuzzer
 	s := &Spec{
 		Name: "SpecFuzzer",
-		Fields: []*FieldType{
+		Fields: []FieldType{
 			{
 				FieldNumber: 1,
 				Name:        "Int8",
@@ -1627,7 +1627,7 @@ func (*LargestFieldNumber[T1]) CanotoSpec(...reflect.Type) *Spec {
 	var zero LargestFieldNumber[T1]
 	s := &Spec{
 		Name: "LargestFieldNumber",
-		Fields: []*FieldType{
+		Fields: []FieldType{
 			{
 				FieldNumber: 536870911,
 				Name:        "Uint",
@@ -1789,7 +1789,7 @@ func (*OneOf) CanotoSpec(...reflect.Type) *Spec {
 	var zero OneOf
 	s := &Spec{
 		Name: "OneOf",
-		Fields: []*FieldType{
+		Fields: []FieldType{
 			{
 				FieldNumber: 1,
 				Name:        "A1",

@@ -33,7 +33,7 @@ func (*LargestFieldNumber[T1]) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero LargestFieldNumber[T1]
 	s := &canoto.Spec{
 		Name: "LargestFieldNumber",
-		Fields: []*canoto.FieldType{
+		Fields: []canoto.FieldType{
 			{
 				FieldNumber: 536870911,
 				Name:        "Uint",
@@ -195,7 +195,7 @@ func (*OneOf) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero OneOf
 	s := &canoto.Spec{
 		Name: "OneOf",
-		Fields: []*canoto.FieldType{
+		Fields: []canoto.FieldType{
 			{
 				FieldNumber: 1,
 				Name:        "A1",
@@ -547,7 +547,7 @@ func (*Node) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	var zero Node
 	s := &canoto.Spec{
 		Name: "Node",
-		Fields: []*canoto.FieldType{
+		Fields: []canoto.FieldType{
 			{
 				FieldNumber: 1,
 				Name:        "Value",
@@ -782,7 +782,7 @@ func (*RecursiveA) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	var zero RecursiveA
 	s := &canoto.Spec{
 		Name: "RecursiveA",
-		Fields: []*canoto.FieldType{
+		Fields: []canoto.FieldType{
 			canoto.FieldTypeFromField(
 				/*type inference:*/ (zero.Next),
 				/*FieldNumber:   */ 1,
@@ -963,7 +963,7 @@ func (*RecursiveB) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	var zero RecursiveB
 	s := &canoto.Spec{
 		Name: "RecursiveB",
-		Fields: []*canoto.FieldType{
+		Fields: []canoto.FieldType{
 			canoto.FieldTypeFromField(
 				/*type inference:*/ (zero.Next),
 				/*FieldNumber:   */ 1,
@@ -1152,7 +1152,7 @@ func (*GenericField[T1, T2, T3]) CanotoSpec(types ...reflect.Type) *canoto.Spec 
 	var zero GenericField[T1, T2, T3]
 	s := &canoto.Spec{
 		Name: "GenericField",
-		Fields: []*canoto.FieldType{
+		Fields: []canoto.FieldType{
 			canoto.FieldTypeFromField(
 				/*type inference:*/ T2(&zero.Value),
 				/*FieldNumber:   */ 1,
@@ -1977,7 +1977,7 @@ func (*NestedGenericField[T1, T2, T3]) CanotoSpec(types ...reflect.Type) *canoto
 	var zero NestedGenericField[T1, T2, T3]
 	s := &canoto.Spec{
 		Name: "NestedGenericField",
-		Fields: []*canoto.FieldType{
+		Fields: []canoto.FieldType{
 			canoto.FieldTypeFromField(
 				/*type inference:*/ (&zero.Value),
 				/*FieldNumber:   */ 1,
@@ -2796,7 +2796,7 @@ func (*Embedded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	var zero Embedded
 	s := &canoto.Spec{
 		Name: "Embedded",
-		Fields: []*canoto.FieldType{
+		Fields: []canoto.FieldType{
 			canoto.FieldTypeFromField(
 				/*type inference:*/ (&zero.OneOf),
 				/*FieldNumber:   */ 1,
@@ -3067,7 +3067,7 @@ func (*A) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero A
 	s := &canoto.Spec{
 		Name: "A",
-		Fields: []*canoto.FieldType{
+		Fields: []canoto.FieldType{
 			{
 				FieldNumber: 1,
 				Name:        "B__C",
@@ -3221,7 +3221,7 @@ func (*A__B) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero A__B
 	s := &canoto.Spec{
 		Name: "A__B",
-		Fields: []*canoto.FieldType{
+		Fields: []canoto.FieldType{
 			{
 				FieldNumber: 1,
 				Name:        "C",
@@ -3460,7 +3460,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	var zero Scalars
 	s := &canoto.Spec{
 		Name: "Scalars",
-		Fields: []*canoto.FieldType{
+		Fields: []canoto.FieldType{
 			{
 				FieldNumber: 1,
 				Name:        "Int8",
@@ -6900,7 +6900,7 @@ type canotoData_SpecUnusedZero struct {
 func (*SpecUnusedZero) CanotoSpec(...reflect.Type) *canoto.Spec {
 	s := &canoto.Spec{
 		Name: "SpecUnusedZero",
-		Fields: []*canoto.FieldType{
+		Fields: []canoto.FieldType{
 			{
 				FieldNumber: 1,
 				Name:        "Bool",

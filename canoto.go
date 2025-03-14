@@ -211,8 +211,8 @@ type (
 	// Spec is itself a message, to allow for implementations of universal
 	// canoto message interpreters.
 	Spec struct {
-		Name   string       `canoto:"string,1"           json:"name"`
-		Fields []*FieldType `canoto:"repeated pointer,2" json:"fields"`
+		Name   string      `canoto:"string,1"         json:"name"`
+		Fields []FieldType `canoto:"repeated value,2" json:"fields"`
 
 		canotoData canotoData_Spec
 	}
@@ -696,20 +696,25 @@ func FieldTypeFromFint[T integer](
 	fixedLength uint64,
 	repeated bool,
 	oneOf string,
-) *FieldType {
-	f := &FieldType{
-		FieldNumber: fieldNumber,
-		Name:        name,
-		FixedLength: fixedLength,
-		Repeated:    repeated,
-		OneOf:       oneOf,
-	}
+) FieldType {
+	var (
+		typeFixedInt  SizeEnum
+		typeFixedUint SizeEnum
+	)
 	if isSigned[T]() {
-		f.TypeFixedInt = SizeOf(field)
+		typeFixedInt = SizeOf(field)
 	} else {
-		f.TypeFixedUint = SizeOf(field)
+		typeFixedUint = SizeOf(field)
 	}
-	return f
+	return FieldType{
+		FieldNumber:   fieldNumber,
+		Name:          name,
+		FixedLength:   fixedLength,
+		Repeated:      repeated,
+		OneOf:         oneOf,
+		TypeFixedInt:  typeFixedInt,
+		TypeFixedUint: typeFixedUint,
+	}
 }
 
 // FieldTypeFromField creates a FieldType from a field.
@@ -721,27 +726,33 @@ func FieldTypeFromField[T Field](
 	repeated bool,
 	oneOf string,
 	types []reflect.Type,
-) *FieldType {
+) FieldType {
 	var (
-		f = &FieldType{
-			FieldNumber: fieldNumber,
-			Name:        name,
-			FixedLength: fixedLength,
-			Repeated:    repeated,
-			OneOf:       oneOf,
-		}
 		fieldType = reflect.TypeOf(field).Elem()
+
+		typeBytes     bool
+		typeRecursive uint64
+		typeMessage   *Spec
 	)
 	if index := slices.Index(types, fieldType); index >= 0 {
-		f.TypeRecursive = uint64(len(types) - index) //#nosec G115 // False positive
+		typeRecursive = uint64(len(types) - index) //#nosec G115 // False positive
 	} else {
-		f.TypeMessage = field.CanotoSpec(types...)
+		typeMessage = field.CanotoSpec(types...)
 		// If this does not have a valid spec, it is treated as bytes.
-		if f.TypeMessage == nil {
-			f.TypeBytes = true
+		if typeMessage == nil {
+			typeBytes = true
 		}
 	}
-	return f
+	return FieldType{
+		FieldNumber:   fieldNumber,
+		Name:          name,
+		FixedLength:   fixedLength,
+		Repeated:      repeated,
+		OneOf:         oneOf,
+		TypeBytes:     typeBytes,
+		TypeRecursive: typeRecursive,
+		TypeMessage:   typeMessage,
+	}
 }
 
 // isSigned returns true if the integer type is signed.
@@ -843,7 +854,8 @@ func (s *Spec) marshal(w *Writer, a Any, specs []*Spec) error {
 }
 
 func (s *Spec) findFieldByNumber(fieldNumber uint32) (*FieldType, error) {
-	for _, f := range s.Fields {
+	for i := range s.Fields {
+		f := &s.Fields[i]
 		if f.FieldNumber == fieldNumber {
 			return f, nil
 		}
@@ -852,7 +864,8 @@ func (s *Spec) findFieldByNumber(fieldNumber uint32) (*FieldType, error) {
 }
 
 func (s *Spec) findFieldByName(name string) (*FieldType, error) {
-	for _, f := range s.Fields {
+	for i := range s.Fields {
+		f := &s.Fields[i]
 		if f.Name == name {
 			return f, nil
 		}

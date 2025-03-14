@@ -33,7 +33,7 @@ func (*Spec) CanotoSpec(types ...reflect.Type) *Spec {
 	var zero Spec
 	s := &Spec{
 		Name: "Spec",
-		Fields: []*FieldType{
+		Fields: []FieldType{
 			{
 				FieldNumber: 1,
 				Name:        "Name",
@@ -41,7 +41,7 @@ func (*Spec) CanotoSpec(types ...reflect.Type) *Spec {
 				TypeString:  true,
 			},
 			FieldTypeFromField(
-				/*type inference:*/ (MakeEntry(zero.Fields)),
+				/*type inference:*/ (MakeEntryPointer(zero.Fields)),
 				/*FieldNumber:   */ 2,
 				/*Name:          */ "Fields",
 				/*FixedLength:   */ 0,
@@ -128,8 +128,7 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 			if len(msgBytes) != 0 {
 				remainingBytes := r.B
 				r.B = msgBytes
-				c.Fields[0] = MakePointer(c.Fields[0])
-				if err := (c.Fields[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&c.Fields[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
@@ -149,8 +148,7 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 
 				remainingBytes := r.B
 				r.B = msgBytes
-				c.Fields[1+i] = MakePointer(c.Fields[1+i])
-				if err := (c.Fields[1+i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&c.Fields[1+i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
@@ -179,7 +177,7 @@ func (c *Spec) ValidCanoto() bool {
 		return false
 	}
 	for i := range c.Fields {
-		if c.Fields[i] != nil && !(c.Fields[i]).ValidCanoto() {
+		if !(&c.Fields[i]).ValidCanoto() {
 			return false
 		}
 	}
@@ -197,11 +195,8 @@ func (c *Spec) CalculateCanotoCache() {
 		size += uint64(len(canoto__Spec__Name__tag)) + SizeBytes(c.Name)
 	}
 	for i := range c.Fields {
-		var fieldSize uint64
-		if c.Fields[i] != nil {
-			(c.Fields[i]).CalculateCanotoCache()
-			fieldSize = (c.Fields[i]).CachedCanotoSize()
-		}
+		(&c.Fields[i]).CalculateCanotoCache()
+		fieldSize := (&c.Fields[i]).CachedCanotoSize()
 		size += uint64(len(canoto__Spec__Fields__tag)) + SizeUint(fieldSize) + fieldSize
 	}
 	c.canotoData.size.Store(size)
@@ -250,14 +245,8 @@ func (c *Spec) MarshalCanotoInto(w Writer) Writer {
 	}
 	for i := range c.Fields {
 		Append(&w, canoto__Spec__Fields__tag)
-		var fieldSize uint64
-		if c.Fields[i] != nil {
-			fieldSize = (c.Fields[i]).CachedCanotoSize()
-		}
-		AppendUint(&w, fieldSize)
-		if fieldSize != 0 {
-			w = (c.Fields[i]).MarshalCanotoInto(w)
-		}
+		AppendUint(&w, (&c.Fields[i]).CachedCanotoSize())
+		w = (&c.Fields[i]).MarshalCanotoInto(w)
 	}
 	return w
 }
@@ -292,7 +281,7 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 	var zero FieldType
 	s := &Spec{
 		Name: "FieldType",
-		Fields: []*FieldType{
+		Fields: []FieldType{
 			{
 				FieldNumber: 1,
 				Name:        "FieldNumber",

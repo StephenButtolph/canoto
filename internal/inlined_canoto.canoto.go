@@ -33,7 +33,7 @@ func (*justAnInt) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero justAnInt
 	s := &canoto.Spec{
 		Name: "justAnInt",
-		Fields: []*canoto.FieldType{
+		Fields: []canoto.FieldType{
 			{
 				FieldNumber: 1,
 				Name:        "Int8",

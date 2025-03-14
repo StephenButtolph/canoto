@@ -134,7 +134,7 @@ ${sizeCache}${oneOfCache}}
 func (*${structName}${generics}) CanotoSpec(${typesDecl}...reflect.Type) *${selector}Spec {
 ${appendTypes}${zero}	s := &${selector}Spec{
 		Name: "${structName}",
-		Fields: []*${selector}FieldType{
+		Fields: []${selector}FieldType{
 ${spec}		},
 	}
 	s.CalculateCanotoCache()
