@@ -133,9 +133,8 @@ type canotoData_${structName} struct {
 ${sizeCache}${oneOfCache}}
 
 // CanotoSpec returns the specification of this canoto message.
-func (*${structName}${generics}) CanotoSpec(types ...reflect.Type) *${selector}Spec {
-	types = append(types, reflect.TypeOf(${structName}${generics}{}))
-${zero}	s := &${selector}Spec{
+func (*${structName}${generics}) CanotoSpec(${typesDecl}...reflect.Type) *${selector}Spec {
+${appendTypes}${zero}	s := &${selector}Spec{
 		Name: "${structName}",
 		Fields: []*${selector}FieldType{
 ${spec}		},
@@ -270,6 +269,8 @@ ${marshal}	return w
 
 	generics := makeGenerics(m)
 	return writeTemplate(w, structTemplate, map[string]string{
+		"typesDecl":           "types ",
+		"appendTypes":         fmt.Sprintf("\ttypes = append(types, reflect.TypeOf(%s%s{}))\n", m.name, generics),
 		"tagConstants":        makeTagConstants(m),
 		"structName":          m.name,
 		"generics":            generics,
@@ -1727,12 +1728,12 @@ func makeSize(m message) string {
 `
 		repeatedFixedSizeTemplate = `	if num := uint64(len(c.${fieldName})); num != 0 {
 		fieldSize := num * ${selector}Size${suffix}
-		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(uint64(fieldSize)) + fieldSize${sizeOneOf}
+		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
 	}
 `
 		fixedRepeatedFixedSizeTemplate = `	if !${selector}IsZero(c.${fieldName}) {
 		const fieldSize = uint64(len(c.${fieldName})) * ${selector}Size${suffix}
-		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + fieldSize + ${selector}SizeUint(uint64(fieldSize))${sizeOneOf}
+		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + fieldSize + ${selector}SizeUint(fieldSize)${sizeOneOf}
 	}
 `
 		bytesTemplate = `	if len(c.${fieldName}) != 0 {
@@ -1842,7 +1843,7 @@ func makeSize(m message) string {
 			${genericTypeCast}(&c.${fieldName}[i]).CalculateCanotoCache()
 			fieldSize := ${genericTypeCast}(&c.${fieldName}[i]).CachedCanotoSize()
 			fieldSizeSum += fieldSize
-			totalSize += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(uint64(fieldSize)) + fieldSize
+			totalSize += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize
 		}
 		if fieldSizeSum != 0 {
 			size += totalSize${sizeOneOfIndent}
@@ -1980,7 +1981,7 @@ func makeMarshal(m message) string {
 `
 		repeatedFintTemplate = `	if num := uint64(len(c.${fieldName})); num != 0 {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendUint(&w, uint64(num*${selector}Size${suffix}))
+		${selector}AppendUint(&w, num*${selector}Size${suffix})
 		for _, v := range c.${fieldName} {
 			${selector}Append${suffix}(&w, v)
 		}
@@ -1989,7 +1990,7 @@ func makeMarshal(m message) string {
 		fixedRepeatedFintTemplate = `	if !${selector}IsZero(c.${fieldName}) {
 		const fieldSize = uint64(len(c.${fieldName})) * ${selector}Size${suffix}
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendUint(&w, uint64(fieldSize))
+		${selector}AppendUint(&w, fieldSize)
 		for _, v := range &c.${fieldName} {
 			${selector}Append${suffix}(&w, v)
 		}
@@ -2011,7 +2012,7 @@ func makeMarshal(m message) string {
 			single: intTemplate,
 			repeated: `	if len(c.${fieldName}) != 0 {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendUint(&w, uint64(c.canotoData.${fieldName}Size${load}))
+		${selector}AppendUint(&w, c.canotoData.${fieldName}Size${load})
 		for _, v := range c.${fieldName} {
 			${selector}Append${suffix}(&w, v)
 		}
@@ -2019,7 +2020,7 @@ func makeMarshal(m message) string {
 `,
 			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendUint(&w, uint64(c.canotoData.${fieldName}Size${load}))
+		${selector}AppendUint(&w, c.canotoData.${fieldName}Size${load})
 		for _, v := range &c.${fieldName} {
 			${selector}Append${suffix}(&w, v)
 		}
@@ -2089,13 +2090,13 @@ func makeMarshal(m message) string {
 		values: typeTemplate{
 			single: `	if fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendUint(&w, uint64(fieldSize))
+		${selector}AppendUint(&w, fieldSize)
 		w = ${genericTypeCast}(&c.${fieldName}).MarshalCanotoInto(w)
 	}
 `,
 			repeated: `	for i := range c.${fieldName} {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendUint(&w, uint64(${genericTypeCast}(&c.${fieldName}[i]).CachedCanotoSize()))
+		${selector}AppendUint(&w, ${genericTypeCast}(&c.${fieldName}[i]).CachedCanotoSize())
 		w = ${genericTypeCast}(&c.${fieldName}[i]).MarshalCanotoInto(w)
 	}
 `,
@@ -2110,7 +2111,7 @@ func makeMarshal(m message) string {
 		if !isZero {
 			for i := range c.${fieldName} {
 				${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-				${selector}AppendUint(&w, uint64(${genericTypeCast}(&c.${fieldName}[i]).CachedCanotoSize()))
+				${selector}AppendUint(&w, ${genericTypeCast}(&c.${fieldName}[i]).CachedCanotoSize())
 				w = ${genericTypeCast}(&c.${fieldName}[i]).MarshalCanotoInto(w)
 			}
 		}
@@ -2121,7 +2122,7 @@ func makeMarshal(m message) string {
 			single: `	if c.${fieldName} != nil {
 		if fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
 			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-			${selector}AppendUint(&w, uint64(fieldSize))
+			${selector}AppendUint(&w, fieldSize)
 			w = ${genericTypeCast}(c.${fieldName}).MarshalCanotoInto(w)
 		}
 	}
@@ -2165,14 +2166,14 @@ func makeMarshal(m message) string {
 		fields: typeTemplate{
 			single: `	if fieldSize := c.${fieldName}.CachedCanotoSize(); fieldSize != 0 {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendUint(&w, uint64(fieldSize))
+		${selector}AppendUint(&w, fieldSize)
 		w = c.${fieldName}.MarshalCanotoInto(w)
 	}
 `,
 			repeated: `	for i := range c.${fieldName} {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		fieldSize := c.${fieldName}[i].CachedCanotoSize()
-		${selector}AppendUint(&w, uint64(fieldSize))
+		${selector}AppendUint(&w, fieldSize)
 		if fieldSize != 0 {
 			w = c.${fieldName}[i].MarshalCanotoInto(w)
 		}
@@ -2190,7 +2191,7 @@ func makeMarshal(m message) string {
 			for i := range c.${fieldName} {
 				${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 				fieldSize := c.${fieldName}[i].CachedCanotoSize()
-				${selector}AppendUint(&w, uint64(fieldSize))
+				${selector}AppendUint(&w, fieldSize)
 				if fieldSize != 0 {
 					w = c.${fieldName}[i].MarshalCanotoInto(w)
 				}

@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/StephenButtolph/canoto/internal/canoto"
 	"github.com/stretchr/testify/require"
 	"github.com/thepudds/fzgen/fuzzer"
 )
@@ -774,7 +773,7 @@ func TestReadBytes(t *testing.T) {
 
 func FuzzAppendBytes_string(f *testing.F) {
 	f.Fuzz(func(t *testing.T, v string) {
-		if !canoto.ValidString(v) {
+		if !ValidString(v) {
 			return
 		}
 

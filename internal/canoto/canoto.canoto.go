@@ -916,7 +916,7 @@ func (c *FieldType) MarshalCanotoInto(w Writer) Writer {
 	if c.TypeMessage != nil {
 		if fieldSize := (c.TypeMessage).CachedCanotoSize(); fieldSize != 0 {
 			Append(&w, canoto__FieldType__TypeMessage__tag)
-			AppendUint(&w, uint64(fieldSize))
+			AppendUint(&w, fieldSize)
 			w = (c.TypeMessage).MarshalCanotoInto(w)
 		}
 	}

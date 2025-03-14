@@ -355,7 +355,7 @@ func SizeUint[T Uint](v T) uint64 {
 	if v == 0 {
 		return 1
 	}
-	return uint64((bits.Len64(uint64(v)) + 6)) / 7
+	return uint64((bits.Len64(uint64(v)) + 6)) / 7 //#nosec G115 // False positive
 }
 
 // CountInts counts the number of varints that are encoded in bytes.
@@ -408,7 +408,7 @@ func SizeInt[T Int](v T) uint64 {
 	} else {
 		uv = ^uint64(v)<<1 | 1
 	}
-	return uint64((bits.Len64(uv) + 6)) / 7
+	return uint64((bits.Len64(uv) + 6)) / 7 //#nosec G115 // False positive
 }
 
 // ReadInt reads a zigzag encoded integer from the reader.
@@ -1249,7 +1249,7 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		count = uint64(countMinus1 + 1) //#nosec G115 // False positive
+		count = countMinus1 + 1
 	}
 
 	values := make([][]byte, count)
@@ -1405,7 +1405,7 @@ func unmarshalPackedVarint[T comparable](
 		if len(msgBytes) == 0 {
 			return nil, ErrZeroValue
 		}
-		count = uint64(CountInts(msgBytes)) //#nosec G115 // False positive
+		count = CountInts(msgBytes)
 	}
 	values := make([]T, count)
 	r = &Reader{
@@ -1553,7 +1553,7 @@ func unmarshalUnpacked[T any](
 		if err != nil {
 			return nil, err
 		}
-		count = uint64(countMinus1 + 1) //#nosec G115 // False positive
+		count = countMinus1 + 1
 	}
 
 	values := make([]T, count)
