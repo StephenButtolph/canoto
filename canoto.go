@@ -932,11 +932,7 @@ func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 	default:
 		return nil, ErrUnknownFieldType
 	}
-	value, err := unmarshal(f, r, specs)
-	if err != nil {
-		return nil, err
-	}
-	return value, nil
+	return unmarshal(f, r, specs)
 }
 
 func (f *FieldType) marshal(w *Writer, value any, specs []*Spec) error {
