@@ -909,44 +909,56 @@ func (f *FieldType) wireType() (WireType, error) {
 }
 
 func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
-	whichOneOf := f.CachedWhichOneOfType()
-	unmarshal, ok := map[uint32]func(f *FieldType, r *Reader, specs []*Spec) (any, error){
-		6:  (*FieldType).unmarshalInt,
-		7:  (*FieldType).unmarshalUint,
-		8:  (*FieldType).unmarshalFixedInt,
-		9:  (*FieldType).unmarshalFixedUint,
-		10: (*FieldType).unmarshalBool,
-		11: (*FieldType).unmarshalString,
-		12: (*FieldType).unmarshalBytes,
-		13: (*FieldType).unmarshalFixedBytes,
-		14: (*FieldType).unmarshalRecursive,
-		15: (*FieldType).unmarshalSpec,
-	}[whichOneOf]
-	if !ok {
+	var unmarshal func(f *FieldType, r *Reader, specs []*Spec) (any, error)
+	switch f.CachedWhichOneOfType() {
+	case 6:
+		unmarshal = (*FieldType).unmarshalInt
+	case 7:
+		unmarshal = (*FieldType).unmarshalUint
+	case 8:
+		unmarshal = (*FieldType).unmarshalFixedInt
+	case 9:
+		unmarshal = (*FieldType).unmarshalFixedUint
+	case 10:
+		unmarshal = (*FieldType).unmarshalBool
+	case 11:
+		unmarshal = (*FieldType).unmarshalString
+	case 12:
+		unmarshal = (*FieldType).unmarshalBytes
+	case 13:
+		unmarshal = (*FieldType).unmarshalFixedBytes
+	case 14:
+		unmarshal = (*FieldType).unmarshalRecursive
+	case 15:
+		unmarshal = (*FieldType).unmarshalSpec
+	default:
 		return nil, ErrUnknownFieldType
 	}
-	value, err := unmarshal(f, r, specs)
-	if err != nil {
-		return nil, err
-	}
-	return value, nil
+	return unmarshal(f, r, specs)
 }
 
 func (f *FieldType) marshal(w *Writer, value any, specs []*Spec) error {
-	whichOneOf := f.CachedWhichOneOfType()
-	marshal, ok := map[uint32]func(f *FieldType, w *Writer, value any, specs []*Spec) error{
-		6:  (*FieldType).marshalInt,
-		7:  (*FieldType).marshalUint,
-		8:  (*FieldType).marshalFixedInt,
-		9:  (*FieldType).marshalFixedUint,
-		10: (*FieldType).marshalBool,
-		11: (*FieldType).marshalString,
-		12: (*FieldType).marshalBytes,
-		13: (*FieldType).marshalBytes,
-		14: (*FieldType).marshalRecursive,
-		15: (*FieldType).marshalSpec,
-	}[whichOneOf]
-	if !ok {
+	var marshal func(f *FieldType, w *Writer, value any, specs []*Spec) error
+	switch f.CachedWhichOneOfType() {
+	case 6:
+		marshal = (*FieldType).marshalInt
+	case 7:
+		marshal = (*FieldType).marshalUint
+	case 8:
+		marshal = (*FieldType).marshalFixedInt
+	case 9:
+		marshal = (*FieldType).marshalFixedUint
+	case 10:
+		marshal = (*FieldType).marshalBool
+	case 11:
+		marshal = (*FieldType).marshalString
+	case 12, 13:
+		marshal = (*FieldType).marshalBytes
+	case 14:
+		marshal = (*FieldType).marshalRecursive
+	case 15:
+		marshal = (*FieldType).marshalSpec
+	default:
 		return ErrUnknownFieldType
 	}
 	return marshal(f, w, value, specs)
