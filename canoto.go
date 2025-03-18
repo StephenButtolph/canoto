@@ -101,7 +101,39 @@ var (
 	ErrStringNotUTF8   = errors.New("decoded string is not UTF-8")
 
 	_ json.Marshaler = Any{}
+
+	unmarshalers []func(f *FieldType, r *Reader, specs []*Spec) (any, error)
+	marshalers   []func(f *FieldType, w *Writer, value any, specs []*Spec) error
 )
+
+// The unmarshalers and marshalers are initialized here to avoid a circular
+// initialization.
+func init() {
+	unmarshalers = []func(f *FieldType, r *Reader, specs []*Spec) (any, error){
+		(*FieldType).unmarshalInt,
+		(*FieldType).unmarshalUint,
+		(*FieldType).unmarshalFixedInt,
+		(*FieldType).unmarshalFixedUint,
+		(*FieldType).unmarshalBool,
+		(*FieldType).unmarshalString,
+		(*FieldType).unmarshalBytes,
+		(*FieldType).unmarshalFixedBytes,
+		(*FieldType).unmarshalRecursive,
+		(*FieldType).unmarshalSpec,
+	}
+	marshalers = []func(f *FieldType, w *Writer, value any, specs []*Spec) error{
+		(*FieldType).marshalInt,
+		(*FieldType).marshalUint,
+		(*FieldType).marshalFixedInt,
+		(*FieldType).marshalFixedUint,
+		(*FieldType).marshalBool,
+		(*FieldType).marshalString,
+		(*FieldType).marshalBytes,
+		(*FieldType).marshalBytes,
+		(*FieldType).marshalRecursive,
+		(*FieldType).marshalSpec,
+	}
+}
 
 type (
 	Int interface {
@@ -907,59 +939,19 @@ func (f *FieldType) wireType() (WireType, error) {
 }
 
 func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
-	var unmarshal func(f *FieldType, r *Reader, specs []*Spec) (any, error)
-	switch f.CachedWhichOneOfType() {
-	case 6:
-		unmarshal = (*FieldType).unmarshalInt
-	case 7:
-		unmarshal = (*FieldType).unmarshalUint
-	case 8:
-		unmarshal = (*FieldType).unmarshalFixedInt
-	case 9:
-		unmarshal = (*FieldType).unmarshalFixedUint
-	case 10:
-		unmarshal = (*FieldType).unmarshalBool
-	case 11:
-		unmarshal = (*FieldType).unmarshalString
-	case 12:
-		unmarshal = (*FieldType).unmarshalBytes
-	case 13:
-		unmarshal = (*FieldType).unmarshalFixedBytes
-	case 14:
-		unmarshal = (*FieldType).unmarshalRecursive
-	case 15:
-		unmarshal = (*FieldType).unmarshalSpec
-	default:
+	fieldType := f.CachedWhichOneOfType()
+	if fieldType < 6 || fieldType > 15 {
 		return nil, ErrUnknownFieldType
 	}
-	return unmarshal(f, r, specs)
+	return unmarshalers[fieldType-6](f, r, specs)
 }
 
 func (f *FieldType) marshal(w *Writer, value any, specs []*Spec) error {
-	var marshal func(f *FieldType, w *Writer, value any, specs []*Spec) error
-	switch f.CachedWhichOneOfType() {
-	case 6:
-		marshal = (*FieldType).marshalInt
-	case 7:
-		marshal = (*FieldType).marshalUint
-	case 8:
-		marshal = (*FieldType).marshalFixedInt
-	case 9:
-		marshal = (*FieldType).marshalFixedUint
-	case 10:
-		marshal = (*FieldType).marshalBool
-	case 11:
-		marshal = (*FieldType).marshalString
-	case 12, 13:
-		marshal = (*FieldType).marshalBytes
-	case 14:
-		marshal = (*FieldType).marshalRecursive
-	case 15:
-		marshal = (*FieldType).marshalSpec
-	default:
+	fieldType := f.CachedWhichOneOfType()
+	if fieldType < 6 || fieldType > 15 {
 		return ErrUnknownFieldType
 	}
-	return marshal(f, w, value, specs)
+	return marshalers[fieldType-6](f, w, value, specs)
 }
 
 func (f *FieldType) unmarshalInt(r *Reader, _ []*Spec) (any, error) {
