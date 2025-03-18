@@ -48,7 +48,6 @@ jobs:
 
       - name: Compare benchmarks
         run: |
-          benchstat old new
           EOF="$(dd if=/dev/urandom bs=15 count=1 status=none | base64)"
           {
             echo "RESULT<<$EOF"
@@ -103,7 +102,6 @@ jobs:
 
       - name: Compare benchmarks
         run: |
-          benchstat old new
           EOF="$(dd if=/dev/urandom bs=15 count=1 status=none | base64)"
           {
             echo "RESULT<<$EOF"
