@@ -33,7 +33,9 @@ jobs:
         run: go install golang.org/x/perf/cmd/benchstat@latest
 
       - name: Run benchmarks
-        run: go test -bench=. -benchmem -count=10  ./... > new
+        run: |
+          go test -bench=. -benchmem -count=10  ./... > new
+          cat new
 
       - name: Run benchmark for base code
         run: |
@@ -41,6 +43,7 @@ jobs:
           HEAD="$(git rev-parse HEAD)"
           git reset --hard ${{ github.event.pull_request.base.sha }}
           go test -bench=. -benchmem -count=10  ./... > old
+          cat old
           git reset --hard "$HEAD"
 
       - name: Compare benchmarks
@@ -84,7 +87,9 @@ jobs:
         run: go install golang.org/x/perf/cmd/benchstat@latest
 
       - name: Run benchmarks
-        run: go test -bench=. -benchmem -count=10  ./... > new
+        run: |
+          go test -bench=. -benchmem -count=10  ./... > new
+          cat new
 
       - name: Run benchmark for base code
         run: |
@@ -92,6 +97,7 @@ jobs:
           HEAD="$(git rev-parse HEAD)"
           git reset --hard ${{ github.event.pull_request.base.sha }}
           go test -bench=. -benchmem -count=10  ./... > old
+          cat old
           git reset --hard "$HEAD"
 
       - name: Compare benchmarks
