@@ -36,6 +36,20 @@ func (v invalidTest) Bytes(t *testing.T) []byte {
 	require.NoError(t, err)
 	return bytes
 }
+func BenchmarkTag(b *testing.B) {
+	fieldNumbers := []uint32{
+		1,
+		MaxFieldNumber,
+	}
+	for _, fieldNumber := range fieldNumbers {
+		fieldNumberStr := strconv.FormatUint(uint64(fieldNumber), 10)
+		b.Run(fieldNumberStr, func(b *testing.B) {
+			for range b.N {
+				Tag(fieldNumber, Varint)
+			}
+		})
+	}
+}
 
 func BenchmarkHasPrefix(b *testing.B) {
 	bytes := []byte("hello")
