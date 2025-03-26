@@ -330,8 +330,11 @@ func Append[T Bytes](w *Writer, v T) {
 // This function should not typically be used during marshaling, as tags can be
 // precomputed.
 func Tag(fieldNumber uint32, wireType WireType) []byte {
-	w := Writer{}
-	AppendUint(&w, fieldNumber<<wireTypeLength|uint32(wireType))
+	tag := fieldNumber<<wireTypeLength | uint32(wireType)
+	w := Writer{
+		make([]byte, 0, SizeUint(tag)),
+	}
+	AppendUint(&w, tag)
 	return w.B
 }
 
