@@ -330,12 +330,16 @@ func Append[T Bytes](w *Writer, v T) {
 // This function should not typically be used during marshaling, as tags can be
 // precomputed.
 func Tag(fieldNumber uint32, wireType WireType) []byte {
-	tag := fieldNumber<<wireTypeLength | uint32(wireType)
+	tag := tagValue(fieldNumber, wireType)
 	w := Writer{
 		make([]byte, 0, SizeUint(tag)),
 	}
 	AppendUint(&w, tag)
 	return w.B
+}
+
+func tagValue(fieldNumber uint32, wireType WireType) uint32 {
+	return fieldNumber<<wireTypeLength | uint32(wireType)
 }
 
 // ReadTag reads the next field number and wire type from the reader.
@@ -846,8 +850,8 @@ func (s *Spec) marshal(w *Writer, a Any, specs []*Spec) error {
 			return err
 		}
 
-		tag := Tag(ft.FieldNumber, wireType)
-		Append(w, tag)
+		tag := tagValue(ft.FieldNumber, wireType)
+		AppendUint(w, tag)
 
 		if err := ft.marshal(w, f.Value, specs); err != nil {
 			return err
@@ -1645,9 +1649,9 @@ func marshalUnpacked[T any](
 		return err
 	}
 
-	tag := Tag(f.FieldNumber, Len)
+	tag := tagValue(f.FieldNumber, Len)
 	for _, v := range vl[1:] {
-		Append(w, tag)
+		AppendUint(w, tag)
 		if err := marshal(w, v); err != nil {
 			return err
 		}
