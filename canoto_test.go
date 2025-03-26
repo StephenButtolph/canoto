@@ -37,6 +37,18 @@ func (v invalidTest) Bytes(t *testing.T) []byte {
 	return bytes
 }
 
+func BenchmarkTag(b *testing.B) {
+	for i := 1; i < 30; i++ {
+		fieldNumber := uint32(1)<<i - 1
+		fieldNumberStr := strconv.FormatUint(uint64(fieldNumber), 10)
+		b.Run(fieldNumberStr, func(b *testing.B) {
+			for range b.N {
+				Tag(fieldNumber, Varint)
+			}
+		})
+	}
+}
+
 func TestReadTag(t *testing.T) {
 	type tag struct {
 		fieldNumber uint32
