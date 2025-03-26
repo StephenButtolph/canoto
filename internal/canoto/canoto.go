@@ -54,6 +54,7 @@ const (
 
 	wireTypeLength = 3
 	wireTypeMask   = 0x07
+	maxTagLength   = 5
 
 	falseByte        = 0
 	trueByte         = 1
@@ -1273,7 +1274,9 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 	}
 
 	// Count the number of additional entries after the first entry.
-	expectedTag := Tag(f.FieldNumber, Len)
+	expectedTag := make([]byte, 0, maxTagLength)
+	expectedTagValue := tagValue(f.FieldNumber, Len)
+	expectedTag = binary.AppendUvarint(expectedTag, uint64(expectedTagValue))
 
 	count := f.FixedLength
 	if count == 0 {
@@ -1577,7 +1580,9 @@ func unmarshalUnpacked[T any](
 	}
 
 	// Count the number of additional entries after the first entry.
-	expectedTag := Tag(f.FieldNumber, Len)
+	expectedTag := make([]byte, 0, maxTagLength)
+	expectedTagValue := tagValue(f.FieldNumber, Len)
+	expectedTag = binary.AppendUvarint(expectedTag, uint64(expectedTagValue))
 
 	count := f.FixedLength
 	if count == 0 {
