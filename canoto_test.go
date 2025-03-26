@@ -37,6 +37,23 @@ func (v invalidTest) Bytes(t *testing.T) []byte {
 	return bytes
 }
 
+func BenchmarkHasPrefix(b *testing.B) {
+	bytes := []byte("hello")
+	prefixes := [][]byte{
+		[]byte("hel"),
+		// golang allocates string conversions on the stack if they are <= 32 bytes
+		[]byte("helloooooooooooooooooooooooooooo"),
+		[]byte("hellooooooooooooooooooooooooooooo"),
+	}
+	for _, prefix := range prefixes {
+		b.Run(string(prefix), func(b *testing.B) {
+			for range b.N {
+				HasPrefix(bytes, prefix)
+			}
+		})
+	}
+}
+
 func TestReadTag(t *testing.T) {
 	type tag struct {
 		fieldNumber uint32
