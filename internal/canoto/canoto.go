@@ -507,7 +507,7 @@ func SizeBytes[T Bytes](v T) uint64 {
 
 // CountBytes counts the consecutive number of length-prefixed fields with the
 // given tag.
-func CountBytes(bytes []byte, tag string) (uint64, error) {
+func CountBytes[T Bytes](bytes []byte, tag T) (uint64, error) {
 	var (
 		r     = Reader{B: bytes}
 		count uint64
@@ -528,8 +528,8 @@ func CountBytes(bytes []byte, tag string) (uint64, error) {
 }
 
 // HasPrefix returns true if the bytes start with the given prefix.
-func HasPrefix(bytes []byte, prefix string) bool {
-	return len(bytes) >= len(prefix) && string(bytes[:len(prefix)]) == prefix
+func HasPrefix[T Bytes](bytes []byte, prefix T) bool {
+	return len(bytes) >= len(prefix) && string(bytes[:len(prefix)]) == string(prefix)
 }
 
 // ReadString reads a string from the reader. The string is verified to be valid
@@ -1270,7 +1270,7 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 
 	count := f.FixedLength
 	if count == 0 {
-		countMinus1, err := CountBytes(r.B, string(expectedTag))
+		countMinus1, err := CountBytes(r.B, expectedTag)
 		if err != nil {
 			return nil, err
 		}
@@ -1284,7 +1284,7 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 
 	// Read the rest of the entries, stripping the tag each time.
 	for i := range count - 1 {
-		if !HasPrefix(r.B, string(expectedTag)) {
+		if !HasPrefix(r.B, expectedTag) {
 			return nil, ErrUnknownField
 		}
 		r.B = r.B[len(expectedTag):]
@@ -1574,7 +1574,7 @@ func unmarshalUnpacked[T any](
 
 	count := f.FixedLength
 	if count == 0 {
-		countMinus1, err := CountBytes(r.B, string(expectedTag))
+		countMinus1, err := CountBytes(r.B, expectedTag)
 		if err != nil {
 			return nil, err
 		}
@@ -1591,7 +1591,7 @@ func unmarshalUnpacked[T any](
 
 	// Read the rest of the entries, stripping the tag each time.
 	for i := range count - 1 {
-		if !HasPrefix(r.B, string(expectedTag)) {
+		if !HasPrefix(r.B, expectedTag) {
 			return nil, ErrUnknownField
 		}
 		r.B = r.B[len(expectedTag):]
