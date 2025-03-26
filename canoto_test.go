@@ -36,6 +36,7 @@ func (v invalidTest) Bytes(t *testing.T) []byte {
 	require.NoError(t, err)
 	return bytes
 }
+
 func BenchmarkTag(b *testing.B) {
 	fieldNumbers := []uint32{
 		1,
