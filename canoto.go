@@ -1347,7 +1347,7 @@ func (f *FieldType) unmarshalRecursive(r *Reader, specs []*Spec) (any, error) {
 }
 
 func (f *FieldType) marshalRecursive(w *Writer, value any, specs *Stack[*Spec]) error {
-	spec, specs, ok := specs.Pop(f.TypeRecursive)
+	spec, specs, ok := specs.Pop(f.TypeRecursive - 1)
 	if !ok {
 		return ErrInvalidRecursiveDepth
 	}
