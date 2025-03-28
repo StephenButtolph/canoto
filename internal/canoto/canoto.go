@@ -835,8 +835,11 @@ func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 	return a, nil
 }
 
-func (s *Spec) marshal(w *Writer, a Any, specs []*Spec) error {
-	specs = append(specs, s)
+func (s *Spec) marshal(w *Writer, a Any, specs *Stack[*Spec]) error {
+	specs = &Stack[*Spec]{
+		Value:    s,
+		Previous: specs,
+	}
 	var minField uint32
 	for _, f := range a.Fields {
 		ft, err := s.findFieldByName(f.Name)
@@ -951,8 +954,8 @@ func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 	return unmarshal(f, r, specs)
 }
 
-func (f *FieldType) marshal(w *Writer, value any, specs []*Spec) error {
-	var marshal func(f *FieldType, w *Writer, value any, specs []*Spec) error
+func (f *FieldType) marshal(w *Writer, value any, specs *Stack[*Spec]) error {
+	var marshal func(f *FieldType, w *Writer, value any, specs *Stack[*Spec]) error
 	switch f.CachedWhichOneOfType() {
 	case 6:
 		marshal = (*FieldType).marshalInt
@@ -1007,7 +1010,7 @@ func (f *FieldType) unmarshalInt(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalInt(w *Writer, value any, _ []*Spec) error {
+func (f *FieldType) marshalInt(w *Writer, value any, _ *Stack[*Spec]) error {
 	return marshalPacked(
 		f,
 		w,
@@ -1067,7 +1070,7 @@ func (f *FieldType) unmarshalUint(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalUint(w *Writer, value any, _ []*Spec) error {
+func (f *FieldType) marshalUint(w *Writer, value any, _ *Stack[*Spec]) error {
 	return marshalPacked(
 		f,
 		w,
@@ -1117,7 +1120,7 @@ func (f *FieldType) unmarshalFixedInt(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalFixedInt(w *Writer, value any, _ []*Spec) error {
+func (f *FieldType) marshalFixedInt(w *Writer, value any, _ *Stack[*Spec]) error {
 	return marshalPacked(
 		f,
 		w,
@@ -1161,7 +1164,7 @@ func (f *FieldType) unmarshalFixedUint(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalFixedUint(w *Writer, value any, _ []*Spec) error {
+func (f *FieldType) marshalFixedUint(w *Writer, value any, _ *Stack[*Spec]) error {
 	return marshalPacked(
 		f,
 		w,
@@ -1196,7 +1199,7 @@ func (f *FieldType) unmarshalBool(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalBool(w *Writer, value any, _ []*Spec) error {
+func (f *FieldType) marshalBool(w *Writer, value any, _ *Stack[*Spec]) error {
 	return marshalPacked(
 		f,
 		w,
@@ -1221,7 +1224,7 @@ func (f *FieldType) unmarshalString(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalString(w *Writer, value any, _ []*Spec) error {
+func (f *FieldType) marshalString(w *Writer, value any, _ *Stack[*Spec]) error {
 	return marshalUnpacked(
 		f,
 		w,
@@ -1243,7 +1246,7 @@ func (f *FieldType) unmarshalBytes(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalBytes(w *Writer, value any, _ []*Spec) error {
+func (f *FieldType) marshalBytes(w *Writer, value any, _ *Stack[*Spec]) error {
 	return marshalUnpacked(
 		f,
 		w,
@@ -1351,10 +1354,10 @@ func (f *FieldType) unmarshalRecursive(r *Reader, specs []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalRecursive(w *Writer, value any, specs []*Spec) error {
-	spec, specs, err := f.recursiveSpec(specs)
-	if err != nil {
-		return err
+func (f *FieldType) marshalRecursive(w *Writer, value any, specs *Stack[*Spec]) error {
+	spec, specs, ok := specs.Pop(f.TypeRecursive - 1)
+	if !ok {
+		return ErrInvalidRecursiveDepth
 	}
 
 	return marshalUnpacked(
@@ -1402,7 +1405,7 @@ func (f *FieldType) unmarshalSpec(r *Reader, specs []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalSpec(w *Writer, value any, specs []*Spec) error {
+func (f *FieldType) marshalSpec(w *Writer, value any, specs *Stack[*Spec]) error {
 	return marshalUnpacked(
 		f,
 		w,
@@ -1678,4 +1681,33 @@ func isBytesEmpty(b []byte) bool {
 		}
 	}
 	return true
+}
+
+type Stack[T comparable] struct {
+	Value    T
+	Previous *Stack[T]
+}
+
+func (s *Stack[T]) Find(v T) (uint64, bool) {
+	var index uint64
+	for s != nil {
+		if s.Value == v {
+			return index, true
+		}
+		index++
+		s = s.Previous
+	}
+	return 0, false
+}
+
+func (s *Stack[T]) Pop(index uint64) (T, *Stack[T], bool) {
+	for s != nil {
+		if index == 0 {
+			return s.Value, s.Previous, true
+		}
+		index--
+		s = s.Previous
+	}
+	var zero T
+	return zero, nil, false
 }
