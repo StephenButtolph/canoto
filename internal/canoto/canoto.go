@@ -663,10 +663,12 @@ func unsafeString(b []byte) string {
 // type directly. This function should only be used when the concrete type can
 // not be known ahead of time.
 func Unmarshal(s *Spec, b []byte) (Any, error) {
-	r := Reader{
-		B: b,
-	}
-	return s.unmarshal(&r, nil)
+	return s.unmarshal(
+		Reader{
+			B: b,
+		},
+		nil,
+	)
 }
 
 // Marshal marshals the given message into bytes based on the specification.
@@ -784,15 +786,15 @@ func SizeOf[T integer](_ T) SizeEnum {
 	panic("unsupported integer size")
 }
 
-func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
+func (s *Spec) unmarshal(r Reader, specs []*Spec) (Any, error) {
 	specs = append(specs, s)
 	var (
 		minField uint32
 		a        Any
 		oneOfs   = make(map[string]struct{})
 	)
-	for HasNext(r) {
-		fieldNumber, wireType, err := ReadTag(r)
+	for HasNext(&r) {
+		fieldNumber, wireType, err := ReadTag(&r)
 		if err != nil {
 			return Any{}, err
 		}
@@ -820,7 +822,8 @@ func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 			oneOfs[fieldType.OneOf] = struct{}{}
 		}
 
-		value, err := fieldType.unmarshal(r, specs)
+		var value any
+		r, value, err = fieldType.unmarshal(r, specs)
 		if err != nil {
 			return Any{}, err
 		}
@@ -922,8 +925,8 @@ func (f *FieldType) wireType() (WireType, error) {
 	}
 }
 
-func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
-	var unmarshal func(f *FieldType, r *Reader, specs []*Spec) (any, error)
+func (f *FieldType) unmarshal(r Reader, specs []*Spec) (Reader, any, error) {
+	var unmarshal func(f *FieldType, r Reader, specs []*Spec) (Reader, any, error)
 	switch f.CachedWhichOneOfType() {
 	case 6:
 		unmarshal = (*FieldType).unmarshalInt
@@ -946,7 +949,7 @@ func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 	case 15:
 		unmarshal = (*FieldType).unmarshalSpec
 	default:
-		return nil, ErrUnknownFieldType
+		return Reader{}, nil, ErrUnknownFieldType
 	}
 	return unmarshal(f, r, specs)
 }
@@ -978,30 +981,30 @@ func (f *FieldType) marshal(w Writer, value any, specs []*Spec) (Writer, error) 
 	return marshal(f, w, value, specs)
 }
 
-func (f *FieldType) unmarshalInt(r *Reader, _ []*Spec) (any, error) {
+func (f *FieldType) unmarshalInt(r Reader, _ []*Spec) (Reader, any, error) {
 	return unmarshalPackedVarint(
 		f,
 		r,
-		func(r *Reader) (int64, error) {
+		func(r Reader) (Reader, int64, error) {
 			switch f.TypeInt {
 			case SizeEnum8:
 				var v int8
-				err := ReadInt(r, &v)
-				return int64(v), err
+				err := ReadInt(&r, &v)
+				return r, int64(v), err
 			case SizeEnum16:
 				var v int16
-				err := ReadInt(r, &v)
-				return int64(v), err
+				err := ReadInt(&r, &v)
+				return r, int64(v), err
 			case SizeEnum32:
 				var v int32
-				err := ReadInt(r, &v)
-				return int64(v), err
+				err := ReadInt(&r, &v)
+				return r, int64(v), err
 			case SizeEnum64:
 				var v int64
-				err := ReadInt(r, &v)
-				return v, err
+				err := ReadInt(&r, &v)
+				return r, v, err
 			default:
-				return 0, ErrUnexpectedFieldSize
+				return Reader{}, 0, ErrUnexpectedFieldSize
 			}
 		},
 	)
@@ -1038,30 +1041,30 @@ func (f *FieldType) marshalInt(w Writer, value any, _ []*Spec) (Writer, error) {
 	)
 }
 
-func (f *FieldType) unmarshalUint(r *Reader, _ []*Spec) (any, error) {
+func (f *FieldType) unmarshalUint(r Reader, _ []*Spec) (Reader, any, error) {
 	return unmarshalPackedVarint(
 		f,
 		r,
-		func(r *Reader) (uint64, error) {
+		func(r Reader) (Reader, uint64, error) {
 			switch f.TypeUint {
 			case SizeEnum8:
 				var v uint8
-				err := ReadUint(r, &v)
-				return uint64(v), err
+				err := ReadUint(&r, &v)
+				return r, uint64(v), err
 			case SizeEnum16:
 				var v uint16
-				err := ReadUint(r, &v)
-				return uint64(v), err
+				err := ReadUint(&r, &v)
+				return r, uint64(v), err
 			case SizeEnum32:
 				var v uint32
-				err := ReadUint(r, &v)
-				return uint64(v), err
+				err := ReadUint(&r, &v)
+				return r, uint64(v), err
 			case SizeEnum64:
 				var v uint64
-				err := ReadUint(r, &v)
-				return v, err
+				err := ReadUint(&r, &v)
+				return r, v, err
 			default:
-				return 0, ErrUnexpectedFieldSize
+				return Reader{}, 0, ErrUnexpectedFieldSize
 			}
 		},
 	)
@@ -1095,22 +1098,22 @@ func (f *FieldType) marshalUint(w Writer, value any, _ []*Spec) (Writer, error) 
 	)
 }
 
-func (f *FieldType) unmarshalFixedInt(r *Reader, _ []*Spec) (any, error) {
+func (f *FieldType) unmarshalFixedInt(r Reader, _ []*Spec) (Reader, any, error) {
 	return unmarshalPackedFixed(
 		f,
 		r,
-		func(r *Reader) (int64, error) {
+		func(r Reader) (Reader, int64, error) {
 			switch f.TypeFixedInt {
 			case SizeEnum32:
 				var v int32
-				err := ReadFint32(r, &v)
-				return int64(v), err
+				err := ReadFint32(&r, &v)
+				return r, int64(v), err
 			case SizeEnum64:
 				var v int64
-				err := ReadFint64(r, &v)
-				return v, err
+				err := ReadFint64(&r, &v)
+				return r, v, err
 			default:
-				return 0, ErrUnexpectedFieldSize
+				return Reader{}, 0, ErrUnexpectedFieldSize
 			}
 		},
 		f.TypeFixedInt,
@@ -1139,22 +1142,22 @@ func (f *FieldType) marshalFixedInt(w Writer, value any, _ []*Spec) (Writer, err
 	)
 }
 
-func (f *FieldType) unmarshalFixedUint(r *Reader, _ []*Spec) (any, error) {
+func (f *FieldType) unmarshalFixedUint(r Reader, _ []*Spec) (Reader, any, error) {
 	return unmarshalPackedFixed(
 		f,
 		r,
-		func(r *Reader) (uint64, error) {
+		func(r Reader) (Reader, uint64, error) {
 			switch f.TypeFixedUint {
 			case SizeEnum32:
 				var v uint32
-				err := ReadFint32(r, &v)
-				return uint64(v), err
+				err := ReadFint32(&r, &v)
+				return r, uint64(v), err
 			case SizeEnum64:
 				var v uint64
-				err := ReadFint64(r, &v)
-				return v, err
+				err := ReadFint64(&r, &v)
+				return r, v, err
 			default:
-				return 0, ErrUnexpectedFieldSize
+				return Reader{}, 0, ErrUnexpectedFieldSize
 			}
 		},
 		f.TypeFixedUint,
@@ -1183,14 +1186,14 @@ func (f *FieldType) marshalFixedUint(w Writer, value any, _ []*Spec) (Writer, er
 	)
 }
 
-func (f *FieldType) unmarshalBool(r *Reader, _ []*Spec) (any, error) {
+func (f *FieldType) unmarshalBool(r Reader, _ []*Spec) (Reader, any, error) {
 	return unmarshalPackedFixed(
 		f,
 		r,
-		func(r *Reader) (bool, error) {
+		func(r Reader) (Reader, bool, error) {
 			var v bool
-			err := ReadBool(r, &v)
-			return v, err
+			err := ReadBool(&r, &v)
+			return r, v, err
 		},
 		1,
 	)
@@ -1208,7 +1211,7 @@ func (f *FieldType) marshalBool(w Writer, value any, _ []*Spec) (Writer, error) 
 	)
 }
 
-func (f *FieldType) unmarshalString(r *Reader, _ []*Spec) (any, error) {
+func (f *FieldType) unmarshalString(r Reader, _ []*Spec) (Reader, any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
@@ -1233,7 +1236,7 @@ func (f *FieldType) marshalString(w Writer, value any, _ []*Spec) (Writer, error
 	)
 }
 
-func (f *FieldType) unmarshalBytes(r *Reader, _ []*Spec) (any, error) {
+func (f *FieldType) unmarshalBytes(r Reader, _ []*Spec) (Reader, any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
@@ -1255,17 +1258,17 @@ func (f *FieldType) marshalBytes(w Writer, value any, _ []*Spec) (Writer, error)
 	)
 }
 
-func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
+func (f *FieldType) unmarshalFixedBytes(r Reader, _ []*Spec) (Reader, any, error) {
 	// Read the first entry manually because the tag is already stripped.
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
-		return nil, err
+	if err := ReadUint(&r, &length); err != nil {
+		return Reader{}, nil, err
 	}
 	if length != f.TypeFixedBytes {
-		return nil, ErrInvalidLength
+		return Reader{}, nil, ErrInvalidLength
 	}
 	if f.TypeFixedBytes > uint64(len(r.B)) {
-		return nil, io.ErrUnexpectedEOF
+		return Reader{}, nil, io.ErrUnexpectedEOF
 	}
 
 	msgBytes := r.B[:f.TypeFixedBytes]
@@ -1274,9 +1277,9 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 	if !f.Repeated {
 		// If there is only one entry, return it.
 		if isBytesEmpty(msgBytes) {
-			return nil, ErrZeroValue
+			return Reader{}, nil, ErrZeroValue
 		}
-		return slices.Clone(msgBytes), nil
+		return r, slices.Clone(msgBytes), nil
 	}
 
 	// Count the number of additional entries after the first entry.
@@ -1288,7 +1291,7 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 	if count == 0 {
 		countMinus1, err := CountBytes(r.B, expectedTag)
 		if err != nil {
-			return nil, err
+			return Reader{}, nil, err
 		}
 		count = countMinus1 + 1
 	}
@@ -1301,18 +1304,18 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 	// Read the rest of the entries, stripping the tag each time.
 	for i := range count - 1 {
 		if !HasPrefix(r.B, expectedTag) {
-			return nil, ErrUnknownField
+			return Reader{}, nil, ErrUnknownField
 		}
 		r.B = r.B[len(expectedTag):]
 
-		if err := ReadUint(r, &length); err != nil {
-			return nil, err
+		if err := ReadUint(&r, &length); err != nil {
+			return Reader{}, nil, err
 		}
 		if length != f.TypeFixedBytes {
-			return nil, ErrInvalidLength
+			return Reader{}, nil, ErrInvalidLength
 		}
 		if f.TypeFixedBytes > uint64(len(r.B)) {
-			return nil, io.ErrUnexpectedEOF
+			return Reader{}, nil, io.ErrUnexpectedEOF
 		}
 
 		msgBytes := r.B[:f.TypeFixedBytes]
@@ -1322,15 +1325,15 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 		isZero = isZero && isBytesEmpty(msgBytes)
 	}
 	if f.FixedLength > 0 && isZero {
-		return nil, ErrZeroValue
+		return Reader{}, nil, ErrZeroValue
 	}
-	return values, nil
+	return r, values, nil
 }
 
-func (f *FieldType) unmarshalRecursive(r *Reader, specs []*Spec) (any, error) {
+func (f *FieldType) unmarshalRecursive(r Reader, specs []*Spec) (Reader, any, error) {
 	spec, specs, err := f.recursiveSpec(specs)
 	if err != nil {
-		return nil, err
+		return Reader{}, nil, err
 	}
 
 	return unmarshalUnpacked(
@@ -1341,7 +1344,7 @@ func (f *FieldType) unmarshalRecursive(r *Reader, specs []*Spec) (any, error) {
 				return Any{}, true, nil
 			}
 			a, err := spec.unmarshal(
-				&Reader{
+				Reader{
 					B: msgBytes,
 				},
 				specs,
@@ -1374,16 +1377,16 @@ func (f *FieldType) marshalRecursive(w Writer, value any, specs []*Spec) (Writer
 
 func (f *FieldType) recursiveSpec(specs []*Spec) (*Spec, []*Spec, error) {
 	numSpecs := uint64(len(specs))
-	if f.TypeRecursive > numSpecs {
+	index := numSpecs - f.TypeRecursive
+	if index >= numSpecs {
 		return nil, nil, ErrInvalidRecursiveDepth
 	}
-	index := numSpecs - f.TypeRecursive
 	spec := specs[index]
 	specs = slices.Clone(specs[:index])
 	return spec, specs, nil
 }
 
-func (f *FieldType) unmarshalSpec(r *Reader, specs []*Spec) (any, error) {
+func (f *FieldType) unmarshalSpec(r Reader, specs []*Spec) (Reader, any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
@@ -1392,7 +1395,7 @@ func (f *FieldType) unmarshalSpec(r *Reader, specs []*Spec) (any, error) {
 				return Any{}, true, nil
 			}
 			a, err := f.TypeMessage.unmarshal(
-				&Reader{
+				Reader{
 					B: msgBytes,
 				},
 				specs,
@@ -1420,54 +1423,58 @@ func (f *FieldType) marshalSpec(w Writer, value any, specs []*Spec) (Writer, err
 
 func unmarshalPackedVarint[T comparable](
 	f *FieldType,
-	r *Reader,
-	unmarshal func(r *Reader) (T, error),
-) (any, error) {
+	r Reader,
+	unmarshal func(r Reader) (Reader, T, error),
+) (Reader, any, error) {
 	if !f.Repeated {
 		// If there is only one entry, read it.
-		value, err := unmarshal(r)
+		r, value, err := unmarshal(r)
 		if err != nil {
-			return nil, err
+			return Reader{}, nil, err
 		}
 		if IsZero(value) {
-			return nil, ErrZeroValue
+			return Reader{}, nil, ErrZeroValue
 		}
-		return value, nil
+		return r, value, nil
 	}
 
 	// Read the full packed bytes.
 	var msgBytes []byte
-	if err := ReadBytes(r, &msgBytes); err != nil {
-		return nil, err
+	if err := ReadBytes(&r, &msgBytes); err != nil {
+		return Reader{}, nil, err
 	}
 
 	count := f.FixedLength
 	if count == 0 {
 		if len(msgBytes) == 0 {
-			return nil, ErrZeroValue
+			return Reader{}, nil, ErrZeroValue
 		}
 		count = CountInts(msgBytes)
 	}
 	values := make([]T, count)
-	r = &Reader{
+	tr := Reader{
 		B: msgBytes,
 	}
 	isZero := true
 	for i := range values {
-		value, err := unmarshal(r)
+		var (
+			value T
+			err   error
+		)
+		tr, value, err = unmarshal(tr)
 		if err != nil {
-			return nil, err
+			return Reader{}, nil, err
 		}
 		values[i] = value
 		isZero = isZero && IsZero(value)
 	}
-	if HasNext(r) {
-		return nil, ErrInvalidLength
+	if HasNext(&tr) {
+		return Reader{}, nil, ErrInvalidLength
 	}
 	if f.FixedLength > 0 && isZero {
-		return nil, ErrZeroValue
+		return Reader{}, nil, ErrZeroValue
 	}
-	return values, nil
+	return r, values, nil
 }
 
 func marshalPacked[T comparable](
@@ -1506,87 +1513,91 @@ func marshalPacked[T comparable](
 
 func unmarshalPackedFixed[T comparable](
 	f *FieldType,
-	r *Reader,
-	unmarshal func(r *Reader) (T, error),
+	r Reader,
+	unmarshal func(r Reader) (Reader, T, error),
 	sizeEnum SizeEnum,
-) (any, error) {
+) (Reader, any, error) {
 	if !f.Repeated {
 		// If there is only one entry, read it.
-		value, err := unmarshal(r)
+		r, value, err := unmarshal(r)
 		if err != nil {
-			return nil, err
+			return Reader{}, nil, err
 		}
 		if IsZero(value) {
-			return nil, ErrZeroValue
+			return Reader{}, nil, ErrZeroValue
 		}
-		return value, nil
+		return r, value, nil
 	}
 
 	// Read the full packed bytes.
 	var msgBytes []byte
-	if err := ReadBytes(r, &msgBytes); err != nil {
-		return nil, err
+	if err := ReadBytes(&r, &msgBytes); err != nil {
+		return Reader{}, nil, err
 	}
 
 	count := f.FixedLength
 	if count == 0 {
 		numMsgBytes := uint64(len(msgBytes))
 		if numMsgBytes == 0 {
-			return nil, ErrZeroValue
+			return Reader{}, nil, ErrZeroValue
 		}
 
 		size, ok := sizeEnum.NumBytes()
 		if !ok {
-			return nil, ErrUnexpectedFieldSize
+			return Reader{}, nil, ErrUnexpectedFieldSize
 		}
 		if numMsgBytes%size != 0 {
-			return nil, ErrInvalidLength
+			return Reader{}, nil, ErrInvalidLength
 		}
 		count = numMsgBytes / size
 	}
 
 	values := make([]T, count)
-	r = &Reader{
+	tr := Reader{
 		B: msgBytes,
 	}
 	isZero := true
 	for i := range values {
-		value, err := unmarshal(r)
+		var (
+			value T
+			err   error
+		)
+		tr, value, err = unmarshal(tr)
 		if err != nil {
-			return nil, err
+			return Reader{}, nil, err
 		}
 		values[i] = value
 		isZero = isZero && IsZero(value)
 	}
-	if HasNext(r) {
-		return nil, ErrInvalidLength
+	if HasNext(&tr) {
+		return Reader{}, nil, ErrInvalidLength
 	}
 	if f.FixedLength > 0 && isZero {
-		return nil, ErrZeroValue
+		return Reader{}, nil, ErrZeroValue
 	}
-	return values, nil
+	return r, values, nil
 }
 
 func unmarshalUnpacked[T any](
 	f *FieldType,
-	r *Reader,
+	r Reader,
 	unmarshal func([]byte) (T, bool, error),
-) (any, error) {
+) (Reader, any, error) {
 	// Read the first entry manually because the tag is already stripped.
 	var msgBytes []byte
-	if err := ReadBytes(r, &msgBytes); err != nil {
-		return nil, err
+	if err := ReadBytes(&r, &msgBytes); err != nil {
+		return Reader{}, nil, err
 	}
 	if !f.Repeated {
 		// If there is only one entry, return it.
 		value, isZero, err := unmarshal(msgBytes)
 		if err != nil {
-			return nil, err
+			return Reader{}, nil, err
 		}
 		if isZero {
-			return nil, ErrZeroValue
+			return Reader{}, nil, ErrZeroValue
 		}
-		return value, nil
+		return r, value, nil
 	}
 
 	// Count the number of additional entries after the first entry.
@@ -1598,7 +1609,7 @@ func unmarshalUnpacked[T any](
 	if count == 0 {
 		countMinus1, err := CountBytes(r.B, expectedTag)
 		if err != nil {
-			return nil, err
+			return Reader{}, nil, err
 		}
 		count = countMinus1 + 1
 	}
@@ -1607,32 +1618,32 @@ func unmarshalUnpacked[T any](
 
 	value, isZero, err := unmarshal(msgBytes)
 	if err != nil {
-		return nil, err
+		return Reader{}, nil, err
 	}
 	values[0] = value
 
 	// Read the rest of the entries, stripping the tag each time.
 	for i := range count - 1 {
 		if !HasPrefix(r.B, expectedTag) {
-			return nil, ErrUnknownField
+			return Reader{}, nil, ErrUnknownField
 		}
 		r.B = r.B[len(expectedTag):]
 
-		if err := ReadBytes(r, &msgBytes); err != nil {
-			return nil, err
+		if err := ReadBytes(&r, &msgBytes); err != nil {
+			return Reader{}, nil, err
 		}
 
 		var isFieldZero bool
 		values[1+i], isFieldZero, err = unmarshal(msgBytes)
 		if err != nil {
-			return nil, err
+			return Reader{}, nil, err
 		}
 		isZero = isZero && isFieldZero
 	}
 	if f.FixedLength > 0 && isZero {
-		return nil, ErrZeroValue
+		return Reader{}, nil, ErrZeroValue
 	}
-	return values, nil
+	return r, values, nil
 }
 
 func marshalUnpacked[T any](
