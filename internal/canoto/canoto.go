@@ -457,8 +457,9 @@ func ReadFint32[T Int32](r *Reader, v *T) error {
 		return io.ErrUnexpectedEOF
 	}
 
+	newB := r.B[SizeFint32:]
 	*v = T(binary.LittleEndian.Uint32(r.B))
-	r.B = r.B[SizeFint32:]
+	r.B = newB
 	return nil
 }
 
@@ -473,8 +474,9 @@ func ReadFint64[T Int64](r *Reader, v *T) error {
 		return io.ErrUnexpectedEOF
 	}
 
+	newB := r.B[SizeFint64:]
 	*v = T(binary.LittleEndian.Uint64(r.B))
-	r.B = r.B[SizeFint64:]
+	r.B = newB
 	return nil
 }
 
@@ -491,8 +493,9 @@ func ReadBool[T ~bool](r *Reader, v *T) error {
 	case r.B[0] > trueByte:
 		return ErrInvalidBool
 	default:
+		newB := r.B[SizeBool:]
 		*v = r.B[0] == trueByte
-		r.B = r.B[SizeBool:]
+		r.B = newB
 		return nil
 	}
 }
@@ -552,11 +555,12 @@ func ReadString[T ~string](r *Reader, v *T) error {
 	}
 
 	bytes := r.B[:length]
+	newB := r.B[length:]
 	if !utf8.Valid(bytes) {
 		return ErrStringNotUTF8
 	}
+	r.B = newB
 
-	r.B = r.B[length:]
 	if r.Unsafe {
 		*v = T(unsafeString(bytes))
 	} else {
@@ -864,8 +868,9 @@ func (s *Spec) marshal(w *Writer, a Any, specs []*Spec) error {
 }
 
 func (s *Spec) findFieldByNumber(fieldNumber uint32) (*FieldType, error) {
-	for i := range s.Fields {
-		f := &s.Fields[i]
+	fields := s.Fields
+	for i := range fields {
+		f := &fields[i]
 		if f.FieldNumber == fieldNumber {
 			return f, nil
 		}
@@ -874,8 +879,9 @@ func (s *Spec) findFieldByNumber(fieldNumber uint32) (*FieldType, error) {
 }
 
 func (s *Spec) findFieldByName(name string) (*FieldType, error) {
-	for i := range s.Fields {
-		f := &s.Fields[i]
+	fields := s.Fields
+	for i := range fields {
+		f := &fields[i]
 		if f.Name == name {
 			return f, nil
 		}

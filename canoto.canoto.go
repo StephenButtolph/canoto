@@ -176,9 +176,12 @@ func (c *Spec) ValidCanoto() bool {
 	if !ValidString(c.Name) {
 		return false
 	}
-	for i := range c.Fields {
-		if !(&c.Fields[i]).ValidCanoto() {
-			return false
+	{
+		field := c.Fields
+		for i := range field {
+			if !(&field[i]).ValidCanoto() {
+				return false
+			}
 		}
 	}
 	return true
@@ -194,10 +197,13 @@ func (c *Spec) CalculateCanotoCache() {
 	if len(c.Name) != 0 {
 		size += uint64(len(canoto__Spec__Name__tag)) + SizeBytes(c.Name)
 	}
-	for i := range c.Fields {
-		(&c.Fields[i]).CalculateCanotoCache()
-		fieldSize := (&c.Fields[i]).CachedCanotoSize()
-		size += uint64(len(canoto__Spec__Fields__tag)) + SizeUint(fieldSize) + fieldSize
+	{
+		field := c.Fields
+		for i := range field {
+			(&field[i]).CalculateCanotoCache()
+			fieldSize := (&field[i]).CachedCanotoSize()
+			size += uint64(len(canoto__Spec__Fields__tag)) + SizeUint(fieldSize) + fieldSize
+		}
 	}
 	c.canotoData.size.Store(size)
 }
@@ -243,10 +249,13 @@ func (c *Spec) MarshalCanotoInto(w Writer) Writer {
 		Append(&w, canoto__Spec__Name__tag)
 		AppendBytes(&w, c.Name)
 	}
-	for i := range c.Fields {
-		Append(&w, canoto__Spec__Fields__tag)
-		AppendUint(&w, (&c.Fields[i]).CachedCanotoSize())
-		w = (&c.Fields[i]).MarshalCanotoInto(w)
+	{
+		field := c.Fields
+		for i := range field {
+			Append(&w, canoto__Spec__Fields__tag)
+			AppendUint(&w, (&field[i]).CachedCanotoSize())
+			w = (&field[i]).MarshalCanotoInto(w)
+		}
 	}
 	return w
 }

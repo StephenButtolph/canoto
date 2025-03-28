@@ -582,8 +582,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			remainingBytes := r.B
 			r.B = msgBytes
 			c.RepeatedInt8 = MakeSlice(c.RepeatedInt8, CountInts(msgBytes))
-			for i := range c.RepeatedInt8 {
-				if err := ReadInt(&r, &c.RepeatedInt8[i]); err != nil {
+			field := c.RepeatedInt8
+			for i := range field {
+				if err := ReadInt(&r, &field[i]); err != nil {
 					return err
 				}
 			}
@@ -613,8 +614,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			remainingBytes := r.B
 			r.B = msgBytes
 			c.RepeatedInt16 = MakeSlice(c.RepeatedInt16, CountInts(msgBytes))
-			for i := range c.RepeatedInt16 {
-				if err := ReadInt(&r, &c.RepeatedInt16[i]); err != nil {
+			field := c.RepeatedInt16
+			for i := range field {
+				if err := ReadInt(&r, &field[i]); err != nil {
 					return err
 				}
 			}
@@ -644,8 +646,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			remainingBytes := r.B
 			r.B = msgBytes
 			c.RepeatedInt32 = MakeSlice(c.RepeatedInt32, CountInts(msgBytes))
-			for i := range c.RepeatedInt32 {
-				if err := ReadInt(&r, &c.RepeatedInt32[i]); err != nil {
+			field := c.RepeatedInt32
+			for i := range field {
+				if err := ReadInt(&r, &field[i]); err != nil {
 					return err
 				}
 			}
@@ -675,8 +678,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			remainingBytes := r.B
 			r.B = msgBytes
 			c.RepeatedInt64 = MakeSlice(c.RepeatedInt64, CountInts(msgBytes))
-			for i := range c.RepeatedInt64 {
-				if err := ReadInt(&r, &c.RepeatedInt64[i]); err != nil {
+			field := c.RepeatedInt64
+			for i := range field {
+				if err := ReadInt(&r, &field[i]); err != nil {
 					return err
 				}
 			}
@@ -706,8 +710,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			remainingBytes := r.B
 			r.B = msgBytes
 			c.RepeatedUint16 = MakeSlice(c.RepeatedUint16, CountInts(msgBytes))
-			for i := range c.RepeatedUint16 {
-				if err := ReadUint(&r, &c.RepeatedUint16[i]); err != nil {
+			field := c.RepeatedUint16
+			for i := range field {
+				if err := ReadUint(&r, &field[i]); err != nil {
 					return err
 				}
 			}
@@ -737,8 +742,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			remainingBytes := r.B
 			r.B = msgBytes
 			c.RepeatedUint32 = MakeSlice(c.RepeatedUint32, CountInts(msgBytes))
-			for i := range c.RepeatedUint32 {
-				if err := ReadUint(&r, &c.RepeatedUint32[i]); err != nil {
+			field := c.RepeatedUint32
+			for i := range field {
+				if err := ReadUint(&r, &field[i]); err != nil {
 					return err
 				}
 			}
@@ -768,8 +774,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			remainingBytes := r.B
 			r.B = msgBytes
 			c.RepeatedUint64 = MakeSlice(c.RepeatedUint64, CountInts(msgBytes))
-			for i := range c.RepeatedUint64 {
-				if err := ReadUint(&r, &c.RepeatedUint64[i]); err != nil {
+			field := c.RepeatedUint64
+			for i := range field {
+				if err := ReadUint(&r, &field[i]); err != nil {
 					return err
 				}
 			}
@@ -805,8 +812,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			remainingBytes := r.B
 			r.B = msgBytes
 			c.RepeatedSfixed32 = MakeSlice(c.RepeatedSfixed32, numMsgBytes/SizeFint32)
-			for i := range c.RepeatedSfixed32 {
-				if err := ReadFint32(&r, &c.RepeatedSfixed32[i]); err != nil {
+			field := c.RepeatedSfixed32
+			for i := range field {
+				if err := ReadFint32(&r, &field[i]); err != nil {
 					return err
 				}
 			}
@@ -838,8 +846,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			remainingBytes := r.B
 			r.B = msgBytes
 			c.RepeatedFixed32 = MakeSlice(c.RepeatedFixed32, numMsgBytes/SizeFint32)
-			for i := range c.RepeatedFixed32 {
-				if err := ReadFint32(&r, &c.RepeatedFixed32[i]); err != nil {
+			field := c.RepeatedFixed32
+			for i := range field {
+				if err := ReadFint32(&r, &field[i]); err != nil {
 					return err
 				}
 			}
@@ -871,8 +880,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			remainingBytes := r.B
 			r.B = msgBytes
 			c.RepeatedSfixed64 = MakeSlice(c.RepeatedSfixed64, numMsgBytes/SizeFint64)
-			for i := range c.RepeatedSfixed64 {
-				if err := ReadFint64(&r, &c.RepeatedSfixed64[i]); err != nil {
+			field := c.RepeatedSfixed64
+			for i := range field {
+				if err := ReadFint64(&r, &field[i]); err != nil {
 					return err
 				}
 			}
@@ -904,8 +914,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			remainingBytes := r.B
 			r.B = msgBytes
 			c.RepeatedFixed64 = MakeSlice(c.RepeatedFixed64, numMsgBytes/SizeFint64)
-			for i := range c.RepeatedFixed64 {
-				if err := ReadFint64(&r, &c.RepeatedFixed64[i]); err != nil {
+			field := c.RepeatedFixed64
+			for i := range field {
+				if err := ReadFint64(&r, &field[i]); err != nil {
 					return err
 				}
 			}
@@ -937,8 +948,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			remainingBytes := r.B
 			r.B = msgBytes
 			c.RepeatedBool = MakeSlice(c.RepeatedBool, numMsgBytes/SizeBool)
-			for i := range c.RepeatedBool {
-				if err := ReadBool(&r, &c.RepeatedBool[i]); err != nil {
+			field := c.RepeatedBool
+			for i := range field {
+				if err := ReadBool(&r, &field[i]); err != nil {
 					return err
 				}
 			}
@@ -1194,9 +1206,12 @@ func (c *SpecFuzzer) ValidCanoto() bool {
 			return false
 		}
 	}
-	for i := range c.RepeatedLargestFieldNumber {
-		if !(&c.RepeatedLargestFieldNumber[i]).ValidCanoto() {
-			return false
+	{
+		field := c.RepeatedLargestFieldNumber
+		for i := range field {
+			if !(&field[i]).ValidCanoto() {
+				return false
+			}
 		}
 	}
 	if c.OneOf != nil && !(c.OneOf).ValidCanoto() {
@@ -1354,10 +1369,13 @@ func (c *SpecFuzzer) CalculateCanotoCache() {
 	for _, v := range c.RepeatedBytes {
 		size += uint64(len(canoto__SpecFuzzer__RepeatedBytes__tag)) + SizeBytes(v)
 	}
-	for i := range c.RepeatedLargestFieldNumber {
-		(&c.RepeatedLargestFieldNumber[i]).CalculateCanotoCache()
-		fieldSize := (&c.RepeatedLargestFieldNumber[i]).CachedCanotoSize()
-		size += uint64(len(canoto__SpecFuzzer__RepeatedLargestFieldNumber__tag)) + SizeUint(fieldSize) + fieldSize
+	{
+		field := c.RepeatedLargestFieldNumber
+		for i := range field {
+			(&field[i]).CalculateCanotoCache()
+			fieldSize := (&field[i]).CachedCanotoSize()
+			size += uint64(len(canoto__SpecFuzzer__RepeatedLargestFieldNumber__tag)) + SizeUint(fieldSize) + fieldSize
+		}
 	}
 	if c.OneOf != nil {
 		(c.OneOf).CalculateCanotoCache()
@@ -1580,10 +1598,13 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 		Append(&w, canoto__SpecFuzzer__RepeatedBytes__tag)
 		AppendBytes(&w, v)
 	}
-	for i := range c.RepeatedLargestFieldNumber {
-		Append(&w, canoto__SpecFuzzer__RepeatedLargestFieldNumber__tag)
-		AppendUint(&w, (&c.RepeatedLargestFieldNumber[i]).CachedCanotoSize())
-		w = (&c.RepeatedLargestFieldNumber[i]).MarshalCanotoInto(w)
+	{
+		field := c.RepeatedLargestFieldNumber
+		for i := range field {
+			Append(&w, canoto__SpecFuzzer__RepeatedLargestFieldNumber__tag)
+			AppendUint(&w, (&field[i]).CachedCanotoSize())
+			w = (&field[i]).MarshalCanotoInto(w)
+		}
 	}
 	if c.OneOf != nil {
 		if fieldSize := (c.OneOf).CachedCanotoSize(); fieldSize != 0 {
