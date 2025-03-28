@@ -675,8 +675,7 @@ func Unmarshal(s *Spec, b []byte) (Any, error) {
 func Marshal(s *Spec, a Any) ([]byte, error) {
 	// TODO: Implement size calculations to avoid quadratic marshalling
 	// complexity.
-	w := Writer{}
-	err := s.marshal(&w, a, nil)
+	w, err := s.marshal(Writer{}, a, nil)
 	return w.B, err
 }
 
@@ -833,36 +832,37 @@ func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 	return a, nil
 }
 
-func (s *Spec) marshal(w *Writer, a Any, specs []*Spec) error {
+func (s *Spec) marshal(w Writer, a Any, specs []*Spec) (Writer, error) {
 	specs = append(specs, s)
 	var minField uint32
 	for _, f := range a.Fields {
 		ft, err := s.findFieldByName(f.Name)
 		if err != nil {
-			return err
+			return Writer{}, err
 		}
 		if ft.FieldNumber == 0 || ft.FieldNumber > MaxFieldNumber {
-			return ErrUnknownField
+			return Writer{}, ErrUnknownField
 		}
 		if ft.FieldNumber < minField {
-			return ErrInvalidFieldOrder
+			return Writer{}, ErrInvalidFieldOrder
 		}
 
 		wireType, err := ft.wireType()
 		if err != nil {
-			return err
+			return Writer{}, err
 		}
 
 		tag := tagValue(ft.FieldNumber, wireType)
-		AppendUint(w, tag)
+		AppendUint(&w, tag)
 
-		if err := ft.marshal(w, f.Value, specs); err != nil {
-			return err
+		w, err = ft.marshal(w, f.Value, specs)
+		if err != nil {
+			return Writer{}, err
 		}
 
 		minField = ft.FieldNumber + 1
 	}
-	return nil
+	return w, nil
 }
 
 func (s *Spec) findFieldByNumber(fieldNumber uint32) (*FieldType, error) {
@@ -949,8 +949,8 @@ func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 	return unmarshal(f, r, specs)
 }
 
-func (f *FieldType) marshal(w *Writer, value any, specs []*Spec) error {
-	var marshal func(f *FieldType, w *Writer, value any, specs []*Spec) error
+func (f *FieldType) marshal(w Writer, value any, specs []*Spec) (Writer, error) {
+	var marshal func(f *FieldType, w Writer, value any, specs []*Spec) (Writer, error)
 	switch f.CachedWhichOneOfType() {
 	case 6:
 		marshal = (*FieldType).marshalInt
@@ -971,7 +971,7 @@ func (f *FieldType) marshal(w *Writer, value any, specs []*Spec) error {
 	case 15:
 		marshal = (*FieldType).marshalSpec
 	default:
-		return ErrUnknownFieldType
+		return Writer{}, ErrUnknownFieldType
 	}
 	return marshal(f, w, value, specs)
 }
@@ -1005,12 +1005,12 @@ func (f *FieldType) unmarshalInt(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalInt(w *Writer, value any, _ []*Spec) error {
+func (f *FieldType) marshalInt(w Writer, value any, _ []*Spec) (Writer, error) {
 	return marshalPacked(
 		f,
 		w,
 		value,
-		func(w *Writer, value int64) error {
+		func(w Writer, value int64) (Writer, error) {
 			var (
 				minimum int64
 				maximum int64
@@ -1025,13 +1025,13 @@ func (f *FieldType) marshalInt(w *Writer, value any, _ []*Spec) error {
 			case SizeEnum64:
 				minimum, maximum = math.MinInt64, math.MaxInt64
 			default:
-				return ErrUnexpectedFieldSize
+				return Writer{}, ErrUnexpectedFieldSize
 			}
 			if value < minimum || value > maximum {
-				return ErrOverflow
+				return Writer{}, ErrOverflow
 			}
-			AppendInt(w, value)
-			return nil
+			AppendInt(&w, value)
+			return w, nil
 		},
 	)
 }
@@ -1065,12 +1065,12 @@ func (f *FieldType) unmarshalUint(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalUint(w *Writer, value any, _ []*Spec) error {
+func (f *FieldType) marshalUint(w Writer, value any, _ []*Spec) (Writer, error) {
 	return marshalPacked(
 		f,
 		w,
 		value,
-		func(w *Writer, value uint64) error {
+		func(w Writer, value uint64) (Writer, error) {
 			var maximum uint64
 			switch f.TypeUint {
 			case SizeEnum8:
@@ -1082,13 +1082,13 @@ func (f *FieldType) marshalUint(w *Writer, value any, _ []*Spec) error {
 			case SizeEnum64:
 				maximum = math.MaxUint64
 			default:
-				return ErrUnexpectedFieldSize
+				return Writer{}, ErrUnexpectedFieldSize
 			}
 			if value > maximum {
-				return ErrOverflow
+				return Writer{}, ErrOverflow
 			}
-			AppendUint(w, value)
-			return nil
+			AppendUint(&w, value)
+			return w, nil
 		},
 	)
 }
@@ -1115,24 +1115,24 @@ func (f *FieldType) unmarshalFixedInt(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalFixedInt(w *Writer, value any, _ []*Spec) error {
+func (f *FieldType) marshalFixedInt(w Writer, value any, _ []*Spec) (Writer, error) {
 	return marshalPacked(
 		f,
 		w,
 		value,
-		func(w *Writer, value int64) error {
+		func(w Writer, value int64) (Writer, error) {
 			switch f.TypeFixedInt {
 			case SizeEnum32:
 				if value < math.MinInt32 || value > math.MaxInt32 {
-					return ErrOverflow
+					return Writer{}, ErrOverflow
 				}
-				AppendFint32(w, int32(value))
+				AppendFint32(&w, int32(value))
 			case SizeEnum64:
-				AppendFint64(w, value)
+				AppendFint64(&w, value)
 			default:
-				return ErrUnexpectedFieldSize
+				return Writer{}, ErrUnexpectedFieldSize
 			}
-			return nil
+			return w, nil
 		},
 	)
 }
@@ -1159,24 +1159,24 @@ func (f *FieldType) unmarshalFixedUint(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalFixedUint(w *Writer, value any, _ []*Spec) error {
+func (f *FieldType) marshalFixedUint(w Writer, value any, _ []*Spec) (Writer, error) {
 	return marshalPacked(
 		f,
 		w,
 		value,
-		func(w *Writer, value uint64) error {
+		func(w Writer, value uint64) (Writer, error) {
 			switch f.TypeFixedUint {
 			case SizeEnum32:
 				if value > math.MaxUint32 {
-					return ErrOverflow
+					return Writer{}, ErrOverflow
 				}
-				AppendFint32(w, uint32(value))
+				AppendFint32(&w, uint32(value))
 			case SizeEnum64:
-				AppendFint64(w, value)
+				AppendFint64(&w, value)
 			default:
-				return ErrUnexpectedFieldSize
+				return Writer{}, ErrUnexpectedFieldSize
 			}
-			return nil
+			return w, nil
 		},
 	)
 }
@@ -1194,14 +1194,14 @@ func (f *FieldType) unmarshalBool(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalBool(w *Writer, value any, _ []*Spec) error {
+func (f *FieldType) marshalBool(w Writer, value any, _ []*Spec) (Writer, error) {
 	return marshalPacked(
 		f,
 		w,
 		value,
-		func(w *Writer, value bool) error {
-			AppendBool(w, value)
-			return nil
+		func(w Writer, value bool) (Writer, error) {
+			AppendBool(&w, value)
+			return w, nil
 		},
 	)
 }
@@ -1219,14 +1219,14 @@ func (f *FieldType) unmarshalString(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalString(w *Writer, value any, _ []*Spec) error {
+func (f *FieldType) marshalString(w Writer, value any, _ []*Spec) (Writer, error) {
 	return marshalUnpacked(
 		f,
 		w,
 		value,
-		func(w *Writer, value string) error {
-			AppendBytes(w, value)
-			return nil
+		func(w Writer, value string) (Writer, error) {
+			AppendBytes(&w, value)
+			return w, nil
 		},
 	)
 }
@@ -1241,14 +1241,14 @@ func (f *FieldType) unmarshalBytes(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalBytes(w *Writer, value any, _ []*Spec) error {
+func (f *FieldType) marshalBytes(w Writer, value any, _ []*Spec) (Writer, error) {
 	return marshalUnpacked(
 		f,
 		w,
 		value,
-		func(w *Writer, value []byte) error {
-			AppendBytes(w, value)
-			return nil
+		func(w Writer, value []byte) (Writer, error) {
+			AppendBytes(&w, value)
+			return w, nil
 		},
 	)
 }
@@ -1349,23 +1349,23 @@ func (f *FieldType) unmarshalRecursive(r *Reader, specs []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalRecursive(w *Writer, value any, specs []*Spec) error {
+func (f *FieldType) marshalRecursive(w Writer, value any, specs []*Spec) (Writer, error) {
 	spec, specs, err := f.recursiveSpec(specs)
 	if err != nil {
-		return err
+		return Writer{}, err
 	}
 
 	return marshalUnpacked(
 		f,
 		w,
 		value,
-		func(w *Writer, value Any) error {
-			var tw Writer
-			if err := spec.marshal(&tw, value, specs); err != nil {
-				return err
+		func(w Writer, value Any) (Writer, error) {
+			tw, err := spec.marshal(Writer{}, value, specs)
+			if err != nil {
+				return Writer{}, err
 			}
-			AppendBytes(w, tw.B)
-			return nil
+			AppendBytes(&w, tw.B)
+			return w, nil
 		},
 	)
 }
@@ -1400,18 +1400,18 @@ func (f *FieldType) unmarshalSpec(r *Reader, specs []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalSpec(w *Writer, value any, specs []*Spec) error {
+func (f *FieldType) marshalSpec(w Writer, value any, specs []*Spec) (Writer, error) {
 	return marshalUnpacked(
 		f,
 		w,
 		value,
-		func(w *Writer, value Any) error {
-			var tw Writer
-			if err := f.TypeMessage.marshal(&tw, value, specs); err != nil {
-				return err
+		func(w Writer, value Any) (Writer, error) {
+			tw, err := f.TypeMessage.marshal(Writer{}, value, specs)
+			if err != nil {
+				return Writer{}, err
 			}
-			AppendBytes(w, tw.B)
-			return nil
+			AppendBytes(&w, tw.B)
+			return w, nil
 		},
 	)
 }
@@ -1470,32 +1470,36 @@ func unmarshalPackedVarint[T comparable](
 
 func marshalPacked[T comparable](
 	f *FieldType,
-	w *Writer,
+	w Writer,
 	value any,
-	marshal func(w *Writer, value T) error,
-) error {
+	marshal func(w Writer, value T) (Writer, error),
+) (Writer, error) {
 	if !f.Repeated {
 		// If there is only one entry, write it.
 		v, ok := value.(T)
 		if !ok {
-			return ErrInvalidFieldType
+			return Writer{}, ErrInvalidFieldType
 		}
 		return marshal(w, v)
 	}
 
 	vl, ok := value.([]T)
 	if !ok {
-		return ErrInvalidFieldType
+		return Writer{}, ErrInvalidFieldType
 	}
 
-	var tw Writer
+	var (
+		tw  Writer
+		err error
+	)
 	for _, v := range vl {
-		if err := marshal(&tw, v); err != nil {
-			return err
+		tw, err = marshal(tw, v)
+		if err != nil {
+			return Writer{}, err
 		}
 	}
-	AppendBytes(w, tw.B)
-	return nil
+	AppendBytes(&w, tw.B)
+	return w, nil
 }
 
 func unmarshalPackedFixed[T comparable](
@@ -1631,41 +1635,44 @@ func unmarshalUnpacked[T any](
 
 func marshalUnpacked[T any](
 	f *FieldType,
-	w *Writer,
+	w Writer,
 	value any,
-	marshal func(w *Writer, value T) error,
-) error {
+	marshal func(w Writer, value T) (Writer, error),
+) (Writer, error) {
 	if !f.Repeated {
 		// If there is only one entry, write it.
 		v, ok := value.(T)
 		if !ok {
-			return ErrInvalidFieldType
+			return Writer{}, ErrInvalidFieldType
 		}
 		return marshal(w, v)
 	}
 
 	vl, ok := value.([]T)
 	if !ok {
-		return ErrInvalidFieldType
+		return Writer{}, ErrInvalidFieldType
 	}
 
 	if len(vl) == 0 {
-		return ErrInvalidLength
+		return Writer{}, ErrInvalidLength
 	}
 
 	// Write the first entry manually because the tag is already written.
-	if err := marshal(w, vl[0]); err != nil {
-		return err
+	var err error
+	w, err = marshal(w, vl[0])
+	if err != nil {
+		return Writer{}, err
 	}
 
 	tag := tagValue(f.FieldNumber, Len)
 	for _, v := range vl[1:] {
-		AppendUint(w, tag)
-		if err := marshal(w, v); err != nil {
-			return err
+		AppendUint(&w, tag)
+		w, err = marshal(w, v)
+		if err != nil {
+			return Writer{}, err
 		}
 	}
-	return nil
+	return w, nil
 }
 
 // isBytesEmpty returns true if the byte slice is all zeros.
