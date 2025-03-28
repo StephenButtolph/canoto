@@ -125,17 +125,19 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 			}
 
 			c.Fields = MakeSlice(c.Fields, countMinus1+1)
+			field := c.Fields
+			additionalField := field[1:]
 			if len(msgBytes) != 0 {
 				remainingBytes := r.B
 				r.B = msgBytes
-				if err := (&c.Fields[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&field[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			for i := range countMinus1 {
+			for i := range additionalField {
 				r.B = r.B[len(canoto__Spec__Fields__tag):]
 				r.Unsafe = true
 				if err := ReadBytes(&r, &msgBytes); err != nil {
@@ -148,7 +150,7 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 
 				remainingBytes := r.B
 				r.B = msgBytes
-				if err := (&c.Fields[1+i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes

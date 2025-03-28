@@ -819,18 +819,20 @@ func makeUnmarshal(m message) string {
 				return err
 			}
 			c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
+			field := c.${fieldName}
 
 			// Read the first entry manually because the tag is still already
 			// stripped.
 			r.B = remainingBytes
-			if err := ${selector}Read${suffix}(&r, &c.${fieldName}[0]); err != nil {
+			if err := ${selector}Read${suffix}(&r, &field[0]); err != nil {
 				return err
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			for i := range countMinus1 {
+			field = field[1:]
+			for i := range field {
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
-				if err := ${selector}Read${suffix}(&r, &c.${fieldName}[1+i]); err != nil {
+				if err := ${selector}Read${suffix}(&r, &field[i]); err != nil {
 					return err
 				}
 			}
@@ -840,6 +842,9 @@ func makeUnmarshal(m message) string {
 				return ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.${fieldName}) - 1)
+
 			// Read the first entry manually because the tag is already
 			// stripped.
 			if err := ${selector}Read${suffix}(&r, &(&c.${fieldName})[0]); err != nil {
@@ -848,16 +853,16 @@ func makeUnmarshal(m message) string {
 
 			// Read the rest of the entries, stripping the tag each time.
 			isZero := len((&c.${fieldName})[0]) == 0
-			const numToRead = uint(len(c.${fieldName}) - 1)
-			for i := range numToRead {
+			field := (&c.${fieldName})[1:]
+			for i := range field {
 				if !${selector}HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
 					return ${selector}ErrUnknownField
 				}
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
-				if err := ${selector}Read${suffix}(&r, &(&c.${fieldName})[1+i]); err != nil {
+				if err := ${selector}Read${suffix}(&r, &field[i]); err != nil {
 					return err
 				}
-				isZero = isZero && len((&c.${fieldName})[1+i]) == 0
+				isZero = isZero && len(field[i]) == 0
 			}
 			if isZero {
 				return ${selector}ErrZeroValue
@@ -1008,10 +1013,12 @@ func makeUnmarshal(m message) string {
 			}
 
 			c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
-			copy((&c.${fieldName}[0])[:], firstEntry)
+			field := c.${fieldName}
+			copy((&field[0])[:], firstEntry)
 
 			// Read the rest of the entries, stripping the tag each time.
-			for i := range countMinus1 {
+			field = field[1:]
+			for i := range field {
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 				if err := ${selector}ReadUint(&r, &length); err != nil {
 					return err
@@ -1023,8 +1030,9 @@ func makeUnmarshal(m message) string {
 					return io.ErrUnexpectedEOF
 				}
 
-				copy((&c.${fieldName}[1+i])[:], r.B)
-				r.B = r.B[expectedLength:]
+				newB := r.B[expectedLength:]
+				copy(field[i][:], r.B)
+				r.B = newB
 			}
 `,
 		fixedRepeatedBytesTemplate: fixedRepeatedBytes,
@@ -1034,6 +1042,8 @@ func makeUnmarshal(m message) string {
 			}${unmarshalOneOf}
 
 			const (
+				// Ensure this field has a constant length of at least one.
+				_                    = uint(len(c.${fieldName}) - 1)
 				expectedLength       = len(c.${fieldName}[0])
 				expectedLengthUint64 = uint64(expectedLength)
 			)
@@ -1051,12 +1061,13 @@ func makeUnmarshal(m message) string {
 				return io.ErrUnexpectedEOF
 			}
 
+			newB := r.B[expectedLength:]
 			copy((&(&c.${fieldName})[0])[:], r.B)
-			r.B = r.B[expectedLength:]
+			r.B = newB
 
 			// Read the rest of the entries, stripping the tag each time.
-			const numToRead = uint(len(c.${fieldName}) - 1)
-			for i := range numToRead {
+			field := (&c.${fieldName})[1:]
+			for i := range field {
 				if !${selector}HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
 					return ${selector}ErrUnknownField
 				}
@@ -1072,8 +1083,9 @@ func makeUnmarshal(m message) string {
 					return io.ErrUnexpectedEOF
 				}
 
-				copy((&(&c.${fieldName})[1+i])[:], r.B)
-				r.B = r.B[expectedLength:]
+				newB := r.B[expectedLength:]
+				copy((&field[i])[:], r.B)
+				r.B = newB
 			}
 			if ${selector}IsZero(c.${fieldName}) {
 				return ${selector}ErrZeroValue
@@ -1127,17 +1139,19 @@ func makeUnmarshal(m message) string {
 			}
 
 			c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
+			field := c.${fieldName}
+			additionalField := field[1:]
 			if len(msgBytes) != 0 {
 				remainingBytes := r.B
 				r.B = msgBytes
-				if err := ${genericTypeCast}(&c.${fieldName}[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ${genericTypeCast}(&field[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			for i := range countMinus1 {
+			for i := range additionalField {
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 				r.Unsafe = true
 				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
@@ -1150,7 +1164,7 @@ func makeUnmarshal(m message) string {
 
 				remainingBytes := r.B
 				r.B = msgBytes
-				if err := ${genericTypeCast}(&c.${fieldName}[1+i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ${genericTypeCast}(&additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
@@ -1160,6 +1174,9 @@ func makeUnmarshal(m message) string {
 			if wireType != ${selector}Len {
 				return ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
+
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.${fieldName}) - 1)
 
 			// Read the first entry manually because the tag is already
 			// stripped.
@@ -1182,8 +1199,8 @@ func makeUnmarshal(m message) string {
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			const numToRead = uint(len(c.${fieldName}) - 1)
-			for i := range numToRead {
+			field := c.${fieldName}[1:]
+			for i := range field {
 				if !${selector}HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
 					return ${selector}ErrUnknownField
 				}
@@ -1199,7 +1216,7 @@ func makeUnmarshal(m message) string {
 
 				remainingBytes := r.B
 				r.B = msgBytes
-				if err := ${genericTypeCast}(&c.${fieldName}[1+i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ${genericTypeCast}(&field[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
@@ -1259,18 +1276,20 @@ func makeUnmarshal(m message) string {
 			}
 
 			c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
+			field := c.${fieldName}
+			additionalField := field[1:]
 			if len(msgBytes) != 0 {
 				remainingBytes := r.B
 				r.B = msgBytes
-				c.${fieldName}[0] = ${selector}MakePointer(c.${fieldName}[0])
-				if err := ${genericTypeCast}(c.${fieldName}[0]).UnmarshalCanotoFrom(r); err != nil {
+				field[0] = ${selector}MakePointer(field[0])
+				if err := ${genericTypeCast}(field[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			for i := range countMinus1 {
+			for i := range additionalField {
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 				r.Unsafe = true
 				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
@@ -1283,8 +1302,8 @@ func makeUnmarshal(m message) string {
 
 				remainingBytes := r.B
 				r.B = msgBytes
-				c.${fieldName}[1+i] = ${selector}MakePointer(c.${fieldName}[1+i])
-				if err := ${genericTypeCast}(c.${fieldName}[1+i]).UnmarshalCanotoFrom(r); err != nil {
+				additionalField[i] = ${selector}MakePointer(additionalField[i])
+				if err := ${genericTypeCast}(additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
@@ -1294,6 +1313,9 @@ func makeUnmarshal(m message) string {
 			if wireType != ${selector}Len {
 				return ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
+
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.${fieldName}) - 1)
 
 			// Read the first entry manually because the tag is already
 			// stripped.
@@ -1317,8 +1339,8 @@ func makeUnmarshal(m message) string {
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			const numToRead = uint(len(c.${fieldName}) - 1)
-			for i := range numToRead {
+			field := c.${fieldName}[1:]
+			for i := range field {
 				if !${selector}HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
 					return ${selector}ErrUnknownField
 				}
@@ -1334,8 +1356,8 @@ func makeUnmarshal(m message) string {
 
 				remainingBytes := r.B
 				r.B = msgBytes
-				c.${fieldName}[1+i] = ${selector}MakePointer(c.${fieldName}[1+i])
-				if err := ${genericTypeCast}(c.${fieldName}[1+i]).UnmarshalCanotoFrom(r); err != nil {
+				field[i] = ${selector}MakePointer(field[i])
+				if err := ${genericTypeCast}(field[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
@@ -1395,18 +1417,20 @@ func makeUnmarshal(m message) string {
 			}
 
 			c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
+			field := c.${fieldName}
+			additionalField := field[1:]
 			if len(msgBytes) != 0 {
 				remainingBytes := r.B
 				r.B = msgBytes
-				c.${fieldName}[0] = c.${fieldName}[0].MakeCanoto()
-				if err := c.${fieldName}[0].UnmarshalCanotoFrom(r); err != nil {
+				field[0] = field[0].MakeCanoto()
+				if err := field[0].UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			for i := range countMinus1 {
+			for i := range additionalField {
 				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
 				r.Unsafe = true
 				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
@@ -1419,8 +1443,8 @@ func makeUnmarshal(m message) string {
 
 				remainingBytes := r.B
 				r.B = msgBytes
-				c.${fieldName}[1+i] = c.${fieldName}[1+i].MakeCanoto()
-				if err := c.${fieldName}[1+i].UnmarshalCanotoFrom(r); err != nil {
+				additionalField[i] = additionalField[i].MakeCanoto()
+				if err := additionalField[i].UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
@@ -1430,6 +1454,9 @@ func makeUnmarshal(m message) string {
 			if wireType != ${selector}Len {
 				return ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
+
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.${fieldName}) - 1)
 
 			// Read the first entry manually because the tag is already
 			// stripped.
@@ -1453,8 +1480,8 @@ func makeUnmarshal(m message) string {
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			const numToRead = uint(len(c.${fieldName}) - 1)
-			for i := range numToRead {
+			field := c.${fieldName}[1:]
+			for i := range field {
 				if !${selector}HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
 					return ${selector}ErrUnknownField
 				}
@@ -1470,8 +1497,8 @@ func makeUnmarshal(m message) string {
 
 				remainingBytes := r.B
 				r.B = msgBytes
-				c.${fieldName}[1+i] = c.${fieldName}[1+i].MakeCanoto()
-				if err := c.${fieldName}[1+i].UnmarshalCanotoFrom(r); err != nil {
+				field[i] = field[i].MakeCanoto()
+				if err := field[i].UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes

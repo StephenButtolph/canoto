@@ -975,18 +975,20 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return err
 			}
 			c.RepeatedString = MakeSlice(c.RepeatedString, countMinus1+1)
+			field := c.RepeatedString
 
 			// Read the first entry manually because the tag is still already
 			// stripped.
 			r.B = remainingBytes
-			if err := ReadString(&r, &c.RepeatedString[0]); err != nil {
+			if err := ReadString(&r, &field[0]); err != nil {
 				return err
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			for i := range countMinus1 {
+			field = field[1:]
+			for i := range field {
 				r.B = r.B[len(canoto__SpecFuzzer__RepeatedString__tag):]
-				if err := ReadString(&r, &c.RepeatedString[1+i]); err != nil {
+				if err := ReadString(&r, &field[i]); err != nil {
 					return err
 				}
 			}
@@ -1010,18 +1012,20 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return err
 			}
 			c.RepeatedBytes = MakeSlice(c.RepeatedBytes, countMinus1+1)
+			field := c.RepeatedBytes
 
 			// Read the first entry manually because the tag is still already
 			// stripped.
 			r.B = remainingBytes
-			if err := ReadBytes(&r, &c.RepeatedBytes[0]); err != nil {
+			if err := ReadBytes(&r, &field[0]); err != nil {
 				return err
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			for i := range countMinus1 {
+			field = field[1:]
+			for i := range field {
 				r.B = r.B[len(canoto__SpecFuzzer__RepeatedBytes__tag):]
-				if err := ReadBytes(&r, &c.RepeatedBytes[1+i]); err != nil {
+				if err := ReadBytes(&r, &field[i]); err != nil {
 					return err
 				}
 			}
@@ -1047,17 +1051,19 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			}
 
 			c.RepeatedLargestFieldNumber = MakeSlice(c.RepeatedLargestFieldNumber, countMinus1+1)
+			field := c.RepeatedLargestFieldNumber
+			additionalField := field[1:]
 			if len(msgBytes) != 0 {
 				remainingBytes := r.B
 				r.B = msgBytes
-				if err := (&c.RepeatedLargestFieldNumber[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&field[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			for i := range countMinus1 {
+			for i := range additionalField {
 				r.B = r.B[len(canoto__SpecFuzzer__RepeatedLargestFieldNumber__tag):]
 				r.Unsafe = true
 				if err := ReadBytes(&r, &msgBytes); err != nil {
@@ -1070,7 +1076,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 				remainingBytes := r.B
 				r.B = msgBytes
-				if err := (&c.RepeatedLargestFieldNumber[1+i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
