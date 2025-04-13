@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/StephenButtolph/canoto"
 )
@@ -35,7 +36,8 @@ func Library(parentDir string) error {
 	}
 
 	libraryPath := filepath.Join(library, libraryFileName)
-	if err := os.WriteFile(libraryPath, []byte(doNotGenerate+canoto.Code), readWrite); err != nil {
+	codeWithoutPrefix, _ := strings.CutPrefix(canoto.Code, canoto.CodeGoGeneratePrefix)
+	if err := os.WriteFile(libraryPath, []byte(doNotGenerate+codeWithoutPrefix), readWrite); err != nil {
 		return fmt.Errorf("failed to write file %q: %w", libraryPath, err)
 	}
 
