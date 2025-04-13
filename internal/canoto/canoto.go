@@ -52,10 +52,6 @@ const (
 	// Version is the current version of the canoto library.
 	Version = "v0.16.1"
 
-	// CodeGoGeneratePrefix is the prefix of [Code] that should be removed when
-	// generating this library.
-	CodeGoGeneratePrefix = "//go:generate canoto --internal $GOFILE\n\n"
-
 	wireTypeLength = 3
 	wireTypeMask   = 0x07
 	maxTagLength   = 5
