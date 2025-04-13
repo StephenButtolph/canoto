@@ -125,17 +125,19 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 			}
 
 			c.Fields = MakeSlice(c.Fields, countMinus1+1)
+			field := c.Fields
+			additionalField := field[1:]
 			if len(msgBytes) != 0 {
 				remainingBytes := r.B
 				r.B = msgBytes
-				if err := (&c.Fields[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&field[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			for i := range countMinus1 {
+			for i := range additionalField {
 				r.B = r.B[len(canoto__Spec__Fields__tag):]
 				r.Unsafe = true
 				if err := ReadBytes(&r, &msgBytes); err != nil {
@@ -148,7 +150,7 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 
 				remainingBytes := r.B
 				r.B = msgBytes
-				if err := (&c.Fields[1+i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
@@ -176,9 +178,12 @@ func (c *Spec) ValidCanoto() bool {
 	if !ValidString(c.Name) {
 		return false
 	}
-	for i := range c.Fields {
-		if !(&c.Fields[i]).ValidCanoto() {
-			return false
+	{
+		field := c.Fields
+		for i := range field {
+			if !(&field[i]).ValidCanoto() {
+				return false
+			}
 		}
 	}
 	return true
@@ -194,10 +199,13 @@ func (c *Spec) CalculateCanotoCache() {
 	if len(c.Name) != 0 {
 		size += uint64(len(canoto__Spec__Name__tag)) + SizeBytes(c.Name)
 	}
-	for i := range c.Fields {
-		(&c.Fields[i]).CalculateCanotoCache()
-		fieldSize := (&c.Fields[i]).CachedCanotoSize()
-		size += uint64(len(canoto__Spec__Fields__tag)) + SizeUint(fieldSize) + fieldSize
+	{
+		field := c.Fields
+		for i := range field {
+			(&field[i]).CalculateCanotoCache()
+			fieldSize := (&field[i]).CachedCanotoSize()
+			size += uint64(len(canoto__Spec__Fields__tag)) + SizeUint(fieldSize) + fieldSize
+		}
 	}
 	c.canotoData.size.Store(size)
 }
@@ -243,10 +251,13 @@ func (c *Spec) MarshalCanotoInto(w Writer) Writer {
 		Append(&w, canoto__Spec__Name__tag)
 		AppendBytes(&w, c.Name)
 	}
-	for i := range c.Fields {
-		Append(&w, canoto__Spec__Fields__tag)
-		AppendUint(&w, (&c.Fields[i]).CachedCanotoSize())
-		w = (&c.Fields[i]).MarshalCanotoInto(w)
+	{
+		field := c.Fields
+		for i := range field {
+			Append(&w, canoto__Spec__Fields__tag)
+			AppendUint(&w, (&field[i]).CachedCanotoSize())
+			w = (&field[i]).MarshalCanotoInto(w)
+		}
 	}
 	return w
 }
