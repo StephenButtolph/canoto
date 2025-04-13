@@ -70,7 +70,7 @@ func (c *Spec) UnmarshalCanoto(bytes []byte) error {
 	return c.UnmarshalCanotoFrom(r)
 }
 
-// UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
+// UnmarshalCanotoFrom populates the struct from a [Reader]. Most users
 // should just use UnmarshalCanoto.
 //
 // During parsing, the canoto cache is saved.
@@ -236,8 +236,8 @@ func (c *Spec) MarshalCanoto() []byte {
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a canoto.Writer and returns the
-// resulting canoto.Writer. Most users should just use MarshalCanoto.
+// MarshalCanotoInto writes the struct into a [Writer] and returns the
+// resulting [Writer]. Most users should just use MarshalCanoto.
 //
 // It is assumed that CalculateCanotoCache has been called since the last
 // modification to this struct.
@@ -407,7 +407,7 @@ func (c *FieldType) UnmarshalCanoto(bytes []byte) error {
 	return c.UnmarshalCanotoFrom(r)
 }
 
-// UnmarshalCanotoFrom populates the struct from a canoto.Reader. Most users
+// UnmarshalCanotoFrom populates the struct from a [Reader]. Most users
 // should just use UnmarshalCanoto.
 //
 // During parsing, the canoto cache is saved.
@@ -844,8 +844,8 @@ func (c *FieldType) MarshalCanoto() []byte {
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a canoto.Writer and returns the
-// resulting canoto.Writer. Most users should just use MarshalCanoto.
+// MarshalCanotoInto writes the struct into a [Writer] and returns the
+// resulting [Writer]. Most users should just use MarshalCanoto.
 //
 // It is assumed that CalculateCanotoCache has been called since the last
 // modification to this struct.
