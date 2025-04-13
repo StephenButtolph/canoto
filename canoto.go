@@ -48,7 +48,7 @@ const (
 	MaxFieldNumber = 1<<29 - 1
 
 	// Version is the current version of the canoto library.
-	Version = "v0.16.0"
+	Version = "v0.16.1"
 
 	// CodeGoGeneratePrefix is the prefix of [Code] that should be removed when
 	// generating this library.
