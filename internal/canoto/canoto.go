@@ -136,8 +136,8 @@ type (
 		//
 		// If there is not a valid specification of this type, it returns nil.
 		CanotoSpec(types ...reflect.Type) *Spec
-		// MarshalCanotoInto writes the field into a canoto.Writer and returns
-		// the resulting canoto.Writer.
+		// MarshalCanotoInto writes the field into a [Writer] and returns the
+		// resulting [Writer].
 		//
 		// It is assumed that CalculateCanotoCache has been called since the
 		// last modification to this field.
@@ -154,7 +154,7 @@ type (
 		// been modified since the last call to CalculateCanotoCache, the
 		// returned size may be incorrect.
 		CachedCanotoSize() uint64
-		// UnmarshalCanotoFrom populates the field from a canoto.Reader.
+		// UnmarshalCanotoFrom populates the field from a [Reader].
 		UnmarshalCanotoFrom(r Reader) error
 		// ValidCanoto validates that the field can be correctly marshaled into
 		// the Canoto format.
