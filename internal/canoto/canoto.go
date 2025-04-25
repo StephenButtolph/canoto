@@ -46,6 +46,31 @@ const (
 	// SizeBool is the size of a boolean in bytes.
 	SizeBool = 1
 
+	// FieldTypeInt is the field number of an int in the FieldType OneOf.
+	FieldTypeInt = 6
+	// FieldTypeUint is the field number of a uint in the FieldType OneOf.
+	FieldTypeUint = 7
+	// FieldTypeFixedInt is the field number of a fixed int in the FieldType
+	// OneOf.
+	FieldTypeFixedInt = 8
+	// FieldTypeFixedUint is the field number of a fixed uint in the FieldType
+	// OneOf.
+	FieldTypeFixedUint = 9
+	// FieldTypeBool is the field number of a bool in the FieldType OneOf.
+	FieldTypeBool = 10
+	// FieldTypeString is the field number of a string in the FieldType OneOf.
+	FieldTypeString = 11
+	// FieldTypeBytes is the field number of bytes in the FieldType OneOf.
+	FieldTypeBytes = 12
+	// FieldTypeFixedBytes is the field number of fixed bytes in the FieldType
+	// OneOf.
+	FieldTypeFixedBytes = 13
+	// FieldTypeRecursive is the field number of a recursive type in the
+	// FieldType OneOf.
+	FieldTypeRecursive = 14
+	// FieldTypeMessage is the field number of a message in the FieldType OneOf.
+	FieldTypeMessage = 15
+
 	// MaxFieldNumber is the maximum field number allowed to be used in a Tag.
 	MaxFieldNumber = 1<<29 - 1
 
@@ -924,25 +949,25 @@ func (f *FieldType) wireType() (WireType, error) {
 func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 	var unmarshal func(f *FieldType, r *Reader, specs []*Spec) (any, error)
 	switch f.CachedWhichOneOfType() {
-	case 6:
+	case FieldTypeInt:
 		unmarshal = (*FieldType).unmarshalInt
-	case 7:
+	case FieldTypeUint:
 		unmarshal = (*FieldType).unmarshalUint
-	case 8:
+	case FieldTypeFixedInt:
 		unmarshal = (*FieldType).unmarshalFixedInt
-	case 9:
+	case FieldTypeFixedUint:
 		unmarshal = (*FieldType).unmarshalFixedUint
-	case 10:
+	case FieldTypeBool:
 		unmarshal = (*FieldType).unmarshalBool
-	case 11:
+	case FieldTypeString:
 		unmarshal = (*FieldType).unmarshalString
-	case 12:
+	case FieldTypeBytes:
 		unmarshal = (*FieldType).unmarshalBytes
-	case 13:
+	case FieldTypeFixedBytes:
 		unmarshal = (*FieldType).unmarshalFixedBytes
-	case 14:
+	case FieldTypeRecursive:
 		unmarshal = (*FieldType).unmarshalRecursive
-	case 15:
+	case FieldTypeMessage:
 		unmarshal = (*FieldType).unmarshalSpec
 	default:
 		return nil, ErrUnknownFieldType
@@ -953,23 +978,23 @@ func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 func (f *FieldType) marshal(w Writer, value any, specs []*Spec) (Writer, error) {
 	var marshal func(f *FieldType, w Writer, value any, specs []*Spec) (Writer, error)
 	switch f.CachedWhichOneOfType() {
-	case 6:
+	case FieldTypeInt:
 		marshal = (*FieldType).marshalInt
-	case 7:
+	case FieldTypeUint:
 		marshal = (*FieldType).marshalUint
-	case 8:
+	case FieldTypeFixedInt:
 		marshal = (*FieldType).marshalFixedInt
-	case 9:
+	case FieldTypeFixedUint:
 		marshal = (*FieldType).marshalFixedUint
-	case 10:
+	case FieldTypeBool:
 		marshal = (*FieldType).marshalBool
-	case 11:
+	case FieldTypeString:
 		marshal = (*FieldType).marshalString
-	case 12, 13:
+	case FieldTypeBytes, FieldTypeFixedBytes:
 		marshal = (*FieldType).marshalBytes
-	case 14:
+	case FieldTypeRecursive:
 		marshal = (*FieldType).marshalRecursive
-	case 15:
+	case FieldTypeMessage:
 		marshal = (*FieldType).marshalSpec
 	default:
 		return Writer{}, ErrUnknownFieldType
