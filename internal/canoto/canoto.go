@@ -1158,7 +1158,7 @@ func (f *FieldType) marshalFixedInt(w Writer, value any, _ []*Spec) (Writer, err
 
 func (f *FieldType) unmarshalFixedUint(r *Reader, _ []*Spec) (any, error) {
 	var read func(*Reader) (uint64, error)
-	switch f.TypeFixedInt {
+	switch f.TypeFixedUint {
 	case SizeEnum32:
 		read = func(r *Reader) (uint64, error) {
 			var v uint32
