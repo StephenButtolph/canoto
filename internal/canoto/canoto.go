@@ -1056,7 +1056,7 @@ func (f *FieldType) marshalInt(w Writer, value any, _ []*Spec) (Writer, error) {
 
 func (f *FieldType) unmarshalUint(r *Reader, _ []*Spec) (any, error) {
 	var read func(*Reader) (uint64, error)
-	switch f.TypeInt {
+	switch f.TypeUint {
 	case SizeEnum8:
 		read = unmarshalUint[uint8]
 	case SizeEnum16:
