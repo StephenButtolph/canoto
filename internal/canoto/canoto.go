@@ -1184,7 +1184,7 @@ func (f *FieldType) unmarshalFixedUint(r *Reader, _ []*Spec) (any, error) {
 
 func (f *FieldType) marshalFixedUint(w Writer, value any, _ []*Spec) (Writer, error) {
 	var write func(w Writer, value uint64) (Writer, error)
-	switch f.TypeFixedInt {
+	switch f.TypeFixedUint {
 	case SizeEnum32:
 		write = func(w Writer, value uint64) (Writer, error) {
 			if value > math.MaxUint32 {
