@@ -70,7 +70,7 @@ func (c *justAnInt) UnmarshalCanoto(bytes []byte) error {
 func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = justAnInt{}
-	c.canotoData.size = uint64(len(r.B))
+	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -129,7 +129,7 @@ func (c *justAnInt) CalculateCanotoCache() {
 	if !canoto.IsZero(c.Int8) {
 		size += uint64(len(canoto__justAnInt__Int8__tag)) + canoto.SizeInt(c.Int8)
 	}
-	c.canotoData.size = size
+	atomic.StoreUint64(&c.canotoData.size, size)
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto

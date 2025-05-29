@@ -253,9 +253,9 @@ ${marshal}	return w
 	var (
 		loadPrefix         = "atomic.LoadUint64(&"
 		loadSuffix         = ")"
-		storePrefix        string
-		storeJoin          = " = "
-		storeSuffix        string
+		storePrefix        = "atomic.StoreUint64(&"
+		storeJoin          = ", "
+		storeSuffix        = ")"
 		concurrencyWarning = `
 //
 // It is not safe to call this function concurrently.`
@@ -1998,13 +1998,13 @@ func makeAssignSizeVars(m message) string {
 	if m.useAtomic {
 		s.WriteString("\tc.canotoData.size.Store(size)\n")
 	} else {
-		s.WriteString("\tc.canotoData.size = size\n")
+		s.WriteString("\tatomic.StoreUint64(&c.canotoData.size, size)\n")
 	}
 	for _, oneOf := range m.OneOfs() {
 		if m.useAtomic {
 			_, _ = fmt.Fprintf(&s, "\tc.canotoData.%sOneOf.Store(%sOneOf)\n", oneOf, oneOf)
 		} else {
-			_, _ = fmt.Fprintf(&s, "\tc.canotoData.%sOneOf = %sOneOf\n", oneOf, oneOf)
+			_, _ = fmt.Fprintf(&s, "\tatomic.StoreUint32(&c.canotoData.%sOneOf, %sOneOf)\n", oneOf, oneOf)
 		}
 	}
 	return s.String()
