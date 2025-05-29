@@ -143,7 +143,7 @@ func (c *justAnInt) CachedCanotoSize() uint64 {
 	if c == nil {
 		return 0
 	}
-	return c.canotoData.size
+	return atomic.LoadUint64(&c.canotoData.size)
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.

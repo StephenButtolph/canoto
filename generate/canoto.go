@@ -220,7 +220,7 @@ func (c *${structName}${generics}) CachedCanotoSize() uint64 {
 	if c == nil {
 		return 0
 	}
-	return c.canotoData.size${load}
+	return ${loadPrefix}c.canotoData.size${loadSuffix}
 }${oneOfCacheAccessors}
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -251,7 +251,8 @@ ${marshal}	return w
 `
 
 	var (
-		load               string
+		loadPrefix         = "atomic.LoadUint64(&"
+		loadSuffix         = ")"
 		storePrefix        = " = "
 		storeSuffix        string
 		concurrencyWarning = `
@@ -259,7 +260,8 @@ ${marshal}	return w
 // It is not safe to call this function concurrently.`
 	)
 	if m.useAtomic {
-		load = ".Load()"
+		loadPrefix = ""
+		loadSuffix = ".Load()"
 		storePrefix = ".Store("
 		storeSuffix = ")"
 		concurrencyWarning = ""
@@ -299,7 +301,8 @@ ${marshal}	return w
 		"sizeVars":            makeSizeVars(m),
 		"size":                makeSize(m),
 		"assignSizeVars":      makeAssignSizeVars(m),
-		"load":                load,
+		"loadPrefix":          loadPrefix,
+		"loadSuffix":          loadSuffix,
 		"storePrefix":         storePrefix,
 		"storeSuffix":         storeSuffix,
 		"oneOfCacheAccessors": makeOneOfCacheAccessors(m),
@@ -2018,22 +2021,25 @@ func makeOneOfCacheAccessors(m message) string {
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
 func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() uint32 {
-	return c.canotoData.${oneOf}OneOf${load}
+	return ${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix}
 }`
 	var (
-		s        strings.Builder
-		generics = makeGenerics(m)
-		load     string
+		s          strings.Builder
+		generics   = makeGenerics(m)
+		loadPrefix = "atomic.LoadUint32(&"
+		loadSuffix = ")"
 	)
 	if m.useAtomic {
-		load = ".Load()"
+		loadPrefix = ""
+		loadSuffix = ".Load()"
 	}
 	for _, oneOf := range m.OneOfs() {
 		_ = writeTemplate(&s, template, map[string]string{
 			"oneOf":      oneOf,
 			"structName": m.name,
 			"generics":   generics,
-			"load":       load,
+			"loadPrefix": loadPrefix,
+			"loadSuffix": loadSuffix,
 		})
 	}
 	return s.String()
@@ -2079,7 +2085,7 @@ func makeMarshal(m message) string {
 			single: intTemplate,
 			repeated: `	if len(c.${fieldName}) != 0 {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendUint(&w, c.canotoData.${fieldName}Size${load})
+		${selector}AppendUint(&w, ${loadPrefix}c.canotoData.${fieldName}Size${loadSuffix})
 		for _, v := range c.${fieldName} {
 			${selector}Append${suffix}(&w, v)
 		}
@@ -2087,7 +2093,7 @@ func makeMarshal(m message) string {
 `,
 			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendUint(&w, c.canotoData.${fieldName}Size${load})
+		${selector}AppendUint(&w, ${loadPrefix}c.canotoData.${fieldName}Size${loadSuffix})
 		for _, v := range &c.${fieldName} {
 			${selector}Append${suffix}(&w, v)
 		}

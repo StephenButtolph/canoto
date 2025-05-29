@@ -46,7 +46,7 @@ type OneOf struct {
 	C  int32 `canoto:"int,5"`
 	D  int64 `canoto:"int,6"`
 
-	canotoData canotoData_OneOf
+	canotoData canotoData_OneOf `canoto:"noatomic"`
 }
 
 type Node struct {
@@ -191,7 +191,7 @@ type Scalars struct {
 	RepeatedField                   []*LargestFieldNumber[uint32]  `canoto:"repeated field,67"`
 	FixedRepeatedField              [3]*LargestFieldNumber[uint32] `canoto:"fixed repeated field,68"`
 
-	canotoData canotoData_Scalars
+	canotoData canotoData_Scalars `canoto:"noatomic"`
 }
 
 type SpecUnusedZero struct {

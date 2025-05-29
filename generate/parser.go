@@ -264,12 +264,14 @@ func parseField(
 	}
 
 	var (
-		load        string
+		loadPrefix  = "atomic.LoadUint64(&"
+		loadSuffix  = ")"
 		storePrefix = ` = `
 		storeSuffix string
 	)
 	if useAtomic {
-		load = ".Load()"
+		loadPrefix = ""
+		loadSuffix = ".Load()"
 		storePrefix = ".Store("
 		storeSuffix = ")"
 	}
@@ -285,27 +287,23 @@ func parseField(
 		sizeOneOfIndent string
 	)
 	if oneOfName != "" {
+		var unmarshalOneOfTemplate string
 		if useAtomic {
-			unmarshalOneOf = fmt.Sprintf(`
+			unmarshalOneOfTemplate = `
 			if c.canotoData.%sOneOf.Swap(%d) != 0 {
 				return %sErrDuplicateOneOf
-			}`,
-				oneOfName,
-				fieldNumber,
-				selector,
-			)
+			}`
 		} else {
-			unmarshalOneOf = fmt.Sprintf(`
-			if c.canotoData.%sOneOf != 0 {
+			unmarshalOneOfTemplate = `
+			if atomic.SwapUint32(&c.canotoData.%sOneOf, %d) != 0 {
 				return %sErrDuplicateOneOf
-			}
-			c.canotoData.%sOneOf = %d`,
-				oneOfName,
-				selector,
-				oneOfName,
-				fieldNumber,
-			)
+			}`
 		}
+		unmarshalOneOf = fmt.Sprintf(unmarshalOneOfTemplate,
+			oneOfName,
+			fieldNumber,
+			selector,
+		)
 
 		assignOneOf := fmt.Sprintf("%sOneOf = %d", oneOfName, fieldNumber)
 		sizeOneOf = "\n\t\t" + assignOneOf
@@ -379,7 +377,8 @@ func parseField(
 		oneOfName:         oneOfName,
 		templateArgs: map[string]string{
 			"selector":          selector,
-			"load":              load,
+			"loadPrefix":        loadPrefix,
+			"loadSuffix":        loadSuffix,
 			"storePrefix":       storePrefix,
 			"storeSuffix":       storeSuffix,
 			"escapedStructName": canonicalizedStructName,
