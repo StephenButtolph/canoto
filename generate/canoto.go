@@ -165,7 +165,7 @@ func (c *${structName}${generics}) UnmarshalCanoto(bytes []byte) error {
 func (c *${structName}${generics}) UnmarshalCanotoFrom(r ${selector}Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = ${structName}${generics}{}
-	c.canotoData.size${storeJoin}uint64(len(r.B))${storeSuffix}
+	${storePrefix}c.canotoData.size${storeJoin}uint64(len(r.B))${storeSuffix}
 
 	var minField uint32
 	for ${selector}HasNext(&r) {
@@ -253,6 +253,7 @@ ${marshal}	return w
 	var (
 		loadPrefix         = "atomic.LoadUint64(&"
 		loadSuffix         = ")"
+		storePrefix        string
 		storeJoin          = " = "
 		storeSuffix        string
 		concurrencyWarning = `
@@ -262,6 +263,7 @@ ${marshal}	return w
 	if m.useAtomic {
 		loadPrefix = ""
 		loadSuffix = ".Load()"
+		storePrefix = ""
 		storeJoin = ".Store("
 		storeSuffix = ")"
 		concurrencyWarning = ""
@@ -303,6 +305,7 @@ ${marshal}	return w
 		"assignSizeVars":      makeAssignSizeVars(m),
 		"loadPrefix":          loadPrefix,
 		"loadSuffix":          loadSuffix,
+		"storePrefix":         storePrefix,
 		"storeJoin":           storeJoin,
 		"storeSuffix":         storeSuffix,
 		"oneOfCacheAccessors": makeOneOfCacheAccessors(m),
@@ -906,7 +909,7 @@ func makeUnmarshal(m message) string {
 				return ${selector}ErrInvalidLength
 			}
 			r.B = remainingBytes
-			c.canotoData.${fieldName}Size${storeJoin}uint64(len(msgBytes))${storeSuffix}
+			${storePrefix}c.canotoData.${fieldName}Size${storeJoin}uint64(len(msgBytes))${storeSuffix}
 `,
 			fixedRepeated: `		case ${fieldNumber}:
 			if wireType != ${selector}Len {
@@ -937,7 +940,7 @@ func makeUnmarshal(m message) string {
 				return ${selector}ErrZeroValue
 			}
 			r.B = remainingBytes
-			c.canotoData.${fieldName}Size${storeJoin}uint64(len(msgBytes))${storeSuffix}
+			${storePrefix}c.canotoData.${fieldName}Size${storeJoin}uint64(len(msgBytes))${storeSuffix}
 `,
 		},
 		fints: typeTemplate{
@@ -1815,7 +1818,7 @@ func makeSize(m message) string {
 			fieldSize += ${selector}Size${suffix}(v)
 		}
 		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize
-		c.canotoData.${fieldName}Size${storeJoin}fieldSize${storeSuffix}${sizeOneOf}
+		${storePrefix}c.canotoData.${fieldName}Size${storeJoin}fieldSize${storeSuffix}${sizeOneOf}
 	}
 `,
 			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
@@ -1824,7 +1827,7 @@ func makeSize(m message) string {
 			fieldSize += ${selector}Size${suffix}(v)
 		}
 		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize
-		c.canotoData.${fieldName}Size${storeJoin}fieldSize${storeSuffix}${sizeOneOf}
+		${storePrefix}c.canotoData.${fieldName}Size${storeJoin}fieldSize${storeSuffix}${sizeOneOf}
 	}
 `,
 		},
