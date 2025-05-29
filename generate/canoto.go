@@ -258,9 +258,9 @@ ${marshal}	return w
 		storeSuffix        = ")"
 		concurrencyWarning = `
 //
-// It is not safe to call this function concurrently.`
+// It is not safe to copy this struct concurrently.`
 	)
-	if m.useAtomic {
+	if m.noCopy {
 		loadPrefix = ""
 		loadSuffix = ".Load()"
 		storePrefix = ""
@@ -410,7 +410,7 @@ func makeSizeCache(m message) string {
 	}
 
 	sizeType := "uint64"
-	if m.useAtomic {
+	if m.noCopy {
 		sizeType = "atomic.Uint64"
 	}
 
@@ -441,7 +441,7 @@ func makeOneOfCache(m message) string {
 	}
 
 	oneOfType := "uint32"
-	if m.useAtomic {
+	if m.noCopy {
 		oneOfType = "atomic.Uint32"
 	}
 
@@ -1995,13 +1995,13 @@ func makeSize(m message) string {
 
 func makeAssignSizeVars(m message) string {
 	var s strings.Builder
-	if m.useAtomic {
+	if m.noCopy {
 		s.WriteString("\tc.canotoData.size.Store(size)\n")
 	} else {
 		s.WriteString("\tatomic.StoreUint64(&c.canotoData.size, size)\n")
 	}
 	for _, oneOf := range m.OneOfs() {
-		if m.useAtomic {
+		if m.noCopy {
 			_, _ = fmt.Fprintf(&s, "\tc.canotoData.%sOneOf.Store(%sOneOf)\n", oneOf, oneOf)
 		} else {
 			_, _ = fmt.Fprintf(&s, "\tatomic.StoreUint32(&c.canotoData.%sOneOf, %sOneOf)\n", oneOf, oneOf)
@@ -2032,7 +2032,7 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() uint32 {
 		loadPrefix = "atomic.LoadUint32(&"
 		loadSuffix = ")"
 	)
-	if m.useAtomic {
+	if m.noCopy {
 		loadPrefix = ""
 		loadSuffix = ".Load()"
 	}

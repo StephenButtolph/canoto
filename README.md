@@ -203,15 +203,15 @@ By default, the auto-generated `canotoData` struct includes atomic variables. Th
 
 However, this results in being unable to pass messages by value due to the [NoCopy](https://github.com/golang/go/issues/8005) included on atomic variables.
 
-If concurrent calls to `MarshalCanoto` are not required and it is desired to be able to pass a message by value, the `canoto:"noatomic"` tag can be added to the `canotoData` field to remove the usage of atomic variables.
+Because calling `MarshalCanoto` concurrently with copying a message is not safe, the `canoto:"nocopy"` tag can be added to the `canotoData` field to disallow message copying.
 
 For example:
 
 ```golang
-type PassableByValue struct {
+type NotPassableByValue struct {
 	Int int64 `canoto:"int,1"`
 
-	canotoData canotoData_PassableByValue `canoto:"noatomic"`
+	canotoData canotoData_NotPassableByValue `canoto:"nocopy"`
 }
 ```
 

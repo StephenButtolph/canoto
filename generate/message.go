@@ -10,7 +10,7 @@ type message struct {
 	canonicalizedName string
 	numTypes          int
 	fields            []field
-	useAtomic         bool
+	noCopy            bool
 }
 
 func (m *message) OneOfs() []string {

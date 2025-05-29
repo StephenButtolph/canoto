@@ -14,5 +14,5 @@ var (
 type justAnInt struct {
 	Int8 int8 `canoto:"int,1"`
 
-	canotoData canotoData_justAnInt `canoto:"noatomic"`
+	canotoData canotoData_justAnInt `canoto:"nocopy"`
 }
