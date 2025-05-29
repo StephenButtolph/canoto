@@ -266,13 +266,13 @@ func parseField(
 	var (
 		loadPrefix  = "atomic.LoadUint64(&"
 		loadSuffix  = ")"
-		storePrefix = ` = `
+		storeJoin   = ` = `
 		storeSuffix string
 	)
 	if useAtomic {
 		loadPrefix = ""
 		loadSuffix = ".Load()"
-		storePrefix = ".Store("
+		storeJoin = ".Store("
 		storeSuffix = ")"
 	}
 
@@ -379,7 +379,7 @@ func parseField(
 			"selector":          selector,
 			"loadPrefix":        loadPrefix,
 			"loadSuffix":        loadSuffix,
-			"storePrefix":       storePrefix,
+			"storeJoin":         storeJoin,
 			"storeSuffix":       storeSuffix,
 			"escapedStructName": canonicalizedStructName,
 			"fieldNumber":       strconv.FormatUint(uint64(fieldNumber), 10),
