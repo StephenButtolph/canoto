@@ -24,7 +24,7 @@ const (
 )
 
 type canotoData_Spec struct {
-	size atomic.Uint64
+	size uint64
 }
 
 // CanotoSpec returns the specification of this canoto message.
@@ -79,7 +79,7 @@ func (c *Spec) UnmarshalCanoto(bytes []byte) error {
 func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = Spec{}
-	c.canotoData.size.Store(uint64(len(r.B)))
+	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
 
 	var minField uint32
 	for HasNext(&r) {
@@ -191,6 +191,8 @@ func (c *Spec) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
+//
+// It is not safe to copy this struct concurrently.
 func (c *Spec) CalculateCanotoCache() {
 	if c == nil {
 		return
@@ -207,7 +209,7 @@ func (c *Spec) CalculateCanotoCache() {
 			size += uint64(len(canoto__Spec__Fields__tag)) + SizeUint(fieldSize) + fieldSize
 		}
 	}
-	c.canotoData.size.Store(size)
+	atomic.StoreUint64(&c.canotoData.size, size)
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -221,12 +223,14 @@ func (c *Spec) CachedCanotoSize() uint64 {
 	if c == nil {
 		return 0
 	}
-	return c.canotoData.size.Load()
+	return atomic.LoadUint64(&c.canotoData.size)
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to copy this struct concurrently.
 func (c *Spec) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := Writer{
@@ -243,6 +247,8 @@ func (c *Spec) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to copy this struct concurrently.
 func (c *Spec) MarshalCanotoInto(w Writer) Writer {
 	if c == nil {
 		return w
@@ -281,9 +287,9 @@ const (
 )
 
 type canotoData_FieldType struct {
-	size atomic.Uint64
+	size uint64
 
-	TypeOneOf atomic.Uint32
+	TypeOneOf uint32
 }
 
 // CanotoSpec returns the specification of this canoto message.
@@ -416,7 +422,7 @@ func (c *FieldType) UnmarshalCanoto(bytes []byte) error {
 func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = FieldType{}
-	c.canotoData.size.Store(uint64(len(r.B)))
+	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
 
 	var minField uint32
 	for HasNext(&r) {
@@ -488,7 +494,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if c.canotoData.TypeOneOf.Swap(6) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 6) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -502,7 +508,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if c.canotoData.TypeOneOf.Swap(7) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 7) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -516,7 +522,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if c.canotoData.TypeOneOf.Swap(8) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 8) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -530,7 +536,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if c.canotoData.TypeOneOf.Swap(9) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 9) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -544,7 +550,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if c.canotoData.TypeOneOf.Swap(10) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 10) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -558,7 +564,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if c.canotoData.TypeOneOf.Swap(11) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 11) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -572,7 +578,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if c.canotoData.TypeOneOf.Swap(12) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 12) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -586,7 +592,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if c.canotoData.TypeOneOf.Swap(13) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 13) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -600,7 +606,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if c.canotoData.TypeOneOf.Swap(14) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 14) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -614,7 +620,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
-			if c.canotoData.TypeOneOf.Swap(15) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 15) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -736,6 +742,8 @@ func (c *FieldType) ValidCanoto() bool {
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
+//
+// It is not safe to copy this struct concurrently.
 func (c *FieldType) CalculateCanotoCache() {
 	if c == nil {
 		return
@@ -800,8 +808,8 @@ func (c *FieldType) CalculateCanotoCache() {
 			TypeOneOf = 15
 		}
 	}
-	c.canotoData.size.Store(size)
-	c.canotoData.TypeOneOf.Store(TypeOneOf)
+	atomic.StoreUint64(&c.canotoData.size, size)
+	atomic.StoreUint32(&c.canotoData.TypeOneOf, TypeOneOf)
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -815,7 +823,7 @@ func (c *FieldType) CachedCanotoSize() uint64 {
 	if c == nil {
 		return 0
 	}
-	return c.canotoData.size.Load()
+	return atomic.LoadUint64(&c.canotoData.size)
 }
 
 // CachedWhichOneOfType returns the previously calculated field number used
@@ -829,12 +837,14 @@ func (c *FieldType) CachedCanotoSize() uint64 {
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
 func (c *FieldType) CachedWhichOneOfType() uint32 {
-	return c.canotoData.TypeOneOf.Load()
+	return atomic.LoadUint32(&c.canotoData.TypeOneOf)
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to copy this struct concurrently.
 func (c *FieldType) MarshalCanoto() []byte {
 	c.CalculateCanotoCache()
 	w := Writer{
@@ -851,6 +861,8 @@ func (c *FieldType) MarshalCanoto() []byte {
 // modification to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to copy this struct concurrently.
 func (c *FieldType) MarshalCanotoInto(w Writer) Writer {
 	if c == nil {
 		return w
