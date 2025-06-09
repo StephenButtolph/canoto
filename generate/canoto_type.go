@@ -46,54 +46,22 @@ const (
 )
 
 var (
-	canotoTypes = []canotoType{
-		canotoInt,
-		canotoUint,
-		canotoFint32,
-		canotoFint64,
-		canotoBool,
-		canotoString,
-		canotoBytes,
-		canotoFixedBytes,
-		canotoValue,
-		canotoPointer,
-		canotoField,
-
-		canotoRepeatedInt,
-		canotoRepeatedUint,
-		canotoRepeatedFint32,
-		canotoRepeatedFint64,
-		canotoRepeatedBool,
-		canotoRepeatedString,
-		canotoRepeatedBytes,
-		canotoRepeatedFixedBytes,
-		canotoRepeatedValue,
-		canotoRepeatedPointer,
-		canotoRepeatedField,
-
-		canotoFixedRepeatedInt,
-		canotoFixedRepeatedUint,
-		canotoFixedRepeatedFint32,
-		canotoFixedRepeatedFint64,
-		canotoFixedRepeatedBool,
-		canotoFixedRepeatedString,
-		canotoFixedRepeatedBytes,
-		canotoFixedRepeatedFixedBytes,
-		canotoFixedRepeatedValue,
-		canotoFixedRepeatedPointer,
-		canotoFixedRepeatedField,
-	}
-	canotoIntTypes = []canotoType{
-		canotoInt,
-		canotoRepeatedInt,
-		canotoFixedRepeatedInt,
-	}
-	canotoUintTypes = []canotoType{
-		canotoUint,
-		canotoRepeatedUint,
-		canotoFixedRepeatedUint,
-	}
-	canotoVarintTypes   = append(canotoIntTypes, canotoUintTypes...)
+	canotoTypes = append(
+		[]canotoType{
+			canotoInt,
+			canotoUint,
+			canotoFint32,
+			canotoFint64,
+			canotoBool,
+			canotoString,
+			canotoBytes,
+			canotoFixedBytes,
+			canotoValue,
+			canotoPointer,
+			canotoField,
+		},
+		canotoRepeatedTypes...,
+	)
 	canotoRepeatedTypes = append(
 		[]canotoType{
 			canotoRepeatedInt,
@@ -123,6 +91,17 @@ var (
 		canotoFixedRepeatedPointer,
 		canotoFixedRepeatedField,
 	}
+	canotoIntTypes = []canotoType{
+		canotoInt,
+		canotoRepeatedInt,
+		canotoFixedRepeatedInt,
+	}
+	canotoUintTypes = []canotoType{
+		canotoUint,
+		canotoRepeatedUint,
+		canotoFixedRepeatedUint,
+	}
+	canotoVarintTypes  = append(canotoIntTypes, canotoUintTypes...)
 	canotoMessageTypes = []canotoType{
 		canotoValue,
 		canotoPointer,
@@ -178,7 +157,7 @@ func (c canotoType) IsVarint() bool {
 }
 
 func (c canotoType) IsRepeated() bool {
-	return slices.Contains(canotoRepeatedTypes, c) || c.IsFixed()
+	return slices.Contains(canotoRepeatedTypes, c)
 }
 
 func (c canotoType) IsFixed() bool {
