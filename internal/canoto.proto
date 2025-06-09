@@ -67,6 +67,7 @@ message Embedded {
   OneOf OneOf = 1;
   LargestFieldNumber LargestFieldNumber = 2;
   GenericField GenericField = 3;
+  bytes Int = 4;
 }
 
 message A {

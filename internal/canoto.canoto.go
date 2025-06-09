@@ -2922,6 +2922,7 @@ const (
 	canoto__Embedded__OneOf__tag              = "\x0a" // canoto.Tag(1, canoto.Len)
 	canoto__Embedded__LargestFieldNumber__tag = "\x12" // canoto.Tag(2, canoto.Len)
 	canoto__Embedded__GenericField__tag       = "\x1a" // canoto.Tag(3, canoto.Len)
+	canoto__Embedded__Int__tag                = "\x22" // canoto.Tag(4, canoto.Len)
 )
 
 type canotoData_Embedded struct {
@@ -2957,6 +2958,15 @@ func (*Embedded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*type inference:*/ zero.GenericField,
 				/*FieldNumber:   */ 3,
 				/*Name:          */ "GenericField",
+				/*FixedLength:   */ 0,
+				/*Repeated:      */ false,
+				/*OneOf:         */ "",
+				/*types:         */ types,
+			),
+			canoto.FieldTypeFromField(
+				/*type inference:*/ (zero.Int),
+				/*FieldNumber:   */ 4,
+				/*Name:          */ "Int",
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
@@ -3079,6 +3089,31 @@ func (c *Embedded) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return err
 			}
 			r.B = remainingBytes
+		case 4:
+			if wireType != canoto.Len {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			// Read the bytes for the field.
+			originalUnsafe := r.Unsafe
+			r.Unsafe = true
+			var msgBytes []byte
+			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				return err
+			}
+			if len(msgBytes) == 0 {
+				return canoto.ErrZeroValue
+			}
+			r.Unsafe = originalUnsafe
+
+			// Unmarshal the field from the bytes.
+			remainingBytes := r.B
+			r.B = msgBytes
+			c.Int = canoto.MakePointer(c.Int)
+			if err := (c.Int).UnmarshalCanotoFrom(r); err != nil {
+				return err
+			}
+			r.B = remainingBytes
 		default:
 			return canoto.ErrUnknownField
 		}
@@ -3108,6 +3143,9 @@ func (c *Embedded) ValidCanoto() bool {
 	if !c.GenericField.ValidCanoto() {
 		return false
 	}
+	if c.Int != nil && !(c.Int).ValidCanoto() {
+		return false
+	}
 	return true
 }
 
@@ -3133,6 +3171,12 @@ func (c *Embedded) CalculateCanotoCache() {
 	c.GenericField.CalculateCanotoCache()
 	if fieldSize := c.GenericField.CachedCanotoSize(); fieldSize != 0 {
 		size += uint64(len(canoto__Embedded__GenericField__tag)) + canoto.SizeUint(fieldSize) + fieldSize
+	}
+	if c.Int != nil {
+		(c.Int).CalculateCanotoCache()
+		if fieldSize := (c.Int).CachedCanotoSize(); fieldSize != 0 {
+			size += uint64(len(canoto__Embedded__Int__tag)) + canoto.SizeUint(fieldSize) + fieldSize
+		}
 	}
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
@@ -3194,6 +3238,13 @@ func (c *Embedded) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		canoto.Append(&w, canoto__Embedded__GenericField__tag)
 		canoto.AppendUint(&w, fieldSize)
 		w = c.GenericField.MarshalCanotoInto(w)
+	}
+	if c.Int != nil {
+		if fieldSize := (c.Int).CachedCanotoSize(); fieldSize != 0 {
+			canoto.Append(&w, canoto__Embedded__Int__tag)
+			canoto.AppendUint(&w, fieldSize)
+			w = (c.Int).MarshalCanotoInto(w)
+		}
 	}
 	return w
 }

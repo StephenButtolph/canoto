@@ -322,6 +322,7 @@ func parseField(
 		case *ast.Ident:
 			goType = tt.Name
 		case *ast.SelectorExpr:
+			goType = tt.Sel.Name
 		case *ast.StarExpr:
 			t = tt.X
 			continue

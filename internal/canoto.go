@@ -100,6 +100,7 @@ type Embedded struct {
 	OneOf                                `canoto:"value,1"`
 	*LargestFieldNumber[uint32]          `canoto:"pointer,2"`
 	*GenericField[OneOf, *OneOf, *OneOf] `canoto:"field,3"`
+	*big.Int                             `canoto:"pointer,4"`
 
 	canotoData canotoData_Embedded
 }
