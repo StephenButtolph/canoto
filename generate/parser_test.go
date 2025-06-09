@@ -51,6 +51,12 @@ func TestParse(t *testing.T) {
 			wantErr:         errMalformedTag,
 		},
 		{
+			name:            "multiple fields per type",
+			filePath:        "testdata/multiple_fields_per_type.go",
+			wantPackageName: "testdata",
+			wantErr:         errUnexpectedNumberOfIdentifiers,
+		},
+		{
 			name:            "repeated oneof",
 			filePath:        "testdata/repeated_oneof.go",
 			wantPackageName: "testdata",
