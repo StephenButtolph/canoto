@@ -1,4 +1,3 @@
-// generate/canoto.go
 package generate
 
 import (
@@ -81,9 +80,7 @@ func writeCanoto(
 // 	canoto ${version}
 // source: ${source}
 
-
 package ${package}
-
 
 import (
 	"io"
@@ -91,16 +88,13 @@ import (
 	"sync/atomic"
 ${canotoImport})
 
-
 // Ensure that unused imports do not error
 var (
 	_ atomic.Uint64
 
-
 	_ = io.ErrUnexpectedEOF
 )
 `
-
 	// Only include the import for canoto if this is not an internal file.
 	if internal {
 		canotoImport = ""
@@ -131,14 +125,11 @@ var (
 
 func writeStruct(w io.Writer, m message, canotoSelector string) error {
 	const structTemplate = `
-
 const (
 ${tagConstants})
 
-
 type canotoData_${structName} struct {
 ${sizeCache}${oneOfCache}}
-
 
 // CanotoSpec returns the specification of this canoto message.
 func (*${structName}${generics}) CanotoSpec(${typesDecl}...reflect.Type) *${selector}Spec {
@@ -151,12 +142,10 @@ ${spec}		},
 	return s
 }
 
-
 // MakeCanoto creates a new empty value.
 func (*${structName}${generics}) MakeCanoto() *${structName}${generics} {
 	return new(${structName}${generics})
 }
-
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
@@ -167,7 +156,6 @@ func (c *${structName}${generics}) UnmarshalCanoto(bytes []byte) error {
 	}
 	return c.UnmarshalCanotoFrom(r)
 }
-
 
 // UnmarshalCanotoFrom populates the struct from a [${selector}Reader]. Most users
 // should just use UnmarshalCanoto.
@@ -180,7 +168,6 @@ func (c *${structName}${generics}) UnmarshalCanotoFrom(r ${selector}Reader) erro
 	*c = ${structName}${generics}{}
 	${storePrefix}c.canotoData.size${storeJoin}uint64(len(r.B))${storeSuffix}
 
-
 	var minField uint32
 	for ${selector}HasNext(&r) {
 		field, wireType, err := ${selector}ReadTag(&r)
@@ -191,18 +178,15 @@ func (c *${structName}${generics}) UnmarshalCanotoFrom(r ${selector}Reader) erro
 			return ${selector}ErrInvalidFieldOrder
 		}
 
-
 		switch field {
 ${unmarshal}		default:
 			return ${selector}ErrUnknownField
 		}
 
-
 		minField = field + 1
 	}
 	return nil
 }
-
 
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.
@@ -218,7 +202,6 @@ func (c *${structName}${generics}) ValidCanoto() bool {
 ${validOneOf}${valid}	return true
 }
 
-
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.${concurrencyWarning}
 func (c *${structName}${generics}) CalculateCanotoCache() {
@@ -226,7 +209,6 @@ func (c *${structName}${generics}) CalculateCanotoCache() {
 		return
 	}
 ${sizeVars}${size}${assignSizeVars}}
-
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
 // representation from CalculateCanotoCache.
@@ -242,7 +224,6 @@ func (c *${structName}${generics}) CachedCanotoSize() uint64 {
 	return ${loadPrefix}c.canotoData.size${loadSuffix}
 }${oneOfCacheAccessors}
 
-
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.${concurrencyWarning}
@@ -254,7 +235,6 @@ func (c *${structName}${generics}) MarshalCanoto() []byte {
 	w = c.MarshalCanotoInto(w)
 	return w.B
 }
-
 
 // MarshalCanotoInto writes the struct into a [${selector}Writer] and returns the
 // resulting [${selector}Writer]. Most users should just use MarshalCanoto.

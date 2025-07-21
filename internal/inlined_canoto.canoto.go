@@ -3,9 +3,7 @@
 // 	canoto v0.17.1
 // source: inlined_canoto.go
 
-
 package examples
-
 
 import (
 	"io"
@@ -15,25 +13,20 @@ import (
 	"github.com/StephenButtolph/canoto/internal/canoto"
 )
 
-
 // Ensure that unused imports do not error
 var (
 	_ atomic.Uint64
 
-
 	_ = io.ErrUnexpectedEOF
 )
-
 
 const (
 	canoto__justAnInt__Int8__tag = "\x08" // canoto.Tag(1, canoto.Varint)
 )
 
-
 type canotoData_justAnInt struct {
 	size atomic.Uint64
 }
-
 
 // CanotoSpec returns the specification of this canoto message.
 func (*justAnInt) CanotoSpec(...reflect.Type) *canoto.Spec {
@@ -53,12 +46,10 @@ func (*justAnInt) CanotoSpec(...reflect.Type) *canoto.Spec {
 	return s
 }
 
-
 // MakeCanoto creates a new empty value.
 func (*justAnInt) MakeCanoto() *justAnInt {
 	return new(justAnInt)
 }
-
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
@@ -69,7 +60,6 @@ func (c *justAnInt) UnmarshalCanoto(bytes []byte) error {
 	}
 	return c.UnmarshalCanotoFrom(r)
 }
-
 
 // UnmarshalCanotoFrom populates the struct from a [canoto.Reader]. Most users
 // should just use UnmarshalCanoto.
@@ -82,7 +72,6 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) error {
 	*c = justAnInt{}
 	c.canotoData.size.Store(uint64(len(r.B)))
 
-
 	var minField uint32
 	for canoto.HasNext(&r) {
 		field, wireType, err := canoto.ReadTag(&r)
@@ -92,7 +81,6 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) error {
 		if field < minField {
 			return canoto.ErrInvalidFieldOrder
 		}
-
 
 		switch field {
 		case 1:
@@ -110,12 +98,10 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) error {
 			return canoto.ErrUnknownField
 		}
 
-
 		minField = field + 1
 	}
 	return nil
 }
-
 
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.
@@ -131,7 +117,6 @@ func (c *justAnInt) ValidCanoto() bool {
 	return true
 }
 
-
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
 func (c *justAnInt) CalculateCanotoCache() {
@@ -144,7 +129,6 @@ func (c *justAnInt) CalculateCanotoCache() {
 	}
 	c.canotoData.size.Store(size)
 }
-
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
 // representation from CalculateCanotoCache.
@@ -160,7 +144,6 @@ func (c *justAnInt) CachedCanotoSize() uint64 {
 	return c.canotoData.size.Load()
 }
 
-
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
@@ -172,7 +155,6 @@ func (c *justAnInt) MarshalCanoto() []byte {
 	w = c.MarshalCanotoInto(w)
 	return w.B
 }
-
 
 // MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
