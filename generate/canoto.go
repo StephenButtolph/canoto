@@ -2110,10 +2110,10 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 		pointerTemplate = pointerTemplateBodyOneof
 		fieldTemplate = fieldTemplateBodyOneof
 	} else {
-		intTemplate = "	if !${selector}IsZero(c.${fieldName}) {\n" + intTemplateBody + "\t}\n"
-		boolTemplate = "	if !${selector}IsZero(c.${fieldName}) {\n" + boolTemplateBody + "\t}\n"
-		bytesTemplate = "	if len(c.${fieldName}) != 0 {\n" + bytesTemplateBody + "\t}\n"
-		fixedBytesTemplate = "	if !${selector}IsZero(c.${fieldName}) {\n" + fixedBytesTemplateBody + "\t}\n"
+		intTemplate = "\tif !${selector}IsZero(c.${fieldName}) {\n" + intTemplateBody + "\t}\n"
+		boolTemplate = "\tif !${selector}IsZero(c.${fieldName}) {\n" + boolTemplateBody + "\t}\n"
+		bytesTemplate = "\tif len(c.${fieldName}) != 0 {\n" + bytesTemplateBody + "\t}\n"
+		fixedBytesTemplate = "\tif !${selector}IsZero(c.${fieldName}) {\n" + fixedBytesTemplateBody + "\t}\n"
 		valueTemplate = valueTemplateRegular
 		pointerTemplate = pointerTemplateRegular
 		fieldTemplate = fieldTemplateRegular
