@@ -3,7 +3,9 @@
 // 	canoto v0.17.1
 // source: canoto_test.go
 
+
 package canoto
+
 
 import (
 	"io"
@@ -11,12 +13,15 @@ import (
 	"sync/atomic"
 )
 
+
 // Ensure that unused imports do not error
 var (
 	_ atomic.Uint64
 
+
 	_ = io.ErrUnexpectedEOF
 )
+
 
 const (
 	canoto__SpecFuzzer__Int8__tag                       = "\x08"     // canoto.Tag(1, canoto.Varint)
@@ -56,6 +61,7 @@ const (
 	canoto__SpecFuzzer__Recursive__tag                  = "\x9a\x02" // canoto.Tag(35, canoto.Len)
 )
 
+
 type canotoData_SpecFuzzer struct {
 	size               uint64
 	RepeatedInt8Size   uint64
@@ -66,6 +72,7 @@ type canotoData_SpecFuzzer struct {
 	RepeatedUint32Size uint64
 	RepeatedUint64Size uint64
 }
+
 
 // CanotoSpec returns the specification of this canoto message.
 func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
@@ -334,10 +341,12 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 	return s
 }
 
+
 // MakeCanoto creates a new empty value.
 func (*SpecFuzzer) MakeCanoto() *SpecFuzzer {
 	return new(SpecFuzzer)
 }
+
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
@@ -348,6 +357,7 @@ func (c *SpecFuzzer) UnmarshalCanoto(bytes []byte) error {
 	}
 	return c.UnmarshalCanotoFrom(r)
 }
+
 
 // UnmarshalCanotoFrom populates the struct from a [Reader]. Most users
 // should just use UnmarshalCanoto.
@@ -360,6 +370,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 	*c = SpecFuzzer{}
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
 
+
 	var minField uint32
 	for HasNext(&r) {
 		field, wireType, err := ReadTag(&r)
@@ -369,6 +380,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 		if field < minField {
 			return ErrInvalidFieldOrder
 		}
+
 
 		switch field {
 		case 1:
@@ -1185,10 +1197,12 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			return ErrUnknownField
 		}
 
+
 		minField = field + 1
 	}
 	return nil
 }
+
 
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.
@@ -1234,6 +1248,7 @@ func (c *SpecFuzzer) ValidCanoto() bool {
 	}
 	return true
 }
+
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
@@ -1410,6 +1425,7 @@ func (c *SpecFuzzer) CalculateCanotoCache() {
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
 
+
 // CachedCanotoSize returns the previously calculated size of the Canoto
 // representation from CalculateCanotoCache.
 //
@@ -1424,6 +1440,7 @@ func (c *SpecFuzzer) CachedCanotoSize() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
+
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
@@ -1437,6 +1454,7 @@ func (c *SpecFuzzer) MarshalCanoto() []byte {
 	w = c.MarshalCanotoInto(w)
 	return w.B
 }
+
 
 // MarshalCanotoInto writes the struct into a [Writer] and returns the
 // resulting [Writer]. Most users should just use MarshalCanoto.
@@ -1647,13 +1665,16 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 	return w
 }
 
+
 const (
 	canoto__LargestFieldNumber__Uint__tag = "\xf8\xff\xff\xff\x0f" // canoto.Tag(536870911, canoto.Varint)
 )
 
+
 type canotoData_LargestFieldNumber struct {
 	size uint64
 }
+
 
 // CanotoSpec returns the specification of this canoto message.
 func (*LargestFieldNumber[T1]) CanotoSpec(...reflect.Type) *Spec {
@@ -1673,10 +1694,12 @@ func (*LargestFieldNumber[T1]) CanotoSpec(...reflect.Type) *Spec {
 	return s
 }
 
+
 // MakeCanoto creates a new empty value.
 func (*LargestFieldNumber[T1]) MakeCanoto() *LargestFieldNumber[T1] {
 	return new(LargestFieldNumber[T1])
 }
+
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
@@ -1687,6 +1710,7 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanoto(bytes []byte) error {
 	}
 	return c.UnmarshalCanotoFrom(r)
 }
+
 
 // UnmarshalCanotoFrom populates the struct from a [Reader]. Most users
 // should just use UnmarshalCanoto.
@@ -1699,6 +1723,7 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) error {
 	*c = LargestFieldNumber[T1]{}
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
 
+
 	var minField uint32
 	for HasNext(&r) {
 		field, wireType, err := ReadTag(&r)
@@ -1708,6 +1733,7 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) error {
 		if field < minField {
 			return ErrInvalidFieldOrder
 		}
+
 
 		switch field {
 		case 536870911:
@@ -1725,10 +1751,12 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) error {
 			return ErrUnknownField
 		}
 
+
 		minField = field + 1
 	}
 	return nil
 }
+
 
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.
@@ -1743,6 +1771,7 @@ func (c *LargestFieldNumber[T1]) ValidCanoto() bool {
 	}
 	return true
 }
+
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
@@ -1759,6 +1788,7 @@ func (c *LargestFieldNumber[T1]) CalculateCanotoCache() {
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
 
+
 // CachedCanotoSize returns the previously calculated size of the Canoto
 // representation from CalculateCanotoCache.
 //
@@ -1773,6 +1803,7 @@ func (c *LargestFieldNumber[T1]) CachedCanotoSize() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
+
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
@@ -1786,6 +1817,7 @@ func (c *LargestFieldNumber[T1]) MarshalCanoto() []byte {
 	w = c.MarshalCanotoInto(w)
 	return w.B
 }
+
 
 // MarshalCanotoInto writes the struct into a [Writer] and returns the
 // resulting [Writer]. Most users should just use MarshalCanoto.
@@ -1807,6 +1839,7 @@ func (c *LargestFieldNumber[T1]) MarshalCanotoInto(w Writer) Writer {
 	return w
 }
 
+
 const (
 	canoto__OneOf__A1__tag = "\x08" // canoto.Tag(1, canoto.Varint)
 	canoto__OneOf__B1__tag = "\x18" // canoto.Tag(3, canoto.Varint)
@@ -1816,12 +1849,14 @@ const (
 	canoto__OneOf__A2__tag = "\x38" // canoto.Tag(7, canoto.Varint)
 )
 
+
 type canotoData_OneOf struct {
 	size uint64
 
 	AOneOf uint32
 	BOneOf uint32
 }
+
 
 // CanotoSpec returns the specification of this canoto message.
 func (*OneOf) CanotoSpec(...reflect.Type) *Spec {
@@ -1871,10 +1906,12 @@ func (*OneOf) CanotoSpec(...reflect.Type) *Spec {
 	return s
 }
 
+
 // MakeCanoto creates a new empty value.
 func (*OneOf) MakeCanoto() *OneOf {
 	return new(OneOf)
 }
+
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
@@ -1885,6 +1922,7 @@ func (c *OneOf) UnmarshalCanoto(bytes []byte) error {
 	}
 	return c.UnmarshalCanotoFrom(r)
 }
+
 
 // UnmarshalCanotoFrom populates the struct from a [Reader]. Most users
 // should just use UnmarshalCanoto.
@@ -1897,6 +1935,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
 	*c = OneOf{}
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
 
+
 	var minField uint32
 	for HasNext(&r) {
 		field, wireType, err := ReadTag(&r)
@@ -1906,6 +1945,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
 		if field < minField {
 			return ErrInvalidFieldOrder
 		}
+
 
 		switch field {
 		case 1:
@@ -1990,10 +2030,12 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
 			return ErrUnknownField
 		}
 
+
 		minField = field + 1
 	}
 	return nil
 }
+
 
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.
@@ -2035,6 +2077,7 @@ func (c *OneOf) ValidCanoto() bool {
 	return true
 }
 
+
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
 //
@@ -2072,6 +2115,7 @@ func (c *OneOf) CalculateCanotoCache() {
 	atomic.StoreUint32(&c.canotoData.AOneOf, AOneOf)
 	atomic.StoreUint32(&c.canotoData.BOneOf, BOneOf)
 }
+
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
 // representation from CalculateCanotoCache.
@@ -2115,6 +2159,7 @@ func (c *OneOf) CachedWhichOneOfB() uint32 {
 	return atomic.LoadUint32(&c.canotoData.BOneOf)
 }
 
+
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
@@ -2129,6 +2174,7 @@ func (c *OneOf) MarshalCanoto() []byte {
 	return w.B
 }
 
+
 // MarshalCanotoInto writes the struct into a [Writer] and returns the
 // resulting [Writer]. Most users should just use MarshalCanoto.
 //
@@ -2142,15 +2188,19 @@ func (c *OneOf) MarshalCanotoInto(w Writer) Writer {
 	if c == nil {
 		return w
 	}
-	if !IsZero(c.A1) {
+	switch c.CachedWhichOneOfA() {
+	case 1:
 		Append(&w, canoto__OneOf__A1__tag)
 		AppendInt(&w, c.A1)
+	case 7:
+		Append(&w, canoto__OneOf__A2__tag)
+		AppendInt(&w, c.A2)
 	}
-	if !IsZero(c.B1) {
+	switch c.CachedWhichOneOfB() {
+	case 3:
 		Append(&w, canoto__OneOf__B1__tag)
 		AppendInt(&w, c.B1)
-	}
-	if !IsZero(c.B2) {
+	case 4:
 		Append(&w, canoto__OneOf__B2__tag)
 		AppendInt(&w, c.B2)
 	}
@@ -2161,10 +2211,6 @@ func (c *OneOf) MarshalCanotoInto(w Writer) Writer {
 	if !IsZero(c.D) {
 		Append(&w, canoto__OneOf__D__tag)
 		AppendInt(&w, c.D)
-	}
-	if !IsZero(c.A2) {
-		Append(&w, canoto__OneOf__A2__tag)
-		AppendInt(&w, c.A2)
 	}
 	return w
 }
