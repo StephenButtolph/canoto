@@ -2118,24 +2118,8 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 		fieldTemplate = fieldTemplateRegular
 	}
 
-	// Templates for repeated fields (not applicable for oneof)
-	repeatedIntTemplate := `	if len(c.${fieldName}) != 0 {
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendUint(&w, ${loadPrefix}c.canotoData.${fieldName}Size${loadSuffix})
-		for _, v := range c.${fieldName} {
-			${selector}Append${suffix}(&w, v)
-		}
-	}
-`
-	fixedRepeatedIntTemplate := `	if !${selector}IsZero(c.${fieldName}) {
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendUint(&w, ${loadPrefix}c.canotoData.${fieldName}Size${loadSuffix})
-		for _, v := range &c.${fieldName} {
-			${selector}Append${suffix}(&w, v)
-		}
-	}
-`
-	repeatedFintTemplate := `	if num := uint64(len(c.${fieldName})); num != 0 {
+	const (
+		repeatedFintTemplate = `	if num := uint64(len(c.${fieldName})); num != 0 {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendUint(&w, num*${selector}Size${suffix})
 		for _, v := range c.${fieldName} {
@@ -2143,7 +2127,15 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 		}
 	}
 `
-	fixedRepeatedFintTemplate := `	if !${selector}IsZero(c.${fieldName}) {
+		fixedRepeatedIntTemplate = `	if !${selector}IsZero(c.${fieldName}) {
+		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}AppendUint(&w, ${loadPrefix}c.canotoData.${fieldName}Size${loadSuffix})
+		for _, v := range &c.${fieldName} {
+			${selector}Append${suffix}(&w, v)
+		}
+	}
+`
+		fixedRepeatedFintTemplate = `	if !${selector}IsZero(c.${fieldName}) {
 		const fieldSize = uint64(len(c.${fieldName})) * ${selector}Size${suffix}
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendUint(&w, fieldSize)
@@ -2152,27 +2144,58 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 		}
 	}
 `
-	repeatedBytesTemplate := `	for _, v := range c.${fieldName} {
+		repeatedBytesTemplate = `	for _, v := range c.${fieldName} {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendBytes(&w, v)
 	}
 `
-	fixedRepeatedStringTemplate := `	if !${selector}IsZero(c.${fieldName}) {
+	)
+	return messageTemplate{
+		ints: typeTemplate{
+			single: intTemplate,
+			repeated: `	if len(c.${fieldName}) != 0 {
+		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}AppendUint(&w, ${loadPrefix}c.canotoData.${fieldName}Size${loadSuffix})
+		for _, v := range c.${fieldName} {
+			${selector}Append${suffix}(&w, v)
+		}
+	}
+`,
+			fixedRepeated: fixedRepeatedIntTemplate,
+		},
+		fints: typeTemplate{
+			single:        intTemplate,
+			repeated:      repeatedFintTemplate,
+			fixedRepeated: fixedRepeatedFintTemplate,
+		},
+		bools: typeTemplate{
+			single:        boolTemplate,
+			repeated:      repeatedFintTemplate,
+			fixedRepeated: fixedRepeatedFintTemplate,
+		},
+		strings: typeTemplate{
+			single:   bytesTemplate,
+			repeated: repeatedBytesTemplate,
+			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
 		for _, v := range &c.${fieldName} {
 			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 			${selector}AppendBytes(&w, v)
 		}
 	}
-`
-	repeatedFixedBytesTemplate := `	{
+`,
+		},
+		bytesTemplate:         bytesTemplate,
+		repeatedBytesTemplate: repeatedBytesTemplate,
+		fixedBytesTemplate:    fixedBytesTemplate,
+		repeatedFixedBytesTemplate: `	{
 		field := c.${fieldName}
 		for i := range field {
 			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 			${selector}AppendBytes(&w, (&field[i])[:])
 		}
 	}
-`
-	fixedRepeatedBytesTemplate := `	{
+`,
+		fixedRepeatedBytesTemplate: `	{
 		isZero := true
 		for _, v := range c.${fieldName} {
 			if len(v) != 0 {
@@ -2187,15 +2210,17 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 			}
 		}
 	}
-`
-	fixedRepeatedFixedBytesTemplate := `	if !${selector}IsZero(c.${fieldName}) {
+`,
+		fixedRepeatedFixedBytesTemplate: `	if !${selector}IsZero(c.${fieldName}) {
 		for i := range c.${fieldName} {
 			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 			${selector}AppendBytes(&w, (&(&c.${fieldName})[i])[:])
 		}
 	}
-`
-	repeatedValueTemplate := `	{
+`,
+		values: typeTemplate{
+			single: valueTemplate,
+			repeated: `	{
 		field := c.${fieldName}
 		for i := range field {
 			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
@@ -2203,8 +2228,8 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 			w = ${genericTypeCast}(&field[i]).MarshalCanotoInto(w)
 		}
 	}
-`
-	fixedRepeatedValueTemplate := `	{
+`,
+			fixedRepeated: `	{
 		isZero := true
 		field := &c.${fieldName}
 		for i := range field {
@@ -2221,8 +2246,11 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 			}
 		}
 	}
-`
-	repeatedPointerTemplate := `	{
+`,
+		},
+		pointers: typeTemplate{
+			single: pointerTemplate,
+			repeated: `	{
 		field := c.${fieldName}
 		for i := range field {
 			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
@@ -2236,8 +2264,8 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 			}
 		}
 	}
-`
-	fixedRepeatedPointerTemplate := `	{
+`,
+			fixedRepeated: `	{
 		isZero := true
 		field := c.${fieldName}
 		for i := range field {
@@ -2260,8 +2288,11 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 			}
 		}
 	}
-`
-	repeatedFieldTemplate := `	{
+`,
+		},
+		fields: typeTemplate{
+			single: fieldTemplate,
+			repeated: `	{
 		field := c.${fieldName}
 		for i := range field {
 			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
@@ -2272,8 +2303,8 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 			}
 		}
 	}
-`
-	fixedRepeatedFieldTemplate := `	{
+`,
+			fixedRepeated: `	{
 		isZero := true
 		field := c.${fieldName}
 		for i := range field {
@@ -2293,49 +2324,7 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 			}
 		}
 	}
-`
-
-	return messageTemplate{
-		ints: typeTemplate{
-			single:        intTemplate,
-			repeated:      repeatedIntTemplate,
-			fixedRepeated: fixedRepeatedIntTemplate,
-		},
-		fints: typeTemplate{
-			single:        intTemplate,
-			repeated:      repeatedFintTemplate,
-			fixedRepeated: fixedRepeatedFintTemplate,
-		},
-		bools: typeTemplate{
-			single:        boolTemplate,
-			repeated:      repeatedFintTemplate,
-			fixedRepeated: fixedRepeatedFintTemplate,
-		},
-		strings: typeTemplate{
-			single:        bytesTemplate,
-			repeated:      repeatedBytesTemplate,
-			fixedRepeated: fixedRepeatedStringTemplate,
-		},
-		bytesTemplate:                   bytesTemplate,
-		repeatedBytesTemplate:           repeatedBytesTemplate,
-		fixedBytesTemplate:              fixedBytesTemplate,
-		repeatedFixedBytesTemplate:      repeatedFixedBytesTemplate,
-		fixedRepeatedBytesTemplate:      fixedRepeatedBytesTemplate,
-		fixedRepeatedFixedBytesTemplate: fixedRepeatedFixedBytesTemplate,
-		values: typeTemplate{
-			single:        valueTemplate,
-			repeated:      repeatedValueTemplate,
-			fixedRepeated: fixedRepeatedValueTemplate,
-		},
-		pointers: typeTemplate{
-			single:        pointerTemplate,
-			repeated:      repeatedPointerTemplate,
-			fixedRepeated: fixedRepeatedPointerTemplate,
-		},
-		fields: typeTemplate{
-			single:        fieldTemplate,
-			repeated:      repeatedFieldTemplate,
-			fixedRepeated: fixedRepeatedFieldTemplate,
+`,
 		},
 	}
 }
