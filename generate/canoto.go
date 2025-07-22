@@ -2048,7 +2048,7 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() uint32 {
 	return s.String()
 }
 
-func getMarshalTemplates(isOneof bool) messageTemplate {
+func getMarshalTemplate(isOneOf bool) messageTemplate {
 	const (
 		intTemplateBody = `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}Append${suffix}(&w, c.${fieldName})
@@ -2062,17 +2062,17 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 		fixedBytesTemplateBody = `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendBytes(&w, (&c.${fieldName})[:])
 `
-		valueTemplateBodyOneof = `		fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize()
+		valueTemplateBodyOneOf = `		fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize()
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendUint(&w, fieldSize)
 		w = ${genericTypeCast}(&c.${fieldName}).MarshalCanotoInto(w)
 `
-		pointerTemplateBodyOneof = `		fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize()
+		pointerTemplateBodyOneOf = `		fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize()
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendUint(&w, fieldSize)
 		w = ${genericTypeCast}(c.${fieldName}).MarshalCanotoInto(w)
 `
-		fieldTemplateBodyOneof = `		fieldSize := c.${fieldName}.CachedCanotoSize()
+		fieldTemplateBodyOneOf = `		fieldSize := c.${fieldName}.CachedCanotoSize()
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendUint(&w, fieldSize)
 		w = c.${fieldName}.MarshalCanotoInto(w)
@@ -2100,23 +2100,17 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 `
 	)
 
-	var intTemplate,
-		boolTemplate,
-		bytesTemplate,
-		fixedBytesTemplate,
-		valueTemplate,
-		pointerTemplate,
-		fieldTemplate string
-
-	if isOneof {
-		intTemplate = intTemplateBody
-		boolTemplate = boolTemplateBody
-		bytesTemplate = bytesTemplateBody
+	var (
+		intTemplate        = intTemplateBody
+		boolTemplate       = boolTemplateBody
+		bytesTemplate      = bytesTemplateBody
 		fixedBytesTemplate = fixedBytesTemplateBody
-		valueTemplate = valueTemplateBodyOneof
-		pointerTemplate = pointerTemplateBodyOneof
-		fieldTemplate = fieldTemplateBodyOneof
-	} else {
+		valueTemplate      = valueTemplateBodyOneOf
+		pointerTemplate    = pointerTemplateBodyOneOf
+		fieldTemplate      = fieldTemplateBodyOneOf
+	)
+
+	if !isOneOf {
 		intTemplate = "\tif !${selector}IsZero(c.${fieldName}) {\n" + intTemplateBody + "\t}\n"
 		boolTemplate = "\tif !${selector}IsZero(c.${fieldName}) {\n" + boolTemplateBody + "\t}\n"
 		bytesTemplate = "\tif len(c.${fieldName}) != 0 {\n" + bytesTemplateBody + "\t}\n"
@@ -2338,8 +2332,8 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 
 func makeMarshal(m message) string {
 	var (
-		regularTmpl = getMarshalTemplates(false)
-		oneofTmpl   = getMarshalTemplates(true)
+		regularTmpl = getMarshalTemplate(false)
+		oneOfTmpl   = getMarshalTemplate(true)
 
 		s strings.Builder
 
@@ -2354,12 +2348,12 @@ func makeMarshal(m message) string {
 
 		if len(currentOneOfFields) == 1 {
 			_, _ = fmt.Fprintf(&s, "\tif c.CachedWhichOneOf%s() == %d {\n", currentOneOfName, currentOneOfFields[0].fieldNumber)
-			_ = writeField(&s, currentOneOfFields[0], oneofTmpl)
+			_ = writeField(&s, currentOneOfFields[0], oneOfTmpl)
 		} else {
 			fmt.Fprintf(&s, "\tswitch c.CachedWhichOneOf%s() {\n", currentOneOfName)
 			for _, field := range currentOneOfFields {
 				_, _ = fmt.Fprintf(&s, "\tcase %d:\n", field.fieldNumber)
-				_ = writeField(&s, field, oneofTmpl)
+				_ = writeField(&s, field, oneOfTmpl)
 			}
 		}
 
