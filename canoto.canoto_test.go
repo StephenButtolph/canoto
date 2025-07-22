@@ -2142,11 +2142,13 @@ func (c *OneOf) MarshalCanotoInto(w Writer) Writer {
 	if c == nil {
 		return w
 	}
-	if c.CachedWhichOneOfA() == 1 {
+	cachedWhichOneOfA := atomic.LoadUint32(&c.canotoData.AOneOf)
+	if cachedWhichOneOfA == 1 {
 		Append(&w, canoto__OneOf__A1__tag)
 		AppendInt(&w, c.A1)
 	}
-	switch c.CachedWhichOneOfB() {
+	cachedWhichOneOfB := atomic.LoadUint32(&c.canotoData.BOneOf)
+	switch cachedWhichOneOfB {
 	case 3:
 		Append(&w, canoto__OneOf__B1__tag)
 		AppendInt(&w, c.B1)
@@ -2162,7 +2164,7 @@ func (c *OneOf) MarshalCanotoInto(w Writer) Writer {
 		Append(&w, canoto__OneOf__D__tag)
 		AppendInt(&w, c.D)
 	}
-	if c.CachedWhichOneOfA() == 7 {
+	if cachedWhichOneOfA == 7 {
 		Append(&w, canoto__OneOf__A2__tag)
 		AppendInt(&w, c.A2)
 	}

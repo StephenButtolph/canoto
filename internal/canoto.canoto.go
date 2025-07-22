@@ -515,11 +515,13 @@ func (c *OneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
 	}
-	if c.CachedWhichOneOfA() == 1 {
+	cachedWhichOneOfA := atomic.LoadUint32(&c.canotoData.AOneOf)
+	if cachedWhichOneOfA == 1 {
 		canoto.Append(&w, canoto__OneOf__A1__tag)
 		canoto.AppendInt(&w, c.A1)
 	}
-	switch c.CachedWhichOneOfB() {
+	cachedWhichOneOfB := atomic.LoadUint32(&c.canotoData.BOneOf)
+	switch cachedWhichOneOfB {
 	case 3:
 		canoto.Append(&w, canoto__OneOf__B1__tag)
 		canoto.AppendInt(&w, c.B1)
@@ -535,7 +537,7 @@ func (c *OneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		canoto.Append(&w, canoto__OneOf__D__tag)
 		canoto.AppendInt(&w, c.D)
 	}
-	if c.CachedWhichOneOfA() == 7 {
+	if cachedWhichOneOfA == 7 {
 		canoto.Append(&w, canoto__OneOf__A2__tag)
 		canoto.AppendInt(&w, c.A2)
 	}
@@ -776,7 +778,8 @@ func (c *Node) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		canoto.Append(&w, canoto__Node__Value__tag)
 		canoto.AppendInt(&w, c.Value)
 	}
-	if c.CachedWhichOneOfOneOf() == 2 {
+	cachedWhichOneOfOneOf := atomic.LoadUint32(&c.canotoData.OneOfOneOf)
+	if cachedWhichOneOfOneOf == 2 {
 		fieldSize := (c.Next).CachedCanotoSize()
 		canoto.Append(&w, canoto__Node__Next__tag)
 		canoto.AppendUint(&w, fieldSize)

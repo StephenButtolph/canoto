@@ -887,7 +887,8 @@ func (c *FieldType) MarshalCanotoInto(w Writer) Writer {
 		Append(&w, canoto__FieldType__OneOf__tag)
 		AppendBytes(&w, c.OneOf)
 	}
-	switch c.CachedWhichOneOfType() {
+	cachedWhichOneOfType := atomic.LoadUint32(&c.canotoData.TypeOneOf)
+	switch cachedWhichOneOfType {
 	case 6:
 		Append(&w, canoto__FieldType__TypeInt__tag)
 		AppendUint(&w, c.TypeInt)

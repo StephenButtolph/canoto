@@ -2339,18 +2339,33 @@ func makeMarshal(m message) string {
 
 		currentOneOfName   string
 		currentOneOfFields = make([]field, 0, len(m.fields))
+		declaredOneOfNames = make(map[string]bool)
+
+		loadPrefix = "atomic.LoadUint32(&"
+		loadSuffix = ")"
 	)
+
+	if m.noCopy {
+		loadPrefix = ""
+		loadSuffix = ".Load()"
+	}
 
 	flushOneOf := func() {
 		if len(currentOneOfFields) == 0 {
 			return
 		}
 
+		varName := "cachedWhichOneOf" + currentOneOfName
+		if !declaredOneOfNames[currentOneOfName] {
+			_, _ = fmt.Fprintf(&s, "\t%s := %sc.canotoData.%sOneOf%s\n", varName, loadPrefix, currentOneOfName, loadSuffix)
+			declaredOneOfNames[currentOneOfName] = true
+		}
+
 		if len(currentOneOfFields) == 1 {
-			_, _ = fmt.Fprintf(&s, "\tif c.CachedWhichOneOf%s() == %d {\n", currentOneOfName, currentOneOfFields[0].fieldNumber)
+			_, _ = fmt.Fprintf(&s, "\tif %s == %d {\n", varName, currentOneOfFields[0].fieldNumber)
 			_ = writeField(&s, currentOneOfFields[0], oneOfTmpl)
 		} else {
-			fmt.Fprintf(&s, "\tswitch c.CachedWhichOneOf%s() {\n", currentOneOfName)
+			fmt.Fprintf(&s, "\tswitch %s {\n", varName)
 			for _, field := range currentOneOfFields {
 				_, _ = fmt.Fprintf(&s, "\tcase %d:\n", field.fieldNumber)
 				_ = writeField(&s, field, oneOfTmpl)
