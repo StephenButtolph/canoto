@@ -515,13 +515,9 @@ func (c *OneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
 	}
-	switch c.CachedWhichOneOfA() {
-	case 1:
+	if c.CachedWhichOneOfA() == 1 {
 		canoto.Append(&w, canoto__OneOf__A1__tag)
 		canoto.AppendInt(&w, c.A1)
-	case 7:
-		canoto.Append(&w, canoto__OneOf__A2__tag)
-		canoto.AppendInt(&w, c.A2)
 	}
 	switch c.CachedWhichOneOfB() {
 	case 3:
@@ -538,6 +534,10 @@ func (c *OneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.D) {
 		canoto.Append(&w, canoto__OneOf__D__tag)
 		canoto.AppendInt(&w, c.D)
+	}
+	if c.CachedWhichOneOfA() == 7 {
+		canoto.Append(&w, canoto__OneOf__A2__tag)
+		canoto.AppendInt(&w, c.A2)
 	}
 	return w
 }

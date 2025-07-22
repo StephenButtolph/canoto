@@ -2343,39 +2343,49 @@ func makeMarshal(m message) string {
 
 		s strings.Builder
 
-		processedOneofs = make(map[string]bool)
+		currentOneOfName   string
+		currentOneOfFields = make([]field, 0, len(m.fields))
 	)
-	for _, f := range m.fields {
-		if f.oneOfName == "" {
-			_ = writeField(&s, f, regularTmpl)
-			continue
+
+	flushOneOf := func() {
+		if len(currentOneOfFields) == 0 {
+			return
 		}
 
-		if processedOneofs[f.oneOfName] {
-			continue
-		}
-		processedOneofs[f.oneOfName] = true
-
-		var oneOfFields []field
-		for _, field := range m.fields {
-			if field.oneOfName == f.oneOfName {
-				oneOfFields = append(oneOfFields, field)
-			}
-		}
-
-		if len(oneOfFields) == 1 {
-			_, _ = fmt.Fprintf(&s, "\tif c.CachedWhichOneOf%s() == %d {\n", f.oneOfName, oneOfFields[0].fieldNumber)
-			_ = writeField(&s, oneOfFields[0], oneofTmpl)
+		if len(currentOneOfFields) == 1 {
+			_, _ = fmt.Fprintf(&s, "\tif c.CachedWhichOneOf%s() == %d {\n", currentOneOfName, currentOneOfFields[0].fieldNumber)
+			_ = writeField(&s, currentOneOfFields[0], oneofTmpl)
 		} else {
-			fmt.Fprintf(&s, "\tswitch c.CachedWhichOneOf%s() {\n", f.oneOfName)
-			for _, field := range oneOfFields {
+			fmt.Fprintf(&s, "\tswitch c.CachedWhichOneOf%s() {\n", currentOneOfName)
+			for _, field := range currentOneOfFields {
 				_, _ = fmt.Fprintf(&s, "\tcase %d:\n", field.fieldNumber)
 				_ = writeField(&s, field, oneofTmpl)
 			}
 		}
 
 		s.WriteString("\t}\n")
+		currentOneOfName = ""
+		currentOneOfFields = currentOneOfFields[:0]
 	}
+
+	for _, f := range m.fields {
+		if f.oneOfName != "" && f.oneOfName == currentOneOfName {
+			currentOneOfFields = append(currentOneOfFields, f)
+			continue
+		}
+
+		flushOneOf()
+
+		if f.oneOfName == "" {
+			_ = writeField(&s, f, regularTmpl)
+			continue
+		}
+
+		currentOneOfName = f.oneOfName
+		currentOneOfFields = append(currentOneOfFields, f)
+	}
+
+	flushOneOf()
 
 	return s.String()
 }
