@@ -2127,14 +2127,6 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 		}
 	}
 `
-		fixedRepeatedIntTemplate = `	if !${selector}IsZero(c.${fieldName}) {
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendUint(&w, ${loadPrefix}c.canotoData.${fieldName}Size${loadSuffix})
-		for _, v := range &c.${fieldName} {
-			${selector}Append${suffix}(&w, v)
-		}
-	}
-`
 		fixedRepeatedFintTemplate = `	if !${selector}IsZero(c.${fieldName}) {
 		const fieldSize = uint64(len(c.${fieldName})) * ${selector}Size${suffix}
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
@@ -2161,7 +2153,14 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 		}
 	}
 `,
-			fixedRepeated: fixedRepeatedIntTemplate,
+			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
+		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}AppendUint(&w, ${loadPrefix}c.canotoData.${fieldName}Size${loadSuffix})
+		for _, v := range &c.${fieldName} {
+			${selector}Append${suffix}(&w, v)
+		}
+	}
+`,
 		},
 		fints: typeTemplate{
 			single:        intTemplate,
