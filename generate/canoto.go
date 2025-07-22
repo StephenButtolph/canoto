@@ -2355,18 +2355,37 @@ func makeMarshal(m message) string {
 			}
 			processedOneofs[f.oneOfName] = true
 
+			numCases := 0
+
+			var oneOfIf bytes.Buffer
+			_, _ = fmt.Fprintf(&oneOfIf, "\tif c.CachedWhichOneOf%s() == ", f.oneOfName)
+
 			var oneofSwitch bytes.Buffer
 			_, _ = fmt.Fprintf(&oneofSwitch, "\tswitch c.CachedWhichOneOf%s() {\n", f.oneOfName)
 
 			for _, oneofField := range m.fields {
-				if oneofField.oneOfName == f.oneOfName {
-					_, _ = fmt.Fprintf(&oneofSwitch, "\tcase %d:\n", oneofField.fieldNumber)
-					_ = writeField(&oneofSwitch, oneofField, oneofTmpl)
+				if oneofField.oneOfName != f.oneOfName {
+					continue
+				}
+
+				numCases += 1
+
+				_, _ = fmt.Fprintf(&oneofSwitch, "\tcase %d:\n", oneofField.fieldNumber)
+				_ = writeField(&oneofSwitch, oneofField, oneofTmpl)
+
+				if numCases == 1 {
+					_, _ = fmt.Fprintf(&oneOfIf, "%d {\n", oneofField.fieldNumber)
+					_ = writeField(&oneOfIf, oneofField, oneofTmpl)
 				}
 			}
 
-			oneofSwitch.WriteString("\t}\n")
-			s.WriteString(oneofSwitch.String())
+			if numCases == 1 {
+				oneOfIf.WriteString("\t}\n")
+				s.WriteString(oneOfIf.String())
+			} else {
+				oneofSwitch.WriteString("\t}\n")
+				s.WriteString(oneofSwitch.String())
+			}
 		} else {
 			_ = writeField(&s, f, regularTmpl)
 		}

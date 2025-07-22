@@ -776,8 +776,7 @@ func (c *Node) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		canoto.Append(&w, canoto__Node__Value__tag)
 		canoto.AppendInt(&w, c.Value)
 	}
-	switch c.CachedWhichOneOfOneOf() {
-	case 2:
+	if c.CachedWhichOneOfOneOf() == 2 {
 		fieldSize := (c.Next).CachedCanotoSize()
 		canoto.Append(&w, canoto__Node__Next__tag)
 		canoto.AppendUint(&w, fieldSize)
