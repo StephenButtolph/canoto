@@ -2049,41 +2049,42 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() uint32 {
 }
 
 func getMarshalTemplates(isOneof bool) messageTemplate {
-	intTemplateBody := `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+	const (
+		intTemplateBody = `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}Append${suffix}(&w, c.${fieldName})
 `
-	boolTemplateBody := `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		boolTemplateBody = `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendBool(&w, true)
 `
-	bytesTemplateBody := `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		bytesTemplateBody = `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendBytes(&w, c.${fieldName})
 `
-	fixedBytesTemplateBody := `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		fixedBytesTemplateBody = `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendBytes(&w, (&c.${fieldName})[:])
 `
-	valueTemplateBodyOneof := `		fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize()
+		valueTemplateBodyOneof = `		fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize()
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendUint(&w, fieldSize)
 		w = ${genericTypeCast}(&c.${fieldName}).MarshalCanotoInto(w)
 `
-	pointerTemplateBodyOneof := `		fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize()
+		pointerTemplateBodyOneof = `		fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize()
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendUint(&w, fieldSize)
 		w = ${genericTypeCast}(c.${fieldName}).MarshalCanotoInto(w)
 `
-	fieldTemplateBodyOneof := `		fieldSize := c.${fieldName}.CachedCanotoSize()
+		fieldTemplateBodyOneof = `		fieldSize := c.${fieldName}.CachedCanotoSize()
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendUint(&w, fieldSize)
 		w = c.${fieldName}.MarshalCanotoInto(w)
 `
 
-	valueTemplateRegular := `	if fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
+		valueTemplateRegular = `	if fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendUint(&w, fieldSize)
 		w = ${genericTypeCast}(&c.${fieldName}).MarshalCanotoInto(w)
 	}
 `
-	pointerTemplateRegular := `	if c.${fieldName} != nil {
+		pointerTemplateRegular = `	if c.${fieldName} != nil {
 		if fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
 			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 			${selector}AppendUint(&w, fieldSize)
@@ -2091,14 +2092,21 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 		}
 	}
 `
-	fieldTemplateRegular := `	if fieldSize := c.${fieldName}.CachedCanotoSize(); fieldSize != 0 {
+		fieldTemplateRegular = `	if fieldSize := c.${fieldName}.CachedCanotoSize(); fieldSize != 0 {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendUint(&w, fieldSize)
 		w = c.${fieldName}.MarshalCanotoInto(w)
 	}
 `
+	)
 
-	var intTemplate, boolTemplate, bytesTemplate, fixedBytesTemplate, valueTemplate, pointerTemplate, fieldTemplate string
+	var intTemplate,
+		boolTemplate,
+		bytesTemplate,
+		fixedBytesTemplate,
+		valueTemplate,
+		pointerTemplate,
+		fieldTemplate string
 
 	if isOneof {
 		intTemplate = intTemplateBody
