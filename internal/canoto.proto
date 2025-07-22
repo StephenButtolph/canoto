@@ -24,6 +24,19 @@ message OneOf {
   sint64 D = 6;
 }
 
+message OneOfNoCopy {
+  oneof A {
+    sint32 A1 = 1;
+    sint64 A2 = 7;
+  }
+  oneof B {
+    sint32 B1 = 3;
+    sint64 B2 = 4;
+  }
+  sint32 C = 5;
+  sint64 D = 6;
+}
+
 message Node {
   oneof OneOf {
     Node Next = 2;
