@@ -1,7 +1,6 @@
 package generate
 
 import (
-	"bytes"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -2349,46 +2348,35 @@ func makeMarshal(m message) string {
 	processedOneofs := make(map[string]bool)
 
 	for _, f := range m.fields {
-		if f.oneOfName != "" {
-			if processedOneofs[f.oneOfName] {
-				continue
-			}
-			processedOneofs[f.oneOfName] = true
-
-			numCases := 0
-
-			var oneOfIf bytes.Buffer
-			_, _ = fmt.Fprintf(&oneOfIf, "\tif c.CachedWhichOneOf%s() == ", f.oneOfName)
-
-			var oneofSwitch bytes.Buffer
-			_, _ = fmt.Fprintf(&oneofSwitch, "\tswitch c.CachedWhichOneOf%s() {\n", f.oneOfName)
-
-			for _, oneofField := range m.fields {
-				if oneofField.oneOfName != f.oneOfName {
-					continue
-				}
-
-				numCases += 1
-
-				_, _ = fmt.Fprintf(&oneofSwitch, "\tcase %d:\n", oneofField.fieldNumber)
-				_ = writeField(&oneofSwitch, oneofField, oneofTmpl)
-
-				if numCases == 1 {
-					_, _ = fmt.Fprintf(&oneOfIf, "%d {\n", oneofField.fieldNumber)
-					_ = writeField(&oneOfIf, oneofField, oneofTmpl)
-				}
-			}
-
-			if numCases == 1 {
-				oneOfIf.WriteString("\t}\n")
-				s.WriteString(oneOfIf.String())
-			} else {
-				oneofSwitch.WriteString("\t}\n")
-				s.WriteString(oneofSwitch.String())
-			}
-		} else {
+		if f.oneOfName == "" {
 			_ = writeField(&s, f, regularTmpl)
+			continue
 		}
+
+		if processedOneofs[f.oneOfName] {
+			continue
+		}
+		processedOneofs[f.oneOfName] = true
+
+		var oneOfFields []field
+		for _, field := range m.fields {
+			if field.oneOfName == f.oneOfName {
+				oneOfFields = append(oneOfFields, field)
+			}
+		}
+
+		if len(oneOfFields) == 1 {
+			_, _ = fmt.Fprintf(&s, "\tif c.CachedWhichOneOf%s() == %d {\n", f.oneOfName, oneOfFields[0].fieldNumber)
+			_ = writeField(&s, oneOfFields[0], oneofTmpl)
+		} else {
+			fmt.Fprintf(&s, "\tswitch c.CachedWhichOneOf%s() {\n", f.oneOfName)
+			for _, field := range oneOfFields {
+				_, _ = fmt.Fprintf(&s, "\tcase %d:\n", field.fieldNumber)
+				_ = writeField(&s, field, oneofTmpl)
+			}
+		}
+
+		s.WriteString("\t}\n")
 	}
 
 	return s.String()
