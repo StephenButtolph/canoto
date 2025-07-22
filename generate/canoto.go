@@ -2341,12 +2341,14 @@ func getMarshalTemplates(isOneof bool) messageTemplate {
 }
 
 func makeMarshal(m message) string {
-	regularTmpl := getMarshalTemplates(false)
-	oneofTmpl := getMarshalTemplates(true)
+	var (
+		regularTmpl = getMarshalTemplates(false)
+		oneofTmpl   = getMarshalTemplates(true)
 
-	var s strings.Builder
-	processedOneofs := make(map[string]bool)
+		s strings.Builder
 
+		processedOneofs = make(map[string]bool)
+	)
 	for _, f := range m.fields {
 		if f.oneOfName == "" {
 			_ = writeField(&s, f, regularTmpl)
