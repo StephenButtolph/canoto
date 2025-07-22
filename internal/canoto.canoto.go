@@ -515,15 +515,17 @@ func (c *OneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if c == nil {
 		return w
 	}
-	if !canoto.IsZero(c.A1) {
+	cachedWhichOneOfA := atomic.LoadUint32(&c.canotoData.AOneOf)
+	if cachedWhichOneOfA == 1 {
 		canoto.Append(&w, canoto__OneOf__A1__tag)
 		canoto.AppendInt(&w, c.A1)
 	}
-	if !canoto.IsZero(c.B1) {
+	cachedWhichOneOfB := atomic.LoadUint32(&c.canotoData.BOneOf)
+	switch cachedWhichOneOfB {
+	case 3:
 		canoto.Append(&w, canoto__OneOf__B1__tag)
 		canoto.AppendInt(&w, c.B1)
-	}
-	if !canoto.IsZero(c.B2) {
+	case 4:
 		canoto.Append(&w, canoto__OneOf__B2__tag)
 		canoto.AppendInt(&w, c.B2)
 	}
@@ -535,8 +537,366 @@ func (c *OneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		canoto.Append(&w, canoto__OneOf__D__tag)
 		canoto.AppendInt(&w, c.D)
 	}
-	if !canoto.IsZero(c.A2) {
+	if cachedWhichOneOfA == 7 {
 		canoto.Append(&w, canoto__OneOf__A2__tag)
+		canoto.AppendInt(&w, c.A2)
+	}
+	return w
+}
+
+const (
+	canoto__OneOfNoCopy__A1__tag = "\x08" // canoto.Tag(1, canoto.Varint)
+	canoto__OneOfNoCopy__B1__tag = "\x18" // canoto.Tag(3, canoto.Varint)
+	canoto__OneOfNoCopy__B2__tag = "\x20" // canoto.Tag(4, canoto.Varint)
+	canoto__OneOfNoCopy__C__tag  = "\x28" // canoto.Tag(5, canoto.Varint)
+	canoto__OneOfNoCopy__D__tag  = "\x30" // canoto.Tag(6, canoto.Varint)
+	canoto__OneOfNoCopy__A2__tag = "\x38" // canoto.Tag(7, canoto.Varint)
+)
+
+type canotoData_OneOfNoCopy struct {
+	size atomic.Uint64
+
+	AOneOf atomic.Uint32
+	BOneOf atomic.Uint32
+}
+
+// CanotoSpec returns the specification of this canoto message.
+func (*OneOfNoCopy) CanotoSpec(...reflect.Type) *canoto.Spec {
+	var zero OneOfNoCopy
+	s := &canoto.Spec{
+		Name: "OneOfNoCopy",
+		Fields: []canoto.FieldType{
+			{
+				FieldNumber: 1,
+				Name:        "A1",
+				OneOf:       "A",
+				TypeInt:     canoto.SizeOf(zero.A1),
+			},
+			{
+				FieldNumber: 3,
+				Name:        "B1",
+				OneOf:       "B",
+				TypeInt:     canoto.SizeOf(zero.B1),
+			},
+			{
+				FieldNumber: 4,
+				Name:        "B2",
+				OneOf:       "B",
+				TypeInt:     canoto.SizeOf(zero.B2),
+			},
+			{
+				FieldNumber: 5,
+				Name:        "C",
+				OneOf:       "",
+				TypeInt:     canoto.SizeOf(zero.C),
+			},
+			{
+				FieldNumber: 6,
+				Name:        "D",
+				OneOf:       "",
+				TypeInt:     canoto.SizeOf(zero.D),
+			},
+			{
+				FieldNumber: 7,
+				Name:        "A2",
+				OneOf:       "A",
+				TypeInt:     canoto.SizeOf(zero.A2),
+			},
+		},
+	}
+	s.CalculateCanotoCache()
+	return s
+}
+
+// MakeCanoto creates a new empty value.
+func (*OneOfNoCopy) MakeCanoto() *OneOfNoCopy {
+	return new(OneOfNoCopy)
+}
+
+// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
+func (c *OneOfNoCopy) UnmarshalCanoto(bytes []byte) error {
+	r := canoto.Reader{
+		B: bytes,
+	}
+	return c.UnmarshalCanotoFrom(r)
+}
+
+// UnmarshalCanotoFrom populates the struct from a [canoto.Reader]. Most users
+// should just use UnmarshalCanoto.
+//
+// During parsing, the canoto cache is saved.
+//
+// This function enables configuration of reader options.
+func (c *OneOfNoCopy) UnmarshalCanotoFrom(r canoto.Reader) error {
+	// Zero the struct before unmarshaling.
+	*c = OneOfNoCopy{}
+	c.canotoData.size.Store(uint64(len(r.B)))
+
+	var minField uint32
+	for canoto.HasNext(&r) {
+		field, wireType, err := canoto.ReadTag(&r)
+		if err != nil {
+			return err
+		}
+		if field < minField {
+			return canoto.ErrInvalidFieldOrder
+		}
+
+		switch field {
+		case 1:
+			if wireType != canoto.Varint {
+				return canoto.ErrUnexpectedWireType
+			}
+			if c.canotoData.AOneOf.Swap(1) != 0 {
+				return canoto.ErrDuplicateOneOf
+			}
+
+			if err := canoto.ReadInt(&r, &c.A1); err != nil {
+				return err
+			}
+			if canoto.IsZero(c.A1) {
+				return canoto.ErrZeroValue
+			}
+		case 3:
+			if wireType != canoto.Varint {
+				return canoto.ErrUnexpectedWireType
+			}
+			if c.canotoData.BOneOf.Swap(3) != 0 {
+				return canoto.ErrDuplicateOneOf
+			}
+
+			if err := canoto.ReadInt(&r, &c.B1); err != nil {
+				return err
+			}
+			if canoto.IsZero(c.B1) {
+				return canoto.ErrZeroValue
+			}
+		case 4:
+			if wireType != canoto.Varint {
+				return canoto.ErrUnexpectedWireType
+			}
+			if c.canotoData.BOneOf.Swap(4) != 0 {
+				return canoto.ErrDuplicateOneOf
+			}
+
+			if err := canoto.ReadInt(&r, &c.B2); err != nil {
+				return err
+			}
+			if canoto.IsZero(c.B2) {
+				return canoto.ErrZeroValue
+			}
+		case 5:
+			if wireType != canoto.Varint {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			if err := canoto.ReadInt(&r, &c.C); err != nil {
+				return err
+			}
+			if canoto.IsZero(c.C) {
+				return canoto.ErrZeroValue
+			}
+		case 6:
+			if wireType != canoto.Varint {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			if err := canoto.ReadInt(&r, &c.D); err != nil {
+				return err
+			}
+			if canoto.IsZero(c.D) {
+				return canoto.ErrZeroValue
+			}
+		case 7:
+			if wireType != canoto.Varint {
+				return canoto.ErrUnexpectedWireType
+			}
+			if c.canotoData.AOneOf.Swap(7) != 0 {
+				return canoto.ErrDuplicateOneOf
+			}
+
+			if err := canoto.ReadInt(&r, &c.A2); err != nil {
+				return err
+			}
+			if canoto.IsZero(c.A2) {
+				return canoto.ErrZeroValue
+			}
+		default:
+			return canoto.ErrUnknownField
+		}
+
+		minField = field + 1
+	}
+	return nil
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// Specifically, ValidCanoto ensures:
+// 1. All OneOfs are specified at most once.
+// 2. All strings are valid utf-8.
+// 3. All custom fields are ValidCanoto.
+func (c *OneOfNoCopy) ValidCanoto() bool {
+	if c == nil {
+		return true
+	}
+	var AOneOf uint32
+	var BOneOf uint32
+	if !canoto.IsZero(c.A1) {
+		if AOneOf != 0 {
+			return false
+		}
+		AOneOf = 1
+	}
+	if !canoto.IsZero(c.B1) {
+		if BOneOf != 0 {
+			return false
+		}
+		BOneOf = 3
+	}
+	if !canoto.IsZero(c.B2) {
+		if BOneOf != 0 {
+			return false
+		}
+		BOneOf = 4
+	}
+	if !canoto.IsZero(c.A2) {
+		if AOneOf != 0 {
+			return false
+		}
+		AOneOf = 7
+	}
+	return true
+}
+
+// CalculateCanotoCache populates size and OneOf caches based on the current
+// values in the struct.
+func (c *OneOfNoCopy) CalculateCanotoCache() {
+	if c == nil {
+		return
+	}
+	var size uint64
+	var AOneOf uint32
+	var BOneOf uint32
+	if !canoto.IsZero(c.A1) {
+		size += uint64(len(canoto__OneOfNoCopy__A1__tag)) + canoto.SizeInt(c.A1)
+		AOneOf = 1
+	}
+	if !canoto.IsZero(c.B1) {
+		size += uint64(len(canoto__OneOfNoCopy__B1__tag)) + canoto.SizeInt(c.B1)
+		BOneOf = 3
+	}
+	if !canoto.IsZero(c.B2) {
+		size += uint64(len(canoto__OneOfNoCopy__B2__tag)) + canoto.SizeInt(c.B2)
+		BOneOf = 4
+	}
+	if !canoto.IsZero(c.C) {
+		size += uint64(len(canoto__OneOfNoCopy__C__tag)) + canoto.SizeInt(c.C)
+	}
+	if !canoto.IsZero(c.D) {
+		size += uint64(len(canoto__OneOfNoCopy__D__tag)) + canoto.SizeInt(c.D)
+	}
+	if !canoto.IsZero(c.A2) {
+		size += uint64(len(canoto__OneOfNoCopy__A2__tag)) + canoto.SizeInt(c.A2)
+		AOneOf = 7
+	}
+	c.canotoData.size.Store(size)
+	c.canotoData.AOneOf.Store(AOneOf)
+	c.canotoData.BOneOf.Store(BOneOf)
+}
+
+// CachedCanotoSize returns the previously calculated size of the Canoto
+// representation from CalculateCanotoCache.
+//
+// If CalculateCanotoCache has not yet been called, it will return 0.
+//
+// If the struct has been modified since the last call to CalculateCanotoCache,
+// the returned size may be incorrect.
+func (c *OneOfNoCopy) CachedCanotoSize() uint64 {
+	if c == nil {
+		return 0
+	}
+	return c.canotoData.size.Load()
+}
+
+// CachedWhichOneOfA returns the previously calculated field number used
+// to represent A.
+//
+// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CalculateCanotoCache.
+//
+// If the field has not yet been cached, it will return 0.
+//
+// If the struct has been modified since the field was last cached, the returned
+// field number may be incorrect.
+func (c *OneOfNoCopy) CachedWhichOneOfA() uint32 {
+	return c.canotoData.AOneOf.Load()
+}
+
+// CachedWhichOneOfB returns the previously calculated field number used
+// to represent B.
+//
+// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CalculateCanotoCache.
+//
+// If the field has not yet been cached, it will return 0.
+//
+// If the struct has been modified since the field was last cached, the returned
+// field number may be incorrect.
+func (c *OneOfNoCopy) CachedWhichOneOfB() uint32 {
+	return c.canotoData.BOneOf.Load()
+}
+
+// MarshalCanoto returns the Canoto representation of this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+func (c *OneOfNoCopy) MarshalCanoto() []byte {
+	c.CalculateCanotoCache()
+	w := canoto.Writer{
+		B: make([]byte, 0, c.CachedCanotoSize()),
+	}
+	w = c.MarshalCanotoInto(w)
+	return w.B
+}
+
+// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// resulting [canoto.Writer]. Most users should just use MarshalCanoto.
+//
+// It is assumed that CalculateCanotoCache has been called since the last
+// modification to this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+func (c *OneOfNoCopy) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+	if c == nil {
+		return w
+	}
+	cachedWhichOneOfA := c.canotoData.AOneOf.Load()
+	if cachedWhichOneOfA == 1 {
+		canoto.Append(&w, canoto__OneOfNoCopy__A1__tag)
+		canoto.AppendInt(&w, c.A1)
+	}
+	cachedWhichOneOfB := c.canotoData.BOneOf.Load()
+	switch cachedWhichOneOfB {
+	case 3:
+		canoto.Append(&w, canoto__OneOfNoCopy__B1__tag)
+		canoto.AppendInt(&w, c.B1)
+	case 4:
+		canoto.Append(&w, canoto__OneOfNoCopy__B2__tag)
+		canoto.AppendInt(&w, c.B2)
+	}
+	if !canoto.IsZero(c.C) {
+		canoto.Append(&w, canoto__OneOfNoCopy__C__tag)
+		canoto.AppendInt(&w, c.C)
+	}
+	if !canoto.IsZero(c.D) {
+		canoto.Append(&w, canoto__OneOfNoCopy__D__tag)
+		canoto.AppendInt(&w, c.D)
+	}
+	if cachedWhichOneOfA == 7 {
+		canoto.Append(&w, canoto__OneOfNoCopy__A2__tag)
 		canoto.AppendInt(&w, c.A2)
 	}
 	return w
@@ -776,12 +1136,12 @@ func (c *Node) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		canoto.Append(&w, canoto__Node__Value__tag)
 		canoto.AppendInt(&w, c.Value)
 	}
-	if c.Next != nil {
-		if fieldSize := (c.Next).CachedCanotoSize(); fieldSize != 0 {
-			canoto.Append(&w, canoto__Node__Next__tag)
-			canoto.AppendUint(&w, fieldSize)
-			w = (c.Next).MarshalCanotoInto(w)
-		}
+	cachedWhichOneOfOneOf := atomic.LoadUint32(&c.canotoData.OneOfOneOf)
+	if cachedWhichOneOfOneOf == 2 {
+		fieldSize := (c.Next).CachedCanotoSize()
+		canoto.Append(&w, canoto__Node__Next__tag)
+		canoto.AppendUint(&w, fieldSize)
+		w = (c.Next).MarshalCanotoInto(w)
 	}
 	return w
 }

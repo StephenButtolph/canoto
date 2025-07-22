@@ -2048,13 +2048,79 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() uint32 {
 	return s.String()
 }
 
-func makeMarshal(m message) string {
+func getMarshalTemplate(isOneOf bool) messageTemplate {
 	const (
-		intTemplate = `	if !${selector}IsZero(c.${fieldName}) {
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		intTemplateBody = `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}Append${suffix}(&w, c.${fieldName})
+`
+		boolTemplateBody = `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}AppendBool(&w, true)
+`
+		bytesTemplateBody = `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}AppendBytes(&w, c.${fieldName})
+`
+		fixedBytesTemplateBody = `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}AppendBytes(&w, (&c.${fieldName})[:])
+`
+		valueTemplateBodyOneOf = `		fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize()
+		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}AppendUint(&w, fieldSize)
+		w = ${genericTypeCast}(&c.${fieldName}).MarshalCanotoInto(w)
+`
+		pointerTemplateBodyOneOf = `		fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize()
+		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}AppendUint(&w, fieldSize)
+		w = ${genericTypeCast}(c.${fieldName}).MarshalCanotoInto(w)
+`
+		fieldTemplateBodyOneOf = `		fieldSize := c.${fieldName}.CachedCanotoSize()
+		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}AppendUint(&w, fieldSize)
+		w = c.${fieldName}.MarshalCanotoInto(w)
+`
+
+		valueTemplateRegular = `	if fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
+		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}AppendUint(&w, fieldSize)
+		w = ${genericTypeCast}(&c.${fieldName}).MarshalCanotoInto(w)
 	}
 `
+		pointerTemplateRegular = `	if c.${fieldName} != nil {
+		if fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
+			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+			${selector}AppendUint(&w, fieldSize)
+			w = ${genericTypeCast}(c.${fieldName}).MarshalCanotoInto(w)
+		}
+	}
+`
+		fieldTemplateRegular = `	if fieldSize := c.${fieldName}.CachedCanotoSize(); fieldSize != 0 {
+		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}AppendUint(&w, fieldSize)
+		w = c.${fieldName}.MarshalCanotoInto(w)
+	}
+`
+	)
+
+	var (
+		intTemplate        = intTemplateBody
+		boolTemplate       = boolTemplateBody
+		bytesTemplate      = bytesTemplateBody
+		fixedBytesTemplate = fixedBytesTemplateBody
+		valueTemplate      = valueTemplateBodyOneOf
+		pointerTemplate    = pointerTemplateBodyOneOf
+		fieldTemplate      = fieldTemplateBodyOneOf
+	)
+
+	if !isOneOf {
+		intTemplate = "\tif !${selector}IsZero(c.${fieldName}) {\n" + intTemplateBody + "\t}\n"
+		boolTemplate = "\tif !${selector}IsZero(c.${fieldName}) {\n" + boolTemplateBody + "\t}\n"
+		bytesTemplate = "\tif len(c.${fieldName}) != 0 {\n" + bytesTemplateBody + "\t}\n"
+		fixedBytesTemplate = "\tif !${selector}IsZero(c.${fieldName}) {\n" + fixedBytesTemplateBody + "\t}\n"
+		valueTemplate = valueTemplateRegular
+		pointerTemplate = pointerTemplateRegular
+		fieldTemplate = fieldTemplateRegular
+	}
+
+	const (
 		repeatedFintTemplate = `	if num := uint64(len(c.${fieldName})); num != 0 {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendUint(&w, num*${selector}Size${suffix})
@@ -2072,18 +2138,13 @@ func makeMarshal(m message) string {
 		}
 	}
 `
-		bytesTemplate = `	if len(c.${fieldName}) != 0 {
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendBytes(&w, c.${fieldName})
-	}
-`
 		repeatedBytesTemplate = `	for _, v := range c.${fieldName} {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendBytes(&w, v)
 	}
 `
 	)
-	return writeMessage(m, messageTemplate{
+	return messageTemplate{
 		ints: typeTemplate{
 			single: intTemplate,
 			repeated: `	if len(c.${fieldName}) != 0 {
@@ -2109,11 +2170,7 @@ func makeMarshal(m message) string {
 			fixedRepeated: fixedRepeatedFintTemplate,
 		},
 		bools: typeTemplate{
-			single: `	if !${selector}IsZero(c.${fieldName}) {
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendBool(&w, true)
-	}
-`,
+			single:        boolTemplate,
 			repeated:      repeatedFintTemplate,
 			fixedRepeated: fixedRepeatedFintTemplate,
 		},
@@ -2130,11 +2187,7 @@ func makeMarshal(m message) string {
 		},
 		bytesTemplate:         bytesTemplate,
 		repeatedBytesTemplate: repeatedBytesTemplate,
-		fixedBytesTemplate: `	if !${selector}IsZero(c.${fieldName}) {
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendBytes(&w, (&c.${fieldName})[:])
-	}
-`,
+		fixedBytesTemplate:    fixedBytesTemplate,
 		repeatedFixedBytesTemplate: `	{
 		field := c.${fieldName}
 		for i := range field {
@@ -2167,12 +2220,7 @@ func makeMarshal(m message) string {
 	}
 `,
 		values: typeTemplate{
-			single: `	if fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendUint(&w, fieldSize)
-		w = ${genericTypeCast}(&c.${fieldName}).MarshalCanotoInto(w)
-	}
-`,
+			single: valueTemplate,
 			repeated: `	{
 		field := c.${fieldName}
 		for i := range field {
@@ -2202,14 +2250,7 @@ func makeMarshal(m message) string {
 `,
 		},
 		pointers: typeTemplate{
-			single: `	if c.${fieldName} != nil {
-		if fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
-			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-			${selector}AppendUint(&w, fieldSize)
-			w = ${genericTypeCast}(c.${fieldName}).MarshalCanotoInto(w)
-		}
-	}
-`,
+			single: pointerTemplate,
 			repeated: `	{
 		field := c.${fieldName}
 		for i := range field {
@@ -2251,12 +2292,7 @@ func makeMarshal(m message) string {
 `,
 		},
 		fields: typeTemplate{
-			single: `	if fieldSize := c.${fieldName}.CachedCanotoSize(); fieldSize != 0 {
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendUint(&w, fieldSize)
-		w = c.${fieldName}.MarshalCanotoInto(w)
-	}
-`,
+			single: fieldTemplate,
 			repeated: `	{
 		field := c.${fieldName}
 		for i := range field {
@@ -2291,7 +2327,76 @@ func makeMarshal(m message) string {
 	}
 `,
 		},
-	})
+	}
+}
+
+func makeMarshal(m message) string {
+	var (
+		regularTmpl = getMarshalTemplate(false)
+		oneOfTmpl   = getMarshalTemplate(true)
+
+		s strings.Builder
+
+		currentOneOfName   string
+		currentOneOfFields = make([]field, 0, len(m.fields))
+		declaredOneOfNames = make(map[string]bool)
+
+		loadPrefix = "atomic.LoadUint32(&"
+		loadSuffix = ")"
+	)
+
+	if m.noCopy {
+		loadPrefix = ""
+		loadSuffix = ".Load()"
+	}
+
+	flushOneOf := func() {
+		if len(currentOneOfFields) == 0 {
+			return
+		}
+
+		varName := "cachedWhichOneOf" + currentOneOfName
+		if !declaredOneOfNames[currentOneOfName] {
+			_, _ = fmt.Fprintf(&s, "\t%s := %sc.canotoData.%sOneOf%s\n", varName, loadPrefix, currentOneOfName, loadSuffix)
+			declaredOneOfNames[currentOneOfName] = true
+		}
+
+		if len(currentOneOfFields) == 1 {
+			_, _ = fmt.Fprintf(&s, "\tif %s == %d {\n", varName, currentOneOfFields[0].fieldNumber)
+			_ = writeField(&s, currentOneOfFields[0], oneOfTmpl)
+		} else {
+			fmt.Fprintf(&s, "\tswitch %s {\n", varName)
+			for _, field := range currentOneOfFields {
+				_, _ = fmt.Fprintf(&s, "\tcase %d:\n", field.fieldNumber)
+				_ = writeField(&s, field, oneOfTmpl)
+			}
+		}
+
+		s.WriteString("\t}\n")
+		currentOneOfName = ""
+		currentOneOfFields = currentOneOfFields[:0]
+	}
+
+	for _, f := range m.fields {
+		if f.oneOfName != "" && f.oneOfName == currentOneOfName {
+			currentOneOfFields = append(currentOneOfFields, f)
+			continue
+		}
+
+		flushOneOf()
+
+		if f.oneOfName == "" {
+			_ = writeField(&s, f, regularTmpl)
+			continue
+		}
+
+		currentOneOfName = f.oneOfName
+		currentOneOfFields = append(currentOneOfFields, f)
+	}
+
+	flushOneOf()
+
+	return s.String()
 }
 
 type messageTemplate struct {

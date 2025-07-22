@@ -49,6 +49,17 @@ type OneOf struct {
 	canotoData canotoData_OneOf
 }
 
+type OneOfNoCopy struct {
+	A1 int32 `canoto:"int,1,A"`
+	A2 int64 `canoto:"int,7,A"`
+	B1 int32 `canoto:"int,3,B"`
+	B2 int64 `canoto:"int,4,B"`
+	C  int32 `canoto:"int,5"`
+	D  int64 `canoto:"int,6"`
+
+	canotoData canotoData_OneOfNoCopy `canoto:"nocopy"`
+}
+
 type Node struct {
 	Value int32 `canoto:"int,1"`
 	Next  *Node `canoto:"pointer,2,OneOf"`

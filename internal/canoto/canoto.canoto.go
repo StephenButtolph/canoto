@@ -887,48 +887,40 @@ func (c *FieldType) MarshalCanotoInto(w Writer) Writer {
 		Append(&w, canoto__FieldType__OneOf__tag)
 		AppendBytes(&w, c.OneOf)
 	}
-	if !IsZero(c.TypeInt) {
+	cachedWhichOneOfType := atomic.LoadUint32(&c.canotoData.TypeOneOf)
+	switch cachedWhichOneOfType {
+	case 6:
 		Append(&w, canoto__FieldType__TypeInt__tag)
 		AppendUint(&w, c.TypeInt)
-	}
-	if !IsZero(c.TypeUint) {
+	case 7:
 		Append(&w, canoto__FieldType__TypeUint__tag)
 		AppendUint(&w, c.TypeUint)
-	}
-	if !IsZero(c.TypeFixedInt) {
+	case 8:
 		Append(&w, canoto__FieldType__TypeFixedInt__tag)
 		AppendUint(&w, c.TypeFixedInt)
-	}
-	if !IsZero(c.TypeFixedUint) {
+	case 9:
 		Append(&w, canoto__FieldType__TypeFixedUint__tag)
 		AppendUint(&w, c.TypeFixedUint)
-	}
-	if !IsZero(c.TypeBool) {
+	case 10:
 		Append(&w, canoto__FieldType__TypeBool__tag)
 		AppendBool(&w, true)
-	}
-	if !IsZero(c.TypeString) {
+	case 11:
 		Append(&w, canoto__FieldType__TypeString__tag)
 		AppendBool(&w, true)
-	}
-	if !IsZero(c.TypeBytes) {
+	case 12:
 		Append(&w, canoto__FieldType__TypeBytes__tag)
 		AppendBool(&w, true)
-	}
-	if !IsZero(c.TypeFixedBytes) {
+	case 13:
 		Append(&w, canoto__FieldType__TypeFixedBytes__tag)
 		AppendUint(&w, c.TypeFixedBytes)
-	}
-	if !IsZero(c.TypeRecursive) {
+	case 14:
 		Append(&w, canoto__FieldType__TypeRecursive__tag)
 		AppendUint(&w, c.TypeRecursive)
-	}
-	if c.TypeMessage != nil {
-		if fieldSize := (c.TypeMessage).CachedCanotoSize(); fieldSize != 0 {
-			Append(&w, canoto__FieldType__TypeMessage__tag)
-			AppendUint(&w, fieldSize)
-			w = (c.TypeMessage).MarshalCanotoInto(w)
-		}
+	case 15:
+		fieldSize := (c.TypeMessage).CachedCanotoSize()
+		Append(&w, canoto__FieldType__TypeMessage__tag)
+		AppendUint(&w, fieldSize)
+		w = (c.TypeMessage).MarshalCanotoInto(w)
 	}
 	return w
 }
