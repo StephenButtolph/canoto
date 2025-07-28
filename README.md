@@ -199,9 +199,9 @@ Because `BadUsage` is an interface, it does not have a useful zero value and wil
 
 ### Pass-By-Value Messages
 
-The auto-generated `canotoData` struct includes atomic variables. This ensures that `MarshalCanoto` can be called at the same time on multiple threads, which is expected for what appears to be a read only method.
+The auto-generated `canotoData` struct utilizes atomic reads and writes to ensure that `MarshalCanoto` can be called at the same time on multiple threads. Concurrent calls to `MarshalCanoto` is expected for what appears to be a read only method.
 
-However, this can cause race detection failures when concurrently marshalling and passing messages by value. To explicitly disallow passing messages by value, the `canoto:"nocopy"` tag can be added to the `canotoData` field. This results in the [NoCopy](https://github.com/golang/go/issues/8005) pattern being used to warn against incorrect usage.
+However, concurrently marshalling and passing messages by value may cause race detection failures. To explicitly disallow passing messages by value, the `canoto:"nocopy"` tag can be added to the `canotoData` field. This results in the [NoCopy](https://github.com/golang/go/issues/8005) pattern being used to warn against incorrect usage.
 
 For example:
 
