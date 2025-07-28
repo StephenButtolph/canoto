@@ -124,15 +124,15 @@ The above example will generate `example.canoto.go` and `example.proto`.
 
 ### go:generate
 
-To automatically generate the `.canoto.go` version of a file, it is recommended to use `go:generate`
+To automatically generate the `.canoto.go` version of a file, it is recommended to use `go:generate`. By using `go run` inside the `go:generate`, the version of the command being run will be taken from the local `go.mod`.
 
-Placing
+Place
 
 ```golang
-//go:generate canoto $GOFILE
+//go:generate go run github.com/StephenButtolph/canoto/canoto $GOFILE
 ```
 
-at the top of a file will update the `.canoto.go` version of the file every time `go generate ./...` is run.
+at the top of a file to update the `.canoto.go` version of the file every time `go generate ./...` is run.
 
 ### Best Practices
 
@@ -199,11 +199,9 @@ Because `BadUsage` is an interface, it does not have a useful zero value and wil
 
 ### Pass-By-Value Messages
 
-By default, the auto-generated `canotoData` struct includes atomic variables. This ensures that `MarshalCanoto` can be called at the same time on multiple threads, which is expected for what appears to be a read only method.
+The auto-generated `canotoData` struct includes atomic variables. This ensures that `MarshalCanoto` can be called at the same time on multiple threads, which is expected for what appears to be a read only method.
 
-However, this results in being unable to pass messages by value due to the [NoCopy](https://github.com/golang/go/issues/8005) included on atomic variables.
-
-Because calling `MarshalCanoto` concurrently with copying a message is not safe, the `canoto:"nocopy"` tag can be added to the `canotoData` field to disallow message copying.
+However, this can cause race detection failures when concurrently marshalling and passing messages by value. To explicitly disallow passing messages by value, the `canoto:"nocopy"` tag can be added to the `canotoData` field. This results in the [NoCopy](https://github.com/golang/go/issues/8005) pattern being used to warn against incorrect usage.
 
 For example:
 
