@@ -282,8 +282,8 @@ const (
 	canoto__FieldType__TypeString__tag     = "\x58" // canoto.Tag(11, canoto.Varint)
 	canoto__FieldType__TypeBytes__tag      = "\x60" // canoto.Tag(12, canoto.Varint)
 	canoto__FieldType__TypeFixedBytes__tag = "\x68" // canoto.Tag(13, canoto.Varint)
-	canoto__FieldType__TypeRecursive__tag  = "\x70" // canoto.Tag(14, canoto.Varint)
-	canoto__FieldType__TypeMessage__tag    = "\x7a" // canoto.Tag(15, canoto.Len)
+	canoto__FieldType__TypeMessage__tag    = "\x72" // canoto.Tag(14, canoto.Len)
+	canoto__FieldType__TypeRecursive__tag  = "\x78" // canoto.Tag(15, canoto.Varint)
 )
 
 type canotoData_FieldType struct {
@@ -377,21 +377,21 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 				OneOf:       "Type",
 				TypeUint:    SizeOf(zero.TypeFixedBytes),
 			},
-			{
-				FieldNumber: 14,
-				Name:        "TypeRecursive",
-				OneOf:       "Type",
-				TypeUint:    SizeOf(zero.TypeRecursive),
-			},
 			FieldTypeFromField(
 				/*type inference:*/ (zero.TypeMessage),
-				/*FieldNumber:   */ 15,
+				/*FieldNumber:   */ 14,
 				/*Name:          */ "TypeMessage",
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "Type",
 				/*types:         */ types,
 			),
+			{
+				FieldNumber: 15,
+				Name:        "TypeRecursive",
+				OneOf:       "Type",
+				TypeUint:    SizeOf(zero.TypeRecursive),
+			},
 		},
 	}
 	s.CalculateCanotoCache()
@@ -603,24 +603,10 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 				return ErrZeroValue
 			}
 		case 14:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 14) != 0 {
-				return ErrDuplicateOneOf
-			}
-
-			if err := ReadUint(&r, &c.TypeRecursive); err != nil {
-				return err
-			}
-			if IsZero(c.TypeRecursive) {
-				return ErrZeroValue
-			}
-		case 15:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 15) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 14) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -644,6 +630,20 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 				return err
 			}
 			r.B = remainingBytes
+		case 15:
+			if wireType != Varint {
+				return ErrUnexpectedWireType
+			}
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 15) != 0 {
+				return ErrDuplicateOneOf
+			}
+
+			if err := ReadUint(&r, &c.TypeRecursive); err != nil {
+				return err
+			}
+			if IsZero(c.TypeRecursive) {
+				return ErrZeroValue
+			}
 		default:
 			return ErrUnknownField
 		}
@@ -713,20 +713,20 @@ func (c *FieldType) ValidCanoto() bool {
 		}
 		TypeOneOf = 13
 	}
-	if !IsZero(c.TypeRecursive) {
-		if TypeOneOf != 0 {
-			return false
-		}
-		TypeOneOf = 14
-	}
 	if c.TypeMessage != nil {
 		(c.TypeMessage).CalculateCanotoCache()
 		if (c.TypeMessage).CachedCanotoSize() != 0 {
 			if TypeOneOf != 0 {
 				return false
 			}
-			TypeOneOf = 15
+			TypeOneOf = 14
 		}
+	}
+	if !IsZero(c.TypeRecursive) {
+		if TypeOneOf != 0 {
+			return false
+		}
+		TypeOneOf = 15
 	}
 	if !ValidString(c.Name) {
 		return false
@@ -797,16 +797,16 @@ func (c *FieldType) CalculateCanotoCache() {
 		size += uint64(len(canoto__FieldType__TypeFixedBytes__tag)) + SizeUint(c.TypeFixedBytes)
 		TypeOneOf = 13
 	}
-	if !IsZero(c.TypeRecursive) {
-		size += uint64(len(canoto__FieldType__TypeRecursive__tag)) + SizeUint(c.TypeRecursive)
-		TypeOneOf = 14
-	}
 	if c.TypeMessage != nil {
 		(c.TypeMessage).CalculateCanotoCache()
 		if fieldSize := (c.TypeMessage).CachedCanotoSize(); fieldSize != 0 {
 			size += uint64(len(canoto__FieldType__TypeMessage__tag)) + SizeUint(fieldSize) + fieldSize
-			TypeOneOf = 15
+			TypeOneOf = 14
 		}
+	}
+	if !IsZero(c.TypeRecursive) {
+		size += uint64(len(canoto__FieldType__TypeRecursive__tag)) + SizeUint(c.TypeRecursive)
+		TypeOneOf = 15
 	}
 	atomic.StoreUint64(&c.canotoData.size, size)
 	atomic.StoreUint32(&c.canotoData.TypeOneOf, TypeOneOf)
@@ -914,13 +914,13 @@ func (c *FieldType) MarshalCanotoInto(w Writer) Writer {
 		Append(&w, canoto__FieldType__TypeFixedBytes__tag)
 		AppendUint(&w, c.TypeFixedBytes)
 	case 14:
-		Append(&w, canoto__FieldType__TypeRecursive__tag)
-		AppendUint(&w, c.TypeRecursive)
-	case 15:
 		fieldSize := (c.TypeMessage).CachedCanotoSize()
 		Append(&w, canoto__FieldType__TypeMessage__tag)
 		AppendUint(&w, fieldSize)
 		w = (c.TypeMessage).MarshalCanotoInto(w)
+	case 15:
+		Append(&w, canoto__FieldType__TypeRecursive__tag)
+		AppendUint(&w, c.TypeRecursive)
 	}
 	return w
 }

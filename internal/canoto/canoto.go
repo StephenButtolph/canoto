@@ -65,11 +65,11 @@ const (
 	// FieldTypeFixedBytes is the field number of fixed bytes in the FieldType
 	// OneOf.
 	FieldTypeFixedBytes = 13
+	// FieldTypeMessage is the field number of a message in the FieldType OneOf.
+	FieldTypeMessage = 14
 	// FieldTypeRecursive is the field number of a recursive type in the
 	// FieldType OneOf.
-	FieldTypeRecursive = 14
-	// FieldTypeMessage is the field number of a message in the FieldType OneOf.
-	FieldTypeMessage = 15
+	FieldTypeRecursive = 15
 
 	// MaxFieldNumber is the maximum field number allowed to be used in a Tag.
 	MaxFieldNumber = 1<<29 - 1
@@ -259,8 +259,8 @@ type (
 		TypeString     bool     `canoto:"bool,11,Type"    json:"typeString,omitempty"`     // can only be true.
 		TypeBytes      bool     `canoto:"bool,12,Type"    json:"typeBytes,omitempty"`      // can only be true.
 		TypeFixedBytes uint64   `canoto:"uint,13,Type"    json:"typeFixedBytes,omitempty"` // length of the fixed bytes.
-		TypeRecursive  uint64   `canoto:"uint,14,Type"    json:"typeRecursive,omitempty"`  // depth of the recursion.
-		TypeMessage    *Spec    `canoto:"pointer,15,Type" json:"typeMessage,omitempty"`
+		TypeMessage    *Spec    `canoto:"pointer,14,Type" json:"typeMessage,omitempty"`
+		TypeRecursive  uint64   `canoto:"uint,15,Type"    json:"typeRecursive,omitempty"` // depth of the recursion.
 
 		canotoData canotoData_FieldType
 	}
@@ -939,7 +939,7 @@ func (f *FieldType) wireType() (WireType, error) {
 			return 0, ErrUnexpectedFieldSize
 		}
 		return w, nil
-	case FieldTypeString, FieldTypeBytes, FieldTypeFixedBytes, FieldTypeRecursive, FieldTypeMessage:
+	case FieldTypeString, FieldTypeBytes, FieldTypeFixedBytes, FieldTypeMessage, FieldTypeRecursive:
 		return Len, nil
 	default:
 		return 0, ErrUnknownFieldType
@@ -965,10 +965,10 @@ func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 		unmarshal = (*FieldType).unmarshalBytes
 	case FieldTypeFixedBytes:
 		unmarshal = (*FieldType).unmarshalFixedBytes
-	case FieldTypeRecursive:
-		unmarshal = (*FieldType).unmarshalRecursive
 	case FieldTypeMessage:
 		unmarshal = (*FieldType).unmarshalSpec
+	case FieldTypeRecursive:
+		unmarshal = (*FieldType).unmarshalRecursive
 	default:
 		return nil, ErrUnknownFieldType
 	}
@@ -992,10 +992,10 @@ func (f *FieldType) marshal(w Writer, value any, specs []*Spec) (Writer, error) 
 		marshal = (*FieldType).marshalString
 	case FieldTypeBytes, FieldTypeFixedBytes:
 		marshal = (*FieldType).marshalBytes
-	case FieldTypeRecursive:
-		marshal = (*FieldType).marshalRecursive
 	case FieldTypeMessage:
 		marshal = (*FieldType).marshalSpec
+	case FieldTypeRecursive:
+		marshal = (*FieldType).marshalRecursive
 	default:
 		return Writer{}, ErrUnknownFieldType
 	}
@@ -1353,6 +1353,41 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 	return values, nil
 }
 
+func (f *FieldType) unmarshalSpec(r *Reader, specs []*Spec) (any, error) {
+	return unmarshalUnpacked(
+		f,
+		r,
+		func(msgBytes []byte) (Any, bool, error) {
+			if len(msgBytes) == 0 {
+				return Any{}, true, nil
+			}
+			a, err := f.TypeMessage.unmarshal(
+				&Reader{
+					B: msgBytes,
+				},
+				specs,
+			)
+			return a, false, err
+		},
+	)
+}
+
+func (f *FieldType) marshalSpec(w Writer, value any, specs []*Spec) (Writer, error) {
+	return marshalUnpacked(
+		f,
+		w,
+		value,
+		func(w Writer, value Any) (Writer, error) {
+			tw, err := f.TypeMessage.marshal(Writer{}, value, specs)
+			if err != nil {
+				return Writer{}, err
+			}
+			AppendBytes(&w, tw.B)
+			return w, nil
+		},
+	)
+}
+
 func (f *FieldType) unmarshalRecursive(r *Reader, specs []*Spec) (any, error) {
 	spec, specs, err := f.recursiveSpec(specs)
 	if err != nil {
@@ -1407,41 +1442,6 @@ func (f *FieldType) recursiveSpec(specs []*Spec) (*Spec, []*Spec, error) {
 	spec := specs[index]
 	specs = slices.Clone(specs[:index])
 	return spec, specs, nil
-}
-
-func (f *FieldType) unmarshalSpec(r *Reader, specs []*Spec) (any, error) {
-	return unmarshalUnpacked(
-		f,
-		r,
-		func(msgBytes []byte) (Any, bool, error) {
-			if len(msgBytes) == 0 {
-				return Any{}, true, nil
-			}
-			a, err := f.TypeMessage.unmarshal(
-				&Reader{
-					B: msgBytes,
-				},
-				specs,
-			)
-			return a, false, err
-		},
-	)
-}
-
-func (f *FieldType) marshalSpec(w Writer, value any, specs []*Spec) (Writer, error) {
-	return marshalUnpacked(
-		f,
-		w,
-		value,
-		func(w Writer, value Any) (Writer, error) {
-			tw, err := f.TypeMessage.marshal(Writer{}, value, specs)
-			if err != nil {
-				return Writer{}, err
-			}
-			AppendBytes(&w, tw.B)
-			return w, nil
-		},
-	)
 }
 
 func unmarshalInt[T Int](r *Reader) (int64, error) {
