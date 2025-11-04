@@ -45,29 +45,29 @@ const (
 	SizeBool = 1
 
 	// FieldTypeInt is the field number of an int in the FieldType OneOf.
-	FieldTypeInt = 6
+	FieldTypeInt = canoto__FieldType__TypeInt
 	// FieldTypeUint is the field number of a uint in the FieldType OneOf.
-	FieldTypeUint = 7
+	FieldTypeUint = canoto__FieldType__TypeUint
 	// FieldTypeFixedInt is the field number of a fixed int in the FieldType
 	// OneOf.
-	FieldTypeFixedInt = 8
+	FieldTypeFixedInt = canoto__FieldType__TypeFixedInt
 	// FieldTypeFixedUint is the field number of a fixed uint in the FieldType
 	// OneOf.
-	FieldTypeFixedUint = 9
+	FieldTypeFixedUint = canoto__FieldType__TypeFixedUint
 	// FieldTypeBool is the field number of a bool in the FieldType OneOf.
-	FieldTypeBool = 10
+	FieldTypeBool = canoto__FieldType__TypeBool
 	// FieldTypeString is the field number of a string in the FieldType OneOf.
-	FieldTypeString = 11
+	FieldTypeString = canoto__FieldType__TypeString
 	// FieldTypeBytes is the field number of bytes in the FieldType OneOf.
-	FieldTypeBytes = 12
+	FieldTypeBytes = canoto__FieldType__TypeBytes
 	// FieldTypeFixedBytes is the field number of fixed bytes in the FieldType
 	// OneOf.
-	FieldTypeFixedBytes = 13
+	FieldTypeFixedBytes = canoto__FieldType__TypeFixedBytes
 	// FieldTypeRecursive is the field number of a recursive type in the
 	// FieldType OneOf.
-	FieldTypeRecursive = 14
+	FieldTypeRecursive = canoto__FieldType__TypeRecursive
 	// FieldTypeMessage is the field number of a message in the FieldType OneOf.
-	FieldTypeMessage = 15
+	FieldTypeMessage = canoto__FieldType__TypeMessage
 
 	// MaxFieldNumber is the maximum field number allowed to be used in a Tag.
 	MaxFieldNumber = 1<<29 - 1

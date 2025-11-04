@@ -21,7 +21,9 @@ var (
 )
 
 const (
-	canoto__justAnInt__Int8__tag = "\x08" // canoto.Tag(1, canoto.Varint)
+	canoto__justAnInt__Int8 = 1
+
+	canoto__justAnInt__Int8__tag = "\x08" // canoto.Tag(canoto__justAnInt__Int8, canoto.Varint)
 )
 
 type canotoData_justAnInt struct {
@@ -35,7 +37,7 @@ func (*justAnInt) CanotoSpec(...reflect.Type) *canoto.Spec {
 		Name: "justAnInt",
 		Fields: []canoto.FieldType{
 			{
-				FieldNumber: 1,
+				FieldNumber: canoto__justAnInt__Int8,
 				Name:        "Int8",
 				OneOf:       "",
 				TypeInt:     canoto.SizeOf(zero.Int8),
@@ -83,7 +85,7 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) error {
 		}
 
 		switch field {
-		case 1:
+		case canoto__justAnInt__Int8:
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}

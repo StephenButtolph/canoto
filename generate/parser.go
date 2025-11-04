@@ -387,7 +387,7 @@ func parseField(
 			"storeJoin":         storeJoin,
 			"storeSuffix":       storeSuffix,
 			"escapedStructName": canonicalizedStructName,
-			"fieldNumber":       strconv.FormatUint(uint64(fieldNumber), 10),
+			"fieldNumber":       fmt.Sprintf("canoto__%s__%s", canonicalizedStructName, canonicalizedName),
 			"wireType":          canotoType.WireType().String(),
 			"goType":            goType,
 			"genericTypeCast":   genericTypeCast,

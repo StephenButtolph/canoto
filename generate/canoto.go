@@ -125,6 +125,7 @@ var (
 func writeStruct(w io.Writer, m message, canotoSelector string) error {
 	const structTemplate = `
 const (
+${numberConstants}
 ${tagConstants})
 
 type canotoData_${structName} struct {
@@ -289,6 +290,7 @@ ${marshal}	return w
 	return writeTemplate(w, structTemplate, map[string]string{
 		"typesDecl":           typesDecl,
 		"appendTypes":         appendTypes,
+		"numberConstants":     makeNumberConstants(m),
 		"tagConstants":        makeTagConstants(m),
 		"structName":          m.name,
 		"generics":            generics,
@@ -354,6 +356,27 @@ func makeGenerics(m message) string {
 	return s.String()
 }
 
+func makeNumberConstants(m message) string {
+	const fieldSizeOverhead = len("canoto____")
+	var largestNumberConstSize int
+	for _, f := range m.fields {
+		numberConstSize := fieldSizeOverhead + len(m.canonicalizedName) + len(f.canonicalizedName)
+		largestNumberConstSize = max(largestNumberConstSize, numberConstSize)
+	}
+
+	var (
+		template = fmt.Sprintf("\t%%-%ds = %%d\n",
+			largestNumberConstSize,
+		)
+		s strings.Builder
+	)
+	for _, f := range m.fields {
+		field := fmt.Sprintf("canoto__%s__%s", m.canonicalizedName, f.canonicalizedName)
+		_, _ = fmt.Fprintf(&s, template, field, f.fieldNumber)
+	}
+	return s.String()
+}
+
 func makeTagConstants(m message) string {
 	const tagSizeOverhead = len("canoto______tag")
 	var (
@@ -371,14 +394,15 @@ func makeTagConstants(m message) string {
 	}
 
 	var (
-		template = fmt.Sprintf("\t%%-%ds = %%-%ds // canoto.Tag(%%d, canoto.%%s)\n",
+		template = fmt.Sprintf("\t%%-%ds = %%-%ds // canoto.Tag(%%s, canoto.%%s)\n",
 			largestTagConstSize,
 			largestTagSize,
 		)
 		s strings.Builder
 	)
 	for _, f := range m.fields {
-		tag := fmt.Sprintf("canoto__%s__%s__tag", m.canonicalizedName, f.canonicalizedName)
+		field := fmt.Sprintf("canoto__%s__%s", m.canonicalizedName, f.canonicalizedName)
+		tag := field + "__tag"
 
 		var tagString strings.Builder
 		_, _ = tagString.WriteString(`"`)
@@ -390,7 +414,7 @@ func makeTagConstants(m message) string {
 		}
 		_, _ = tagString.WriteString(`"`)
 
-		_, _ = fmt.Fprintf(&s, template, tag, &tagString, f.fieldNumber, wireType)
+		_, _ = fmt.Fprintf(&s, template, tag, &tagString, field, wireType)
 	}
 	return s.String()
 }
