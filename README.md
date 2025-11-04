@@ -292,6 +292,32 @@ Will generate the canoto library in `./internal/canoto` and will import `"github
 | `[x]*T Message`   | `fixed repeated pointer`     | `repeated message`  | `len`     |
 | `[x]T FieldMaker` | `fixed repeated field`       | `repeated message`  | `len`     |
 
+### OneOf Fields
+
+OneOfs allow message definitions to declare that a set of fields are mutually exclusive. When serialized, Canoto ensures that at most one field in each OneOf group appears on the wire.
+
+Each OneOf has a group name, specified as an additional option after the field number in the struct tag:
+```golang
+type OneOf struct {
+	Int  int64 `canoto:"int,1,Type"`
+	Bool bool  `canoto:"bool,2,Type"`
+
+	canotoData canotoData_OneOf
+}
+```
+
+For every OneOf group, the generated code includes a helper method that lets you quickly determine which field was populated.
+
+In the example above, the method `CachedWhichOneOfType` will be generated.
+
+All OneOf accessor methods follow the naming pattern:
+```
+CachedWhichOneOf<GroupName>
+```
+
+After the cache has been initialized by calling one of `UnmarshalCanoto`, `UnmarshalCanotoFrom`, or `CalculateCanotoCache`, the method returns the field number of the populated field.
+If no field in the OneOf group was set, the method returns `0`.
+
 ### Non-standard encoding
 
 It is valid to define a `Field` that implements a non-standard format. However, this format should still be canonical and the corresponding Proto file should report opaque bytes.
