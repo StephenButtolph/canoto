@@ -531,10 +531,10 @@ func (c *OneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	}
 	cachedWhichOneOfB := atomic.LoadUint32(&c.canotoData.BOneOf)
 	switch cachedWhichOneOfB {
-	case 3:
+	case canoto__OneOf__B1:
 		canoto.Append(&w, canoto__OneOf__B1__tag)
 		canoto.AppendInt(&w, c.B1)
-	case 4:
+	case canoto__OneOf__B2:
 		canoto.Append(&w, canoto__OneOf__B2__tag)
 		canoto.AppendInt(&w, c.B2)
 	}
@@ -896,10 +896,10 @@ func (c *OneOfNoCopy) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	}
 	cachedWhichOneOfB := c.canotoData.BOneOf.Load()
 	switch cachedWhichOneOfB {
-	case 3:
+	case canoto__OneOfNoCopy__B1:
 		canoto.Append(&w, canoto__OneOfNoCopy__B1__tag)
 		canoto.AppendInt(&w, c.B1)
-	case 4:
+	case canoto__OneOfNoCopy__B2:
 		canoto.Append(&w, canoto__OneOfNoCopy__B2__tag)
 		canoto.AppendInt(&w, c.B2)
 	}

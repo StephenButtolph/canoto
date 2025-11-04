@@ -2391,7 +2391,7 @@ func makeMarshal(m message) string {
 		} else {
 			fmt.Fprintf(&s, "\tswitch %s {\n", varName)
 			for _, field := range currentOneOfFields {
-				_, _ = fmt.Fprintf(&s, "\tcase %d:\n", field.fieldNumber)
+				_, _ = fmt.Fprintf(&s, "\tcase canoto__%s__%s:\n", m.canonicalizedName, field.canonicalizedName)
 				_ = writeField(&s, field, oneOfTmpl)
 			}
 		}

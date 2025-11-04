@@ -2194,10 +2194,10 @@ func (c *OneOf) MarshalCanotoInto(w Writer) Writer {
 	}
 	cachedWhichOneOfB := atomic.LoadUint32(&c.canotoData.BOneOf)
 	switch cachedWhichOneOfB {
-	case 3:
+	case canoto__OneOf__B1:
 		Append(&w, canoto__OneOf__B1__tag)
 		AppendInt(&w, c.B1)
-	case 4:
+	case canoto__OneOf__B2:
 		Append(&w, canoto__OneOf__B2__tag)
 		AppendInt(&w, c.B2)
 	}
