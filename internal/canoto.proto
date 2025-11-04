@@ -8,165 +8,165 @@ syntax = "proto3";
 package examples;
 
 message LargestFieldNumber {
-  uint64 Uint = canoto__LargestFieldNumber__Uint;
+  uint64 Uint = 536870911;
 }
 
 message OneOf {
   oneof A {
-    sint32 A1 = canoto__OneOf__A1;
-    sint64 A2 = canoto__OneOf__A2;
+    sint32 A1 = 1;
+    sint64 A2 = 7;
   }
   oneof B {
-    sint32 B1 = canoto__OneOf__B1;
-    sint64 B2 = canoto__OneOf__B2;
+    sint32 B1 = 3;
+    sint64 B2 = 4;
   }
-  sint32 C = canoto__OneOf__C;
-  sint64 D = canoto__OneOf__D;
+  sint32 C = 5;
+  sint64 D = 6;
 }
 
 message OneOfNoCopy {
   oneof A {
-    sint32 A1 = canoto__OneOfNoCopy__A1;
-    sint64 A2 = canoto__OneOfNoCopy__A2;
+    sint32 A1 = 1;
+    sint64 A2 = 7;
   }
   oneof B {
-    sint32 B1 = canoto__OneOfNoCopy__B1;
-    sint64 B2 = canoto__OneOfNoCopy__B2;
+    sint32 B1 = 3;
+    sint64 B2 = 4;
   }
-  sint32 C = canoto__OneOfNoCopy__C;
-  sint64 D = canoto__OneOfNoCopy__D;
+  sint32 C = 5;
+  sint64 D = 6;
 }
 
 message Node {
   oneof OneOf {
-    Node Next = canoto__Node__Next;
+    Node Next = 2;
   }
-  sint32 Value = canoto__Node__Value;
+  sint32 Value = 1;
 }
 
 message RecursiveA {
-  RecursiveB Next = canoto__RecursiveA__Next;
+  RecursiveB Next = 1;
 }
 
 message RecursiveB {
-  RecursiveA Next = canoto__RecursiveB__Next;
+  RecursiveA Next = 1;
 }
 
 message GenericField {
-  bytes Value = canoto__GenericField__Value;
-  repeated bytes RepeatedValue = canoto__GenericField__RepeatedValue;
-  repeated bytes FixedRepeatedValue = canoto__GenericField__FixedRepeatedValue;
-  bytes Pointer = canoto__GenericField__Pointer;
-  repeated bytes RepeatedPointer = canoto__GenericField__RepeatedPointer;
-  repeated bytes FixedRepeatedPointer = canoto__GenericField__FixedRepeatedPointer;
-  bytes Field = canoto__GenericField__Field;
-  repeated bytes RepeatedField = canoto__GenericField__RepeatedField;
-  repeated bytes FixedRepeatedField = canoto__GenericField__FixedRepeatedField;
+  bytes Value = 1;
+  repeated bytes RepeatedValue = 2;
+  repeated bytes FixedRepeatedValue = 3;
+  bytes Pointer = 4;
+  repeated bytes RepeatedPointer = 5;
+  repeated bytes FixedRepeatedPointer = 6;
+  bytes Field = 7;
+  repeated bytes RepeatedField = 8;
+  repeated bytes FixedRepeatedField = 9;
 }
 
 message NestedGenericField {
-  GenericField Value = canoto__NestedGenericField__Value;
-  repeated GenericField RepeatedValue = canoto__NestedGenericField__RepeatedValue;
-  repeated GenericField FixedRepeatedValue = canoto__NestedGenericField__FixedRepeatedValue;
-  GenericField Pointer = canoto__NestedGenericField__Pointer;
-  repeated GenericField RepeatedPointer = canoto__NestedGenericField__RepeatedPointer;
-  repeated GenericField FixedRepeatedPointer = canoto__NestedGenericField__FixedRepeatedPointer;
-  GenericField Field = canoto__NestedGenericField__Field;
-  repeated GenericField RepeatedField = canoto__NestedGenericField__RepeatedField;
-  repeated GenericField FixedRepeatedField = canoto__NestedGenericField__FixedRepeatedField;
+  GenericField Value = 1;
+  repeated GenericField RepeatedValue = 2;
+  repeated GenericField FixedRepeatedValue = 3;
+  GenericField Pointer = 4;
+  repeated GenericField RepeatedPointer = 5;
+  repeated GenericField FixedRepeatedPointer = 6;
+  GenericField Field = 7;
+  repeated GenericField RepeatedField = 8;
+  repeated GenericField FixedRepeatedField = 9;
 }
 
 message Embedded {
-  OneOf OneOf = canoto__Embedded__OneOf;
-  LargestFieldNumber LargestFieldNumber = canoto__Embedded__LargestFieldNumber;
-  GenericField GenericField = canoto__Embedded__GenericField;
-  bytes Int = canoto__Embedded__Int;
+  OneOf OneOf = 1;
+  LargestFieldNumber LargestFieldNumber = 2;
+  GenericField GenericField = 3;
+  bytes Int = 4;
 }
 
 message A {
-  sint32 B__C = canoto__A__B_1_1C;
+  sint32 B__C = 1;
 }
 
 message A__B {
-  sint32 C = canoto__A_1_1B__C;
+  sint32 C = 1;
 }
 
 message Scalars {
-  sint32 Int8 = canoto__Scalars__Int8;
-  sint32 Int16 = canoto__Scalars__Int16;
-  sint32 Int32 = canoto__Scalars__Int32;
-  sint64 Int64 = canoto__Scalars__Int64;
-  uint32 Uint8 = canoto__Scalars__Uint8;
-  uint32 Uint16 = canoto__Scalars__Uint16;
-  uint32 Uint32 = canoto__Scalars__Uint32;
-  uint64 Uint64 = canoto__Scalars__Uint64;
-  sfixed32 Sfixed32 = canoto__Scalars__Sfixed32;
-  fixed32 Fixed32 = canoto__Scalars__Fixed32;
-  sfixed64 Sfixed64 = canoto__Scalars__Sfixed64;
-  fixed64 Fixed64 = canoto__Scalars__Fixed64;
-  bool Bool = canoto__Scalars__Bool;
-  string String = canoto__Scalars__String;
-  bytes Bytes = canoto__Scalars__Bytes;
-  LargestFieldNumber LargestFieldNumber = canoto__Scalars__LargestFieldNumber;
-  repeated sint32 RepeatedInt8 = canoto__Scalars__RepeatedInt8;
-  repeated sint32 RepeatedInt16 = canoto__Scalars__RepeatedInt16;
-  repeated sint32 RepeatedInt32 = canoto__Scalars__RepeatedInt32;
-  repeated sint64 RepeatedInt64 = canoto__Scalars__RepeatedInt64;
-  repeated uint32 RepeatedUint8 = canoto__Scalars__RepeatedUint8;
-  repeated uint32 RepeatedUint16 = canoto__Scalars__RepeatedUint16;
-  repeated uint32 RepeatedUint32 = canoto__Scalars__RepeatedUint32;
-  repeated uint64 RepeatedUint64 = canoto__Scalars__RepeatedUint64;
-  repeated sfixed32 RepeatedSfixed32 = canoto__Scalars__RepeatedSfixed32;
-  repeated fixed32 RepeatedFixed32 = canoto__Scalars__RepeatedFixed32;
-  repeated sfixed64 RepeatedSfixed64 = canoto__Scalars__RepeatedSfixed64;
-  repeated fixed64 RepeatedFixed64 = canoto__Scalars__RepeatedFixed64;
-  repeated bool RepeatedBool = canoto__Scalars__RepeatedBool;
-  repeated string RepeatedString = canoto__Scalars__RepeatedString;
-  repeated bytes RepeatedBytes = canoto__Scalars__RepeatedBytes;
-  repeated LargestFieldNumber RepeatedLargestFieldNumber = canoto__Scalars__RepeatedLargestFieldNumber;
-  repeated sint32 FixedRepeatedInt8 = canoto__Scalars__FixedRepeatedInt8;
-  repeated sint32 FixedRepeatedInt16 = canoto__Scalars__FixedRepeatedInt16;
-  repeated sint32 FixedRepeatedInt32 = canoto__Scalars__FixedRepeatedInt32;
-  repeated sint64 FixedRepeatedInt64 = canoto__Scalars__FixedRepeatedInt64;
-  repeated uint32 FixedRepeatedUint8 = canoto__Scalars__FixedRepeatedUint8;
-  repeated uint32 FixedRepeatedUint16 = canoto__Scalars__FixedRepeatedUint16;
-  repeated uint32 FixedRepeatedUint32 = canoto__Scalars__FixedRepeatedUint32;
-  repeated uint64 FixedRepeatedUint64 = canoto__Scalars__FixedRepeatedUint64;
-  repeated sfixed32 FixedRepeatedSfixed32 = canoto__Scalars__FixedRepeatedSfixed32;
-  repeated fixed32 FixedRepeatedFixed32 = canoto__Scalars__FixedRepeatedFixed32;
-  repeated sfixed64 FixedRepeatedSfixed64 = canoto__Scalars__FixedRepeatedSfixed64;
-  repeated fixed64 FixedRepeatedFixed64 = canoto__Scalars__FixedRepeatedFixed64;
-  repeated bool FixedRepeatedBool = canoto__Scalars__FixedRepeatedBool;
-  repeated string FixedRepeatedString = canoto__Scalars__FixedRepeatedString;
-  bytes FixedBytes = canoto__Scalars__FixedBytes;
-  repeated bytes RepeatedFixedBytes = canoto__Scalars__RepeatedFixedBytes;
-  repeated bytes FixedRepeatedBytes = canoto__Scalars__FixedRepeatedBytes;
-  repeated bytes FixedRepeatedFixedBytes = canoto__Scalars__FixedRepeatedFixedBytes;
-  repeated LargestFieldNumber FixedRepeatedLargestFieldNumber = canoto__Scalars__FixedRepeatedLargestFieldNumber;
-  repeated uint64 ConstRepeatedUint64 = canoto__Scalars__ConstRepeatedUint64;
-  bytes CustomType = canoto__Scalars__CustomType;
-  fixed32 CustomUint32 = canoto__Scalars__CustomUint32;
-  string CustomString = canoto__Scalars__CustomString;
-  bytes CustomBytes = canoto__Scalars__CustomBytes;
-  bytes CustomFixedBytes = canoto__Scalars__CustomFixedBytes;
-  repeated bytes CustomRepeatedBytes = canoto__Scalars__CustomRepeatedBytes;
-  repeated bytes CustomRepeatedFixedBytes = canoto__Scalars__CustomRepeatedFixedBytes;
-  repeated bytes CustomFixedRepeatedBytes = canoto__Scalars__CustomFixedRepeatedBytes;
-  repeated bytes CustomFixedRepeatedFixedBytes = canoto__Scalars__CustomFixedRepeatedFixedBytes;
-  OneOf OneOf = canoto__Scalars__OneOf;
-  LargestFieldNumber Pointer = canoto__Scalars__Pointer;
-  repeated LargestFieldNumber RepeatedPointer = canoto__Scalars__RepeatedPointer;
-  repeated LargestFieldNumber FixedRepeatedPointer = canoto__Scalars__FixedRepeatedPointer;
-  LargestFieldNumber Field = canoto__Scalars__Field;
-  repeated LargestFieldNumber RepeatedField = canoto__Scalars__RepeatedField;
-  repeated LargestFieldNumber FixedRepeatedField = canoto__Scalars__FixedRepeatedField;
+  sint32 Int8 = 1;
+  sint32 Int16 = 2;
+  sint32 Int32 = 3;
+  sint64 Int64 = 4;
+  uint32 Uint8 = 5;
+  uint32 Uint16 = 6;
+  uint32 Uint32 = 7;
+  uint64 Uint64 = 8;
+  sfixed32 Sfixed32 = 9;
+  fixed32 Fixed32 = 10;
+  sfixed64 Sfixed64 = 11;
+  fixed64 Fixed64 = 12;
+  bool Bool = 13;
+  string String = 14;
+  bytes Bytes = 15;
+  LargestFieldNumber LargestFieldNumber = 16;
+  repeated sint32 RepeatedInt8 = 17;
+  repeated sint32 RepeatedInt16 = 18;
+  repeated sint32 RepeatedInt32 = 19;
+  repeated sint64 RepeatedInt64 = 20;
+  repeated uint32 RepeatedUint8 = 21;
+  repeated uint32 RepeatedUint16 = 22;
+  repeated uint32 RepeatedUint32 = 23;
+  repeated uint64 RepeatedUint64 = 24;
+  repeated sfixed32 RepeatedSfixed32 = 25;
+  repeated fixed32 RepeatedFixed32 = 26;
+  repeated sfixed64 RepeatedSfixed64 = 27;
+  repeated fixed64 RepeatedFixed64 = 28;
+  repeated bool RepeatedBool = 29;
+  repeated string RepeatedString = 30;
+  repeated bytes RepeatedBytes = 31;
+  repeated LargestFieldNumber RepeatedLargestFieldNumber = 32;
+  repeated sint32 FixedRepeatedInt8 = 33;
+  repeated sint32 FixedRepeatedInt16 = 34;
+  repeated sint32 FixedRepeatedInt32 = 35;
+  repeated sint64 FixedRepeatedInt64 = 36;
+  repeated uint32 FixedRepeatedUint8 = 37;
+  repeated uint32 FixedRepeatedUint16 = 38;
+  repeated uint32 FixedRepeatedUint32 = 39;
+  repeated uint64 FixedRepeatedUint64 = 40;
+  repeated sfixed32 FixedRepeatedSfixed32 = 41;
+  repeated fixed32 FixedRepeatedFixed32 = 42;
+  repeated sfixed64 FixedRepeatedSfixed64 = 43;
+  repeated fixed64 FixedRepeatedFixed64 = 44;
+  repeated bool FixedRepeatedBool = 45;
+  repeated string FixedRepeatedString = 46;
+  bytes FixedBytes = 47;
+  repeated bytes RepeatedFixedBytes = 48;
+  repeated bytes FixedRepeatedBytes = 49;
+  repeated bytes FixedRepeatedFixedBytes = 50;
+  repeated LargestFieldNumber FixedRepeatedLargestFieldNumber = 51;
+  repeated uint64 ConstRepeatedUint64 = 52;
+  bytes CustomType = 53;
+  fixed32 CustomUint32 = 54;
+  string CustomString = 55;
+  bytes CustomBytes = 56;
+  bytes CustomFixedBytes = 57;
+  repeated bytes CustomRepeatedBytes = 58;
+  repeated bytes CustomRepeatedFixedBytes = 59;
+  repeated bytes CustomFixedRepeatedBytes = 60;
+  repeated bytes CustomFixedRepeatedFixedBytes = 61;
+  OneOf OneOf = 62;
+  LargestFieldNumber Pointer = 63;
+  repeated LargestFieldNumber RepeatedPointer = 64;
+  repeated LargestFieldNumber FixedRepeatedPointer = 65;
+  LargestFieldNumber Field = 66;
+  repeated LargestFieldNumber RepeatedField = 67;
+  repeated LargestFieldNumber FixedRepeatedField = 68;
 }
 
 message SpecUnusedZero {
-  bool Bool = canoto__SpecUnusedZero__Bool;
-  repeated bool RepeatedBool = canoto__SpecUnusedZero__RepeatedBool;
-  string String = canoto__SpecUnusedZero__String;
-  repeated string RepeatedString = canoto__SpecUnusedZero__RepeatedString;
-  bytes Bytes = canoto__SpecUnusedZero__Bytes;
-  repeated bytes RepeatedBytes = canoto__SpecUnusedZero__RepeatedBytes;
+  bool Bool = 1;
+  repeated bool RepeatedBool = 2;
+  string String = 3;
+  repeated string RepeatedString = 4;
+  bytes Bytes = 5;
+  repeated bytes RepeatedBytes = 6;
 }
