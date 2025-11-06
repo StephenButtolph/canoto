@@ -88,7 +88,7 @@ import (
 	"sync/atomic"
 ${canotoImport})
 
-// Ensure that the generated code is compatible with the canoto version.
+// Ensure that the generated code is compatible with the library version.
 const (
 	_ uint = ${selector}VersionCompatibility - ${genVersion}
 	_ uint = ${genVersion} - ${selector}VersionCompatibility

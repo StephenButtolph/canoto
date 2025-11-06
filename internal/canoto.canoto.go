@@ -13,7 +13,7 @@ import (
 	"github.com/StephenButtolph/canoto"
 )
 
-// Ensure that the generated code is compatible with the canoto version.
+// Ensure that the generated code is compatible with the library version.
 const (
 	_ uint = canoto.VersionCompatibility - 0
 	_ uint = 0 - canoto.VersionCompatibility

@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 )
 
-// Ensure that the generated code is compatible with the canoto version.
+// Ensure that the generated code is compatible with the library version.
 const (
 	_ uint = VersionCompatibility - 0
 	_ uint = 0 - VersionCompatibility
