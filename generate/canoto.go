@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/StephenButtolph/canoto"
@@ -87,6 +88,12 @@ import (
 	"sync/atomic"
 ${canotoImport})
 
+// Ensure that the generated code is compatible with the canoto version.
+const (
+	_ uint = ${selector}VersionCompatibility - ${genVersion}
+	_ uint = ${genVersion} - ${selector}VersionCompatibility
+)
+
 // Ensure that unused imports do not error
 var (
 	_ atomic.Uint64
@@ -95,25 +102,26 @@ var (
 )
 `
 	// Only include the import for canoto if this is not an internal file.
+	var selector string
 	if internal {
 		canotoImport = ""
+		selector = ""
 	} else {
 		canotoImport = fmt.Sprintf("\n\t%s\n", canotoImport)
+		selector = defaultCanotoImporter
 	}
 	err := writeTemplate(w, fileTemplate, map[string]string{
 		"version":      canoto.Version,
+		"genVersion":   strconv.FormatUint(uint64(canoto.VersionCompatibility), 10),
 		"source":       source,
 		"package":      packageName,
 		"canotoImport": canotoImport,
+		"selector":     selector,
 	})
 	if err != nil {
 		return err
 	}
 
-	var selector string
-	if !internal {
-		selector = defaultCanotoImporter
-	}
 	for _, m := range messages {
 		if err := writeStruct(w, m, selector); err != nil {
 			return err
