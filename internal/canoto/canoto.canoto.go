@@ -38,7 +38,7 @@ type canotoData_Spec struct {
 
 // CanotoSpec returns the specification of this canoto message.
 func (*Spec) CanotoSpec(types ...reflect.Type) *Spec {
-	types = append(types, reflect.TypeOf(Spec{}))
+	types = append(types, reflect.TypeFor[Spec]())
 	var zero Spec
 	s := &Spec{
 		Name: "Spec",
@@ -319,7 +319,7 @@ type canotoData_FieldType struct {
 
 // CanotoSpec returns the specification of this canoto message.
 func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
-	types = append(types, reflect.TypeOf(FieldType{}))
+	types = append(types, reflect.TypeFor[FieldType]())
 	var zero FieldType
 	s := &Spec{
 		Name: "FieldType",

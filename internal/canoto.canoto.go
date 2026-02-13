@@ -940,7 +940,7 @@ type canotoData_Node struct {
 
 // CanotoSpec returns the specification of this canoto message.
 func (*Node) CanotoSpec(types ...reflect.Type) *canoto.Spec {
-	types = append(types, reflect.TypeOf(Node{}))
+	types = append(types, reflect.TypeFor[Node]())
 	var zero Node
 	s := &canoto.Spec{
 		Name: "Node",
@@ -1183,7 +1183,7 @@ type canotoData_RecursiveA struct {
 
 // CanotoSpec returns the specification of this canoto message.
 func (*RecursiveA) CanotoSpec(types ...reflect.Type) *canoto.Spec {
-	types = append(types, reflect.TypeOf(RecursiveA{}))
+	types = append(types, reflect.TypeFor[RecursiveA]())
 	var zero RecursiveA
 	s := &canoto.Spec{
 		Name: "RecursiveA",
@@ -1372,7 +1372,7 @@ type canotoData_RecursiveB struct {
 
 // CanotoSpec returns the specification of this canoto message.
 func (*RecursiveB) CanotoSpec(types ...reflect.Type) *canoto.Spec {
-	types = append(types, reflect.TypeOf(RecursiveB{}))
+	types = append(types, reflect.TypeFor[RecursiveB]())
 	var zero RecursiveB
 	s := &canoto.Spec{
 		Name: "RecursiveB",
@@ -1577,7 +1577,7 @@ type canotoData_GenericField struct {
 
 // CanotoSpec returns the specification of this canoto message.
 func (*GenericField[T1, T2, T3]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
-	types = append(types, reflect.TypeOf(GenericField[T1, T2, T3]{}))
+	types = append(types, reflect.TypeFor[GenericField[T1, T2, T3]]())
 	var zero GenericField[T1, T2, T3]
 	s := &canoto.Spec{
 		Name: "GenericField",
@@ -2466,7 +2466,7 @@ type canotoData_NestedGenericField struct {
 
 // CanotoSpec returns the specification of this canoto message.
 func (*NestedGenericField[T1, T2, T3]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
-	types = append(types, reflect.TypeOf(NestedGenericField[T1, T2, T3]{}))
+	types = append(types, reflect.TypeFor[NestedGenericField[T1, T2, T3]]())
 	var zero NestedGenericField[T1, T2, T3]
 	s := &canoto.Spec{
 		Name: "NestedGenericField",
@@ -3345,7 +3345,7 @@ type canotoData_Embedded struct {
 
 // CanotoSpec returns the specification of this canoto message.
 func (*Embedded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
-	types = append(types, reflect.TypeOf(Embedded{}))
+	types = append(types, reflect.TypeFor[Embedded]())
 	var zero Embedded
 	s := &canoto.Spec{
 		Name: "Embedded",
@@ -4150,7 +4150,7 @@ type canotoData_Scalars struct {
 
 // CanotoSpec returns the specification of this canoto message.
 func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
-	types = append(types, reflect.TypeOf(Scalars{}))
+	types = append(types, reflect.TypeFor[Scalars]())
 	var zero Scalars
 	s := &canoto.Spec{
 		Name: "Scalars",
