@@ -770,7 +770,7 @@ func FieldTypeFromField[T Field](
 	types []reflect.Type,
 ) FieldType {
 	var (
-		fieldType = reflect.TypeOf(field).Elem()
+		fieldType = reflect.TypeFor[T]().Elem()
 
 		typeBytes     bool
 		typeRecursive uint64

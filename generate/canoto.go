@@ -292,7 +292,7 @@ ${marshal}	return w
 	}
 	if hasSubMessages {
 		typesDecl = "types "
-		appendTypes = fmt.Sprintf("\ttypes = append(types, reflect.TypeOf(%s%s{}))\n", m.name, generics)
+		appendTypes = fmt.Sprintf("\ttypes = append(types, reflect.TypeFor[%s%s]())\n", m.name, generics)
 	}
 
 	return writeTemplate(w, structTemplate, map[string]string{
