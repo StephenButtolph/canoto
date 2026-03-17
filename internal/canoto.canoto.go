@@ -8102,22 +8102,8 @@ func (c *EmptyMessage) UnmarshalCanotoFrom(r canoto.Reader) error {
 	*c = EmptyMessage{}
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
 
-	var minField uint32
-	for canoto.HasNext(&r) {
-		field, wireType, err := canoto.ReadTag(&r)
-		if err != nil {
-			return err
-		}
-		if field < minField {
-			return canoto.ErrInvalidFieldOrder
-		}
-
-		switch field {
-		default:
-			return canoto.ErrUnknownField
-		}
-
-		minField = field + 1
+	if canoto.HasNext(&r) {
+		return canoto.ErrUnknownField
 	}
 	return nil
 }

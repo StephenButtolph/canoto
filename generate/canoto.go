@@ -171,25 +171,7 @@ func (c *${structName}${generics}) UnmarshalCanotoFrom(r ${selector}Reader) erro
 	*c = ${structName}${generics}{}
 	${storePrefix}c.canotoData.size${storeJoin}uint64(len(r.B))${storeSuffix}
 
-	var minField uint32
-	for ${selector}HasNext(&r) {
-		field, wireType, err := ${selector}ReadTag(&r)
-		if err != nil {
-			return err
-		}
-		if field < minField {
-			return ${selector}ErrInvalidFieldOrder
-		}
-
-		switch field {
-${unmarshal}		default:
-			return ${selector}ErrUnknownField
-		}
-
-		minField = field + 1
-	}
-	return nil
-}
+${unmarshalBody}}
 
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.
@@ -301,7 +283,7 @@ ${marshal}	return w
 		"sizeCache":           makeSizeCache(m),
 		"oneOfCache":          makeOneOfCache(m),
 		"specFields":          makeSpecFields(m, canotoSelector),
-		"unmarshal":           makeUnmarshal(m),
+		"unmarshalBody":       makeUnmarshalBody(m, canotoSelector),
 		"validOneOf":          makeValidOneOf(m),
 		"valid":               makeValid(m),
 		"concurrencyWarning":  concurrencyWarning,
@@ -493,8 +475,7 @@ func makeOneOfCache(m message) string {
 }
 
 func makeSpecFields(m message, canotoSelector string) string {
-	const template = "" +
-		`		Name: %s%q,
+	const template = `		Name: %s%q,
 		Fields: []%sFieldType{%s},
 `
 
@@ -764,6 +745,44 @@ func makeSpec(m message) string {
 `,
 		},
 	})
+}
+
+func makeUnmarshalBody(m message, canotoSelector string) string {
+	var template string
+	if len(m.fields) == 0 {
+		template = `	if ${canotoSelector}HasNext(&r) {
+		return ${canotoSelector}ErrUnknownField
+	}
+	return nil
+`
+	} else {
+		template = `	var minField uint32
+	for ${canotoSelector}HasNext(&r) {
+		field, wireType, err := ${canotoSelector}ReadTag(&r)
+		if err != nil {
+			return err
+		}
+		if field < minField {
+			return ${canotoSelector}ErrInvalidFieldOrder
+		}
+
+		switch field {
+${unmarshal}		default:
+			return ${canotoSelector}ErrUnknownField
+		}
+
+		minField = field + 1
+	}
+	return nil
+`
+	}
+
+	var s strings.Builder
+	_ = writeTemplate(&s, template, map[string]string{
+		"canotoSelector": canotoSelector,
+		"unmarshal":      makeUnmarshal(m),
+	})
+	return s.String()
 }
 
 func makeUnmarshal(m message) string {
