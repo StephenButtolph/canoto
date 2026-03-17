@@ -132,9 +132,7 @@ var (
 
 func writeStruct(w io.Writer, m message, canotoSelector string) error {
 	const structTemplate = `
-const (
-${numberConstants}
-${tagConstants})
+const (${numberConstants}${tagConstants})
 
 type canotoData_${structName} struct {
 ${sizeCache}${oneOfCache}}
@@ -365,6 +363,10 @@ func makeGenerics(m message) string {
 }
 
 func makeNumberConstants(m message) string {
+	if len(m.fields) == 0 {
+		return ""
+	}
+
 	const fieldSizeOverhead = len("canoto____")
 	var largestNumberConstSize int
 	for _, f := range m.fields {
@@ -372,11 +374,11 @@ func makeNumberConstants(m message) string {
 		largestNumberConstSize = max(largestNumberConstSize, numberConstSize)
 	}
 
-	var (
-		template = fmt.Sprintf("\t%%-%ds = %%d\n",
-			largestNumberConstSize,
-		)
-		s strings.Builder
+	var s strings.Builder
+	_, _ = s.WriteString("\n")
+
+	template := fmt.Sprintf("\t%%-%ds = %%d\n",
+		largestNumberConstSize,
 	)
 	for _, f := range m.fields {
 		field := fmt.Sprintf("canoto__%s__%s", m.canonicalizedName, f.canonicalizedName)
@@ -386,6 +388,10 @@ func makeNumberConstants(m message) string {
 }
 
 func makeTagConstants(m message) string {
+	if len(m.fields) == 0 {
+		return ""
+	}
+
 	const tagSizeOverhead = len("canoto______tag")
 	var (
 		largestTagConstSize int
@@ -401,12 +407,12 @@ func makeTagConstants(m message) string {
 		largestTagSize = max(largestTagSize, tagSize)
 	}
 
-	var (
-		template = fmt.Sprintf("\t%%-%ds = %%-%ds // canoto.Tag(%%s, canoto.%%s)\n",
-			largestTagConstSize,
-			largestTagSize,
-		)
-		s strings.Builder
+	var s strings.Builder
+	_, _ = s.WriteString("\n")
+
+	template := fmt.Sprintf("\t%%-%ds = %%-%ds // canoto.Tag(%%s, canoto.%%s)\n",
+		largestTagConstSize,
+		largestTagSize,
 	)
 	for _, f := range m.fields {
 		field := fmt.Sprintf("canoto__%s__%s", m.canonicalizedName, f.canonicalizedName)

@@ -146,8 +146,11 @@ func parse(
 				genericPointers[ident.Name] = currentTypeNumber
 			}
 		}
-		var noCopy bool
-		noCopy, err = parseCanotoData(fs, st.Fields)
+		var (
+			noCopy        bool
+			hasCanotoData bool
+		)
+		noCopy, hasCanotoData, err = parseCanotoData(fs, st.Fields)
 		if err != nil {
 			return false
 		}
@@ -178,7 +181,7 @@ func parse(
 			}
 			message.fields = append(message.fields, field)
 		}
-		if len(message.fields) == 0 {
+		if !hasCanotoData && len(message.fields) == 0 {
 			return false
 		}
 
@@ -216,7 +219,7 @@ func parse(
 func parseCanotoData(
 	fs *token.FileSet,
 	afl *ast.FieldList,
-) (bool, error) {
+) (bool, bool, error) {
 	for _, sf := range afl.List {
 		if len(sf.Names) != 1 {
 			continue
@@ -226,29 +229,29 @@ func parseCanotoData(
 		}
 
 		if sf.Tag == nil {
-			return defaultNoCopy, nil
+			return defaultNoCopy, true, nil
 		}
 
 		rawTag := strings.Trim(sf.Tag.Value, "`")
 		tags, err := structtag.Parse(rawTag)
 		if err != nil {
-			return false, err
+			return false, false, err
 		}
 
 		tag, err := tags.Get(canotoTag)
 		if err != nil {
-			return defaultNoCopy, nil //nolint: nilerr // errors imply the tag was not found
+			return defaultNoCopy, true, nil //nolint: nilerr // errors imply the tag was not found
 		}
 		if tag.Name != "nocopy" || len(tag.Options) != 0 {
-			return false, fmt.Errorf("%w %q at %s",
+			return false, false, fmt.Errorf("%w %q at %s",
 				errMalformedCanotoDataTag,
 				tag.Value(),
 				fs.Position(sf.Pos()),
 			)
 		}
-		return true, nil
+		return true, true, nil
 	}
-	return defaultNoCopy, nil
+	return defaultNoCopy, false, nil
 }
 
 func parseField(
@@ -417,9 +420,9 @@ func canonicalizeName(name string) string {
 // description, if one exists.
 func parseFieldTag(fs *token.FileSet, field *ast.Field) (
 	canotoType,
-	uint32,
-	string,
-	bool,
+	uint32, // fieldNumber
+	string, // oneOfName
+	bool, // hasTag
 	error,
 ) {
 	if field.Tag == nil {
