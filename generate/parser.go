@@ -181,6 +181,9 @@ func parse(
 			}
 			message.fields = append(message.fields, field)
 		}
+
+		// If the struct doesn't contain a field named "canotoData", or fields
+		// with canoto tags, then it isn't considered a canoto message.
 		if !hasCanotoData && len(message.fields) == 0 {
 			return false
 		}
