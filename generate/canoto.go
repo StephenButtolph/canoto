@@ -132,20 +132,13 @@ var (
 
 func writeStruct(w io.Writer, m message, canotoSelector string) error {
 	const structTemplate = `
-const (
-${numberConstants}
-${tagConstants})
-
-type canotoData_${structName} struct {
+${constants}type canotoData_${structName} struct {
 ${sizeCache}${oneOfCache}}
 
 // CanotoSpec returns the specification of this canoto message.
 func (*${structName}${generics}) CanotoSpec(${typesDecl}...reflect.Type) *${selector}Spec {
 ${appendTypes}${zero}	s := &${selector}Spec{
-		Name: "${structName}",
-		Fields: []${selector}FieldType{
-${spec}		},
-	}
+${spec}	}
 	s.CalculateCanotoCache()
 	return s
 }
@@ -176,25 +169,7 @@ func (c *${structName}${generics}) UnmarshalCanotoFrom(r ${selector}Reader) erro
 	*c = ${structName}${generics}{}
 	${storePrefix}c.canotoData.size${storeJoin}uint64(len(r.B))${storeSuffix}
 
-	var minField uint32
-	for ${selector}HasNext(&r) {
-		field, wireType, err := ${selector}ReadTag(&r)
-		if err != nil {
-			return err
-		}
-		if field < minField {
-			return ${selector}ErrInvalidFieldOrder
-		}
-
-		switch field {
-${unmarshal}		default:
-			return ${selector}ErrUnknownField
-		}
-
-		minField = field + 1
-	}
-	return nil
-}
+${unmarshalBody}}
 
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.
@@ -298,15 +273,14 @@ ${marshal}	return w
 	return writeTemplate(w, structTemplate, map[string]string{
 		"typesDecl":           typesDecl,
 		"appendTypes":         appendTypes,
-		"numberConstants":     makeNumberConstants(m),
-		"tagConstants":        makeTagConstants(m),
+		"constants":           makeConstants(m),
 		"structName":          m.name,
 		"generics":            generics,
 		"selector":            canotoSelector,
 		"sizeCache":           makeSizeCache(m),
 		"oneOfCache":          makeOneOfCache(m),
-		"spec":                makeSpec(m),
-		"unmarshal":           makeUnmarshal(m),
+		"spec":                makeSpec(m, canotoSelector),
+		"unmarshalBody":       makeUnmarshalBody(m, canotoSelector),
 		"validOneOf":          makeValidOneOf(m),
 		"valid":               makeValid(m),
 		"concurrencyWarning":  concurrencyWarning,
@@ -362,6 +336,19 @@ func makeGenerics(m message) string {
 	}
 	_, _ = s.WriteString("]")
 	return s.String()
+}
+
+func makeConstants(m message) string {
+	if len(m.fields) == 0 {
+		return ""
+	}
+
+	const template = `const (
+%s
+%s)
+
+`
+	return fmt.Sprintf(template, makeNumberConstants(m), makeTagConstants(m))
 }
 
 func makeNumberConstants(m message) string {
@@ -489,7 +476,23 @@ func makeOneOfCache(m message) string {
 	return s.String()
 }
 
-func makeSpec(m message) string {
+func makeSpec(m message, canotoSelector string) string {
+	const template = `		Name: %s%q,
+		Fields: []%sFieldType{%s},
+`
+
+	var (
+		nameSpaces   = "  "
+		fieldEntries = ""
+	)
+	if len(m.fields) != 0 {
+		nameSpaces = ""
+		fieldEntries = fmt.Sprintf("\n%s\t\t", makeSpecFields(m))
+	}
+	return fmt.Sprintf(template, nameSpaces, m.name, canotoSelector, fieldEntries)
+}
+
+func makeSpecFields(m message) string {
 	return writeMessage(m, messageTemplate{
 		ints: typeTemplate{
 			single: `			{
@@ -744,6 +747,44 @@ func makeSpec(m message) string {
 `,
 		},
 	})
+}
+
+func makeUnmarshalBody(m message, canotoSelector string) string {
+	var template string
+	if len(m.fields) == 0 {
+		template = `	if ${canotoSelector}HasNext(&r) {
+		return ${canotoSelector}ErrUnknownField
+	}
+	return nil
+`
+	} else {
+		template = `	var minField uint32
+	for ${canotoSelector}HasNext(&r) {
+		field, wireType, err := ${canotoSelector}ReadTag(&r)
+		if err != nil {
+			return err
+		}
+		if field < minField {
+			return ${canotoSelector}ErrInvalidFieldOrder
+		}
+
+		switch field {
+${unmarshal}		default:
+			return ${canotoSelector}ErrUnknownField
+		}
+
+		minField = field + 1
+	}
+	return nil
+`
+	}
+
+	var s strings.Builder
+	_ = writeTemplate(&s, template, map[string]string{
+		"canotoSelector": canotoSelector,
+		"unmarshal":      makeUnmarshal(m),
+	})
+	return s.String()
 }
 
 func makeUnmarshal(m message) string {

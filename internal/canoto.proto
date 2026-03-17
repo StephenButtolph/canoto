@@ -170,3 +170,6 @@ message SpecUnusedZero {
   bytes Bytes = 5;
   repeated bytes RepeatedBytes = 6;
 }
+
+message EmptyMessage {
+}

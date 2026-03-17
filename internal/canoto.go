@@ -216,3 +216,7 @@ type SpecUnusedZero struct {
 
 	canotoData canotoData_SpecUnusedZero
 }
+
+type EmptyMessage struct {
+	canotoData canotoData_EmptyMessage
+}
