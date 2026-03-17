@@ -18,7 +18,6 @@ const (
 	canotoFixedBytes canotoType = "fixed bytes"
 	canotoValue      canotoType = "value"
 	canotoPointer    canotoType = "pointer"
-	canotoField      canotoType = "field"
 
 	canotoRepeatedInt        = "repeated " + canotoInt
 	canotoRepeatedUint       = "repeated " + canotoUint
@@ -30,7 +29,6 @@ const (
 	canotoRepeatedFixedBytes = "repeated " + canotoFixedBytes
 	canotoRepeatedValue      = "repeated " + canotoValue
 	canotoRepeatedPointer    = "repeated " + canotoPointer
-	canotoRepeatedField      = "repeated " + canotoField
 
 	canotoFixedRepeatedInt        = "fixed " + canotoRepeatedInt
 	canotoFixedRepeatedUint       = "fixed " + canotoRepeatedUint
@@ -42,7 +40,6 @@ const (
 	canotoFixedRepeatedFixedBytes = "fixed " + canotoRepeatedFixedBytes
 	canotoFixedRepeatedValue      = "fixed " + canotoRepeatedValue
 	canotoFixedRepeatedPointer    = "fixed " + canotoRepeatedPointer
-	canotoFixedRepeatedField      = "fixed " + canotoRepeatedField
 )
 
 var (
@@ -58,7 +55,6 @@ var (
 			canotoFixedBytes,
 			canotoValue,
 			canotoPointer,
-			canotoField,
 		},
 		canotoRepeatedTypes...,
 	)
@@ -74,7 +70,6 @@ var (
 			canotoRepeatedFixedBytes,
 			canotoRepeatedValue,
 			canotoRepeatedPointer,
-			canotoRepeatedField,
 		},
 		canotoFixedRepeatedTypes...,
 	)
@@ -89,7 +84,6 @@ var (
 		canotoFixedRepeatedFixedBytes,
 		canotoFixedRepeatedValue,
 		canotoFixedRepeatedPointer,
-		canotoFixedRepeatedField,
 	}
 	canotoIntTypes = []canotoType{
 		canotoInt,
@@ -105,15 +99,12 @@ var (
 	canotoMessageTypes = []canotoType{
 		canotoValue,
 		canotoPointer,
-		canotoField,
 
 		canotoRepeatedValue,
 		canotoRepeatedPointer,
-		canotoRepeatedField,
 
 		canotoFixedRepeatedValue,
 		canotoFixedRepeatedPointer,
-		canotoFixedRepeatedField,
 	}
 
 	goIntToProto = map[string]string{
@@ -198,7 +189,7 @@ func (c canotoType) ProtoType(goType string) string {
 
 func (c canotoType) ProtoTypePrefix() string {
 	switch c {
-	case canotoInt, canotoUint, canotoFint32, canotoFint64, canotoBool, canotoString, canotoBytes, canotoFixedBytes, canotoValue, canotoPointer, canotoField:
+	case canotoInt, canotoUint, canotoFint32, canotoFint64, canotoBool, canotoString, canotoBytes, canotoFixedBytes, canotoValue, canotoPointer:
 		return ""
 	default:
 		return "repeated "

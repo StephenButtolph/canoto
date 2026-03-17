@@ -911,8 +911,7 @@ type SpecFuzzer struct {
 	RepeatedLargestFieldNumber []LargestFieldNumber[uint32] `canoto:"repeated value,31"  json:"RepeatedLargestFieldNumber,omitempty"`
 	OneOf                      *OneOf                       `canoto:"pointer,32"         json:"OneOf,omitempty"`
 	Pointer                    *LargestFieldNumber[uint32]  `canoto:"pointer,33"         json:"Pointer,omitempty"`
-	Field                      *LargestFieldNumber[uint32]  `canoto:"field,34"           json:"Field,omitempty"`
-	Recursive                  *SpecFuzzer                  `canoto:"pointer,35"         json:"Recursive,omitempty"`
+	Recursive                  *SpecFuzzer                  `canoto:"pointer,34"         json:"Recursive,omitempty"`
 
 	canotoData canotoData_SpecFuzzer
 }

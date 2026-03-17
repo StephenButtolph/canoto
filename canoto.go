@@ -196,18 +196,6 @@ type (
 		*T
 	}
 
-	// FieldMaker is a Field that can create a new value of type T.
-	//
-	// The returned value must be able to be unmarshaled into.
-	//
-	// This type can be used when implementing a generic Field. However, if T is
-	// an interface, it is possible for generated code to compile and panic at
-	// runtime.
-	FieldMaker[T any] interface {
-		Field
-		MakeCanoto() T
-	}
-
 	// WireType represents the Proto wire description of a field. Within Proto
 	// it is used to provide forwards compatibility. For Canoto, it exists to
 	// provide compatibility with Proto.

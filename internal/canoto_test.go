@@ -88,20 +88,6 @@ func canonicalizeCanotoScalars(s *Scalars) *Scalars {
 			s.FixedRepeatedPointer[i] = nil
 		}
 	}
-	if s.Field != nil && s.Field.Uint == 0 {
-		s.Field = nil
-	}
-	s.RepeatedField = canonicalizeSlice(s.RepeatedField)
-	for i := range s.RepeatedField {
-		if s.RepeatedField[i] != nil && s.RepeatedField[i].Uint == 0 {
-			s.RepeatedField[i] = nil
-		}
-	}
-	for i := range s.FixedRepeatedField {
-		if s.FixedRepeatedField[i] != nil && s.FixedRepeatedField[i].Uint == 0 {
-			s.FixedRepeatedField[i] = nil
-		}
-	}
 	return s
 }
 
@@ -193,32 +179,6 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 		}
 		fixedRepeatedPointers = append(fixedRepeatedPointers, ptr)
 	}
-	var field *pb.LargestFieldNumber
-	if v := s.Field.GetUint(); v != 0 {
-		field = &pb.LargestFieldNumber{
-			Uint: v,
-		}
-	}
-	repeatedFields := make([]*pb.LargestFieldNumber, 0, len(s.RepeatedField))
-	for _, v := range s.RepeatedField {
-		var field *pb.LargestFieldNumber
-		if v := v.GetUint(); v != 0 {
-			field = &pb.LargestFieldNumber{
-				Uint: v,
-			}
-		}
-		repeatedFields = append(repeatedFields, field)
-	}
-	fixedRepeatedFields := make([]*pb.LargestFieldNumber, 0, len(s.FixedRepeatedField))
-	for _, v := range s.FixedRepeatedField {
-		var field *pb.LargestFieldNumber
-		if v := v.GetUint(); v != 0 {
-			field = &pb.LargestFieldNumber{
-				Uint: v,
-			}
-		}
-		fixedRepeatedFields = append(fixedRepeatedFields, field)
-	}
 	return &pb.Scalars{
 		Int8:               s.Int8,
 		Int16:              s.Int16,
@@ -289,9 +249,6 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 		Pointer:              pointer,
 		RepeatedPointer:      canonicalizeSlice(repeatedPointers),
 		FixedRepeatedPointer: canonicalizeSlice(fixedRepeatedPointers),
-		Field:                field,
-		RepeatedField:        canonicalizeSlice(repeatedFields),
-		FixedRepeatedField:   canonicalizeSlice(fixedRepeatedFields),
 	}
 }
 
@@ -516,39 +473,6 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 					}
 				}
 				pbs.FixedRepeatedPointer = append(pbs.FixedRepeatedPointer, ptr)
-			}
-		}
-	}
-	if s.Field != nil && s.Field.Uint != 0 {
-		pbs.Field = &pb.LargestFieldNumber{
-			Uint: uint64(s.Field.Uint),
-		}
-	}
-	if len(s.RepeatedField) != 0 {
-		for _, v := range s.RepeatedField {
-			var ptr *pb.LargestFieldNumber
-			if v != nil && v.Uint != 0 {
-				ptr = &pb.LargestFieldNumber{
-					Uint: uint64(v.Uint),
-				}
-			}
-			pbs.RepeatedField = append(pbs.RepeatedField, ptr)
-		}
-	}
-	{
-		isZero := true
-		for _, v := range s.FixedRepeatedField {
-			isZero = isZero && (v == nil || v.Uint == 0)
-		}
-		if !isZero {
-			for _, v := range s.FixedRepeatedField {
-				var ptr *pb.LargestFieldNumber
-				if v != nil && v.Uint != 0 {
-					ptr = &pb.LargestFieldNumber{
-						Uint: uint64(v.Uint),
-					}
-				}
-				pbs.FixedRepeatedField = append(pbs.FixedRepeatedField, ptr)
 			}
 		}
 	}

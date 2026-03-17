@@ -12,13 +12,8 @@ const constRepeatedUint64Len = 3
 var (
 	_ canoto.Message = (*LargestFieldNumber[uint32])(nil)
 	_ canoto.Message = (*OneOf)(nil)
-	_ canoto.Message = (*GenericField[OneOf, *OneOf, *OneOf])(nil)
+	_ canoto.Message = (*GenericField[OneOf, *OneOf])(nil)
 	_ canoto.Message = (*Scalars)(nil)
-
-	_ canoto.FieldMaker[*LargestFieldNumber[uint32]]          = (*LargestFieldNumber[uint32])(nil)
-	_ canoto.FieldMaker[*OneOf]                               = (*OneOf)(nil)
-	_ canoto.FieldMaker[*GenericField[OneOf, *OneOf, *OneOf]] = (*GenericField[OneOf, *OneOf, *OneOf])(nil)
-	_ canoto.FieldMaker[*Scalars]                             = (*Scalars)(nil)
 )
 
 type (
@@ -79,39 +74,33 @@ type RecursiveB struct {
 	canotoData canotoData_RecursiveB
 }
 
-type GenericField[V any, _ canoto.FieldPointer[V], T canoto.FieldMaker[T]] struct {
+type GenericField[V any, _ canoto.FieldPointer[V]] struct {
 	Value                V     `canoto:"value,1"`
 	RepeatedValue        []V   `canoto:"repeated value,2"`
 	FixedRepeatedValue   [3]V  `canoto:"fixed repeated value,3"`
 	Pointer              *V    `canoto:"pointer,4"`
 	RepeatedPointer      []*V  `canoto:"repeated pointer,5"`
 	FixedRepeatedPointer [3]*V `canoto:"fixed repeated pointer,6"`
-	Field                T     `canoto:"field,7"`
-	RepeatedField        []T   `canoto:"repeated field,8"`
-	FixedRepeatedField   [3]T  `canoto:"fixed repeated field,9"`
 
 	canotoData canotoData_GenericField
 }
 
-type NestedGenericField[V any, P canoto.FieldPointer[V], T canoto.FieldMaker[T]] struct {
-	Value                GenericField[V, P, T]     `canoto:"value,1"`
-	RepeatedValue        []GenericField[V, P, T]   `canoto:"repeated value,2"`
-	FixedRepeatedValue   [3]GenericField[V, P, T]  `canoto:"fixed repeated value,3"`
-	Pointer              *GenericField[V, P, T]    `canoto:"pointer,4"`
-	RepeatedPointer      []*GenericField[V, P, T]  `canoto:"repeated pointer,5"`
-	FixedRepeatedPointer [3]*GenericField[V, P, T] `canoto:"fixed repeated pointer,6"`
-	Field                *GenericField[V, P, T]    `canoto:"field,7"`
-	RepeatedField        []*GenericField[V, P, T]  `canoto:"repeated field,8"`
-	FixedRepeatedField   [3]*GenericField[V, P, T] `canoto:"fixed repeated field,9"`
+type NestedGenericField[V any, P canoto.FieldPointer[V]] struct {
+	Value                GenericField[V, P]     `canoto:"value,1"`
+	RepeatedValue        []GenericField[V, P]   `canoto:"repeated value,2"`
+	FixedRepeatedValue   [3]GenericField[V, P]  `canoto:"fixed repeated value,3"`
+	Pointer              *GenericField[V, P]    `canoto:"pointer,4"`
+	RepeatedPointer      []*GenericField[V, P]  `canoto:"repeated pointer,5"`
+	FixedRepeatedPointer [3]*GenericField[V, P] `canoto:"fixed repeated pointer,6"`
 
 	canotoData canotoData_NestedGenericField
 }
 
 type Embedded struct {
-	OneOf                                `canoto:"value,1"`
-	*LargestFieldNumber[uint32]          `canoto:"pointer,2"`
-	*GenericField[OneOf, *OneOf, *OneOf] `canoto:"field,3"`
-	*big.Int                             `canoto:"pointer,4"`
+	OneOf                        `canoto:"value,1"`
+	*LargestFieldNumber[uint32]  `canoto:"pointer,2"`
+	*GenericField[OneOf, *OneOf] `canoto:"pointer,3"`
+	*big.Int                     `canoto:"pointer,4"`
 
 	canotoData canotoData_Embedded
 }
@@ -199,9 +188,6 @@ type Scalars struct {
 	Pointer                         *LargestFieldNumber[uint32]    `canoto:"pointer,63"`
 	RepeatedPointer                 []*LargestFieldNumber[uint32]  `canoto:"repeated pointer,64"`
 	FixedRepeatedPointer            [3]*LargestFieldNumber[uint32] `canoto:"fixed repeated pointer,65"`
-	Field                           *LargestFieldNumber[uint32]    `canoto:"field,66"`
-	RepeatedField                   []*LargestFieldNumber[uint32]  `canoto:"repeated field,67"`
-	FixedRepeatedField              [3]*LargestFieldNumber[uint32] `canoto:"fixed repeated field,68"`
 
 	canotoData canotoData_Scalars
 }

@@ -58,8 +58,7 @@ const (
 	canoto__SpecFuzzer__RepeatedLargestFieldNumber = 31
 	canoto__SpecFuzzer__OneOf                      = 32
 	canoto__SpecFuzzer__Pointer                    = 33
-	canoto__SpecFuzzer__Field                      = 34
-	canoto__SpecFuzzer__Recursive                  = 35
+	canoto__SpecFuzzer__Recursive                  = 34
 
 	canoto__SpecFuzzer__Int8__tag                       = "\x08"     // canoto.Tag(canoto__SpecFuzzer__Int8, canoto.Varint)
 	canoto__SpecFuzzer__Int16__tag                      = "\x10"     // canoto.Tag(canoto__SpecFuzzer__Int16, canoto.Varint)
@@ -94,8 +93,7 @@ const (
 	canoto__SpecFuzzer__RepeatedLargestFieldNumber__tag = "\xfa\x01" // canoto.Tag(canoto__SpecFuzzer__RepeatedLargestFieldNumber, canoto.Len)
 	canoto__SpecFuzzer__OneOf__tag                      = "\x82\x02" // canoto.Tag(canoto__SpecFuzzer__OneOf, canoto.Len)
 	canoto__SpecFuzzer__Pointer__tag                    = "\x8a\x02" // canoto.Tag(canoto__SpecFuzzer__Pointer, canoto.Len)
-	canoto__SpecFuzzer__Field__tag                      = "\x92\x02" // canoto.Tag(canoto__SpecFuzzer__Field, canoto.Len)
-	canoto__SpecFuzzer__Recursive__tag                  = "\x9a\x02" // canoto.Tag(canoto__SpecFuzzer__Recursive, canoto.Len)
+	canoto__SpecFuzzer__Recursive__tag                  = "\x92\x02" // canoto.Tag(canoto__SpecFuzzer__Recursive, canoto.Len)
 )
 
 type canotoData_SpecFuzzer struct {
@@ -353,15 +351,6 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*types:         */ types,
 			),
 			FieldTypeFromField(
-				/*type inference:*/ zero.Field,
-				/*FieldNumber:   */ canoto__SpecFuzzer__Field,
-				/*Name:          */ "Field",
-				/*FixedLength:   */ 0,
-				/*Repeated:      */ false,
-				/*OneOf:         */ "",
-				/*types:         */ types,
-			),
-			FieldTypeFromField(
 				/*type inference:*/ (zero.Recursive),
 				/*FieldNumber:   */ canoto__SpecFuzzer__Recursive,
 				/*Name:          */ "Recursive",
@@ -374,11 +363,6 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 	}
 	s.CalculateCanotoCache()
 	return s
-}
-
-// MakeCanoto creates a new empty value.
-func (*SpecFuzzer) MakeCanoto() *SpecFuzzer {
-	return new(SpecFuzzer)
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -1173,31 +1157,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return err
 			}
 			r.B = remainingBytes
-		case canoto__SpecFuzzer__Field:
-			if wireType != Len {
-				return ErrUnexpectedWireType
-			}
-
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
-				return err
-			}
-			if len(msgBytes) == 0 {
-				return ErrZeroValue
-			}
-			r.Unsafe = originalUnsafe
-
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.Field = c.Field.MakeCanoto()
-			if err := c.Field.UnmarshalCanotoFrom(r); err != nil {
-				return err
-			}
-			r.B = remainingBytes
 		case canoto__SpecFuzzer__Recursive:
 			if wireType != Len {
 				return ErrUnexpectedWireType
@@ -1266,9 +1225,6 @@ func (c *SpecFuzzer) ValidCanoto() bool {
 		return false
 	}
 	if c.Pointer != nil && !(c.Pointer).ValidCanoto() {
-		return false
-	}
-	if !c.Field.ValidCanoto() {
 		return false
 	}
 	if c.Recursive != nil && !(c.Recursive).ValidCanoto() {
@@ -1438,10 +1394,6 @@ func (c *SpecFuzzer) CalculateCanotoCache() {
 		if fieldSize := (c.Pointer).CachedCanotoSize(); fieldSize != 0 {
 			size += uint64(len(canoto__SpecFuzzer__Pointer__tag)) + SizeUint(fieldSize) + fieldSize
 		}
-	}
-	c.Field.CalculateCanotoCache()
-	if fieldSize := c.Field.CachedCanotoSize(); fieldSize != 0 {
-		size += uint64(len(canoto__SpecFuzzer__Field__tag)) + SizeUint(fieldSize) + fieldSize
 	}
 	if c.Recursive != nil {
 		(c.Recursive).CalculateCanotoCache()
@@ -1674,11 +1626,6 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 			w = (c.Pointer).MarshalCanotoInto(w)
 		}
 	}
-	if fieldSize := c.Field.CachedCanotoSize(); fieldSize != 0 {
-		Append(&w, canoto__SpecFuzzer__Field__tag)
-		AppendUint(&w, fieldSize)
-		w = c.Field.MarshalCanotoInto(w)
-	}
 	if c.Recursive != nil {
 		if fieldSize := (c.Recursive).CachedCanotoSize(); fieldSize != 0 {
 			Append(&w, canoto__SpecFuzzer__Recursive__tag)
@@ -1715,11 +1662,6 @@ func (*LargestFieldNumber[T1]) CanotoSpec(...reflect.Type) *Spec {
 	}
 	s.CalculateCanotoCache()
 	return s
-}
-
-// MakeCanoto creates a new empty value.
-func (*LargestFieldNumber[T1]) MakeCanoto() *LargestFieldNumber[T1] {
-	return new(LargestFieldNumber[T1])
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -1920,11 +1862,6 @@ func (*OneOf) CanotoSpec(...reflect.Type) *Spec {
 	}
 	s.CalculateCanotoCache()
 	return s
-}
-
-// MakeCanoto creates a new empty value.
-func (*OneOf) MakeCanoto() *OneOf {
-	return new(OneOf)
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
