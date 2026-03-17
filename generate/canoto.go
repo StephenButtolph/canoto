@@ -140,10 +140,7 @@ ${sizeCache}${oneOfCache}}
 // CanotoSpec returns the specification of this canoto message.
 func (*${structName}${generics}) CanotoSpec(${typesDecl}...reflect.Type) *${selector}Spec {
 ${appendTypes}${zero}	s := &${selector}Spec{
-		Name: "${structName}",
-		Fields: []${selector}FieldType{
-${spec}		},
-	}
+${specFields}	}
 	s.CalculateCanotoCache()
 	return s
 }
@@ -303,7 +300,7 @@ ${marshal}	return w
 		"selector":            canotoSelector,
 		"sizeCache":           makeSizeCache(m),
 		"oneOfCache":          makeOneOfCache(m),
-		"spec":                makeSpec(m),
+		"specFields":          makeSpecFields(m, canotoSelector),
 		"unmarshal":           makeUnmarshal(m),
 		"validOneOf":          makeValidOneOf(m),
 		"valid":               makeValid(m),
@@ -493,6 +490,23 @@ func makeOneOfCache(m message) string {
 		_, _ = fmt.Fprintf(&s, template, oneOf+oneOfSuffix)
 	}
 	return s.String()
+}
+
+func makeSpecFields(m message, canotoSelector string) string {
+	const template = "" +
+		`		Name: %s%q,
+		Fields: []%sFieldType{%s},
+`
+
+	var (
+		nameSpaces   = "  "
+		fieldEntries = ""
+	)
+	if len(m.fields) != 0 {
+		nameSpaces = ""
+		fieldEntries = fmt.Sprintf("\n%s\t\t", makeSpec(m))
+	}
+	return fmt.Sprintf(template, nameSpaces, m.name, canotoSelector, fieldEntries)
 }
 
 func makeSpec(m message) string {
