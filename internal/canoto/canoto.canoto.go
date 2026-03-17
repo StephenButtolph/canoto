@@ -64,11 +64,6 @@ func (*Spec) CanotoSpec(types ...reflect.Type) *Spec {
 	return s
 }
 
-// MakeCanoto creates a new empty value.
-func (*Spec) MakeCanoto() *Spec {
-	return new(Spec)
-}
-
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
@@ -421,11 +416,6 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 	}
 	s.CalculateCanotoCache()
 	return s
-}
-
-// MakeCanoto creates a new empty value.
-func (*FieldType) MakeCanoto() *FieldType {
-	return new(FieldType)
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.

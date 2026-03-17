@@ -7,10 +7,7 @@ import (
 	"github.com/StephenButtolph/canoto"
 )
 
-var (
-	_ canoto.Field            = (*Int)(nil)
-	_ canoto.FieldMaker[*Int] = (*Int)(nil)
-)
+var _ canoto.Field = (*Int)(nil)
 
 type Int struct {
 	Int *big.Int
@@ -20,10 +17,6 @@ func (*Int) CanotoSpec(...reflect.Type) *canoto.Spec {
 	// Nil indicates that the type does not have a valid spec. This type will be
 	// treated as opaque bytes.
 	return nil
-}
-
-func (*Int) MakeCanoto() *Int {
-	return new(Int)
 }
 
 func (i *Int) UnmarshalCanotoFrom(r canoto.Reader) error {

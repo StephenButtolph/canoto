@@ -54,11 +54,6 @@ func (*justAnInt) CanotoSpec(...reflect.Type) *canoto.Spec {
 	return s
 }
 
-// MakeCanoto creates a new empty value.
-func (*justAnInt) MakeCanoto() *justAnInt {
-	return new(justAnInt)
-}
-
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
