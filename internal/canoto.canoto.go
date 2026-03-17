@@ -8060,8 +8060,6 @@ func (c *SpecUnusedZero) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	return w
 }
 
-const ()
-
 type canotoData_EmptyMessage struct {
 	size uint64
 }
