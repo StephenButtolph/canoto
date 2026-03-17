@@ -111,7 +111,7 @@ type canotoData_SpecFuzzer struct {
 
 // CanotoSpec returns the specification of this canoto message.
 func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
-	types = append(types, reflect.TypeOf(SpecFuzzer{}))
+	types = append(types, reflect.TypeFor[SpecFuzzer]())
 	var zero SpecFuzzer
 	s := &Spec{
 		Name: "SpecFuzzer",
