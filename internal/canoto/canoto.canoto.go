@@ -646,9 +646,6 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if err := ReadBytes(&r, &msgBytes); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
-				return ErrZeroValue
-			}
 			r.Unsafe = originalUnsafe
 
 			// Unmarshal the field from the bytes.
@@ -736,12 +733,10 @@ func (c *FieldType) ValidCanoto() bool {
 	}
 	if c.TypeMessage != nil {
 		(c.TypeMessage).CalculateCanotoCache()
-		if (c.TypeMessage).CachedCanotoSize() != 0 {
-			if TypeOneOf != 0 {
-				return false
-			}
-			TypeOneOf = canoto__FieldType__TypeMessage
+		if TypeOneOf != 0 {
+			return false
 		}
+		TypeOneOf = canoto__FieldType__TypeMessage
 	}
 	if !ValidString(c.Name) {
 		return false
@@ -818,10 +813,9 @@ func (c *FieldType) CalculateCanotoCache() {
 	}
 	if c.TypeMessage != nil {
 		(c.TypeMessage).CalculateCanotoCache()
-		if fieldSize := (c.TypeMessage).CachedCanotoSize(); fieldSize != 0 {
-			size += uint64(len(canoto__FieldType__TypeMessage__tag)) + SizeUint(fieldSize) + fieldSize
-			TypeOneOf = 15
-		}
+		fieldSize := (c.TypeMessage).CachedCanotoSize()
+		size += uint64(len(canoto__FieldType__TypeMessage__tag)) + SizeUint(fieldSize) + fieldSize
+		TypeOneOf = 15
 	}
 	atomic.StoreUint64(&c.canotoData.size, size)
 	atomic.StoreUint32(&c.canotoData.TypeOneOf, TypeOneOf)

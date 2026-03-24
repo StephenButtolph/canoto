@@ -1009,9 +1009,6 @@ func (c *Node) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
-			}
 			r.Unsafe = originalUnsafe
 
 			// Unmarshal the field from the bytes.
@@ -1045,12 +1042,10 @@ func (c *Node) ValidCanoto() bool {
 	var OneOfOneOf uint32
 	if c.Next != nil {
 		(c.Next).CalculateCanotoCache()
-		if (c.Next).CachedCanotoSize() != 0 {
-			if OneOfOneOf != 0 {
-				return false
-			}
-			OneOfOneOf = canoto__Node__Next
+		if OneOfOneOf != 0 {
+			return false
 		}
+		OneOfOneOf = canoto__Node__Next
 	}
 	if c.Next != nil && !(c.Next).ValidCanoto() {
 		return false
@@ -1073,10 +1068,9 @@ func (c *Node) CalculateCanotoCache() {
 	}
 	if c.Next != nil {
 		(c.Next).CalculateCanotoCache()
-		if fieldSize := (c.Next).CachedCanotoSize(); fieldSize != 0 {
-			size += uint64(len(canoto__Node__Next__tag)) + canoto.SizeUint(fieldSize) + fieldSize
-			OneOfOneOf = 2
-		}
+		fieldSize := (c.Next).CachedCanotoSize()
+		size += uint64(len(canoto__Node__Next__tag)) + canoto.SizeUint(fieldSize) + fieldSize
+		OneOfOneOf = 2
 	}
 	atomic.StoreUint64(&c.canotoData.size, size)
 	atomic.StoreUint32(&c.canotoData.OneOfOneOf, OneOfOneOf)
@@ -1227,9 +1221,6 @@ func (c *RecursiveA) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
-			}
 			r.Unsafe = originalUnsafe
 
 			// Unmarshal the field from the bytes.
@@ -1277,9 +1268,8 @@ func (c *RecursiveA) CalculateCanotoCache() {
 	var size uint64
 	if c.Next != nil {
 		(c.Next).CalculateCanotoCache()
-		if fieldSize := (c.Next).CachedCanotoSize(); fieldSize != 0 {
-			size += uint64(len(canoto__RecursiveA__Next__tag)) + canoto.SizeUint(fieldSize) + fieldSize
-		}
+		fieldSize := (c.Next).CachedCanotoSize()
+		size += uint64(len(canoto__RecursiveA__Next__tag)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
@@ -1326,11 +1316,10 @@ func (c *RecursiveA) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		return w
 	}
 	if c.Next != nil {
-		if fieldSize := (c.Next).CachedCanotoSize(); fieldSize != 0 {
-			canoto.Append(&w, canoto__RecursiveA__Next__tag)
-			canoto.AppendUint(&w, fieldSize)
-			w = (c.Next).MarshalCanotoInto(w)
-		}
+		fieldSize := (c.Next).CachedCanotoSize()
+		canoto.Append(&w, canoto__RecursiveA__Next__tag)
+		canoto.AppendUint(&w, fieldSize)
+		w = (c.Next).MarshalCanotoInto(w)
 	}
 	return w
 }
@@ -1411,9 +1400,6 @@ func (c *RecursiveB) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
-			}
 			r.Unsafe = originalUnsafe
 
 			// Unmarshal the field from the bytes.
@@ -1461,9 +1447,8 @@ func (c *RecursiveB) CalculateCanotoCache() {
 	var size uint64
 	if c.Next != nil {
 		(c.Next).CalculateCanotoCache()
-		if fieldSize := (c.Next).CachedCanotoSize(); fieldSize != 0 {
-			size += uint64(len(canoto__RecursiveB__Next__tag)) + canoto.SizeUint(fieldSize) + fieldSize
-		}
+		fieldSize := (c.Next).CachedCanotoSize()
+		size += uint64(len(canoto__RecursiveB__Next__tag)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
@@ -1510,11 +1495,10 @@ func (c *RecursiveB) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		return w
 	}
 	if c.Next != nil {
-		if fieldSize := (c.Next).CachedCanotoSize(); fieldSize != 0 {
-			canoto.Append(&w, canoto__RecursiveB__Next__tag)
-			canoto.AppendUint(&w, fieldSize)
-			w = (c.Next).MarshalCanotoInto(w)
-		}
+		fieldSize := (c.Next).CachedCanotoSize()
+		canoto.Append(&w, canoto__RecursiveB__Next__tag)
+		canoto.AppendUint(&w, fieldSize)
+		w = (c.Next).MarshalCanotoInto(w)
 	}
 	return w
 }
@@ -1781,9 +1765,6 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
-			}
 			r.Unsafe = originalUnsafe
 
 			// Unmarshal the field from the bytes.
@@ -1999,9 +1980,8 @@ func (c *GenericField[T1, T2]) CalculateCanotoCache() {
 	}
 	if c.Pointer != nil {
 		T2(c.Pointer).CalculateCanotoCache()
-		if fieldSize := T2(c.Pointer).CachedCanotoSize(); fieldSize != 0 {
-			size += uint64(len(canoto__GenericField__Pointer__tag)) + canoto.SizeUint(fieldSize) + fieldSize
-		}
+		fieldSize := T2(c.Pointer).CachedCanotoSize()
+		size += uint64(len(canoto__GenericField__Pointer__tag)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	{
 		field := c.RepeatedPointer
@@ -2108,11 +2088,10 @@ func (c *GenericField[T1, T2]) MarshalCanotoInto(w canoto.Writer) canoto.Writer 
 		}
 	}
 	if c.Pointer != nil {
-		if fieldSize := T2(c.Pointer).CachedCanotoSize(); fieldSize != 0 {
-			canoto.Append(&w, canoto__GenericField__Pointer__tag)
-			canoto.AppendUint(&w, fieldSize)
-			w = T2(c.Pointer).MarshalCanotoInto(w)
-		}
+		fieldSize := T2(c.Pointer).CachedCanotoSize()
+		canoto.Append(&w, canoto__GenericField__Pointer__tag)
+		canoto.AppendUint(&w, fieldSize)
+		w = T2(c.Pointer).MarshalCanotoInto(w)
 	}
 	{
 		field := c.RepeatedPointer
@@ -2416,9 +2395,6 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
-			}
 			r.Unsafe = originalUnsafe
 
 			// Unmarshal the field from the bytes.
@@ -2634,9 +2610,8 @@ func (c *NestedGenericField[T1, T2]) CalculateCanotoCache() {
 	}
 	if c.Pointer != nil {
 		(c.Pointer).CalculateCanotoCache()
-		if fieldSize := (c.Pointer).CachedCanotoSize(); fieldSize != 0 {
-			size += uint64(len(canoto__NestedGenericField__Pointer__tag)) + canoto.SizeUint(fieldSize) + fieldSize
-		}
+		fieldSize := (c.Pointer).CachedCanotoSize()
+		size += uint64(len(canoto__NestedGenericField__Pointer__tag)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	{
 		field := c.RepeatedPointer
@@ -2743,11 +2718,10 @@ func (c *NestedGenericField[T1, T2]) MarshalCanotoInto(w canoto.Writer) canoto.W
 		}
 	}
 	if c.Pointer != nil {
-		if fieldSize := (c.Pointer).CachedCanotoSize(); fieldSize != 0 {
-			canoto.Append(&w, canoto__NestedGenericField__Pointer__tag)
-			canoto.AppendUint(&w, fieldSize)
-			w = (c.Pointer).MarshalCanotoInto(w)
-		}
+		fieldSize := (c.Pointer).CachedCanotoSize()
+		canoto.Append(&w, canoto__NestedGenericField__Pointer__tag)
+		canoto.AppendUint(&w, fieldSize)
+		w = (c.Pointer).MarshalCanotoInto(w)
 	}
 	{
 		field := c.RepeatedPointer
@@ -2922,9 +2896,6 @@ func (c *Embedded) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
-			}
 			r.Unsafe = originalUnsafe
 
 			// Unmarshal the field from the bytes.
@@ -2947,9 +2918,6 @@ func (c *Embedded) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
-			}
 			r.Unsafe = originalUnsafe
 
 			// Unmarshal the field from the bytes.
@@ -2971,9 +2939,6 @@ func (c *Embedded) UnmarshalCanotoFrom(r canoto.Reader) error {
 			var msgBytes []byte
 			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 				return err
-			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
 			}
 			r.Unsafe = originalUnsafe
 
@@ -3035,21 +3000,18 @@ func (c *Embedded) CalculateCanotoCache() {
 	}
 	if c.LargestFieldNumber != nil {
 		(c.LargestFieldNumber).CalculateCanotoCache()
-		if fieldSize := (c.LargestFieldNumber).CachedCanotoSize(); fieldSize != 0 {
-			size += uint64(len(canoto__Embedded__LargestFieldNumber__tag)) + canoto.SizeUint(fieldSize) + fieldSize
-		}
+		fieldSize := (c.LargestFieldNumber).CachedCanotoSize()
+		size += uint64(len(canoto__Embedded__LargestFieldNumber__tag)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	if c.GenericField != nil {
 		(c.GenericField).CalculateCanotoCache()
-		if fieldSize := (c.GenericField).CachedCanotoSize(); fieldSize != 0 {
-			size += uint64(len(canoto__Embedded__GenericField__tag)) + canoto.SizeUint(fieldSize) + fieldSize
-		}
+		fieldSize := (c.GenericField).CachedCanotoSize()
+		size += uint64(len(canoto__Embedded__GenericField__tag)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	if c.Int != nil {
 		(c.Int).CalculateCanotoCache()
-		if fieldSize := (c.Int).CachedCanotoSize(); fieldSize != 0 {
-			size += uint64(len(canoto__Embedded__Int__tag)) + canoto.SizeUint(fieldSize) + fieldSize
-		}
+		fieldSize := (c.Int).CachedCanotoSize()
+		size += uint64(len(canoto__Embedded__Int__tag)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
@@ -3101,25 +3063,22 @@ func (c *Embedded) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		w = (&c.OneOf).MarshalCanotoInto(w)
 	}
 	if c.LargestFieldNumber != nil {
-		if fieldSize := (c.LargestFieldNumber).CachedCanotoSize(); fieldSize != 0 {
-			canoto.Append(&w, canoto__Embedded__LargestFieldNumber__tag)
-			canoto.AppendUint(&w, fieldSize)
-			w = (c.LargestFieldNumber).MarshalCanotoInto(w)
-		}
+		fieldSize := (c.LargestFieldNumber).CachedCanotoSize()
+		canoto.Append(&w, canoto__Embedded__LargestFieldNumber__tag)
+		canoto.AppendUint(&w, fieldSize)
+		w = (c.LargestFieldNumber).MarshalCanotoInto(w)
 	}
 	if c.GenericField != nil {
-		if fieldSize := (c.GenericField).CachedCanotoSize(); fieldSize != 0 {
-			canoto.Append(&w, canoto__Embedded__GenericField__tag)
-			canoto.AppendUint(&w, fieldSize)
-			w = (c.GenericField).MarshalCanotoInto(w)
-		}
+		fieldSize := (c.GenericField).CachedCanotoSize()
+		canoto.Append(&w, canoto__Embedded__GenericField__tag)
+		canoto.AppendUint(&w, fieldSize)
+		w = (c.GenericField).MarshalCanotoInto(w)
 	}
 	if c.Int != nil {
-		if fieldSize := (c.Int).CachedCanotoSize(); fieldSize != 0 {
-			canoto.Append(&w, canoto__Embedded__Int__tag)
-			canoto.AppendUint(&w, fieldSize)
-			w = (c.Int).MarshalCanotoInto(w)
-		}
+		fieldSize := (c.Int).CachedCanotoSize()
+		canoto.Append(&w, canoto__Embedded__Int__tag)
+		canoto.AppendUint(&w, fieldSize)
+		w = (c.Int).MarshalCanotoInto(w)
 	}
 	return w
 }
@@ -5819,9 +5778,6 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
-				return canoto.ErrZeroValue
-			}
 			r.Unsafe = originalUnsafe
 
 			// Unmarshal the field from the bytes.
@@ -6363,9 +6319,8 @@ func (c *Scalars) CalculateCanotoCache() {
 	}
 	if c.Pointer != nil {
 		(c.Pointer).CalculateCanotoCache()
-		if fieldSize := (c.Pointer).CachedCanotoSize(); fieldSize != 0 {
-			size += uint64(len(canoto__Scalars__Pointer__tag)) + canoto.SizeUint(fieldSize) + fieldSize
-		}
+		fieldSize := (c.Pointer).CachedCanotoSize()
+		size += uint64(len(canoto__Scalars__Pointer__tag)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	{
 		field := c.RepeatedPointer
@@ -6830,11 +6785,10 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		w = (&c.OneOf).MarshalCanotoInto(w)
 	}
 	if c.Pointer != nil {
-		if fieldSize := (c.Pointer).CachedCanotoSize(); fieldSize != 0 {
-			canoto.Append(&w, canoto__Scalars__Pointer__tag)
-			canoto.AppendUint(&w, fieldSize)
-			w = (c.Pointer).MarshalCanotoInto(w)
-		}
+		fieldSize := (c.Pointer).CachedCanotoSize()
+		canoto.Append(&w, canoto__Scalars__Pointer__tag)
+		canoto.AppendUint(&w, fieldSize)
+		w = (c.Pointer).MarshalCanotoInto(w)
 	}
 	{
 		field := c.RepeatedPointer

@@ -1281,9 +1281,6 @@ func makeUnmarshal(m message) string {
 			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
-				return ${selector}ErrZeroValue
-			}
 			r.Unsafe = originalUnsafe
 
 			// Unmarshal the field from the bytes.
@@ -1502,12 +1499,10 @@ func makeValidOneOf(m message) string {
 			pointers: typeTemplate{
 				single: `	if c.${fieldName} != nil {
 		${genericTypeCast}(c.${fieldName}).CalculateCanotoCache()
-		if ${genericTypeCast}(c.${fieldName}).CachedCanotoSize() != 0 {
-			if ${oneOf}OneOf != 0 {
-				return false
-			}
-			${oneOf}OneOf = ${fieldNumberConst}
+		if ${oneOf}OneOf != 0 {
+			return false
 		}
+		${oneOf}OneOf = ${fieldNumberConst}
 	}
 `,
 				repeated: repeatedTemplate,
@@ -1763,9 +1758,8 @@ func makeSize(m message) string {
 		pointers: typeTemplate{
 			single: `	if c.${fieldName} != nil {
 		${genericTypeCast}(c.${fieldName}).CalculateCanotoCache()
-		if fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
-			size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOfIndent}
-		}
+		fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize()
+		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
 	}
 `,
 			repeated: `	{
@@ -1896,11 +1890,10 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 	}
 `
 		pointerTemplateRegular = `	if c.${fieldName} != nil {
-		if fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
-			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-			${selector}AppendUint(&w, fieldSize)
-			w = ${genericTypeCast}(c.${fieldName}).MarshalCanotoInto(w)
-		}
+		fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize()
+		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}AppendUint(&w, fieldSize)
+		w = ${genericTypeCast}(c.${fieldName}).MarshalCanotoInto(w)
 	}
 `
 		fieldTemplateRegular = `	if fieldSize := c.${fieldName}.CachedCanotoSize(); fieldSize != 0 {
