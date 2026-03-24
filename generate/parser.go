@@ -17,7 +17,6 @@ import (
 
 const (
 	canotoTag = "canoto"
-	goBytes   = "[]byte"
 
 	// By default, copying of structs is allowed
 	defaultNoCopy = false

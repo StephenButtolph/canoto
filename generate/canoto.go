@@ -327,7 +327,7 @@ func makeGenerics(m message) string {
 		if i != 0 {
 			_, _ = s.WriteString(", ")
 		}
-		_, _ = s.WriteString(fmt.Sprintf("T%d", i+1))
+		_, _ = fmt.Fprintf(&s, "T%d", i+1)
 	}
 	_, _ = s.WriteString("]")
 	return s.String()

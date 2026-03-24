@@ -106,7 +106,7 @@ func makeFields(m message, customTypes map[string]bool) string {
 	)
 	var s strings.Builder
 	for _, o := range m.OneOfs() {
-		_, _ = s.WriteString(fmt.Sprintf("  oneof %s {\n", o))
+		_, _ = fmt.Fprintf(&s, "  oneof %s {\n", o)
 		for _, f := range m.fields {
 			if f.oneOfName != o {
 				continue
