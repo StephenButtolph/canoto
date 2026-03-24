@@ -1400,3 +1400,42 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 		})
 	}
 }
+
+func TestPointerNilVsZeroValue(t *testing.T) {
+	tests := []struct {
+		name string
+		s    *Scalars
+	}{
+		{
+			name: "Pointer/Nil",
+			s:    &Scalars{},
+		},
+		{
+			name: "Pointer/ZeroValue",
+			s:    &Scalars{Pointer: &LargestFieldNumber[uint32]{}},
+		},
+		{
+			name: "RepeatedPointer/NilElement",
+			s:    &Scalars{RepeatedPointer: []*LargestFieldNumber[uint32]{nil}},
+		},
+		{
+			name: "RepeatedPointer/ZeroValueElement",
+			s:    &Scalars{RepeatedPointer: []*LargestFieldNumber[uint32]{{}}},
+		},
+		{
+			name: "FixedRepeatedPointer/AllNil",
+			s:    &Scalars{},
+		},
+		{
+			name: "FixedRepeatedPointer/ZeroValueElement",
+			s:    &Scalars{FixedRepeatedPointer: [3]*LargestFieldNumber[uint32]{{}, nil, nil}},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var got Scalars
+			require.NoError(t, got.UnmarshalCanoto(test.s.MarshalCanoto()))
+			require.Equal(t, test.s, &got)
+		})
+	}
+}
