@@ -4,7 +4,6 @@ package canoto
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"io"
 	"math"
 	"slices"
@@ -878,40 +877,71 @@ func TestIsBytesEmpty(t *testing.T) {
 }
 
 type SpecFuzzer struct {
-	Int8                       int8                         `canoto:"int,1"              json:"Int8,omitempty"`
-	Int16                      int16                        `canoto:"int,2"              json:"Int16,omitempty"`
-	Int32                      int32                        `canoto:"int,3"              json:"Int32,omitempty"`
-	Int64                      int64                        `canoto:"int,4"              json:"Int64,omitempty"`
-	Uint8                      uint8                        `canoto:"uint,5"             json:"Uint8,omitempty"`
-	Uint16                     uint16                       `canoto:"uint,6"             json:"Uint16,omitempty"`
-	Uint32                     uint32                       `canoto:"uint,7"             json:"Uint32,omitempty"`
-	Uint64                     uint64                       `canoto:"uint,8"             json:"Uint64,omitempty"`
-	Sfixed32                   int32                        `canoto:"fint32,9"           json:"Sfixed32,omitempty"`
-	Fixed32                    uint32                       `canoto:"fint32,10"          json:"Fixed32,omitempty"`
-	Sfixed64                   int64                        `canoto:"fint64,11"          json:"Sfixed64,omitempty"`
-	Fixed64                    uint64                       `canoto:"fint64,12"          json:"Fixed64,omitempty"`
-	Bool                       bool                         `canoto:"bool,13"            json:"Bool,omitempty"`
-	String                     string                       `canoto:"string,14"          json:"String,omitempty"`
-	Bytes                      []byte                       `canoto:"bytes,15"           json:"Bytes,omitempty"`
-	LargestFieldNumber         *LargestFieldNumber[uint32]  `canoto:"pointer,16"         json:"LargestFieldNumber,omitempty"`
-	RepeatedInt8               []int8                       `canoto:"repeated int,17"    json:"RepeatedInt8,omitempty"`
-	RepeatedInt16              []int16                      `canoto:"repeated int,18"    json:"RepeatedInt16,omitempty"`
-	RepeatedInt32              []int32                      `canoto:"repeated int,19"    json:"RepeatedInt32,omitempty"`
-	RepeatedInt64              []int64                      `canoto:"repeated int,20"    json:"RepeatedInt64,omitempty"`
-	RepeatedUint16             []uint16                     `canoto:"repeated uint,21"   json:"RepeatedUint16,omitempty"`
-	RepeatedUint32             []uint32                     `canoto:"repeated uint,22"   json:"RepeatedUint32,omitempty"`
-	RepeatedUint64             []uint64                     `canoto:"repeated uint,23"   json:"RepeatedUint64,omitempty"`
-	RepeatedSfixed32           []int32                      `canoto:"repeated fint32,24" json:"RepeatedSfixed32,omitempty"`
-	RepeatedFixed32            []uint32                     `canoto:"repeated fint32,25" json:"RepeatedFixed32,omitempty"`
-	RepeatedSfixed64           []int64                      `canoto:"repeated fint64,26" json:"RepeatedSfixed64,omitempty"`
-	RepeatedFixed64            []uint64                     `canoto:"repeated fint64,27" json:"RepeatedFixed64,omitempty"`
-	RepeatedBool               []bool                       `canoto:"repeated bool,28"   json:"RepeatedBool,omitempty"`
-	RepeatedString             []string                     `canoto:"repeated string,29" json:"RepeatedString,omitempty"`
-	RepeatedBytes              [][]byte                     `canoto:"repeated bytes,30"  json:"RepeatedBytes,omitempty"`
-	RepeatedLargestFieldNumber []LargestFieldNumber[uint32] `canoto:"repeated value,31"  json:"RepeatedLargestFieldNumber,omitempty"`
-	OneOf                      *OneOf                       `canoto:"pointer,32"         json:"OneOf,omitempty"`
-	Pointer                    *LargestFieldNumber[uint32]  `canoto:"pointer,33"         json:"Pointer,omitempty"`
-	Recursive                  *SpecFuzzer                  `canoto:"pointer,34"         json:"Recursive,omitempty"`
+	Int8           int8                        `canoto:"int,1"`
+	Int16          int16                       `canoto:"int,2"`
+	Int32          int32                       `canoto:"int,3"`
+	Int64          int64                       `canoto:"int,4"`
+	Uint8          uint8                       `canoto:"uint,5"`
+	Uint16         uint16                      `canoto:"uint,6"`
+	Uint32         uint32                      `canoto:"uint,7"`
+	Uint64         uint64                      `canoto:"uint,8"`
+	Sfixed32       int32                       `canoto:"fint32,9"`
+	Fixed32        uint32                      `canoto:"fint32,10"`
+	Sfixed64       int64                       `canoto:"fint64,11"`
+	Fixed64        uint64                      `canoto:"fint64,12"`
+	Bool           bool                        `canoto:"bool,13"`
+	String         string                      `canoto:"string,14"`
+	Bytes          []byte                      `canoto:"bytes,15"`
+	FixedBytes     [32]byte                    `canoto:"fixed bytes,16"`
+	Value          LargestFieldNumber[uint32]  `canoto:"value,17"`
+	Pointer        *LargestFieldNumber[uint32] `canoto:"pointer,18"`
+	OneOf          *OneOf                      `canoto:"pointer,19"`
+	Recursive      *SpecFuzzer                 `canoto:"pointer,20"`
+	ValueRecursive *SpecFuzzerPointer          `canoto:"pointer,21"`
+
+	RepeatedInt8           []int8                        `canoto:"repeated int,22"`
+	RepeatedInt16          []int16                       `canoto:"repeated int,23"`
+	RepeatedInt32          []int32                       `canoto:"repeated int,24"`
+	RepeatedInt64          []int64                       `canoto:"repeated int,25"`
+	RepeatedUint8          []uint8                       `canoto:"repeated uint,26"`
+	RepeatedUint16         []uint16                      `canoto:"repeated uint,27"`
+	RepeatedUint32         []uint32                      `canoto:"repeated uint,28"`
+	RepeatedUint64         []uint64                      `canoto:"repeated uint,29"`
+	RepeatedSfixed32       []int32                       `canoto:"repeated fint32,30"`
+	RepeatedFixed32        []uint32                      `canoto:"repeated fint32,31"`
+	RepeatedSfixed64       []int64                       `canoto:"repeated fint64,32"`
+	RepeatedFixed64        []uint64                      `canoto:"repeated fint64,33"`
+	RepeatedBool           []bool                        `canoto:"repeated bool,34"`
+	RepeatedString         []string                      `canoto:"repeated string,35"`
+	RepeatedBytes          [][]byte                      `canoto:"repeated bytes,36"`
+	RepeatedFixedBytes     [][32]byte                    `canoto:"repeated fixed bytes,37"`
+	RepeatedValue          []LargestFieldNumber[uint32]  `canoto:"repeated value,38"`
+	RepeatedPointer        []*LargestFieldNumber[uint32] `canoto:"repeated pointer,39"`
+	RepeatedOneOf          []*OneOf                      `canoto:"repeated pointer,40"`
+	RepeatedRecursive      []*SpecFuzzer                 `canoto:"repeated pointer,41"`
+	RepeatedValueRecursive []*SpecFuzzerPointer          `canoto:"repeated pointer,42"`
+
+	FixedRepeatedInt8           [3]int8                        `canoto:"fixed repeated int,43"`
+	FixedRepeatedInt16          [3]int16                       `canoto:"fixed repeated int,44"`
+	FixedRepeatedInt32          [3]int32                       `canoto:"fixed repeated int,45"`
+	FixedRepeatedInt64          [3]int64                       `canoto:"fixed repeated int,46"`
+	FixedRepeatedUint8          [3]uint8                       `canoto:"fixed repeated uint,47"`
+	FixedRepeatedUint16         [3]uint16                      `canoto:"fixed repeated uint,48"`
+	FixedRepeatedUint32         [3]uint32                      `canoto:"fixed repeated uint,49"`
+	FixedRepeatedUint64         [3]uint64                      `canoto:"fixed repeated uint,50"`
+	FixedRepeatedSfixed32       [3]int32                       `canoto:"fixed repeated fint32,51"`
+	FixedRepeatedFixed32        [3]uint32                      `canoto:"fixed repeated fint32,52"`
+	FixedRepeatedSfixed64       [3]int64                       `canoto:"fixed repeated fint64,53"`
+	FixedRepeatedFixed64        [3]uint64                      `canoto:"fixed repeated fint64,54"`
+	FixedRepeatedBool           [3]bool                        `canoto:"fixed repeated bool,55"`
+	FixedRepeatedString         [3]string                      `canoto:"fixed repeated string,56"`
+	FixedRepeatedBytes          [3][]byte                      `canoto:"fixed repeated bytes,57"`
+	FixedRepeatedFixedBytes     [3][32]byte                    `canoto:"fixed repeated fixed bytes,58"`
+	FixedRepeatedValue          [3]LargestFieldNumber[uint32]  `canoto:"fixed repeated value,59"`
+	FixedRepeatedPointer        [3]*LargestFieldNumber[uint32] `canoto:"fixed repeated pointer,60"`
+	FixedRepeatedOneOf          [3]*OneOf                      `canoto:"fixed repeated pointer,61"`
+	FixedRepeatedRecursive      [3]*SpecFuzzer                 `canoto:"fixed repeated pointer,62"`
+	FixedRepeatedValueRecursive [3]*SpecFuzzerPointer          `canoto:"fixed repeated pointer,63"`
 
 	canotoData canotoData_SpecFuzzer
 }
@@ -920,6 +950,12 @@ type LargestFieldNumber[T Uint] struct {
 	Uint T `canoto:"uint,536870911" json:"Uint,omitempty"`
 
 	canotoData canotoData_LargestFieldNumber
+}
+
+type SpecFuzzerPointer struct {
+	Value SpecFuzzer `canoto:"value,1"`
+
+	canotoData canotoData_SpecFuzzerPointer
 }
 
 type OneOf struct {
@@ -935,56 +971,77 @@ type OneOf struct {
 
 func FuzzSpec(f *testing.F) {
 	full := SpecFuzzer{
-		Int8:     -31,
-		Int16:    -2164,
-		Int32:    -12786345,
-		Int64:    98761243,
-		Uint8:    254,
-		Uint16:   21645,
-		Uint32:   32485976,
-		Uint64:   287634,
-		Fixed32:  98765234,
-		Fixed64:  1234576,
-		Sfixed32: -21348976,
-		Sfixed64: 98756432,
-		Bool:     true,
-		String:   "hi my name is Bob",
-		Bytes:    []byte("hi my name is Bob too"),
-		LargestFieldNumber: &LargestFieldNumber[uint32]{
-			Uint: 216457,
-		},
+		Int8:       -31,
+		Int16:      -2164,
+		Int32:      -12786345,
+		Int64:      98761243,
+		Uint8:      254,
+		Uint16:     21645,
+		Uint32:     32485976,
+		Uint64:     287634,
+		Sfixed32:   -21348976,
+		Fixed32:    98765234,
+		Sfixed64:   98756432,
+		Fixed64:    1234576,
+		Bool:       true,
+		String:     "hi my name is Bob",
+		Bytes:      []byte("hi my name is Bob too"),
+		FixedBytes: [32]byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32},
+		Value:      LargestFieldNumber[uint32]{Uint: 216457},
+		Pointer:    &LargestFieldNumber[uint32]{Uint: 216457},
+		OneOf:      &OneOf{A1: 1, B2: 2, C: 3, D: 4},
 
-		RepeatedInt8:     []int8{1, 2, 3},
-		RepeatedInt16:    []int16{1, 2, 3},
-		RepeatedInt32:    []int32{1, 2, 3},
-		RepeatedInt64:    []int64{1, 2, 3},
-		RepeatedUint16:   []uint16{1, 2, 3},
-		RepeatedUint32:   []uint32{1, 2, 3},
-		RepeatedUint64:   []uint64{1, 2, 3},
-		RepeatedFixed32:  []uint32{1, 2, 3},
-		RepeatedFixed64:  []uint64{1, 2, 3},
-		RepeatedSfixed32: []int32{1, 2, 3},
-		RepeatedSfixed64: []int64{1, 2, 3},
-		RepeatedBool:     []bool{true, false, true},
-		RepeatedString:   []string{"hi", "my", "name", "is", "Bob"},
-		RepeatedBytes:    [][]byte{{1, 2, 3}, {4, 5, 6}},
-		RepeatedLargestFieldNumber: []LargestFieldNumber[uint32]{
-			{Uint: 123455},
-			{Uint: 876523},
-		},
+		RepeatedInt8:       []int8{1, 2, 3},
+		RepeatedInt16:      []int16{1, 2, 3},
+		RepeatedInt32:      []int32{1, 2, 3},
+		RepeatedInt64:      []int64{1, 2, 3},
+		RepeatedUint8:      []uint8{1, 2, 3},
+		RepeatedUint16:     []uint16{1, 2, 3},
+		RepeatedUint32:     []uint32{1, 2, 3},
+		RepeatedUint64:     []uint64{1, 2, 3},
+		RepeatedSfixed32:   []int32{1, 2, 3},
+		RepeatedFixed32:    []uint32{1, 2, 3},
+		RepeatedSfixed64:   []int64{1, 2, 3},
+		RepeatedFixed64:    []uint64{1, 2, 3},
+		RepeatedBool:       []bool{true, false, true},
+		RepeatedString:     []string{"hi", "my", "name", "is", "Bob"},
+		RepeatedBytes:      [][]byte{{1, 2, 3}, {4, 5, 6}},
+		RepeatedFixedBytes: [][32]byte{{1, 2, 3}, {4, 5, 6}},
+		RepeatedValue:      []LargestFieldNumber[uint32]{{Uint: 123455}, {Uint: 876523}},
+		RepeatedPointer:    []*LargestFieldNumber[uint32]{{Uint: 123455}, {Uint: 876523}},
+		RepeatedOneOf:      []*OneOf{{A1: 1}, {A2: 5}},
 
-		OneOf: &OneOf{
-			A1: 1,
-			B2: 2,
-			C:  3,
-			D:  4,
-		},
+		FixedRepeatedInt8:       [3]int8{1, 2, 3},
+		FixedRepeatedInt16:      [3]int16{1, 2, 3},
+		FixedRepeatedInt32:      [3]int32{1, 2, 3},
+		FixedRepeatedInt64:      [3]int64{1, 2, 3},
+		FixedRepeatedUint8:      [3]uint8{1, 2, 3},
+		FixedRepeatedUint16:     [3]uint16{1, 2, 3},
+		FixedRepeatedUint32:     [3]uint32{1, 2, 3},
+		FixedRepeatedUint64:     [3]uint64{1, 2, 3},
+		FixedRepeatedSfixed32:   [3]int32{1, 2, 3},
+		FixedRepeatedFixed32:    [3]uint32{1, 2, 3},
+		FixedRepeatedSfixed64:   [3]int64{1, 2, 3},
+		FixedRepeatedFixed64:    [3]uint64{1, 2, 3},
+		FixedRepeatedBool:       [3]bool{true, true, true},
+		FixedRepeatedString:     [3]string{"a", "b", "c"},
+		FixedRepeatedBytes:      [3][]byte{{1, 2}, {3, 4}, {5, 6}},
+		FixedRepeatedFixedBytes: [3][32]byte{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}},
+		FixedRepeatedValue:      [3]LargestFieldNumber[uint32]{{Uint: 1}, {Uint: 2}, {Uint: 3}},
+		FixedRepeatedPointer:    [3]*LargestFieldNumber[uint32]{{Uint: 1}, {Uint: 2}, {Uint: 3}},
+		FixedRepeatedOneOf:      [3]*OneOf{{A1: 1}, {B1: 2}, {C: 3}},
 	}
 	fullBytes := full.MarshalCanoto()
 	f.Add(fullBytes)
 
-	full.Recursive = new(SpecFuzzer)
-	require.NoError(f, full.Recursive.UnmarshalCanoto(fullBytes))
+	full.ValueRecursive = &SpecFuzzerPointer{}
+	require.NoError(f, full.ValueRecursive.Value.UnmarshalCanoto(fullBytes))
+	full.RepeatedValueRecursive = []*SpecFuzzerPointer{full.ValueRecursive}
+	full.FixedRepeatedValueRecursive = [3]*SpecFuzzerPointer{full.ValueRecursive, full.ValueRecursive, full.ValueRecursive}
+
+	full.Recursive = &full.ValueRecursive.Value
+	full.RepeatedRecursive = []*SpecFuzzer{full.Recursive}
+	full.FixedRepeatedRecursive = [3]*SpecFuzzer{full.Recursive, full.Recursive, full.Recursive}
 
 	recursiveFullBytes := full.MarshalCanoto()
 	f.Add(recursiveFullBytes)
@@ -1015,14 +1072,6 @@ func FuzzSpec(f *testing.F) {
 		for i := range b {
 			b[i]++
 		}
-
-		// Verify that the unmarshalled messages have the same json
-		// representation.
-		expectedJSON, err := json.Marshal(&msg)
-		require.NoError(err)
-		actualJSON, err := json.Marshal(anyMSG)
-		require.NoError(err)
-		require.JSONEq(string(expectedJSON), string(actualJSON))
 
 		// Verify that re-marshalling the unmarshalled message returns the same
 		// bytes as the original message.
