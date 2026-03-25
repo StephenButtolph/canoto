@@ -349,26 +349,24 @@ func (s SizeEnum) NumBytes() (uint64, bool) {
 	}
 }
 
-// ReadPointerPresence parses the presence wrapper from the outer body of a
-// repeated pointer element. msgBytes is the outer body (the bytes after the
-// outer field tag and length have already been consumed). On success it returns
-// the inner message bytes that should be passed to UnmarshalCanotoFrom.
-func ReadPointerPresence(msgBytes []byte) ([]byte, error) {
-	if !HasPrefix(msgBytes, PointerPresenceTag) {
+// ReadPointerPresence removes the presence wrapper from a repeated pointer
+// element.
+func ReadPointerPresence(b []byte) ([]byte, error) {
+	if !HasPrefix(b, PointerPresenceTag) {
 		return nil, ErrUnknownField
 	}
 	r := Reader{
-		B:      msgBytes[len(PointerPresenceTag):],
+		B:      b[len(PointerPresenceTag):],
 		Unsafe: true,
 	}
-	var innerBytes []byte
-	if err := ReadBytes(&r, &innerBytes); err != nil {
+	var v []byte
+	if err := ReadBytes(&r, &v); err != nil {
 		return nil, err
 	}
 	if HasNext(&r) {
 		return nil, ErrInvalidLength
 	}
-	return innerBytes, nil
+	return v, nil
 }
 
 // HasNext returns true if there are more bytes to read.
