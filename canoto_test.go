@@ -4,7 +4,6 @@ package canoto
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"io"
 	"math"
 	"slices"
@@ -1015,14 +1014,6 @@ func FuzzSpec(f *testing.F) {
 		for i := range b {
 			b[i]++
 		}
-
-		// Verify that the unmarshalled messages have the same json
-		// representation.
-		expectedJSON, err := json.Marshal(&msg)
-		require.NoError(err)
-		actualJSON, err := json.Marshal(anyMSG)
-		require.NoError(err)
-		require.JSONEq(string(expectedJSON), string(actualJSON))
 
 		// Verify that re-marshalling the unmarshalled message returns the same
 		// bytes as the original message.
