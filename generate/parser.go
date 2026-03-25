@@ -409,6 +409,8 @@ func parseField(
 			"sizeOneOf":         sizeOneOf,
 			"sizeOneOfIndent":   sizeOneOfIndent,
 			"signedSpace":       signedSpace,
+			"canonicalGoType":   canonicalizeName(goType),
+			"wrapperName":       canonicalizeName(goType) + "__Pointer",
 		},
 	}, true, nil
 }

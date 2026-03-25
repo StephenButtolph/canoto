@@ -3414,6 +3414,163 @@ func (c *A__B) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 }
 
 const (
+	canoto__A_1_1Pointer__C = 1
+
+	canoto__A_1_1Pointer__C__tag = "\x08" // canoto.Tag(canoto__A_1_1Pointer__C, canoto.Varint)
+)
+
+type canotoData_A__Pointer struct {
+	size uint64
+}
+
+// CanotoSpec returns the specification of this canoto message.
+func (*A__Pointer) CanotoSpec(...reflect.Type) *canoto.Spec {
+	var zero A__Pointer
+	s := &canoto.Spec{
+		Name: "A__Pointer",
+		Fields: []canoto.FieldType{
+			{
+				FieldNumber: canoto__A_1_1Pointer__C,
+				Name:        "C",
+				OneOf:       "",
+				TypeInt:     canoto.SizeOf(zero.C),
+			},
+		},
+	}
+	s.CalculateCanotoCache()
+	return s
+}
+
+// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
+func (c *A__Pointer) UnmarshalCanoto(bytes []byte) error {
+	r := canoto.Reader{
+		B: bytes,
+	}
+	return c.UnmarshalCanotoFrom(r)
+}
+
+// UnmarshalCanotoFrom populates the struct from a [canoto.Reader]. Most users
+// should just use UnmarshalCanoto.
+//
+// During parsing, the canoto cache is saved.
+//
+// This function enables configuration of reader options.
+func (c *A__Pointer) UnmarshalCanotoFrom(r canoto.Reader) error {
+	// Zero the struct before unmarshaling.
+	*c = A__Pointer{}
+	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
+
+	var minField uint32
+	for canoto.HasNext(&r) {
+		field, wireType, err := canoto.ReadTag(&r)
+		if err != nil {
+			return err
+		}
+		if field < minField {
+			return canoto.ErrInvalidFieldOrder
+		}
+
+		switch field {
+		case canoto__A_1_1Pointer__C:
+			if wireType != canoto.Varint {
+				return canoto.ErrUnexpectedWireType
+			}
+
+			if err := canoto.ReadInt(&r, &c.C); err != nil {
+				return err
+			}
+			if canoto.IsZero(c.C) {
+				return canoto.ErrZeroValue
+			}
+		default:
+			return canoto.ErrUnknownField
+		}
+
+		minField = field + 1
+	}
+	return nil
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// Specifically, ValidCanoto ensures:
+// 1. All OneOfs are specified at most once.
+// 2. All strings are valid utf-8.
+// 3. All custom fields are ValidCanoto.
+func (c *A__Pointer) ValidCanoto() bool {
+	if c == nil {
+		return true
+	}
+	return true
+}
+
+// CalculateCanotoCache populates size and OneOf caches based on the current
+// values in the struct.
+//
+// It is not safe to copy this struct concurrently.
+func (c *A__Pointer) CalculateCanotoCache() {
+	if c == nil {
+		return
+	}
+	var size uint64
+	if !canoto.IsZero(c.C) {
+		size += uint64(len(canoto__A_1_1Pointer__C__tag)) + canoto.SizeInt(c.C)
+	}
+	atomic.StoreUint64(&c.canotoData.size, size)
+}
+
+// CachedCanotoSize returns the previously calculated size of the Canoto
+// representation from CalculateCanotoCache.
+//
+// If CalculateCanotoCache has not yet been called, it will return 0.
+//
+// If the struct has been modified since the last call to CalculateCanotoCache,
+// the returned size may be incorrect.
+func (c *A__Pointer) CachedCanotoSize() uint64 {
+	if c == nil {
+		return 0
+	}
+	return atomic.LoadUint64(&c.canotoData.size)
+}
+
+// MarshalCanoto returns the Canoto representation of this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to copy this struct concurrently.
+func (c *A__Pointer) MarshalCanoto() []byte {
+	c.CalculateCanotoCache()
+	w := canoto.Writer{
+		B: make([]byte, 0, c.CachedCanotoSize()),
+	}
+	w = c.MarshalCanotoInto(w)
+	return w.B
+}
+
+// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// resulting [canoto.Writer]. Most users should just use MarshalCanoto.
+//
+// It is assumed that CalculateCanotoCache has been called since the last
+// modification to this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to copy this struct concurrently.
+func (c *A__Pointer) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+	if c == nil {
+		return w
+	}
+	if !canoto.IsZero(c.C) {
+		canoto.Append(&w, canoto__A_1_1Pointer__C__tag)
+		canoto.AppendInt(&w, c.C)
+	}
+	return w
+}
+
+const (
 	canoto__Scalars__Int8                            = 1
 	canoto__Scalars__Int16                           = 2
 	canoto__Scalars__Int32                           = 3

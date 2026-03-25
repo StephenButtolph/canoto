@@ -11,6 +11,10 @@ message LargestFieldNumber {
   uint64 Uint = 536870911;
 }
 
+message LargestFieldNumber__Pointer {
+  LargestFieldNumber value = 1;
+}
+
 message OneOf {
   oneof A {
     sint32 A1 = 1;
@@ -22,6 +26,10 @@ message OneOf {
   }
   sint32 C = 5;
   sint64 D = 6;
+}
+
+message OneOf__Pointer {
+  OneOf value = 1;
 }
 
 message OneOfNoCopy {
@@ -37,6 +45,10 @@ message OneOfNoCopy {
   sint64 D = 6;
 }
 
+message OneOfNoCopy__Pointer {
+  OneOfNoCopy value = 1;
+}
+
 message Node {
   oneof OneOf {
     Node Next = 2;
@@ -44,12 +56,24 @@ message Node {
   sint32 Value = 1;
 }
 
+message Node__Pointer {
+  Node value = 1;
+}
+
 message RecursiveA {
   RecursiveB Next = 1;
 }
 
+message RecursiveA__Pointer {
+  RecursiveA value = 1;
+}
+
 message RecursiveB {
   RecursiveA Next = 1;
+}
+
+message RecursiveB__Pointer {
+  RecursiveB value = 1;
 }
 
 message GenericField {
@@ -61,13 +85,21 @@ message GenericField {
   repeated bytes FixedRepeatedPointer = 6;
 }
 
+message GenericField__Pointer {
+  GenericField value = 1;
+}
+
 message NestedGenericField {
   GenericField Value = 1;
   repeated GenericField RepeatedValue = 2;
   repeated GenericField FixedRepeatedValue = 3;
   GenericField Pointer = 4;
-  repeated GenericField RepeatedPointer = 5;
-  repeated GenericField FixedRepeatedPointer = 6;
+  repeated GenericField__Pointer RepeatedPointer = 5;
+  repeated GenericField__Pointer FixedRepeatedPointer = 6;
+}
+
+message NestedGenericField__Pointer {
+  NestedGenericField value = 1;
 }
 
 message Embedded {
@@ -77,12 +109,32 @@ message Embedded {
   bytes Int = 4;
 }
 
+message Embedded__Pointer {
+  Embedded value = 1;
+}
+
 message A {
   sint32 B__C = 1;
 }
 
-message A__B {
+message A__Pointer {
+  A value = 1;
+}
+
+message A_1_1B {
   sint32 C = 1;
+}
+
+message A_1_1B__Pointer {
+  A_1_1B value = 1;
+}
+
+message A_1_1Pointer {
+  sint32 C = 1;
+}
+
+message A_1_1Pointer__Pointer {
+  A_1_1Pointer value = 1;
 }
 
 message Scalars {
@@ -149,8 +201,12 @@ message Scalars {
   repeated bytes CustomFixedRepeatedFixedBytes = 61;
   OneOf OneOf = 62;
   LargestFieldNumber Pointer = 63;
-  repeated LargestFieldNumber RepeatedPointer = 64;
-  repeated LargestFieldNumber FixedRepeatedPointer = 65;
+  repeated LargestFieldNumber__Pointer RepeatedPointer = 64;
+  repeated LargestFieldNumber__Pointer FixedRepeatedPointer = 65;
+}
+
+message Scalars__Pointer {
+  Scalars value = 1;
 }
 
 message SpecUnusedZero {
@@ -162,5 +218,13 @@ message SpecUnusedZero {
   repeated bytes RepeatedBytes = 6;
 }
 
+message SpecUnusedZero__Pointer {
+  SpecUnusedZero value = 1;
+}
+
 message EmptyMessage {
+}
+
+message EmptyMessage__Pointer {
+  EmptyMessage value = 1;
 }

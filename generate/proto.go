@@ -77,8 +77,23 @@ package ${package};
 		if err := writeProtoMessage(w, m, customTypes); err != nil {
 			return err
 		}
+		if err := writeProtoWrapperMessage(w, m.name); err != nil {
+			return err
+		}
 	}
 	return nil
+}
+
+func writeProtoWrapperMessage(w io.Writer, goType string) error {
+	const wrapperTemplate = `
+message ${wrapperName} {
+  ${canonicalGoType} value = 1;
+}
+`
+	return writeTemplate(w, wrapperTemplate, map[string]string{
+		"canonicalGoType": canonicalizeName(goType),
+		"wrapperName":     canonicalizeName(goType) + "__Pointer",
+	})
 }
 
 func writeProtoMessage(w io.Writer, m message, customTypes map[string]bool) error {
@@ -88,7 +103,7 @@ ${fields}}
 `
 
 	return writeTemplate(w, structTemplate, map[string]string{
-		"messageName": m.name,
+		"messageName": canonicalizeName(m.name),
 		"fields":      makeFields(m, customTypes),
 	})
 }
@@ -101,12 +116,14 @@ func makeFields(m message, customTypes map[string]bool) string {
 		specialTemplate      = "  ${protoTypePrefix}${protoType} ${fieldName} = ${fieldNumber};\n"
 		oneOfSpecialTemplate = "  " + specialTemplate
 
-		customTemplate      = "  ${protoTypePrefix}${goType} ${fieldName} = ${fieldNumber};\n"
+		customTemplate      = "  ${protoTypePrefix}${canonicalGoType} ${fieldName} = ${fieldNumber};\n"
 		oneOfCustomTemplate = "  " + customTemplate
+
+		wrapperTemplate = "  repeated ${wrapperName} ${fieldName} = ${fieldNumber};\n"
 	)
 	var s strings.Builder
 	for _, o := range m.OneOfs() {
-		_, _ = s.WriteString(fmt.Sprintf("  oneof %s {\n", o))
+		_, _ = fmt.Fprintf(&s, "  oneof %s {\n", o)
 		for _, f := range m.fields {
 			if f.oneOfName != o {
 				continue
@@ -130,11 +147,16 @@ func makeFields(m message, customTypes map[string]bool) string {
 			continue
 		}
 
-		var template string
+		var (
+			isCustom = customTypes[f.goType]
+			template string
+		)
 		switch {
 		case f.protoType != "":
 			template = specialTemplate
-		case customTypes[f.goType]:
+		case f.canotoType.IsRepeatedPointer() && isCustom:
+			template = wrapperTemplate
+		case isCustom:
 			template = customTemplate
 		default:
 			template = defaultTemplate
