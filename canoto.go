@@ -1433,10 +1433,9 @@ func (f *FieldType) marshalRecursive(w Writer, value any, specs []*Spec) (Writer
 			if err != nil {
 				return Writer{}, err
 			}
-			var pw Writer
-			pw.B = append(pw.B, PointerPresenceTag...)
-			AppendBytes(&pw, tw.B)
-			AppendBytes(&w, pw.B)
+			AppendUint(&w, SizePointerPresenceTag+SizeBytes(tw.B))
+			Append(&w, PointerPresenceTag)
+			AppendBytes(&w, tw.B)
 			return w, nil
 		})
 	}
@@ -1495,10 +1494,9 @@ func (f *FieldType) marshalSpec(w Writer, value any, specs []*Spec) (Writer, err
 			if err != nil {
 				return Writer{}, err
 			}
-			var pw Writer
-			pw.B = append(pw.B, PointerPresenceTag...)
-			AppendBytes(&pw, tw.B)
-			AppendBytes(&w, pw.B)
+			AppendUint(&w, SizePointerPresenceTag+SizeBytes(tw.B))
+			Append(&w, PointerPresenceTag)
+			AppendBytes(&w, tw.B)
 			return w, nil
 		})
 	}
