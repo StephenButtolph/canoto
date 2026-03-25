@@ -56,6 +56,7 @@ func (*Spec) CanotoSpec(types ...reflect.Type) *Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
+				/*Pointer:       */ false,
 				/*types:         */ types,
 			),
 		},
@@ -412,6 +413,7 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "Type",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 			{

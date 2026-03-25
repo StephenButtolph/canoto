@@ -255,17 +255,17 @@ type (
 		FixedLength    uint64   `canoto:"uint,3"          json:"fixedLength,omitempty"`
 		Repeated       bool     `canoto:"bool,4"          json:"repeated,omitempty"`
 		OneOf          string   `canoto:"string,5"        json:"oneOf,omitempty"`
-		Pointer        bool     `canoto:"bool,6"           json:"pointer,omitempty"`
-		TypeInt        SizeEnum `canoto:"uint,7,Type"      json:"typeInt,omitempty"`        // can be any of 8, 16, 32, or 64.
-		TypeUint       SizeEnum `canoto:"uint,8,Type"      json:"typeUint,omitempty"`       // can be any of 8, 16, 32, or 64.
-		TypeFixedInt   SizeEnum `canoto:"uint,9,Type"      json:"typeFixedInt,omitempty"`   // can be either 32 or 64.
-		TypeFixedUint  SizeEnum `canoto:"uint,10,Type"     json:"typeFixedUint,omitempty"`  // can be either 32 or 64.
-		TypeBool       bool     `canoto:"bool,11,Type"     json:"typeBool,omitempty"`       // can only be true.
-		TypeString     bool     `canoto:"bool,12,Type"     json:"typeString,omitempty"`     // can only be true.
-		TypeBytes      bool     `canoto:"bool,13,Type"     json:"typeBytes,omitempty"`      // can only be true.
-		TypeFixedBytes uint64   `canoto:"uint,14,Type"     json:"typeFixedBytes,omitempty"` // length of the fixed bytes.
-		TypeMessage    *Spec    `canoto:"pointer,15,Type"  json:"typeMessage,omitempty"`
-		TypeRecursive  uint64   `canoto:"uint,16,Type"     json:"typeRecursive,omitempty"` // depth of the recursion.
+		Pointer        bool     `canoto:"bool,6"          json:"pointer,omitempty"`
+		TypeInt        SizeEnum `canoto:"uint,7,Type"     json:"typeInt,omitempty"`        // can be any of 8, 16, 32, or 64.
+		TypeUint       SizeEnum `canoto:"uint,8,Type"     json:"typeUint,omitempty"`       // can be any of 8, 16, 32, or 64.
+		TypeFixedInt   SizeEnum `canoto:"uint,9,Type"     json:"typeFixedInt,omitempty"`   // can be either 32 or 64.
+		TypeFixedUint  SizeEnum `canoto:"uint,10,Type"    json:"typeFixedUint,omitempty"`  // can be either 32 or 64.
+		TypeBool       bool     `canoto:"bool,11,Type"    json:"typeBool,omitempty"`       // can only be true.
+		TypeString     bool     `canoto:"bool,12,Type"    json:"typeString,omitempty"`     // can only be true.
+		TypeBytes      bool     `canoto:"bool,13,Type"    json:"typeBytes,omitempty"`      // can only be true.
+		TypeFixedBytes uint64   `canoto:"uint,14,Type"    json:"typeFixedBytes,omitempty"` // length of the fixed bytes.
+		TypeMessage    *Spec    `canoto:"pointer,15,Type" json:"typeMessage,omitempty"`
+		TypeRecursive  uint64   `canoto:"uint,16,Type"    json:"typeRecursive,omitempty"` // depth of the recursion.
 
 		canotoData canotoData_FieldType
 	}
@@ -789,6 +789,7 @@ func FieldTypeFromField[T Field](
 	fixedLength uint64,
 	repeated bool,
 	oneOf string,
+	pointer bool,
 	types []reflect.Type,
 ) FieldType {
 	var (
@@ -813,6 +814,7 @@ func FieldTypeFromField[T Field](
 		FixedLength:   fixedLength,
 		Repeated:      repeated,
 		OneOf:         oneOf,
+		Pointer:       pointer,
 		TypeBytes:     typeBytes,
 		TypeRecursive: typeRecursive,
 		TypeMessage:   typeMessage,

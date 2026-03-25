@@ -943,6 +943,7 @@ func (*Node) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "OneOf",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 		},
@@ -1169,6 +1170,7 @@ func (*RecursiveA) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 		},
@@ -1348,6 +1350,7 @@ func (*RecursiveB) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 		},
@@ -1537,6 +1540,7 @@ func (*GenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ false,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
@@ -1546,6 +1550,7 @@ func (*GenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
+				/*Pointer:       */ false,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
@@ -1555,6 +1560,7 @@ func (*GenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedValue)),
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
+				/*Pointer:       */ false,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
@@ -1564,6 +1570,7 @@ func (*GenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
@@ -1573,6 +1580,7 @@ func (*GenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
@@ -1582,6 +1590,7 @@ func (*GenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedPointer)),
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 		},
@@ -2175,6 +2184,7 @@ func (*NestedGenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spe
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ false,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
@@ -2184,6 +2194,7 @@ func (*NestedGenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spe
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
+				/*Pointer:       */ false,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
@@ -2193,6 +2204,7 @@ func (*NestedGenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spe
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedValue)),
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
+				/*Pointer:       */ false,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
@@ -2202,6 +2214,7 @@ func (*NestedGenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spe
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
@@ -2211,6 +2224,7 @@ func (*NestedGenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spe
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
@@ -2220,6 +2234,7 @@ func (*NestedGenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spe
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedPointer)),
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 		},
@@ -2809,6 +2824,7 @@ func (*Embedded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ false,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
@@ -2818,6 +2834,7 @@ func (*Embedded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
@@ -2827,6 +2844,7 @@ func (*Embedded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
@@ -2836,6 +2854,7 @@ func (*Embedded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 		},
@@ -3837,6 +3856,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ false,
 				/*types:         */ types,
 			),
 			{
@@ -3955,6 +3975,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
+				/*Pointer:       */ false,
 				/*types:         */ types,
 			),
 			{
@@ -4105,6 +4126,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedLargestFieldNumber)),
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
+				/*Pointer:       */ false,
 				/*types:         */ types,
 			),
 			{
@@ -4122,6 +4144,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ false,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromFint(
@@ -4187,6 +4210,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ false,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
@@ -4196,6 +4220,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
@@ -4205,6 +4230,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
@@ -4214,6 +4240,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedPointer)),
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 		},

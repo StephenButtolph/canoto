@@ -219,6 +219,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 			{
@@ -330,6 +331,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
+				/*Pointer:       */ false,
 				/*types:         */ types,
 			),
 			FieldTypeFromField(
@@ -339,6 +341,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 			FieldTypeFromField(
@@ -348,6 +351,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 			FieldTypeFromField(
@@ -357,6 +361,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
 		},
