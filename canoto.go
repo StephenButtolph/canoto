@@ -1393,7 +1393,7 @@ func (f *FieldType) unmarshalRecursive(r *Reader, specs []*Spec) (any, error) {
 		r,
 		func(msgBytes []byte) (Any, bool, error) {
 			if len(msgBytes) == 0 {
-				return Any{}, true, nil
+				return Any{}, !f.Pointer, nil
 			}
 			a, err := spec.unmarshal(
 				&Reader{
@@ -1444,7 +1444,7 @@ func (f *FieldType) unmarshalSpec(r *Reader, specs []*Spec) (any, error) {
 		r,
 		func(msgBytes []byte) (Any, bool, error) {
 			if len(msgBytes) == 0 {
-				return Any{}, true, nil
+				return Any{}, !f.Pointer, nil
 			}
 			a, err := f.TypeMessage.unmarshal(
 				&Reader{
