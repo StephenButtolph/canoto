@@ -1317,8 +1317,12 @@ func makeUnmarshal(m message) string {
 			field := c.${fieldName}
 			additionalField := field[1:]
 			if len(msgBytes) != 0 {
+				innerBytes, err := ${selector}ReadPointerPresence(msgBytes)
+				if err != nil {
+					return err
+				}
 				remainingBytes := r.B
-				r.B = msgBytes
+				r.B = innerBytes
 				field[0] = ${selector}MakePointer(field[0])
 				if err := ${genericTypeCast}(field[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -1336,10 +1340,14 @@ func makeUnmarshal(m message) string {
 				if len(msgBytes) == 0 {
 					continue
 				}
-				r.Unsafe = originalUnsafe
 
+				innerBytes, err := ${selector}ReadPointerPresence(msgBytes)
+				if err != nil {
+					return err
+				}
 				remainingBytes := r.B
-				r.B = msgBytes
+				r.B = innerBytes
+				r.Unsafe = originalUnsafe
 				additionalField[i] = ${selector}MakePointer(additionalField[i])
 				if err := ${genericTypeCast}(additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -1367,8 +1375,12 @@ func makeUnmarshal(m message) string {
 
 			isZero := len(msgBytes) == 0
 			if !isZero {
+				innerBytes, err := ${selector}ReadPointerPresence(msgBytes)
+				if err != nil {
+					return err
+				}
 				remainingBytes := r.B
-				r.B = msgBytes
+				r.B = innerBytes
 				c.${fieldName}[0] = ${selector}MakePointer(c.${fieldName}[0])
 				if err := ${genericTypeCast}(c.${fieldName}[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -1390,10 +1402,14 @@ func makeUnmarshal(m message) string {
 				if len(msgBytes) == 0 {
 					continue
 				}
-				r.Unsafe = originalUnsafe
 
+				innerBytes, err := ${selector}ReadPointerPresence(msgBytes)
+				if err != nil {
+					return err
+				}
 				remainingBytes := r.B
-				r.B = msgBytes
+				r.B = innerBytes
+				r.Unsafe = originalUnsafe
 				field[i] = ${selector}MakePointer(field[i])
 				if err := ${genericTypeCast}(field[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -1506,25 +1522,11 @@ func makeValidOneOf(m message) string {
 	}
 `,
 				repeated: repeatedTemplate,
-				fixedRepeated: `	{
-		isZero := true
-		field := c.${fieldName}
-		for i := range field {
-			if field[i] == nil {
-				continue
-			}
-			field[i].CalculateCanotoCache()
-			if ${genericTypeCast}(field[i]).CachedCanotoSize() != 0 {
-				isZero = false
-				break
-			}
+				fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
+		if ${oneOf}OneOf != 0 {
+			return false
 		}
-		if !isZero {
-			if ${oneOf}OneOf != 0 {
-				return false
-			}
-			${oneOf}OneOf = ${fieldNumberConst}
-		}
+		${oneOf}OneOf = ${fieldNumberConst}
 	}
 `,
 			},
@@ -1768,30 +1770,28 @@ func makeSize(m message) string {
 			var fieldSize uint64
 			if field[i] != nil {
 				${genericTypeCast}(field[i]).CalculateCanotoCache()
-				fieldSize = ${genericTypeCast}(field[i]).CachedCanotoSize()
+				innerSize := ${genericTypeCast}(field[i]).CachedCanotoSize()
+				fieldSize = ${selector}SizePointerPresenceTag + ${selector}SizeUint(innerSize) + innerSize
 			}
 			size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
 		}
 	}
 `,
-			fixedRepeated: `	{
+			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
 		var (
-			fieldSizeSum uint64
-			totalSize    uint64
-			field        = &c.${fieldName}
+			totalSize uint64
+			field     = &c.${fieldName}
 		)
 		for i := range field {
 			var fieldSize uint64
 			if field[i] != nil {
 				${genericTypeCast}(field[i]).CalculateCanotoCache()
-				fieldSize = ${genericTypeCast}(field[i]).CachedCanotoSize()
-				fieldSizeSum += fieldSize
+				innerSize := ${genericTypeCast}(field[i]).CachedCanotoSize()
+				fieldSize = ${selector}SizePointerPresenceTag + ${selector}SizeUint(innerSize) + innerSize
 			}
 			totalSize += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize
 		}
-		if fieldSizeSum != 0 {
-			size += totalSize${sizeOneOfIndent}
-		}
+		size += totalSize${sizeOneOf}
 	}
 `,
 		},
@@ -2057,37 +2057,31 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 		field := c.${fieldName}
 		for i := range field {
 			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-			var fieldSize uint64
-			if field[i] != nil {
-				fieldSize = ${genericTypeCast}(field[i]).CachedCanotoSize()
-			}
-			${selector}AppendUint(&w, fieldSize)
-			if fieldSize != 0 {
+			if field[i] == nil {
+				${selector}Append(&w, ${selector}PointerNilBody)
+			} else {
+				innerSize := ${genericTypeCast}(field[i]).CachedCanotoSize()
+				fieldSize := ${selector}SizePointerPresenceTag + ${selector}SizeUint(innerSize) + innerSize
+				${selector}AppendUint(&w, fieldSize)
+				${selector}Append(&w, ${selector}PointerPresenceTag)
+				${selector}AppendUint(&w, innerSize)
 				w = ${genericTypeCast}(field[i]).MarshalCanotoInto(w)
 			}
 		}
 	}
 `,
-			fixedRepeated: `	{
-		isZero := true
-		field := c.${fieldName}
-		for i := range field {
-			if field[i] != nil && ${genericTypeCast}(field[i]).CachedCanotoSize() != 0 {
-				isZero = false
-				break
-			}
-		}
-		if !isZero {
-			for i := range field {
-				${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-				var fieldSize uint64
-				if field[i] != nil {
-					fieldSize = ${genericTypeCast}(field[i]).CachedCanotoSize()
-				}
+			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
+		for i := range &c.${fieldName} {
+			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+			if (&c.${fieldName})[i] == nil {
+				${selector}Append(&w, ${selector}PointerNilBody)
+			} else {
+				innerSize := ${genericTypeCast}((&c.${fieldName})[i]).CachedCanotoSize()
+				fieldSize := ${selector}SizePointerPresenceTag + ${selector}SizeUint(innerSize) + innerSize
 				${selector}AppendUint(&w, fieldSize)
-				if fieldSize != 0 {
-					w = ${genericTypeCast}(field[i]).MarshalCanotoInto(w)
-				}
+				${selector}Append(&w, ${selector}PointerPresenceTag)
+				${selector}AppendUint(&w, innerSize)
+				w = ${genericTypeCast}((&c.${fieldName})[i]).MarshalCanotoInto(w)
 			}
 		}
 	}

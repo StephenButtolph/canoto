@@ -80,6 +80,19 @@ const (
 	// a breaking change.
 	VersionCompatibility = 0
 
+	// PointerNilBody is the encoded body of a nil pointer element within a
+	// repeated pointer field. It is the varint encoding of 0, indicating an
+	// empty outer body.
+	PointerNilBody = "\x00"
+
+	// PointerPresenceTag is the tag used to encode the presence of a non-nil
+	// pointer element within repeated pointer fields. It encodes field number 1
+	// with the Len wire type.
+	PointerPresenceTag = "\x0a" // Tag(1, Len)
+
+	// SizePointerPresenceTag is the size of PointerPresenceTag in bytes.
+	SizePointerPresenceTag = uint64(len(PointerPresenceTag))
+
 	wireTypeLength = 3
 	wireTypeMask   = 0x07
 	maxTagLength   = 5
@@ -329,6 +342,28 @@ func (s SizeEnum) NumBytes() (uint64, bool) {
 	default:
 		return 0, false
 	}
+}
+
+// ReadPointerPresence parses the presence wrapper from the outer body of a
+// repeated pointer element. msgBytes is the outer body (the bytes after the
+// outer field tag and length have already been consumed). On success it returns
+// the inner message bytes that should be passed to UnmarshalCanotoFrom.
+func ReadPointerPresence(msgBytes []byte) ([]byte, error) {
+	if !HasPrefix(msgBytes, PointerPresenceTag) {
+		return nil, ErrUnknownField
+	}
+	r := Reader{
+		B:      msgBytes[len(PointerPresenceTag):],
+		Unsafe: true,
+	}
+	var innerBytes []byte
+	if err := ReadBytes(&r, &innerBytes); err != nil {
+		return nil, err
+	}
+	if HasNext(&r) {
+		return nil, ErrInvalidLength
+	}
+	return innerBytes, nil
 }
 
 // HasNext returns true if there are more bytes to read.
