@@ -734,21 +734,21 @@ func Marshal(s *Spec, a Any) ([]byte, error) {
 
 func (a Any) MarshalJSON() ([]byte, error) {
 	var sb strings.Builder
-	_, _ = sb.WriteString("{")
+	sb.WriteString("{")
 	for i, f := range a.Fields {
 		if i > 0 {
-			_, _ = sb.WriteString(",")
+			sb.WriteString(",")
 		}
-		_, _ = sb.WriteString(`"`)
-		_, _ = sb.WriteString(f.Name)
-		_, _ = sb.WriteString(`":`)
+		sb.WriteString(`"`)
+		sb.WriteString(f.Name)
+		sb.WriteString(`":`)
 		b, err := json.Marshal(f.Value)
 		if err != nil {
 			return nil, err
 		}
-		_, _ = sb.Write(b)
+		sb.Write(b)
 	}
-	_, _ = sb.WriteString("}")
+	sb.WriteString("}")
 	return []byte(sb.String()), nil
 }
 
