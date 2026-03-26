@@ -1036,12 +1036,12 @@ func FuzzSpec(f *testing.F) {
 
 	full.ValueRecursive = &SpecFuzzerPointer{}
 	require.NoError(f, full.ValueRecursive.Value.UnmarshalCanoto(fullBytes))
-	full.RepeatedValueRecursive = []*SpecFuzzerPointer{full.ValueRecursive}
-	full.FixedRepeatedValueRecursive = [3]*SpecFuzzerPointer{full.ValueRecursive, full.ValueRecursive, full.ValueRecursive}
+	full.RepeatedValueRecursive = []*SpecFuzzerPointer{full.ValueRecursive, nil, {}}
+	full.FixedRepeatedValueRecursive = [3]*SpecFuzzerPointer{full.ValueRecursive, nil, {}}
 
 	full.Recursive = &full.ValueRecursive.Value
-	full.RepeatedRecursive = []*SpecFuzzer{full.Recursive}
-	full.FixedRepeatedRecursive = [3]*SpecFuzzer{full.Recursive, full.Recursive, full.Recursive}
+	full.RepeatedRecursive = []*SpecFuzzer{full.Recursive, nil, {}}
+	full.FixedRepeatedRecursive = [3]*SpecFuzzer{full.Recursive, nil, {}}
 
 	recursiveFullBytes := full.MarshalCanoto()
 	f.Add(recursiveFullBytes)
