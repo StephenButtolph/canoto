@@ -731,12 +731,12 @@ ${unmarshal}		default:
 `
 	}
 
-	var s strings.Builder
-	_ = writeTemplate(&s, template, map[string]string{
+	var sb strings.Builder
+	_ = writeTemplate(&sb, template, map[string]string{
 		"canotoSelector": canotoSelector,
 		"unmarshal":      makeUnmarshal(m),
 	})
-	return s.String()
+	return sb.String()
 }
 
 func makeUnmarshal(m message) string {
