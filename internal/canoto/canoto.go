@@ -90,7 +90,7 @@ const (
 	// with the Len wire type.
 	PointerPresenceTag = "\x0a" // Tag(1, Len)
 
-	// SizePointerPresenceTag is the size of PointerPresenceTag in bytes.
+	// SizePointerPresenceTag is the size of [PointerPresenceTag] in bytes.
 	SizePointerPresenceTag = uint64(len(PointerPresenceTag))
 
 	wireTypeLength = 3
