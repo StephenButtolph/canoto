@@ -305,16 +305,16 @@ func makeGenerics(m message) string {
 		return ""
 	}
 
-	var s strings.Builder
-	_, _ = s.WriteString("[")
+	var sb strings.Builder
+	sb.WriteString("[")
 	for i := range m.numTypes {
 		if i != 0 {
-			_, _ = s.WriteString(", ")
+			sb.WriteString(", ")
 		}
-		_, _ = fmt.Fprintf(&s, "T%d", i+1)
+		fmt.Fprintf(&sb, "T%d", i+1)
 	}
-	_, _ = s.WriteString("]")
-	return s.String()
+	sb.WriteString("]")
+	return sb.String()
 }
 
 func makeConstants(m message) string {
@@ -346,7 +346,7 @@ func makeNumberConstants(m message) string {
 	)
 	for _, f := range m.fields {
 		field := fmt.Sprintf("canoto__%s__%s", m.canonicalizedName, f.canonicalizedName)
-		_, _ = fmt.Fprintf(&s, template, field, f.fieldNumber)
+		fmt.Fprintf(&s, template, field, f.fieldNumber)
 	}
 	return s.String()
 }
@@ -379,16 +379,16 @@ func makeTagConstants(m message) string {
 		tag := field + "__tag"
 
 		var tagString strings.Builder
-		_, _ = tagString.WriteString(`"`)
+		tagString.WriteString(`"`)
 		wireType := f.canotoType.WireType()
 		tagBytes := canoto.Tag(f.fieldNumber, wireType)
 		tagHex := hex.EncodeToString(tagBytes)
 		for i := 0; i < len(tagHex); i += 2 {
-			_, _ = fmt.Fprintf(&tagString, "\\x%s", tagHex[i:i+2])
+			fmt.Fprintf(&tagString, "\\x%s", tagHex[i:i+2])
 		}
-		_, _ = tagString.WriteString(`"`)
+		tagString.WriteString(`"`)
 
-		_, _ = fmt.Fprintf(&s, template, tag, &tagString, field, wireType)
+		fmt.Fprintf(&s, template, tag, &tagString, field, wireType)
 	}
 	return s.String()
 }
@@ -416,13 +416,13 @@ func makeSizeCache(m message) string {
 		s        strings.Builder
 		template = fmt.Sprintf("\t%%-%ds %s\n", largestNameSize, sizeType)
 	)
-	_, _ = fmt.Fprintf(&s, template, sizeVar)
+	fmt.Fprintf(&s, template, sizeVar)
 	for _, f := range m.fields {
 		if !f.canotoType.IsRepeated() || !f.canotoType.IsVarint() {
 			continue
 		}
 
-		_, _ = fmt.Fprintf(&s, template, f.name+sizeSuffix)
+		fmt.Fprintf(&s, template, f.name+sizeSuffix)
 	}
 	return s.String()
 }
@@ -446,13 +446,13 @@ func makeOneOfCache(m message) string {
 	const oneOfSuffix = "OneOf"
 	var (
 		template = fmt.Sprintf("\t%%-%ds %s\n", largestNameSize+len(oneOfSuffix), oneOfType)
-		s        strings.Builder
+		sb       strings.Builder
 	)
-	_, _ = s.WriteString("\n")
+	sb.WriteString("\n")
 	for _, oneOf := range oneOfs {
-		_, _ = fmt.Fprintf(&s, template, oneOf+oneOfSuffix)
+		fmt.Fprintf(&sb, template, oneOf+oneOfSuffix)
 	}
-	return s.String()
+	return sb.String()
 }
 
 func makeSpec(m message, canotoSelector string) string {
@@ -1422,7 +1422,7 @@ func makeValidOneOf(m message) string {
 		s        strings.Builder
 	)
 	for _, oneOf := range m.OneOfs() {
-		_, _ = fmt.Fprintf(&s, template, oneOf+oneOfSuffix)
+		fmt.Fprintf(&s, template, oneOf+oneOfSuffix)
 	}
 
 	const (
@@ -1599,17 +1599,17 @@ func makeValid(m message) string {
 }
 
 func makeSizeVars(m message) string {
-	var s strings.Builder
-	_, _ = fmt.Fprint(&s, "\tvar size uint64\n")
+	var sb strings.Builder
+	sb.WriteString("\tvar size uint64\n")
 
 	const (
 		oneOfSuffix   = "OneOf"
 		oneOfTemplate = "\tvar %s uint32\n"
 	)
 	for _, oneOf := range m.OneOfs() {
-		_, _ = fmt.Fprintf(&s, oneOfTemplate, oneOf+oneOfSuffix)
+		fmt.Fprintf(&sb, oneOfTemplate, oneOf+oneOfSuffix)
 	}
-	return s.String()
+	return sb.String()
 }
 
 func makeSize(m message) string {
@@ -1789,20 +1789,20 @@ func makeSize(m message) string {
 }
 
 func makeAssignSizeVars(m message) string {
-	var s strings.Builder
+	var sb strings.Builder
 	if m.noCopy {
-		s.WriteString("\tc.canotoData.size.Store(size)\n")
+		sb.WriteString("\tc.canotoData.size.Store(size)\n")
 	} else {
-		s.WriteString("\tatomic.StoreUint64(&c.canotoData.size, size)\n")
+		sb.WriteString("\tatomic.StoreUint64(&c.canotoData.size, size)\n")
 	}
 	for _, oneOf := range m.OneOfs() {
 		if m.noCopy {
-			_, _ = fmt.Fprintf(&s, "\tc.canotoData.%sOneOf.Store(%sOneOf)\n", oneOf, oneOf)
+			fmt.Fprintf(&sb, "\tc.canotoData.%sOneOf.Store(%sOneOf)\n", oneOf, oneOf)
 		} else {
-			_, _ = fmt.Fprintf(&s, "\tatomic.StoreUint32(&c.canotoData.%sOneOf, %sOneOf)\n", oneOf, oneOf)
+			fmt.Fprintf(&sb, "\tatomic.StoreUint32(&c.canotoData.%sOneOf, %sOneOf)\n", oneOf, oneOf)
 		}
 	}
-	return s.String()
+	return sb.String()
 }
 
 func makeOneOfCacheAccessors(m message) string {
@@ -2074,7 +2074,7 @@ func makeMarshal(m message) string {
 		regularTmpl = getMarshalTemplate(false)
 		oneOfTmpl   = getMarshalTemplate(true)
 
-		s strings.Builder
+		sb strings.Builder
 
 		currentOneOfName   string
 		currentOneOfFields = make([]field, 0, len(m.fields))
@@ -2096,22 +2096,22 @@ func makeMarshal(m message) string {
 
 		varName := "cachedWhichOneOf" + currentOneOfName
 		if !declaredOneOfNames[currentOneOfName] {
-			_, _ = fmt.Fprintf(&s, "\t%s := %sc.canotoData.%sOneOf%s\n", varName, loadPrefix, currentOneOfName, loadSuffix)
+			fmt.Fprintf(&sb, "\t%s := %sc.canotoData.%sOneOf%s\n", varName, loadPrefix, currentOneOfName, loadSuffix)
 			declaredOneOfNames[currentOneOfName] = true
 		}
 
 		if len(currentOneOfFields) == 1 {
-			_, _ = fmt.Fprintf(&s, "\tif %s == %d {\n", varName, currentOneOfFields[0].fieldNumber)
-			_ = writeField(&s, currentOneOfFields[0], oneOfTmpl)
+			fmt.Fprintf(&sb, "\tif %s == %d {\n", varName, currentOneOfFields[0].fieldNumber)
+			_ = writeField(&sb, currentOneOfFields[0], oneOfTmpl)
 		} else {
-			fmt.Fprintf(&s, "\tswitch %s {\n", varName)
+			fmt.Fprintf(&sb, "\tswitch %s {\n", varName)
 			for _, field := range currentOneOfFields {
-				_, _ = fmt.Fprintf(&s, "\tcase canoto__%s__%s:\n", m.canonicalizedName, field.canonicalizedName)
-				_ = writeField(&s, field, oneOfTmpl)
+				fmt.Fprintf(&sb, "\tcase canoto__%s__%s:\n", m.canonicalizedName, field.canonicalizedName)
+				_ = writeField(&sb, field, oneOfTmpl)
 			}
 		}
 
-		s.WriteString("\t}\n")
+		sb.WriteString("\t}\n")
 		currentOneOfName = ""
 		currentOneOfFields = currentOneOfFields[:0]
 	}
@@ -2125,7 +2125,7 @@ func makeMarshal(m message) string {
 		flushOneOf()
 
 		if f.oneOfName == "" {
-			_ = writeField(&s, f, regularTmpl)
+			_ = writeField(&sb, f, regularTmpl)
 			continue
 		}
 
@@ -2135,7 +2135,7 @@ func makeMarshal(m message) string {
 
 	flushOneOf()
 
-	return s.String()
+	return sb.String()
 }
 
 type messageTemplate struct {

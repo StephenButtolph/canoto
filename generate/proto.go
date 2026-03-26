@@ -121,9 +121,9 @@ func makeFields(m message, customTypes map[string]bool) string {
 
 		wrapperTemplate = "  repeated ${wrapperName} ${fieldName} = ${fieldNumber};\n"
 	)
-	var s strings.Builder
+	var sb strings.Builder
 	for _, o := range m.OneOfs() {
-		_, _ = fmt.Fprintf(&s, "  oneof %s {\n", o)
+		fmt.Fprintf(&sb, "  oneof %s {\n", o)
 		for _, f := range m.fields {
 			if f.oneOfName != o {
 				continue
@@ -138,9 +138,9 @@ func makeFields(m message, customTypes map[string]bool) string {
 			default:
 				template = oneOfDefaultTemplate
 			}
-			_ = writeTemplate(&s, template, f.templateArgs)
+			_ = writeTemplate(&sb, template, f.templateArgs)
 		}
-		_, _ = s.WriteString("  }\n")
+		sb.WriteString("  }\n")
 	}
 	for _, f := range m.fields {
 		if f.oneOfName != "" {
@@ -161,7 +161,7 @@ func makeFields(m message, customTypes map[string]bool) string {
 		default:
 			template = defaultTemplate
 		}
-		_ = writeTemplate(&s, template, f.templateArgs)
+		_ = writeTemplate(&sb, template, f.templateArgs)
 	}
-	return s.String()
+	return sb.String()
 }
