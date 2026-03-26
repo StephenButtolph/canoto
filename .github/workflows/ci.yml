@@ -57,6 +57,11 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
+      - uses: bufbuild/buf-action@v1 # https://github.com/bufbuild/buf-action
+        with:
+          setup_only: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          version: "1.59.0"
       - shell: bash
         run: go install ./canoto
       - shell: bash

@@ -4,6 +4,6 @@ managed:
   go_package_prefix: 
     default: github.com/StephenButtolph/canoto/internal/pb
 plugins:
-  - name: go
+  - plugin: buf.build/protocolbuffers/go:v1.33.0
     out: pb
     opt: paths=source_relative

@@ -1,4 +1,5 @@
 //go:generate canoto --proto $GOFILE
+//go:generate buf generate
 
 package examples
 
