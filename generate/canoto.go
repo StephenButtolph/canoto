@@ -342,13 +342,13 @@ func makeNumberConstants(m message) string {
 		template = fmt.Sprintf("\t%%-%ds = %%d\n",
 			largestNumberConstSize,
 		)
-		s strings.Builder
+		sb strings.Builder
 	)
 	for _, f := range m.fields {
 		field := fmt.Sprintf("canoto__%s__%s", m.canonicalizedName, f.canonicalizedName)
-		fmt.Fprintf(&s, template, field, f.fieldNumber)
+		fmt.Fprintf(&sb, template, field, f.fieldNumber)
 	}
-	return s.String()
+	return sb.String()
 }
 
 func makeTagConstants(m message) string {
@@ -372,7 +372,7 @@ func makeTagConstants(m message) string {
 			largestTagConstSize,
 			largestTagSize,
 		)
-		s strings.Builder
+		sb strings.Builder
 	)
 	for _, f := range m.fields {
 		field := fmt.Sprintf("canoto__%s__%s", m.canonicalizedName, f.canonicalizedName)
@@ -388,9 +388,9 @@ func makeTagConstants(m message) string {
 		}
 		tagString.WriteString(`"`)
 
-		fmt.Fprintf(&s, template, tag, &tagString, field, wireType)
+		fmt.Fprintf(&sb, template, tag, &tagString, field, wireType)
 	}
-	return s.String()
+	return sb.String()
 }
 
 func makeSizeCache(m message) string {
@@ -413,18 +413,18 @@ func makeSizeCache(m message) string {
 	}
 
 	var (
-		s        strings.Builder
+		sb       strings.Builder
 		template = fmt.Sprintf("\t%%-%ds %s\n", largestNameSize, sizeType)
 	)
-	fmt.Fprintf(&s, template, sizeVar)
+	fmt.Fprintf(&sb, template, sizeVar)
 	for _, f := range m.fields {
 		if !f.canotoType.IsRepeated() || !f.canotoType.IsVarint() {
 			continue
 		}
 
-		fmt.Fprintf(&s, template, f.name+sizeSuffix)
+		fmt.Fprintf(&sb, template, f.name+sizeSuffix)
 	}
-	return s.String()
+	return sb.String()
 }
 
 func makeOneOfCache(m message) string {
@@ -1419,10 +1419,10 @@ func makeValidOneOf(m message) string {
 	const oneOfSuffix = "OneOf"
 	var (
 		template = "\tvar %s uint32\n"
-		s        strings.Builder
+		sb       strings.Builder
 	)
 	for _, oneOf := range m.OneOfs() {
-		fmt.Fprintf(&s, template, oneOf+oneOfSuffix)
+		fmt.Fprintf(&sb, template, oneOf+oneOfSuffix)
 	}
 
 	const (
@@ -1528,9 +1528,9 @@ func makeValidOneOf(m message) string {
 			continue
 		}
 
-		_ = writeField(&s, f, t)
+		_ = writeField(&sb, f, t)
 	}
-	return s.String()
+	return sb.String()
 }
 
 func makeValid(m message) string {
@@ -1822,7 +1822,7 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() uint32 {
 	return ${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix}
 }`
 	var (
-		s          strings.Builder
+		sb         strings.Builder
 		generics   = makeGenerics(m)
 		loadPrefix = "atomic.LoadUint32(&"
 		loadSuffix = ")"
@@ -1832,7 +1832,7 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() uint32 {
 		loadSuffix = ".Load()"
 	}
 	for _, oneOf := range m.OneOfs() {
-		_ = writeTemplate(&s, template, map[string]string{
+		_ = writeTemplate(&sb, template, map[string]string{
 			"oneOf":      oneOf,
 			"structName": m.name,
 			"generics":   generics,
@@ -1840,7 +1840,7 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() uint32 {
 			"loadSuffix": loadSuffix,
 		})
 	}
-	return s.String()
+	return sb.String()
 }
 
 func getMarshalTemplate(isOneOf bool) messageTemplate {
@@ -2162,11 +2162,11 @@ type typeTemplate struct {
 }
 
 func writeMessage(m message, t messageTemplate) string {
-	var s strings.Builder
+	var sb strings.Builder
 	for _, f := range m.fields {
-		_ = writeField(&s, f, t)
+		_ = writeField(&sb, f, t)
 	}
-	return s.String()
+	return sb.String()
 }
 
 func writeField(w io.Writer, f field, t messageTemplate) error {
