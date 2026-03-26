@@ -3,6 +3,7 @@
 package canoto
 
 import (
+	"bytes"
 	"encoding/hex"
 	"io"
 	"math"
@@ -970,6 +971,25 @@ type OneOf struct {
 }
 
 func FuzzSpec(f *testing.F) {
+	// Regression tests for incorrect unsafe handling of zero-length slices and
+	// nil pointers.
+	f.Add((&SpecFuzzer{
+		RepeatedValue:      []LargestFieldNumber[uint32]{{}, {}},
+		FixedRepeatedBytes: [3][]byte{{1, 2}},
+	}).MarshalCanoto())
+	f.Add((&SpecFuzzer{
+		RepeatedPointer:    []*LargestFieldNumber[uint32]{nil, nil},
+		FixedRepeatedBytes: [3][]byte{{1, 2}},
+	}).MarshalCanoto())
+	f.Add((&SpecFuzzer{
+		FixedRepeatedValue:     [3]LargestFieldNumber[uint32]{{Uint: 1}, {}, {}},
+		FixedRepeatedRecursive: [3]*SpecFuzzer{{String: "a"}},
+	}).MarshalCanoto())
+	f.Add((&SpecFuzzer{
+		FixedRepeatedPointer:   [3]*LargestFieldNumber[uint32]{{Uint: 1}, nil, nil},
+		FixedRepeatedRecursive: [3]*SpecFuzzer{{String: "a"}},
+	}).MarshalCanoto())
+
 	full := SpecFuzzer{
 		Int8:       -31,
 		Int16:      -2164,
@@ -1048,13 +1068,10 @@ func FuzzSpec(f *testing.F) {
 
 	spec := (*SpecFuzzer)(nil).CanotoSpec()
 	f.Fuzz(func(t *testing.T, b []byte) {
-		// Standardize the empty input for reflect based equality.
-		if len(b) == 0 {
-			b = nil
-		}
-		originalBytes := slices.Clone(b)
-
-		require := require.New(t)
+		var (
+			require       = require.New(t)
+			originalBytes = slices.Clone(b)
+		)
 
 		// Verify that unmarshalling the message using [Unmarshal] returns the
 		// same error as the unmarshalling the message directly.
@@ -1073,110 +1090,13 @@ func FuzzSpec(f *testing.F) {
 			b[i]++
 		}
 
+		// Ensure the generated code isn't impacted by the mutation of b.
+		require.True(bytes.Equal(originalBytes, msg.MarshalCanoto()))
+
 		// Verify that re-marshalling the unmarshalled message returns the same
 		// bytes as the original message.
 		actualBytes, err := Marshal(spec, anyMSG)
 		require.NoError(err)
-		require.Equal(originalBytes, actualBytes)
-	})
-}
-
-func FuzzSpecGenerated(f *testing.F) {
-	full := SpecFuzzer{
-		Int8:       -31,
-		Int16:      -2164,
-		Int32:      -12786345,
-		Int64:      98761243,
-		Uint8:      254,
-		Uint16:     21645,
-		Uint32:     32485976,
-		Uint64:     287634,
-		Sfixed32:   -21348976,
-		Fixed32:    98765234,
-		Sfixed64:   98756432,
-		Fixed64:    1234576,
-		Bool:       true,
-		String:     "hi my name is Bob",
-		Bytes:      []byte("hi my name is Bob too"),
-		FixedBytes: [32]byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32},
-		Value:      LargestFieldNumber[uint32]{Uint: 216457},
-		Pointer:    &LargestFieldNumber[uint32]{Uint: 216457},
-		OneOf:      &OneOf{A1: 1, B2: 2, C: 3, D: 4},
-
-		RepeatedInt8:       []int8{1, 2, 3},
-		RepeatedInt16:      []int16{1, 2, 3},
-		RepeatedInt32:      []int32{1, 2, 3},
-		RepeatedInt64:      []int64{1, 2, 3},
-		RepeatedUint8:      []uint8{1, 2, 3},
-		RepeatedUint16:     []uint16{1, 2, 3},
-		RepeatedUint32:     []uint32{1, 2, 3},
-		RepeatedUint64:     []uint64{1, 2, 3},
-		RepeatedSfixed32:   []int32{1, 2, 3},
-		RepeatedFixed32:    []uint32{1, 2, 3},
-		RepeatedSfixed64:   []int64{1, 2, 3},
-		RepeatedFixed64:    []uint64{1, 2, 3},
-		RepeatedBool:       []bool{true, false, true},
-		RepeatedString:     []string{"hi", "my", "name", "is", "Bob"},
-		RepeatedBytes:      [][]byte{{1, 2, 3}, {4, 5, 6}},
-		RepeatedFixedBytes: [][32]byte{{1, 2, 3}, {4, 5, 6}},
-		RepeatedValue:      []LargestFieldNumber[uint32]{{Uint: 123455}, {Uint: 876523}},
-		RepeatedPointer:    []*LargestFieldNumber[uint32]{{Uint: 123455}, {Uint: 876523}},
-		RepeatedOneOf:      []*OneOf{{A1: 1}, {A2: 5}},
-
-		FixedRepeatedInt8:       [3]int8{1, 2, 3},
-		FixedRepeatedInt16:      [3]int16{1, 2, 3},
-		FixedRepeatedInt32:      [3]int32{1, 2, 3},
-		FixedRepeatedInt64:      [3]int64{1, 2, 3},
-		FixedRepeatedUint8:      [3]uint8{1, 2, 3},
-		FixedRepeatedUint16:     [3]uint16{1, 2, 3},
-		FixedRepeatedUint32:     [3]uint32{1, 2, 3},
-		FixedRepeatedUint64:     [3]uint64{1, 2, 3},
-		FixedRepeatedSfixed32:   [3]int32{1, 2, 3},
-		FixedRepeatedFixed32:    [3]uint32{1, 2, 3},
-		FixedRepeatedSfixed64:   [3]int64{1, 2, 3},
-		FixedRepeatedFixed64:    [3]uint64{1, 2, 3},
-		FixedRepeatedBool:       [3]bool{true, true, true},
-		FixedRepeatedString:     [3]string{"a", "b", "c"},
-		FixedRepeatedBytes:      [3][]byte{{1, 2}, {3, 4}, {5, 6}},
-		FixedRepeatedFixedBytes: [3][32]byte{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}},
-		FixedRepeatedValue:      [3]LargestFieldNumber[uint32]{{Uint: 1}, {Uint: 2}, {Uint: 3}},
-		FixedRepeatedPointer:    [3]*LargestFieldNumber[uint32]{{Uint: 1}, {Uint: 2}, {Uint: 3}},
-		FixedRepeatedOneOf:      [3]*OneOf{{A1: 1}, {B1: 2}, {C: 3}},
-	}
-	fullBytes := full.MarshalCanoto()
-	f.Add(fullBytes)
-
-	full.ValueRecursive = &SpecFuzzerPointer{}
-	require.NoError(f, full.ValueRecursive.Value.UnmarshalCanoto(fullBytes))
-	full.RepeatedValueRecursive = []*SpecFuzzerPointer{full.ValueRecursive}
-	full.FixedRepeatedValueRecursive = [3]*SpecFuzzerPointer{full.ValueRecursive, full.ValueRecursive, full.ValueRecursive}
-
-	full.Recursive = &full.ValueRecursive.Value
-	full.RepeatedRecursive = []*SpecFuzzer{full.Recursive}
-	full.FixedRepeatedRecursive = [3]*SpecFuzzer{full.Recursive, full.Recursive, full.Recursive}
-
-	recursiveFullBytes := full.MarshalCanoto()
-	f.Add(recursiveFullBytes)
-	f.Fuzz(func(t *testing.T, b []byte) {
-		// Standardize the empty input for reflect based equality.
-		if len(b) == 0 {
-			b = []byte{}
-		}
-		originalBytes := slices.Clone(b)
-
-		// Verify that unmarshalling the message using [Unmarshal] returns the
-		// same error as the unmarshalling the message directly.
-		var msg SpecFuzzer
-		if err := msg.UnmarshalCanoto(b); err != nil {
-			return
-		}
-
-		// Modify the original bytes to ensure that [Unmarshal] does not hold a
-		// reference to the originally passed in slice.
-		for i := range b {
-			b[i]++
-		}
-
-		require.Equal(t, originalBytes, msg.MarshalCanoto())
+		require.True(bytes.Equal(originalBytes, actualBytes))
 	})
 }

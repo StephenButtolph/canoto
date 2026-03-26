@@ -1613,10 +1613,10 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				if err := ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
-				r.Unsafe = originalUnsafe
 
 				remainingBytes := r.B
 				r.B = msgBytes
@@ -1670,6 +1670,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				if err := ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
@@ -1680,7 +1681,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				r.Unsafe = originalUnsafe
 				additionalField[i] = MakePointer(additionalField[i])
 				if err := (additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -1732,6 +1732,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				if err := ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
@@ -1742,7 +1743,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				r.Unsafe = originalUnsafe
 				additionalField[i] = MakePointer(additionalField[i])
 				if err := (additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -1794,6 +1794,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				if err := ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
@@ -1804,7 +1805,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				r.Unsafe = originalUnsafe
 				additionalField[i] = MakePointer(additionalField[i])
 				if err := (additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -1856,6 +1856,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				if err := ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
@@ -1866,7 +1867,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				r.Unsafe = originalUnsafe
 				additionalField[i] = MakePointer(additionalField[i])
 				if err := (additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -2411,10 +2411,10 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				if err := ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
-				r.Unsafe = originalUnsafe
 
 				remainingBytes := r.B
 				r.B = msgBytes
@@ -2471,6 +2471,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				if err := ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
@@ -2481,7 +2482,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				r.Unsafe = originalUnsafe
 				field[i] = MakePointer(field[i])
 				if err := (field[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -2536,6 +2536,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				if err := ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
@@ -2546,7 +2547,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				r.Unsafe = originalUnsafe
 				field[i] = MakePointer(field[i])
 				if err := (field[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -2601,6 +2601,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				if err := ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
@@ -2611,7 +2612,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				r.Unsafe = originalUnsafe
 				field[i] = MakePointer(field[i])
 				if err := (field[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -2666,6 +2666,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				if err := ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
@@ -2676,7 +2677,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				r.Unsafe = originalUnsafe
 				field[i] = MakePointer(field[i])
 				if err := (field[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
