@@ -80,17 +80,15 @@ const (
 	// a breaking change.
 	VersionCompatibility = 0
 
-	// PointerNilBody is the encoded body of a nil pointer element within a
-	// repeated pointer field. It is the varint encoding of 0, indicating an
-	// empty outer body.
-	PointerNilBody = "\x00"
+	// EmptyBytes is the length prefixed encoding of empty bytes.
+	EmptyBytes = "\x00" // AppendBytes(&Writer{}, []byte{}).B
 
 	// PointerPresenceTag is the tag used to encode the presence of a non-nil
 	// pointer element within repeated pointer fields. It encodes field number 1
 	// with the Len wire type.
 	PointerPresenceTag = "\x0a" // Tag(1, Len)
 
-	// SizePointerPresenceTag is the size of PointerPresenceTag in bytes.
+	// SizePointerPresenceTag is the size of [PointerPresenceTag] in bytes.
 	SizePointerPresenceTag = uint64(len(PointerPresenceTag))
 
 	wireTypeLength = 3
@@ -1424,7 +1422,7 @@ func (f *FieldType) marshalRecursive(w Writer, value any, specs []*Spec) (Writer
 	if f.Pointer && f.Repeated {
 		return marshalUnpacked(f, w, value, func(w Writer, value *Any) (Writer, error) {
 			if value == nil {
-				Append(&w, PointerNilBody)
+				Append(&w, EmptyBytes)
 				return w, nil
 			}
 			tw, err := spec.marshal(*value, specs)
@@ -1485,7 +1483,7 @@ func (f *FieldType) marshalSpec(w Writer, value any, specs []*Spec) (Writer, err
 	if f.Pointer && f.Repeated {
 		return marshalUnpacked(f, w, value, func(w Writer, value *Any) (Writer, error) {
 			if value == nil {
-				Append(&w, PointerNilBody)
+				Append(&w, EmptyBytes)
 				return w, nil
 			}
 			tw, err := f.TypeMessage.marshal(*value, specs)

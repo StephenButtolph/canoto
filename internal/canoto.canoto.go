@@ -2121,7 +2121,7 @@ func (c *GenericField[T1, T2]) MarshalCanotoInto(w canoto.Writer) canoto.Writer 
 		for i := range field {
 			canoto.Append(&w, canoto__GenericField__RepeatedPointer__tag)
 			if field[i] == nil {
-				canoto.Append(&w, canoto.PointerNilBody)
+				canoto.Append(&w, canoto.EmptyBytes)
 			} else {
 				innerSize := T2(field[i]).CachedCanotoSize()
 				fieldSize := canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
@@ -2136,7 +2136,7 @@ func (c *GenericField[T1, T2]) MarshalCanotoInto(w canoto.Writer) canoto.Writer 
 		for i := range &c.FixedRepeatedPointer {
 			canoto.Append(&w, canoto__GenericField__FixedRepeatedPointer__tag)
 			if (&c.FixedRepeatedPointer)[i] == nil {
-				canoto.Append(&w, canoto.PointerNilBody)
+				canoto.Append(&w, canoto.EmptyBytes)
 			} else {
 				innerSize := T2((&c.FixedRepeatedPointer)[i]).CachedCanotoSize()
 				fieldSize := canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
@@ -2765,7 +2765,7 @@ func (c *NestedGenericField[T1, T2]) MarshalCanotoInto(w canoto.Writer) canoto.W
 		for i := range field {
 			canoto.Append(&w, canoto__NestedGenericField__RepeatedPointer__tag)
 			if field[i] == nil {
-				canoto.Append(&w, canoto.PointerNilBody)
+				canoto.Append(&w, canoto.EmptyBytes)
 			} else {
 				innerSize := (field[i]).CachedCanotoSize()
 				fieldSize := canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
@@ -2780,7 +2780,7 @@ func (c *NestedGenericField[T1, T2]) MarshalCanotoInto(w canoto.Writer) canoto.W
 		for i := range &c.FixedRepeatedPointer {
 			canoto.Append(&w, canoto__NestedGenericField__FixedRepeatedPointer__tag)
 			if (&c.FixedRepeatedPointer)[i] == nil {
-				canoto.Append(&w, canoto.PointerNilBody)
+				canoto.Append(&w, canoto.EmptyBytes)
 			} else {
 				innerSize := ((&c.FixedRepeatedPointer)[i]).CachedCanotoSize()
 				fieldSize := canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
@@ -7009,7 +7009,7 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		for i := range field {
 			canoto.Append(&w, canoto__Scalars__RepeatedPointer__tag)
 			if field[i] == nil {
-				canoto.Append(&w, canoto.PointerNilBody)
+				canoto.Append(&w, canoto.EmptyBytes)
 			} else {
 				innerSize := (field[i]).CachedCanotoSize()
 				fieldSize := canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
@@ -7024,7 +7024,7 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		for i := range &c.FixedRepeatedPointer {
 			canoto.Append(&w, canoto__Scalars__FixedRepeatedPointer__tag)
 			if (&c.FixedRepeatedPointer)[i] == nil {
-				canoto.Append(&w, canoto.PointerNilBody)
+				canoto.Append(&w, canoto.EmptyBytes)
 			} else {
 				innerSize := ((&c.FixedRepeatedPointer)[i]).CachedCanotoSize()
 				fieldSize := canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize

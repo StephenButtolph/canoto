@@ -2064,7 +2064,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 		for i := range field {
 			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 			if field[i] == nil {
-				${selector}Append(&w, ${selector}PointerNilBody)
+				${selector}Append(&w, ${selector}EmptyBytes)
 			} else {
 				innerSize := ${genericTypeCast}(field[i]).CachedCanotoSize()
 				fieldSize := ${selector}SizePointerPresenceTag + ${selector}SizeUint(innerSize) + innerSize
@@ -2080,7 +2080,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 		for i := range &c.${fieldName} {
 			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 			if (&c.${fieldName})[i] == nil {
-				${selector}Append(&w, ${selector}PointerNilBody)
+				${selector}Append(&w, ${selector}EmptyBytes)
 			} else {
 				innerSize := ${genericTypeCast}((&c.${fieldName})[i]).CachedCanotoSize()
 				fieldSize := ${selector}SizePointerPresenceTag + ${selector}SizeUint(innerSize) + innerSize

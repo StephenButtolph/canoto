@@ -3478,7 +3478,7 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 		for i := range field {
 			Append(&w, canoto__SpecFuzzer__RepeatedPointer__tag)
 			if field[i] == nil {
-				Append(&w, PointerNilBody)
+				Append(&w, EmptyBytes)
 			} else {
 				innerSize := (field[i]).CachedCanotoSize()
 				fieldSize := SizePointerPresenceTag + SizeUint(innerSize) + innerSize
@@ -3494,7 +3494,7 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 		for i := range field {
 			Append(&w, canoto__SpecFuzzer__RepeatedOneOf__tag)
 			if field[i] == nil {
-				Append(&w, PointerNilBody)
+				Append(&w, EmptyBytes)
 			} else {
 				innerSize := (field[i]).CachedCanotoSize()
 				fieldSize := SizePointerPresenceTag + SizeUint(innerSize) + innerSize
@@ -3510,7 +3510,7 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 		for i := range field {
 			Append(&w, canoto__SpecFuzzer__RepeatedRecursive__tag)
 			if field[i] == nil {
-				Append(&w, PointerNilBody)
+				Append(&w, EmptyBytes)
 			} else {
 				innerSize := (field[i]).CachedCanotoSize()
 				fieldSize := SizePointerPresenceTag + SizeUint(innerSize) + innerSize
@@ -3526,7 +3526,7 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 		for i := range field {
 			Append(&w, canoto__SpecFuzzer__RepeatedValueRecursive__tag)
 			if field[i] == nil {
-				Append(&w, PointerNilBody)
+				Append(&w, EmptyBytes)
 			} else {
 				innerSize := (field[i]).CachedCanotoSize()
 				fieldSize := SizePointerPresenceTag + SizeUint(innerSize) + innerSize
@@ -3681,7 +3681,7 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 		for i := range &c.FixedRepeatedPointer {
 			Append(&w, canoto__SpecFuzzer__FixedRepeatedPointer__tag)
 			if (&c.FixedRepeatedPointer)[i] == nil {
-				Append(&w, PointerNilBody)
+				Append(&w, EmptyBytes)
 			} else {
 				innerSize := ((&c.FixedRepeatedPointer)[i]).CachedCanotoSize()
 				fieldSize := SizePointerPresenceTag + SizeUint(innerSize) + innerSize
@@ -3696,7 +3696,7 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 		for i := range &c.FixedRepeatedOneOf {
 			Append(&w, canoto__SpecFuzzer__FixedRepeatedOneOf__tag)
 			if (&c.FixedRepeatedOneOf)[i] == nil {
-				Append(&w, PointerNilBody)
+				Append(&w, EmptyBytes)
 			} else {
 				innerSize := ((&c.FixedRepeatedOneOf)[i]).CachedCanotoSize()
 				fieldSize := SizePointerPresenceTag + SizeUint(innerSize) + innerSize
@@ -3711,7 +3711,7 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 		for i := range &c.FixedRepeatedRecursive {
 			Append(&w, canoto__SpecFuzzer__FixedRepeatedRecursive__tag)
 			if (&c.FixedRepeatedRecursive)[i] == nil {
-				Append(&w, PointerNilBody)
+				Append(&w, EmptyBytes)
 			} else {
 				innerSize := ((&c.FixedRepeatedRecursive)[i]).CachedCanotoSize()
 				fieldSize := SizePointerPresenceTag + SizeUint(innerSize) + innerSize
@@ -3726,7 +3726,7 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 		for i := range &c.FixedRepeatedValueRecursive {
 			Append(&w, canoto__SpecFuzzer__FixedRepeatedValueRecursive__tag)
 			if (&c.FixedRepeatedValueRecursive)[i] == nil {
-				Append(&w, PointerNilBody)
+				Append(&w, EmptyBytes)
 			} else {
 				innerSize := ((&c.FixedRepeatedValueRecursive)[i]).CachedCanotoSize()
 				fieldSize := SizePointerPresenceTag + SizeUint(innerSize) + innerSize
