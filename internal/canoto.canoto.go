@@ -20,11 +20,7 @@ const (
 )
 
 // Ensure that unused imports do not error
-var (
-	_ atomic.Uint64
-
-	_ = io.ErrUnexpectedEOF
-)
+var _ = io.ErrUnexpectedEOF
 
 const (
 	canoto__LargestFieldNumber__Uint = 536870911
