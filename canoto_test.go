@@ -1106,8 +1106,16 @@ func FuzzSpec(f *testing.F) {
 func BenchmarkUnmarshalSpec(b *testing.B) {
 	v := fullSpecFuzzer(b)
 	bytes := v.MarshalCanoto()
-	spec := v.CanotoSpec()
-	for b.Loop() {
-		_, _ = Unmarshal(spec, bytes)
-	}
+	b.Run("generic", func(b *testing.B) {
+		spec := v.CanotoSpec()
+		for b.Loop() {
+			_, _ = Unmarshal(spec, bytes)
+		}
+	})
+	b.Run("specialized", func(b *testing.B) {
+		var msg SpecFuzzer
+		for b.Loop() {
+			_ = msg.UnmarshalCanoto(bytes)
+		}
+	})
 }
