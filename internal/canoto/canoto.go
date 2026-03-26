@@ -842,9 +842,12 @@ func SizeOf[T integer](_ T) SizeEnum {
 func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 	specs = append(specs, s)
 	var (
-		minField uint32
-		a        Any
-		oneOfs   = make(map[string]struct{})
+		minField      uint32
+		minFieldIndex int
+		a             = Any{
+			Fields: make([]AnyField, 0, len(s.Fields)),
+		}
+		oneOfs = make(map[string]struct{})
 	)
 	for HasNext(r) {
 		fieldNumber, wireType, err := ReadTag(r)
@@ -855,7 +858,7 @@ func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 			return Any{}, ErrInvalidFieldOrder
 		}
 
-		fieldType, err := s.findFieldByNumber(fieldNumber)
+		fieldType, fieldIndex, err := s.findFieldByNumber(fieldNumber, minFieldIndex)
 		if err != nil {
 			return Any{}, err
 		}
@@ -885,6 +888,7 @@ func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 		})
 
 		minField = fieldNumber + 1
+		minFieldIndex = fieldIndex + 1
 	}
 	return a, nil
 }
@@ -925,15 +929,15 @@ func (s *Spec) marshal(a Any, specs []*Spec) (Writer, error) {
 	return w, nil
 }
 
-func (s *Spec) findFieldByNumber(fieldNumber uint32) (*FieldType, error) {
+func (s *Spec) findFieldByNumber(fieldNumber uint32, startIndex int) (*FieldType, int, error) {
 	fields := s.Fields
-	for i := range fields {
+	for i := startIndex; i < len(fields); i++ {
 		f := &fields[i]
 		if f.FieldNumber == fieldNumber {
-			return f, nil
+			return f, i, nil
 		}
 	}
-	return nil, ErrUnknownField
+	return nil, 0, ErrUnknownField
 }
 
 func (s *Spec) findFieldByName(name string) (*FieldType, error) {
