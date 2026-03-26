@@ -947,50 +947,8 @@ type SpecFuzzer struct {
 	canotoData canotoData_SpecFuzzer
 }
 
-type LargestFieldNumber[T Uint] struct {
-	Uint T `canoto:"uint,536870911" json:"Uint,omitempty"`
-
-	canotoData canotoData_LargestFieldNumber
-}
-
-type SpecFuzzerPointer struct {
-	Value SpecFuzzer `canoto:"value,1"`
-
-	canotoData canotoData_SpecFuzzerPointer
-}
-
-type OneOf struct {
-	A1 int32 `canoto:"int,1,A" json:"A1,omitempty"`
-	B1 int32 `canoto:"int,3,B" json:"B1,omitempty"`
-	B2 int64 `canoto:"int,4,B" json:"B2,omitempty"`
-	C  int32 `canoto:"int,5"   json:"C,omitempty"`
-	D  int64 `canoto:"int,6"   json:"D,omitempty"`
-	A2 int64 `canoto:"int,7,A" json:"A2,omitempty"`
-
-	canotoData canotoData_OneOf
-}
-
-func FuzzSpec(f *testing.F) {
-	// Regression tests for incorrect unsafe handling of zero-length slices and
-	// nil pointers.
-	f.Add((&SpecFuzzer{
-		RepeatedValue:      []LargestFieldNumber[uint32]{{}, {}},
-		FixedRepeatedBytes: [3][]byte{{1, 2}},
-	}).MarshalCanoto())
-	f.Add((&SpecFuzzer{
-		RepeatedPointer:    []*LargestFieldNumber[uint32]{nil, nil},
-		FixedRepeatedBytes: [3][]byte{{1, 2}},
-	}).MarshalCanoto())
-	f.Add((&SpecFuzzer{
-		FixedRepeatedValue:     [3]LargestFieldNumber[uint32]{{Uint: 1}, {}, {}},
-		FixedRepeatedRecursive: [3]*SpecFuzzer{{String: "a"}},
-	}).MarshalCanoto())
-	f.Add((&SpecFuzzer{
-		FixedRepeatedPointer:   [3]*LargestFieldNumber[uint32]{{Uint: 1}, nil, nil},
-		FixedRepeatedRecursive: [3]*SpecFuzzer{{String: "a"}},
-	}).MarshalCanoto())
-
-	full := SpecFuzzer{
+func fullSpecFuzzer(tb testing.TB) SpecFuzzer {
+	v := SpecFuzzer{
 		Int8:       -31,
 		Int16:      -2164,
 		Int32:      -12786345,
@@ -1051,20 +1009,64 @@ func FuzzSpec(f *testing.F) {
 		FixedRepeatedPointer:    [3]*LargestFieldNumber[uint32]{{Uint: 1}, nil, {}},
 		FixedRepeatedOneOf:      [3]*OneOf{{A1: 1}, {B1: 2}, {C: 3}},
 	}
-	fullBytes := full.MarshalCanoto()
-	f.Add(fullBytes)
+	b := v.MarshalCanoto()
 
-	full.ValueRecursive = &SpecFuzzerPointer{}
-	require.NoError(f, full.ValueRecursive.Value.UnmarshalCanoto(fullBytes))
-	full.RepeatedValueRecursive = []*SpecFuzzerPointer{full.ValueRecursive, nil, {}}
-	full.FixedRepeatedValueRecursive = [3]*SpecFuzzerPointer{full.ValueRecursive, nil, {}}
+	v.ValueRecursive = &SpecFuzzerPointer{}
+	require.NoError(tb, v.ValueRecursive.Value.UnmarshalCanoto(b))
+	v.RepeatedValueRecursive = []*SpecFuzzerPointer{v.ValueRecursive, nil, {}}
+	v.FixedRepeatedValueRecursive = [3]*SpecFuzzerPointer{v.ValueRecursive, nil, {}}
 
-	full.Recursive = &full.ValueRecursive.Value
-	full.RepeatedRecursive = []*SpecFuzzer{full.Recursive, nil, {}}
-	full.FixedRepeatedRecursive = [3]*SpecFuzzer{full.Recursive, nil, {}}
+	v.Recursive = &v.ValueRecursive.Value
+	v.RepeatedRecursive = []*SpecFuzzer{v.Recursive, nil, {}}
+	v.FixedRepeatedRecursive = [3]*SpecFuzzer{v.Recursive, nil, {}}
+	return v
+}
 
-	recursiveFullBytes := full.MarshalCanoto()
-	f.Add(recursiveFullBytes)
+type LargestFieldNumber[T Uint] struct {
+	Uint T `canoto:"uint,536870911" json:"Uint,omitempty"`
+
+	canotoData canotoData_LargestFieldNumber
+}
+
+type SpecFuzzerPointer struct {
+	Value SpecFuzzer `canoto:"value,1"`
+
+	canotoData canotoData_SpecFuzzerPointer
+}
+
+type OneOf struct {
+	A1 int32 `canoto:"int,1,A" json:"A1,omitempty"`
+	B1 int32 `canoto:"int,3,B" json:"B1,omitempty"`
+	B2 int64 `canoto:"int,4,B" json:"B2,omitempty"`
+	C  int32 `canoto:"int,5"   json:"C,omitempty"`
+	D  int64 `canoto:"int,6"   json:"D,omitempty"`
+	A2 int64 `canoto:"int,7,A" json:"A2,omitempty"`
+
+	canotoData canotoData_OneOf
+}
+
+func FuzzSpec(f *testing.F) {
+	// Regression tests for incorrect unsafe handling of zero-length slices and
+	// nil pointers.
+	f.Add((&SpecFuzzer{
+		RepeatedValue:      []LargestFieldNumber[uint32]{{}, {}},
+		FixedRepeatedBytes: [3][]byte{{1, 2}},
+	}).MarshalCanoto())
+	f.Add((&SpecFuzzer{
+		RepeatedPointer:    []*LargestFieldNumber[uint32]{nil, nil},
+		FixedRepeatedBytes: [3][]byte{{1, 2}},
+	}).MarshalCanoto())
+	f.Add((&SpecFuzzer{
+		FixedRepeatedValue:     [3]LargestFieldNumber[uint32]{{Uint: 1}, {}, {}},
+		FixedRepeatedRecursive: [3]*SpecFuzzer{{String: "a"}},
+	}).MarshalCanoto())
+	f.Add((&SpecFuzzer{
+		FixedRepeatedPointer:   [3]*LargestFieldNumber[uint32]{{Uint: 1}, nil, nil},
+		FixedRepeatedRecursive: [3]*SpecFuzzer{{String: "a"}},
+	}).MarshalCanoto())
+
+	full := fullSpecFuzzer(f)
+	f.Add(full.MarshalCanoto())
 
 	spec := (*SpecFuzzer)(nil).CanotoSpec()
 	f.Fuzz(func(t *testing.T, b []byte) {
@@ -1098,5 +1100,40 @@ func FuzzSpec(f *testing.F) {
 		actualBytes, err := Marshal(spec, anyMSG)
 		require.NoError(err)
 		require.True(bytes.Equal(originalBytes, actualBytes))
+	})
+}
+
+func BenchmarkSpec(b *testing.B) {
+	v := fullSpecFuzzer(b)
+	spec := v.CanotoSpec()
+
+	bytes := v.MarshalCanoto()
+	a, err := Unmarshal(spec, bytes)
+	require.NoError(b, err)
+
+	b.Run("marshal", func(b *testing.B) {
+		b.Run("baseline", func(b *testing.B) {
+			for b.Loop() {
+				_ = v.MarshalCanoto()
+			}
+		})
+		b.Run("any", func(b *testing.B) {
+			for b.Loop() {
+				_, _ = Marshal(spec, a)
+			}
+		})
+	})
+	b.Run("unmarshal", func(b *testing.B) {
+		b.Run("baseline", func(b *testing.B) {
+			var msg SpecFuzzer
+			for b.Loop() {
+				_ = msg.UnmarshalCanoto(bytes)
+			}
+		})
+		b.Run("any", func(b *testing.B) {
+			for b.Loop() {
+				_, _ = Unmarshal(spec, bytes)
+			}
+		})
 	})
 }
