@@ -95,11 +95,7 @@ const (
 )
 
 // Ensure that unused imports do not error
-var (
-	_ atomic.Uint64
-
-	_ = io.ErrUnexpectedEOF
-)
+var _ = io.ErrUnexpectedEOF
 `
 	// Only include the import for canoto if this is not an internal file.
 	var selector string
