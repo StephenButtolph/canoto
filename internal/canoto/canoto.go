@@ -896,11 +896,12 @@ func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 func (s *Spec) marshal(a Any, specs []*Spec) (Writer, error) {
 	specs = append(specs, s)
 	var (
-		w        Writer
-		minField uint32
+		w             Writer
+		minField      uint32
+		minFieldIndex int
 	)
 	for _, f := range a.Fields {
-		ft, err := s.findFieldByName(f.Name)
+		ft, fieldIndex, err := s.findFieldByName(f.Name, minFieldIndex)
 		if err != nil {
 			return Writer{}, err
 		}
@@ -925,6 +926,7 @@ func (s *Spec) marshal(a Any, specs []*Spec) (Writer, error) {
 		}
 
 		minField = ft.FieldNumber + 1
+		minFieldIndex = fieldIndex + 1
 	}
 	return w, nil
 }
@@ -940,15 +942,15 @@ func (s *Spec) findFieldByNumber(fieldNumber uint32, startIndex int) (*FieldType
 	return nil, 0, ErrUnknownField
 }
 
-func (s *Spec) findFieldByName(name string) (*FieldType, error) {
+func (s *Spec) findFieldByName(name string, startIndex int) (*FieldType, int, error) {
 	fields := s.Fields
-	for i := range fields {
+	for i := startIndex; i < len(fields); i++ {
 		f := &fields[i]
 		if f.Name == name {
-			return f, nil
+			return f, i, nil
 		}
 	}
-	return nil, ErrUnknownField
+	return nil, 0, ErrUnknownField
 }
 
 func (f *FieldType) wireType() (WireType, error) {
