@@ -122,6 +122,13 @@ type A__B struct {
 	canotoData canotoData_A__B
 }
 
+//nolint:stylecheck // This is checking for name collisions with __Pointer wrappers.
+type A__Pointer struct {
+	C int32 `canoto:"int,1"`
+
+	canotoData canotoData_A__Pointer
+}
+
 type Scalars struct {
 	Int8                            int8                           `canoto:"int,1"`
 	Int16                           int16                          `canoto:"int,2"`

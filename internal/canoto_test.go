@@ -74,20 +74,7 @@ func canonicalizeCanotoScalars(s *Scalars) *Scalars {
 	for i := range s.CustomFixedRepeatedBytes {
 		s.CustomFixedRepeatedBytes[i] = canonicalizeSlice(s.CustomFixedRepeatedBytes[i])
 	}
-	if s.Pointer != nil && s.Pointer.Uint == 0 {
-		s.Pointer = nil
-	}
 	s.RepeatedPointer = canonicalizeSlice(s.RepeatedPointer)
-	for i := range s.RepeatedPointer {
-		if s.RepeatedPointer[i] != nil && s.RepeatedPointer[i].Uint == 0 {
-			s.RepeatedPointer[i] = nil
-		}
-	}
-	for i := range s.FixedRepeatedPointer {
-		if s.FixedRepeatedPointer[i] != nil && s.FixedRepeatedPointer[i].Uint == 0 {
-			s.FixedRepeatedPointer[i] = nil
-		}
-	}
 	return s
 }
 
@@ -154,28 +141,24 @@ func canonicalizeProtoScalars(s *pb.Scalars) *pb.Scalars {
 	}
 
 	var pointer *pb.LargestFieldNumber
-	if v := s.Pointer.GetUint(); v != 0 {
+	if s.Pointer != nil {
 		pointer = &pb.LargestFieldNumber{
-			Uint: v,
+			Uint: s.Pointer.Uint,
 		}
 	}
-	repeatedPointers := make([]*pb.LargestFieldNumber, 0, len(s.RepeatedPointer))
-	for _, v := range s.RepeatedPointer {
-		var ptr *pb.LargestFieldNumber
-		if v := v.GetUint(); v != 0 {
-			ptr = &pb.LargestFieldNumber{
-				Uint: v,
-			}
+	repeatedPointers := make([]*pb.LargestFieldNumber__Pointer, 0, len(s.RepeatedPointer))
+	for _, p := range s.RepeatedPointer {
+		ptr := &pb.LargestFieldNumber__Pointer{}
+		if v := p.GetValue(); v != nil {
+			ptr.Value = &pb.LargestFieldNumber{Uint: v.GetUint()}
 		}
 		repeatedPointers = append(repeatedPointers, ptr)
 	}
-	fixedRepeatedPointers := make([]*pb.LargestFieldNumber, 0, len(s.FixedRepeatedPointer))
-	for _, v := range s.FixedRepeatedPointer {
-		var ptr *pb.LargestFieldNumber
-		if v := v.GetUint(); v != 0 {
-			ptr = &pb.LargestFieldNumber{
-				Uint: v,
-			}
+	fixedRepeatedPointers := make([]*pb.LargestFieldNumber__Pointer, 0, len(s.FixedRepeatedPointer))
+	for _, p := range s.FixedRepeatedPointer {
+		ptr := &pb.LargestFieldNumber__Pointer{}
+		if v := p.GetValue(); v != nil {
+			ptr.Value = &pb.LargestFieldNumber{Uint: v.GetUint()}
 		}
 		fixedRepeatedPointers = append(fixedRepeatedPointers, ptr)
 	}
@@ -443,37 +426,27 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 			pbs.CustomFixedRepeatedFixedBytes = append(pbs.CustomFixedRepeatedFixedBytes, slices.Clone(v[:]))
 		}
 	}
-	if s.Pointer != nil && s.Pointer.Uint != 0 {
+	if s.Pointer != nil {
 		pbs.Pointer = &pb.LargestFieldNumber{
 			Uint: uint64(s.Pointer.Uint),
 		}
 	}
 	if len(s.RepeatedPointer) != 0 {
-		for _, v := range s.RepeatedPointer {
-			var ptr *pb.LargestFieldNumber
-			if v != nil && v.Uint != 0 {
-				ptr = &pb.LargestFieldNumber{
-					Uint: uint64(v.Uint),
-				}
+		for _, p := range s.RepeatedPointer {
+			ptr := &pb.LargestFieldNumber__Pointer{}
+			if p != nil {
+				ptr.Value = &pb.LargestFieldNumber{Uint: uint64(p.Uint)}
 			}
 			pbs.RepeatedPointer = append(pbs.RepeatedPointer, ptr)
 		}
 	}
-	{
-		isZero := true
-		for _, v := range s.FixedRepeatedPointer {
-			isZero = isZero && (v == nil || v.Uint == 0)
-		}
-		if !isZero {
-			for _, v := range s.FixedRepeatedPointer {
-				var ptr *pb.LargestFieldNumber
-				if v != nil && v.Uint != 0 {
-					ptr = &pb.LargestFieldNumber{
-						Uint: uint64(v.Uint),
-					}
-				}
-				pbs.FixedRepeatedPointer = append(pbs.FixedRepeatedPointer, ptr)
+	if !canoto.IsZero(s.FixedRepeatedPointer) {
+		for _, p := range s.FixedRepeatedPointer {
+			ptr := &pb.LargestFieldNumber__Pointer{}
+			if p != nil {
+				ptr.Value = &pb.LargestFieldNumber{Uint: uint64(p.Uint)}
 			}
+			pbs.FixedRepeatedPointer = append(pbs.FixedRepeatedPointer, ptr)
 		}
 	}
 	return &pbs
@@ -1397,6 +1370,45 @@ func TestAppend_ProtoCompatibility(t *testing.T) {
 			w := &canoto.Writer{}
 			test.f(w)
 			require.Equal(t, pbBytes, w.B)
+		})
+	}
+}
+
+func TestPointerNilVsZeroValue(t *testing.T) {
+	tests := []struct {
+		name string
+		s    *Scalars
+	}{
+		{
+			name: "Pointer/Nil",
+			s:    &Scalars{},
+		},
+		{
+			name: "Pointer/ZeroValue",
+			s:    &Scalars{Pointer: &LargestFieldNumber[uint32]{}},
+		},
+		{
+			name: "RepeatedPointer/NilElement",
+			s:    &Scalars{RepeatedPointer: []*LargestFieldNumber[uint32]{nil}},
+		},
+		{
+			name: "RepeatedPointer/ZeroValueElement",
+			s:    &Scalars{RepeatedPointer: []*LargestFieldNumber[uint32]{{}}},
+		},
+		{
+			name: "FixedRepeatedPointer/AllNil",
+			s:    &Scalars{},
+		},
+		{
+			name: "FixedRepeatedPointer/ZeroValueElement",
+			s:    &Scalars{FixedRepeatedPointer: [3]*LargestFieldNumber[uint32]{{}, nil, nil}},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var got Scalars
+			require.NoError(t, got.UnmarshalCanoto(test.s.MarshalCanoto()))
+			require.Equal(t, test.s, &got)
 		})
 	}
 }

@@ -159,6 +159,10 @@ func (c canotoType) IsMessage() bool {
 	return slices.Contains(canotoMessageTypes, c)
 }
 
+func (c canotoType) IsRepeatedPointer() bool {
+	return c == canotoRepeatedPointer || c == canotoFixedRepeatedPointer
+}
+
 func (c canotoType) WireType() canoto.WireType {
 	switch c {
 	case canotoInt, canotoUint, canotoBool:
