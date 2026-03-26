@@ -56,6 +56,7 @@ func (*Spec) CanotoSpec(types ...reflect.Type) *Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ true,
 				/*OneOf:         */ "",
+				/*Pointer:       */ false,
 				/*types:         */ types,
 			),
 		},
@@ -176,9 +177,6 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *Spec) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	if !ValidString(c.Name) {
 		return false
 	}
@@ -198,9 +196,6 @@ func (c *Spec) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *Spec) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	if len(c.Name) != 0 {
 		size += uint64(len(canoto__Spec__Name__tag)) + SizeBytes(c.Name)
@@ -224,9 +219,6 @@ func (c *Spec) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *Spec) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -254,9 +246,6 @@ func (c *Spec) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *Spec) MarshalCanotoInto(w Writer) Writer {
-	if c == nil {
-		return w
-	}
 	if len(c.Name) != 0 {
 		Append(&w, canoto__Spec__Name__tag)
 		AppendBytes(&w, c.Name)
@@ -278,32 +267,34 @@ const (
 	canoto__FieldType__FixedLength    = 3
 	canoto__FieldType__Repeated       = 4
 	canoto__FieldType__OneOf          = 5
-	canoto__FieldType__TypeInt        = 6
-	canoto__FieldType__TypeUint       = 7
-	canoto__FieldType__TypeFixedInt   = 8
-	canoto__FieldType__TypeFixedUint  = 9
-	canoto__FieldType__TypeBool       = 10
-	canoto__FieldType__TypeString     = 11
-	canoto__FieldType__TypeBytes      = 12
-	canoto__FieldType__TypeFixedBytes = 13
-	canoto__FieldType__TypeRecursive  = 14
+	canoto__FieldType__Pointer        = 6
+	canoto__FieldType__TypeInt        = 7
+	canoto__FieldType__TypeUint       = 8
+	canoto__FieldType__TypeFixedInt   = 9
+	canoto__FieldType__TypeFixedUint  = 10
+	canoto__FieldType__TypeBool       = 11
+	canoto__FieldType__TypeString     = 12
+	canoto__FieldType__TypeBytes      = 13
+	canoto__FieldType__TypeFixedBytes = 14
 	canoto__FieldType__TypeMessage    = 15
+	canoto__FieldType__TypeRecursive  = 16
 
-	canoto__FieldType__FieldNumber__tag    = "\x08" // canoto.Tag(canoto__FieldType__FieldNumber, canoto.Varint)
-	canoto__FieldType__Name__tag           = "\x12" // canoto.Tag(canoto__FieldType__Name, canoto.Len)
-	canoto__FieldType__FixedLength__tag    = "\x18" // canoto.Tag(canoto__FieldType__FixedLength, canoto.Varint)
-	canoto__FieldType__Repeated__tag       = "\x20" // canoto.Tag(canoto__FieldType__Repeated, canoto.Varint)
-	canoto__FieldType__OneOf__tag          = "\x2a" // canoto.Tag(canoto__FieldType__OneOf, canoto.Len)
-	canoto__FieldType__TypeInt__tag        = "\x30" // canoto.Tag(canoto__FieldType__TypeInt, canoto.Varint)
-	canoto__FieldType__TypeUint__tag       = "\x38" // canoto.Tag(canoto__FieldType__TypeUint, canoto.Varint)
-	canoto__FieldType__TypeFixedInt__tag   = "\x40" // canoto.Tag(canoto__FieldType__TypeFixedInt, canoto.Varint)
-	canoto__FieldType__TypeFixedUint__tag  = "\x48" // canoto.Tag(canoto__FieldType__TypeFixedUint, canoto.Varint)
-	canoto__FieldType__TypeBool__tag       = "\x50" // canoto.Tag(canoto__FieldType__TypeBool, canoto.Varint)
-	canoto__FieldType__TypeString__tag     = "\x58" // canoto.Tag(canoto__FieldType__TypeString, canoto.Varint)
-	canoto__FieldType__TypeBytes__tag      = "\x60" // canoto.Tag(canoto__FieldType__TypeBytes, canoto.Varint)
-	canoto__FieldType__TypeFixedBytes__tag = "\x68" // canoto.Tag(canoto__FieldType__TypeFixedBytes, canoto.Varint)
-	canoto__FieldType__TypeRecursive__tag  = "\x70" // canoto.Tag(canoto__FieldType__TypeRecursive, canoto.Varint)
-	canoto__FieldType__TypeMessage__tag    = "\x7a" // canoto.Tag(canoto__FieldType__TypeMessage, canoto.Len)
+	canoto__FieldType__FieldNumber__tag    = "\x08"     // canoto.Tag(canoto__FieldType__FieldNumber, canoto.Varint)
+	canoto__FieldType__Name__tag           = "\x12"     // canoto.Tag(canoto__FieldType__Name, canoto.Len)
+	canoto__FieldType__FixedLength__tag    = "\x18"     // canoto.Tag(canoto__FieldType__FixedLength, canoto.Varint)
+	canoto__FieldType__Repeated__tag       = "\x20"     // canoto.Tag(canoto__FieldType__Repeated, canoto.Varint)
+	canoto__FieldType__OneOf__tag          = "\x2a"     // canoto.Tag(canoto__FieldType__OneOf, canoto.Len)
+	canoto__FieldType__Pointer__tag        = "\x30"     // canoto.Tag(canoto__FieldType__Pointer, canoto.Varint)
+	canoto__FieldType__TypeInt__tag        = "\x38"     // canoto.Tag(canoto__FieldType__TypeInt, canoto.Varint)
+	canoto__FieldType__TypeUint__tag       = "\x40"     // canoto.Tag(canoto__FieldType__TypeUint, canoto.Varint)
+	canoto__FieldType__TypeFixedInt__tag   = "\x48"     // canoto.Tag(canoto__FieldType__TypeFixedInt, canoto.Varint)
+	canoto__FieldType__TypeFixedUint__tag  = "\x50"     // canoto.Tag(canoto__FieldType__TypeFixedUint, canoto.Varint)
+	canoto__FieldType__TypeBool__tag       = "\x58"     // canoto.Tag(canoto__FieldType__TypeBool, canoto.Varint)
+	canoto__FieldType__TypeString__tag     = "\x60"     // canoto.Tag(canoto__FieldType__TypeString, canoto.Varint)
+	canoto__FieldType__TypeBytes__tag      = "\x68"     // canoto.Tag(canoto__FieldType__TypeBytes, canoto.Varint)
+	canoto__FieldType__TypeFixedBytes__tag = "\x70"     // canoto.Tag(canoto__FieldType__TypeFixedBytes, canoto.Varint)
+	canoto__FieldType__TypeMessage__tag    = "\x7a"     // canoto.Tag(canoto__FieldType__TypeMessage, canoto.Len)
+	canoto__FieldType__TypeRecursive__tag  = "\x80\x01" // canoto.Tag(canoto__FieldType__TypeRecursive, canoto.Varint)
 )
 
 type canotoData_FieldType struct {
@@ -348,6 +339,12 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 				Name:        "OneOf",
 				OneOf:       "",
 				TypeString:  true,
+			},
+			{
+				FieldNumber: canoto__FieldType__Pointer,
+				Name:        "Pointer",
+				OneOf:       "",
+				TypeBool:    true,
 			},
 			{
 				FieldNumber: canoto__FieldType__TypeInt,
@@ -397,12 +394,6 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 				OneOf:       "Type",
 				TypeUint:    SizeOf(zero.TypeFixedBytes),
 			},
-			{
-				FieldNumber: canoto__FieldType__TypeRecursive,
-				Name:        "TypeRecursive",
-				OneOf:       "Type",
-				TypeUint:    SizeOf(zero.TypeRecursive),
-			},
 			FieldTypeFromField(
 				/*type inference:*/ (zero.TypeMessage),
 				/*FieldNumber:   */ canoto__FieldType__TypeMessage,
@@ -410,8 +401,15 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 				/*FixedLength:   */ 0,
 				/*Repeated:      */ false,
 				/*OneOf:         */ "Type",
+				/*Pointer:       */ true,
 				/*types:         */ types,
 			),
+			{
+				FieldNumber: canoto__FieldType__TypeRecursive,
+				Name:        "TypeRecursive",
+				OneOf:       "Type",
+				TypeUint:    SizeOf(zero.TypeRecursive),
+			},
 		},
 	}
 	s.CalculateCanotoCache()
@@ -505,11 +503,22 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if len(c.OneOf) == 0 {
 				return ErrZeroValue
 			}
+		case canoto__FieldType__Pointer:
+			if wireType != Varint {
+				return ErrUnexpectedWireType
+			}
+
+			if err := ReadBool(&r, &c.Pointer); err != nil {
+				return err
+			}
+			if IsZero(c.Pointer) {
+				return ErrZeroValue
+			}
 		case canoto__FieldType__TypeInt:
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 6) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 7) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -523,7 +532,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 7) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 8) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -537,7 +546,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 8) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 9) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -551,7 +560,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 9) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 10) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -565,7 +574,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 10) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 11) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -579,7 +588,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 11) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 12) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -593,7 +602,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 12) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 13) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -607,7 +616,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 13) != 0 {
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 14) != 0 {
 				return ErrDuplicateOneOf
 			}
 
@@ -615,20 +624,6 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 				return err
 			}
 			if IsZero(c.TypeFixedBytes) {
-				return ErrZeroValue
-			}
-		case canoto__FieldType__TypeRecursive:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 14) != 0 {
-				return ErrDuplicateOneOf
-			}
-
-			if err := ReadUint(&r, &c.TypeRecursive); err != nil {
-				return err
-			}
-			if IsZero(c.TypeRecursive) {
 				return ErrZeroValue
 			}
 		case canoto__FieldType__TypeMessage:
@@ -646,9 +641,6 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if err := ReadBytes(&r, &msgBytes); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
-				return ErrZeroValue
-			}
 			r.Unsafe = originalUnsafe
 
 			// Unmarshal the field from the bytes.
@@ -659,6 +651,20 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 				return err
 			}
 			r.B = remainingBytes
+		case canoto__FieldType__TypeRecursive:
+			if wireType != Varint {
+				return ErrUnexpectedWireType
+			}
+			if atomic.SwapUint32(&c.canotoData.TypeOneOf, 16) != 0 {
+				return ErrDuplicateOneOf
+			}
+
+			if err := ReadUint(&r, &c.TypeRecursive); err != nil {
+				return err
+			}
+			if IsZero(c.TypeRecursive) {
+				return ErrZeroValue
+			}
 		default:
 			return ErrUnknownField
 		}
@@ -676,9 +682,6 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *FieldType) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	var TypeOneOf uint32
 	if !IsZero(c.TypeInt) {
 		if TypeOneOf != 0 {
@@ -728,20 +731,18 @@ func (c *FieldType) ValidCanoto() bool {
 		}
 		TypeOneOf = canoto__FieldType__TypeFixedBytes
 	}
+	if c.TypeMessage != nil {
+		(c.TypeMessage).CalculateCanotoCache()
+		if TypeOneOf != 0 {
+			return false
+		}
+		TypeOneOf = canoto__FieldType__TypeMessage
+	}
 	if !IsZero(c.TypeRecursive) {
 		if TypeOneOf != 0 {
 			return false
 		}
 		TypeOneOf = canoto__FieldType__TypeRecursive
-	}
-	if c.TypeMessage != nil {
-		(c.TypeMessage).CalculateCanotoCache()
-		if (c.TypeMessage).CachedCanotoSize() != 0 {
-			if TypeOneOf != 0 {
-				return false
-			}
-			TypeOneOf = canoto__FieldType__TypeMessage
-		}
 	}
 	if !ValidString(c.Name) {
 		return false
@@ -760,9 +761,6 @@ func (c *FieldType) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *FieldType) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	var TypeOneOf uint32
 	if !IsZero(c.FieldNumber) {
@@ -780,48 +778,50 @@ func (c *FieldType) CalculateCanotoCache() {
 	if len(c.OneOf) != 0 {
 		size += uint64(len(canoto__FieldType__OneOf__tag)) + SizeBytes(c.OneOf)
 	}
+	if !IsZero(c.Pointer) {
+		size += uint64(len(canoto__FieldType__Pointer__tag)) + SizeBool
+	}
 	if !IsZero(c.TypeInt) {
 		size += uint64(len(canoto__FieldType__TypeInt__tag)) + SizeUint(c.TypeInt)
-		TypeOneOf = 6
+		TypeOneOf = 7
 	}
 	if !IsZero(c.TypeUint) {
 		size += uint64(len(canoto__FieldType__TypeUint__tag)) + SizeUint(c.TypeUint)
-		TypeOneOf = 7
+		TypeOneOf = 8
 	}
 	if !IsZero(c.TypeFixedInt) {
 		size += uint64(len(canoto__FieldType__TypeFixedInt__tag)) + SizeUint(c.TypeFixedInt)
-		TypeOneOf = 8
+		TypeOneOf = 9
 	}
 	if !IsZero(c.TypeFixedUint) {
 		size += uint64(len(canoto__FieldType__TypeFixedUint__tag)) + SizeUint(c.TypeFixedUint)
-		TypeOneOf = 9
+		TypeOneOf = 10
 	}
 	if !IsZero(c.TypeBool) {
 		size += uint64(len(canoto__FieldType__TypeBool__tag)) + SizeBool
-		TypeOneOf = 10
+		TypeOneOf = 11
 	}
 	if !IsZero(c.TypeString) {
 		size += uint64(len(canoto__FieldType__TypeString__tag)) + SizeBool
-		TypeOneOf = 11
+		TypeOneOf = 12
 	}
 	if !IsZero(c.TypeBytes) {
 		size += uint64(len(canoto__FieldType__TypeBytes__tag)) + SizeBool
-		TypeOneOf = 12
+		TypeOneOf = 13
 	}
 	if !IsZero(c.TypeFixedBytes) {
 		size += uint64(len(canoto__FieldType__TypeFixedBytes__tag)) + SizeUint(c.TypeFixedBytes)
-		TypeOneOf = 13
-	}
-	if !IsZero(c.TypeRecursive) {
-		size += uint64(len(canoto__FieldType__TypeRecursive__tag)) + SizeUint(c.TypeRecursive)
 		TypeOneOf = 14
 	}
 	if c.TypeMessage != nil {
 		(c.TypeMessage).CalculateCanotoCache()
-		if fieldSize := (c.TypeMessage).CachedCanotoSize(); fieldSize != 0 {
-			size += uint64(len(canoto__FieldType__TypeMessage__tag)) + SizeUint(fieldSize) + fieldSize
-			TypeOneOf = 15
-		}
+		fieldSize := (c.TypeMessage).CachedCanotoSize()
+		size += uint64(len(canoto__FieldType__TypeMessage__tag)) + SizeUint(fieldSize) + fieldSize
+		TypeOneOf = 15
+	}
+	if !IsZero(c.TypeRecursive) {
+		size += uint64(len(canoto__FieldType__TypeRecursive__tag)) + SizeUint(c.TypeRecursive)
+		TypeOneOf = 16
 	}
 	atomic.StoreUint64(&c.canotoData.size, size)
 	atomic.StoreUint32(&c.canotoData.TypeOneOf, TypeOneOf)
@@ -835,9 +835,6 @@ func (c *FieldType) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *FieldType) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -879,9 +876,6 @@ func (c *FieldType) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *FieldType) MarshalCanotoInto(w Writer) Writer {
-	if c == nil {
-		return w
-	}
 	if !IsZero(c.FieldNumber) {
 		Append(&w, canoto__FieldType__FieldNumber__tag)
 		AppendUint(&w, c.FieldNumber)
@@ -901,6 +895,10 @@ func (c *FieldType) MarshalCanotoInto(w Writer) Writer {
 	if len(c.OneOf) != 0 {
 		Append(&w, canoto__FieldType__OneOf__tag)
 		AppendBytes(&w, c.OneOf)
+	}
+	if !IsZero(c.Pointer) {
+		Append(&w, canoto__FieldType__Pointer__tag)
+		AppendBool(&w, true)
 	}
 	cachedWhichOneOfType := atomic.LoadUint32(&c.canotoData.TypeOneOf)
 	switch cachedWhichOneOfType {
@@ -928,14 +926,14 @@ func (c *FieldType) MarshalCanotoInto(w Writer) Writer {
 	case canoto__FieldType__TypeFixedBytes:
 		Append(&w, canoto__FieldType__TypeFixedBytes__tag)
 		AppendUint(&w, c.TypeFixedBytes)
-	case canoto__FieldType__TypeRecursive:
-		Append(&w, canoto__FieldType__TypeRecursive__tag)
-		AppendUint(&w, c.TypeRecursive)
 	case canoto__FieldType__TypeMessage:
 		fieldSize := (c.TypeMessage).CachedCanotoSize()
 		Append(&w, canoto__FieldType__TypeMessage__tag)
 		AppendUint(&w, fieldSize)
 		w = (c.TypeMessage).MarshalCanotoInto(w)
+	case canoto__FieldType__TypeRecursive:
+		Append(&w, canoto__FieldType__TypeRecursive__tag)
+		AppendUint(&w, c.TypeRecursive)
 	}
 	return w
 }

@@ -34,14 +34,14 @@ func (*Int) ValidCanoto() bool     { return true }
 func (*Int) CalculateCanotoCache() {}
 
 func (i *Int) CachedCanotoSize() uint64 {
-	if i == nil || i.Int == nil {
+	if i.Int == nil {
 		return 0
 	}
 	return uint64(i.Int.BitLen()+7) / 8 //#nosec G115 // False positive
 }
 
 func (i *Int) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if i == nil || i.Int == nil {
+	if i.Int == nil {
 		return w
 	}
 	startIndex := len(w.B)

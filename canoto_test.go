@@ -1008,7 +1008,7 @@ func FuzzSpec(f *testing.F) {
 		RepeatedBytes:      [][]byte{{1, 2, 3}, {4, 5, 6}},
 		RepeatedFixedBytes: [][32]byte{{1, 2, 3}, {4, 5, 6}},
 		RepeatedValue:      []LargestFieldNumber[uint32]{{Uint: 123455}, {Uint: 876523}},
-		RepeatedPointer:    []*LargestFieldNumber[uint32]{{Uint: 123455}, {Uint: 876523}},
+		RepeatedPointer:    []*LargestFieldNumber[uint32]{{Uint: 123455}, nil, {}},
 		RepeatedOneOf:      []*OneOf{{A1: 1}, {A2: 5}},
 
 		FixedRepeatedInt8:       [3]int8{1, 2, 3},
@@ -1028,7 +1028,7 @@ func FuzzSpec(f *testing.F) {
 		FixedRepeatedBytes:      [3][]byte{{1, 2}, {3, 4}, {5, 6}},
 		FixedRepeatedFixedBytes: [3][32]byte{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}},
 		FixedRepeatedValue:      [3]LargestFieldNumber[uint32]{{Uint: 1}, {Uint: 2}, {Uint: 3}},
-		FixedRepeatedPointer:    [3]*LargestFieldNumber[uint32]{{Uint: 1}, {Uint: 2}, {Uint: 3}},
+		FixedRepeatedPointer:    [3]*LargestFieldNumber[uint32]{{Uint: 1}, nil, {}},
 		FixedRepeatedOneOf:      [3]*OneOf{{A1: 1}, {B1: 2}, {C: 3}},
 	}
 	fullBytes := full.MarshalCanoto()
@@ -1036,12 +1036,12 @@ func FuzzSpec(f *testing.F) {
 
 	full.ValueRecursive = &SpecFuzzerPointer{}
 	require.NoError(f, full.ValueRecursive.Value.UnmarshalCanoto(fullBytes))
-	full.RepeatedValueRecursive = []*SpecFuzzerPointer{full.ValueRecursive}
-	full.FixedRepeatedValueRecursive = [3]*SpecFuzzerPointer{full.ValueRecursive, full.ValueRecursive, full.ValueRecursive}
+	full.RepeatedValueRecursive = []*SpecFuzzerPointer{full.ValueRecursive, nil, {}}
+	full.FixedRepeatedValueRecursive = [3]*SpecFuzzerPointer{full.ValueRecursive, nil, {}}
 
 	full.Recursive = &full.ValueRecursive.Value
-	full.RepeatedRecursive = []*SpecFuzzer{full.Recursive}
-	full.FixedRepeatedRecursive = [3]*SpecFuzzer{full.Recursive, full.Recursive, full.Recursive}
+	full.RepeatedRecursive = []*SpecFuzzer{full.Recursive, nil, {}}
+	full.FixedRepeatedRecursive = [3]*SpecFuzzer{full.Recursive, nil, {}}
 
 	recursiveFullBytes := full.MarshalCanoto()
 	f.Add(recursiveFullBytes)
