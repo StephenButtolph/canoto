@@ -73,12 +73,12 @@ const (
 	MaxFieldNumber = 1<<29 - 1
 
 	// Version is the current version of the canoto library.
-	Version = "v0.17.3"
+	Version = "v0.18.0"
 
 	// VersionCompatibility is used to ensure generated code is compatible with
 	// the library it is using. It is incremented whenever the library includes
 	// a breaking change.
-	VersionCompatibility = 0
+	VersionCompatibility = 1
 
 	// EmptyBytes is the length prefixed encoding of empty bytes.
 	EmptyBytes = "\x00" // AppendBytes(&Writer{}, []byte{}).B
