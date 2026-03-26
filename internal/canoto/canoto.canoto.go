@@ -148,10 +148,10 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 				if err := ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
-				r.Unsafe = originalUnsafe
 
 				remainingBytes := r.B
 				r.B = msgBytes

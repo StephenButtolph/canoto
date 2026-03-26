@@ -1192,10 +1192,10 @@ func makeUnmarshal(m message) string {
 				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
-				r.Unsafe = originalUnsafe
 
 				remainingBytes := r.B
 				r.B = msgBytes
@@ -1244,10 +1244,10 @@ func makeUnmarshal(m message) string {
 				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
-				r.Unsafe = originalUnsafe
 
 				remainingBytes := r.B
 				r.B = msgBytes
@@ -1331,6 +1331,7 @@ func makeUnmarshal(m message) string {
 				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
@@ -1341,7 +1342,6 @@ func makeUnmarshal(m message) string {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				r.Unsafe = originalUnsafe
 				additionalField[i] = ${selector}MakePointer(additionalField[i])
 				if err := ${genericTypeCast}(additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -1393,6 +1393,7 @@ func makeUnmarshal(m message) string {
 				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
@@ -1403,7 +1404,6 @@ func makeUnmarshal(m message) string {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				r.Unsafe = originalUnsafe
 				field[i] = ${selector}MakePointer(field[i])
 				if err := ${genericTypeCast}(field[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err

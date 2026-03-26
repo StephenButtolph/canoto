@@ -1623,10 +1623,10 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
-				r.Unsafe = originalUnsafe
 
 				remainingBytes := r.B
 				r.B = msgBytes
@@ -1674,10 +1674,10 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
-				r.Unsafe = originalUnsafe
 
 				remainingBytes := r.B
 				r.B = msgBytes
@@ -1757,6 +1757,7 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
@@ -1767,7 +1768,6 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				r.Unsafe = originalUnsafe
 				additionalField[i] = canoto.MakePointer(additionalField[i])
 				if err := T2(additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -1818,6 +1818,7 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
@@ -1828,7 +1829,6 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				r.Unsafe = originalUnsafe
 				field[i] = canoto.MakePointer(field[i])
 				if err := T2(field[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -2255,10 +2255,10 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
-				r.Unsafe = originalUnsafe
 
 				remainingBytes := r.B
 				r.B = msgBytes
@@ -2306,10 +2306,10 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
-				r.Unsafe = originalUnsafe
 
 				remainingBytes := r.B
 				r.B = msgBytes
@@ -2389,6 +2389,7 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
@@ -2399,7 +2400,6 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				r.Unsafe = originalUnsafe
 				additionalField[i] = canoto.MakePointer(additionalField[i])
 				if err := (additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -2450,6 +2450,7 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
@@ -2460,7 +2461,6 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				r.Unsafe = originalUnsafe
 				field[i] = canoto.MakePointer(field[i])
 				if err := (field[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -4866,10 +4866,10 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
-				r.Unsafe = originalUnsafe
 
 				remainingBytes := r.B
 				r.B = msgBytes
@@ -5495,10 +5495,10 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
-				r.Unsafe = originalUnsafe
 
 				remainingBytes := r.B
 				r.B = msgBytes
@@ -5889,6 +5889,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
@@ -5899,7 +5900,6 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				r.Unsafe = originalUnsafe
 				additionalField[i] = canoto.MakePointer(additionalField[i])
 				if err := (additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err
@@ -5950,6 +5950,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
 					return err
 				}
+				r.Unsafe = originalUnsafe
 				if len(msgBytes) == 0 {
 					continue
 				}
@@ -5960,7 +5961,6 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				r.Unsafe = originalUnsafe
 				field[i] = canoto.MakePointer(field[i])
 				if err := (field[i]).UnmarshalCanotoFrom(r); err != nil {
 					return err

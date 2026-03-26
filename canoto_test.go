@@ -3,6 +3,7 @@
 package canoto
 
 import (
+	"bytes"
 	"encoding/hex"
 	"io"
 	"math"
@@ -970,6 +971,25 @@ type OneOf struct {
 }
 
 func FuzzSpec(f *testing.F) {
+	// Regression tests for incorrect unsafe handling of zero-length slices and
+	// nil pointers.
+	f.Add((&SpecFuzzer{
+		RepeatedValue:      []LargestFieldNumber[uint32]{{}, {}},
+		FixedRepeatedBytes: [3][]byte{{1, 2}},
+	}).MarshalCanoto())
+	f.Add((&SpecFuzzer{
+		RepeatedPointer:    []*LargestFieldNumber[uint32]{nil, nil},
+		FixedRepeatedBytes: [3][]byte{{1, 2}},
+	}).MarshalCanoto())
+	f.Add((&SpecFuzzer{
+		FixedRepeatedValue:     [3]LargestFieldNumber[uint32]{{Uint: 1}, {}, {}},
+		FixedRepeatedRecursive: [3]*SpecFuzzer{{String: "a"}},
+	}).MarshalCanoto())
+	f.Add((&SpecFuzzer{
+		FixedRepeatedPointer:   [3]*LargestFieldNumber[uint32]{{Uint: 1}, nil, nil},
+		FixedRepeatedRecursive: [3]*SpecFuzzer{{String: "a"}},
+	}).MarshalCanoto())
+
 	full := SpecFuzzer{
 		Int8:       -31,
 		Int16:      -2164,
@@ -1048,13 +1068,10 @@ func FuzzSpec(f *testing.F) {
 
 	spec := (*SpecFuzzer)(nil).CanotoSpec()
 	f.Fuzz(func(t *testing.T, b []byte) {
-		// Standardize the empty input for reflect based equality.
-		if len(b) == 0 {
-			b = nil
-		}
-		originalBytes := slices.Clone(b)
-
-		require := require.New(t)
+		var (
+			require       = require.New(t)
+			originalBytes = slices.Clone(b)
+		)
 
 		// Verify that unmarshalling the message using [Unmarshal] returns the
 		// same error as the unmarshalling the message directly.
@@ -1073,10 +1090,13 @@ func FuzzSpec(f *testing.F) {
 			b[i]++
 		}
 
+		// Ensure the generated code isn't impacted by the mutation of b.
+		require.True(bytes.Equal(originalBytes, msg.MarshalCanoto()))
+
 		// Verify that re-marshalling the unmarshalled message returns the same
 		// bytes as the original message.
 		actualBytes, err := Marshal(spec, anyMSG)
 		require.NoError(err)
-		require.Equal(originalBytes, actualBytes)
+		require.True(bytes.Equal(originalBytes, actualBytes))
 	})
 }
