@@ -1,4 +1,5 @@
 //go:generate canoto --proto $GOFILE
+//go:generate buf generate
 
 package examples
 
@@ -120,6 +121,13 @@ type A__B struct {
 	C int32 `canoto:"int,1"`
 
 	canotoData canotoData_A__B
+}
+
+//nolint:stylecheck // This is checking for name collisions with __Pointer wrappers.
+type A__Pointer struct {
+	C int32 `canoto:"int,1"`
+
+	canotoData canotoData_A__Pointer
 }
 
 type Scalars struct {

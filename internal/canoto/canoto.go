@@ -65,11 +65,11 @@ const (
 	// FieldTypeFixedBytes is the field number of fixed bytes in the FieldType
 	// OneOf.
 	FieldTypeFixedBytes = canoto__FieldType__TypeFixedBytes
+	// FieldTypeMessage is the field number of a message in the FieldType OneOf.
+	FieldTypeMessage = canoto__FieldType__TypeMessage
 	// FieldTypeRecursive is the field number of a recursive type in the
 	// FieldType OneOf.
 	FieldTypeRecursive = canoto__FieldType__TypeRecursive
-	// FieldTypeMessage is the field number of a message in the FieldType OneOf.
-	FieldTypeMessage = canoto__FieldType__TypeMessage
 
 	// MaxFieldNumber is the maximum field number allowed to be used in a Tag.
 	MaxFieldNumber = 1<<29 - 1
@@ -81,6 +81,17 @@ const (
 	// the library it is using. It is incremented whenever the library includes
 	// a breaking change.
 	VersionCompatibility = 0
+
+	// EmptyBytes is the length prefixed encoding of empty bytes.
+	EmptyBytes = "\x00" // AppendBytes(&Writer{}, []byte{}).B
+
+	// PointerPresenceTag is the tag used to encode the presence of a non-nil
+	// pointer element within repeated pointer fields. It encodes field number 1
+	// with the Len wire type.
+	PointerPresenceTag = "\x0a" // Tag(1, Len)
+
+	// SizePointerPresenceTag is the size of [PointerPresenceTag] in bytes.
+	SizePointerPresenceTag = uint64(len(PointerPresenceTag))
 
 	wireTypeLength = 3
 	wireTypeMask   = 0x07
@@ -244,16 +255,17 @@ type (
 		FixedLength    uint64   `canoto:"uint,3"          json:"fixedLength,omitempty"`
 		Repeated       bool     `canoto:"bool,4"          json:"repeated,omitempty"`
 		OneOf          string   `canoto:"string,5"        json:"oneOf,omitempty"`
-		TypeInt        SizeEnum `canoto:"uint,6,Type"     json:"typeInt,omitempty"`        // can be any of 8, 16, 32, or 64.
-		TypeUint       SizeEnum `canoto:"uint,7,Type"     json:"typeUint,omitempty"`       // can be any of 8, 16, 32, or 64.
-		TypeFixedInt   SizeEnum `canoto:"uint,8,Type"     json:"typeFixedInt,omitempty"`   // can be either 32 or 64.
-		TypeFixedUint  SizeEnum `canoto:"uint,9,Type"     json:"typeFixedUint,omitempty"`  // can be either 32 or 64.
-		TypeBool       bool     `canoto:"bool,10,Type"    json:"typeBool,omitempty"`       // can only be true.
-		TypeString     bool     `canoto:"bool,11,Type"    json:"typeString,omitempty"`     // can only be true.
-		TypeBytes      bool     `canoto:"bool,12,Type"    json:"typeBytes,omitempty"`      // can only be true.
-		TypeFixedBytes uint64   `canoto:"uint,13,Type"    json:"typeFixedBytes,omitempty"` // length of the fixed bytes.
-		TypeRecursive  uint64   `canoto:"uint,14,Type"    json:"typeRecursive,omitempty"`  // depth of the recursion.
+		Pointer        bool     `canoto:"bool,6"          json:"pointer,omitempty"`
+		TypeInt        SizeEnum `canoto:"uint,7,Type"     json:"typeInt,omitempty"`        // can be any of 8, 16, 32, or 64.
+		TypeUint       SizeEnum `canoto:"uint,8,Type"     json:"typeUint,omitempty"`       // can be any of 8, 16, 32, or 64.
+		TypeFixedInt   SizeEnum `canoto:"uint,9,Type"     json:"typeFixedInt,omitempty"`   // can be either 32 or 64.
+		TypeFixedUint  SizeEnum `canoto:"uint,10,Type"    json:"typeFixedUint,omitempty"`  // can be either 32 or 64.
+		TypeBool       bool     `canoto:"bool,11,Type"    json:"typeBool,omitempty"`       // can only be true.
+		TypeString     bool     `canoto:"bool,12,Type"    json:"typeString,omitempty"`     // can only be true.
+		TypeBytes      bool     `canoto:"bool,13,Type"    json:"typeBytes,omitempty"`      // can only be true.
+		TypeFixedBytes uint64   `canoto:"uint,14,Type"    json:"typeFixedBytes,omitempty"` // length of the fixed bytes.
 		TypeMessage    *Spec    `canoto:"pointer,15,Type" json:"typeMessage,omitempty"`
+		TypeRecursive  uint64   `canoto:"uint,16,Type"    json:"typeRecursive,omitempty"` // depth of the recursion.
 
 		canotoData canotoData_FieldType
 	}
@@ -279,6 +291,10 @@ type (
 		//   - string, []string
 		//   - []byte, [][]byte
 		//   - Any,    []Any
+		//   - []*Any
+		//
+		// Notice that *Any is not allowed. A nil pointer should not have any
+		// field entry.
 		Value any
 	}
 )
@@ -331,6 +347,26 @@ func (s SizeEnum) NumBytes() (uint64, bool) {
 	default:
 		return 0, false
 	}
+}
+
+// ReadPointerPresence removes the presence wrapper from a repeated pointer
+// element.
+func ReadPointerPresence(b []byte) ([]byte, error) {
+	if !HasPrefix(b, PointerPresenceTag) {
+		return nil, ErrUnknownField
+	}
+	r := Reader{
+		B:      b[len(PointerPresenceTag):],
+		Unsafe: true,
+	}
+	var v []byte
+	if err := ReadBytes(&r, &v); err != nil {
+		return nil, err
+	}
+	if HasNext(&r) {
+		return nil, ErrInvalidLength
+	}
+	return v, nil
 }
 
 // HasNext returns true if there are more bytes to read.
@@ -694,7 +730,7 @@ func Unmarshal(s *Spec, b []byte) (Any, error) {
 func Marshal(s *Spec, a Any) ([]byte, error) {
 	// TODO: Implement size calculations to avoid quadratic marshalling
 	// complexity.
-	w, err := s.marshal(Writer{}, a, nil)
+	w, err := s.marshal(a, nil)
 	return w.B, err
 }
 
@@ -755,6 +791,7 @@ func FieldTypeFromField[T Field](
 	fixedLength uint64,
 	repeated bool,
 	oneOf string,
+	pointer bool,
 	types []reflect.Type,
 ) FieldType {
 	var (
@@ -779,6 +816,7 @@ func FieldTypeFromField[T Field](
 		FixedLength:   fixedLength,
 		Repeated:      repeated,
 		OneOf:         oneOf,
+		Pointer:       pointer,
 		TypeBytes:     typeBytes,
 		TypeRecursive: typeRecursive,
 		TypeMessage:   typeMessage,
@@ -851,9 +889,12 @@ func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 	return a, nil
 }
 
-func (s *Spec) marshal(w Writer, a Any, specs []*Spec) (Writer, error) {
+func (s *Spec) marshal(a Any, specs []*Spec) (Writer, error) {
 	specs = append(specs, s)
-	var minField uint32
+	var (
+		w        Writer
+		minField uint32
+	)
 	for _, f := range a.Fields {
 		ft, err := s.findFieldByName(f.Name)
 		if err != nil {
@@ -1352,22 +1393,26 @@ func (f *FieldType) unmarshalRecursive(r *Reader, specs []*Spec) (any, error) {
 		return nil, err
 	}
 
-	return unmarshalUnpacked(
-		f,
-		r,
-		func(msgBytes []byte) (Any, bool, error) {
+	if f.Pointer && f.Repeated {
+		return unmarshalUnpacked(f, r, func(msgBytes []byte) (*Any, bool, error) {
 			if len(msgBytes) == 0 {
-				return Any{}, true, nil
+				return nil, false, nil
 			}
-			a, err := spec.unmarshal(
-				&Reader{
-					B: msgBytes,
-				},
-				specs,
-			)
-			return a, false, err
-		},
-	)
+			innerBytes, err := ReadPointerPresence(msgBytes)
+			if err != nil {
+				return nil, false, err
+			}
+			a, err := spec.unmarshal(&Reader{B: innerBytes}, specs)
+			return &a, false, err
+		})
+	}
+	return unmarshalUnpacked(f, r, func(msgBytes []byte) (Any, bool, error) {
+		if len(msgBytes) == 0 {
+			return Any{}, !f.Pointer, nil
+		}
+		a, err := spec.unmarshal(&Reader{B: msgBytes}, specs)
+		return a, false, err
+	})
 }
 
 func (f *FieldType) marshalRecursive(w Writer, value any, specs []*Spec) (Writer, error) {
@@ -1376,19 +1421,30 @@ func (f *FieldType) marshalRecursive(w Writer, value any, specs []*Spec) (Writer
 		return Writer{}, err
 	}
 
-	return marshalUnpacked(
-		f,
-		w,
-		value,
-		func(w Writer, value Any) (Writer, error) {
-			tw, err := spec.marshal(Writer{}, value, specs)
+	if f.Pointer && f.Repeated {
+		return marshalUnpacked(f, w, value, func(w Writer, value *Any) (Writer, error) {
+			if value == nil {
+				Append(&w, EmptyBytes)
+				return w, nil
+			}
+			tw, err := spec.marshal(*value, specs)
 			if err != nil {
 				return Writer{}, err
 			}
+			AppendUint(&w, SizePointerPresenceTag+SizeBytes(tw.B))
+			Append(&w, PointerPresenceTag)
 			AppendBytes(&w, tw.B)
 			return w, nil
-		},
-	)
+		})
+	}
+	return marshalUnpacked(f, w, value, func(w Writer, value Any) (Writer, error) {
+		tw, err := spec.marshal(value, specs)
+		if err != nil {
+			return Writer{}, err
+		}
+		AppendBytes(&w, tw.B)
+		return w, nil
+	})
 }
 
 func (f *FieldType) recursiveSpec(specs []*Spec) (*Spec, []*Spec, error) {
@@ -1403,38 +1459,53 @@ func (f *FieldType) recursiveSpec(specs []*Spec) (*Spec, []*Spec, error) {
 }
 
 func (f *FieldType) unmarshalSpec(r *Reader, specs []*Spec) (any, error) {
-	return unmarshalUnpacked(
-		f,
-		r,
-		func(msgBytes []byte) (Any, bool, error) {
+	if f.Pointer && f.Repeated {
+		return unmarshalUnpacked(f, r, func(msgBytes []byte) (*Any, bool, error) {
 			if len(msgBytes) == 0 {
-				return Any{}, true, nil
+				return nil, false, nil
 			}
-			a, err := f.TypeMessage.unmarshal(
-				&Reader{
-					B: msgBytes,
-				},
-				specs,
-			)
-			return a, false, err
-		},
-	)
+			innerBytes, err := ReadPointerPresence(msgBytes)
+			if err != nil {
+				return nil, false, err
+			}
+			a, err := f.TypeMessage.unmarshal(&Reader{B: innerBytes}, specs)
+			return &a, false, err
+		})
+	}
+	return unmarshalUnpacked(f, r, func(msgBytes []byte) (Any, bool, error) {
+		if len(msgBytes) == 0 {
+			return Any{}, !f.Pointer, nil
+		}
+		a, err := f.TypeMessage.unmarshal(&Reader{B: msgBytes}, specs)
+		return a, false, err
+	})
 }
 
 func (f *FieldType) marshalSpec(w Writer, value any, specs []*Spec) (Writer, error) {
-	return marshalUnpacked(
-		f,
-		w,
-		value,
-		func(w Writer, value Any) (Writer, error) {
-			tw, err := f.TypeMessage.marshal(Writer{}, value, specs)
+	if f.Pointer && f.Repeated {
+		return marshalUnpacked(f, w, value, func(w Writer, value *Any) (Writer, error) {
+			if value == nil {
+				Append(&w, EmptyBytes)
+				return w, nil
+			}
+			tw, err := f.TypeMessage.marshal(*value, specs)
 			if err != nil {
 				return Writer{}, err
 			}
+			AppendUint(&w, SizePointerPresenceTag+SizeBytes(tw.B))
+			Append(&w, PointerPresenceTag)
 			AppendBytes(&w, tw.B)
 			return w, nil
-		},
-	)
+		})
+	}
+	return marshalUnpacked(f, w, value, func(w Writer, value Any) (Writer, error) {
+		tw, err := f.TypeMessage.marshal(value, specs)
+		if err != nil {
+			return Writer{}, err
+		}
+		AppendBytes(&w, tw.B)
+		return w, nil
+	})
 }
 
 func unmarshalInt[T Int](r *Reader) (int64, error) {
