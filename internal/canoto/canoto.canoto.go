@@ -177,9 +177,6 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *Spec) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	if !ValidString(c.Name) {
 		return false
 	}
@@ -199,9 +196,6 @@ func (c *Spec) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *Spec) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	if len(c.Name) != 0 {
 		size += uint64(len(canoto__Spec__Name__tag)) + SizeBytes(c.Name)
@@ -225,9 +219,6 @@ func (c *Spec) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *Spec) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -255,9 +246,6 @@ func (c *Spec) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *Spec) MarshalCanotoInto(w Writer) Writer {
-	if c == nil {
-		return w
-	}
 	if len(c.Name) != 0 {
 		Append(&w, canoto__Spec__Name__tag)
 		AppendBytes(&w, c.Name)
@@ -694,9 +682,6 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *FieldType) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	var TypeOneOf uint32
 	if !IsZero(c.TypeInt) {
 		if TypeOneOf != 0 {
@@ -776,9 +761,6 @@ func (c *FieldType) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *FieldType) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	var TypeOneOf uint32
 	if !IsZero(c.FieldNumber) {
@@ -853,9 +835,6 @@ func (c *FieldType) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *FieldType) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -897,9 +876,6 @@ func (c *FieldType) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *FieldType) MarshalCanotoInto(w Writer) Writer {
-	if c == nil {
-		return w
-	}
 	if !IsZero(c.FieldNumber) {
 		Append(&w, canoto__FieldType__FieldNumber__tag)
 		AppendUint(&w, c.FieldNumber)

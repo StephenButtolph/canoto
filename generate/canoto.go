@@ -174,18 +174,12 @@ ${unmarshalBody}}
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *${structName}${generics}) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 ${validOneOf}${valid}	return true
 }
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.${concurrencyWarning}
 func (c *${structName}${generics}) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 ${sizeVars}${size}${assignSizeVars}}
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -196,9 +190,6 @@ ${sizeVars}${size}${assignSizeVars}}
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *${structName}${generics}) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return ${loadPrefix}c.canotoData.size${loadSuffix}
 }${oneOfCacheAccessors}
 
@@ -222,9 +213,6 @@ func (c *${structName}${generics}) MarshalCanoto() []byte {
 //
 // It is assumed that this struct is ValidCanoto.${concurrencyWarning}
 func (c *${structName}${generics}) MarshalCanotoInto(w ${selector}Writer) ${selector}Writer {
-	if c == nil {
-		return w
-	}
 ${marshal}	return w
 }
 `
@@ -1883,11 +1871,6 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 		${selector}AppendUint(&w, fieldSize)
 		w = ${genericTypeCast}(c.${fieldName}).MarshalCanotoInto(w)
 `
-		fieldTemplateBodyOneOf = `		fieldSize := c.${fieldName}.CachedCanotoSize()
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendUint(&w, fieldSize)
-		w = c.${fieldName}.MarshalCanotoInto(w)
-`
 
 		valueTemplateRegular = `	if fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
@@ -1900,12 +1883,6 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
 		${selector}AppendUint(&w, fieldSize)
 		w = ${genericTypeCast}(c.${fieldName}).MarshalCanotoInto(w)
-	}
-`
-		fieldTemplateRegular = `	if fieldSize := c.${fieldName}.CachedCanotoSize(); fieldSize != 0 {
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
-		${selector}AppendUint(&w, fieldSize)
-		w = c.${fieldName}.MarshalCanotoInto(w)
 	}
 `
 	)

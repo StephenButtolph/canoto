@@ -114,18 +114,12 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *justAnInt) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	return true
 }
 
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
 func (c *justAnInt) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	if !canoto.IsZero(c.Int8) {
 		size += uint64(len(canoto__justAnInt__Int8__tag)) + canoto.SizeInt(c.Int8)
@@ -141,9 +135,6 @@ func (c *justAnInt) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *justAnInt) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return c.canotoData.size.Load()
 }
 
@@ -167,9 +158,6 @@ func (c *justAnInt) MarshalCanoto() []byte {
 //
 // It is assumed that this struct is ValidCanoto.
 func (c *justAnInt) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
 	if !canoto.IsZero(c.Int8) {
 		canoto.Append(&w, canoto__justAnInt__Int8__tag)
 		canoto.AppendInt(&w, c.Int8)

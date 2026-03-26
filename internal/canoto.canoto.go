@@ -114,9 +114,6 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *LargestFieldNumber[T1]) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	return true
 }
 
@@ -125,9 +122,6 @@ func (c *LargestFieldNumber[T1]) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *LargestFieldNumber[T1]) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	if !canoto.IsZero(c.Uint) {
 		size += uint64(len(canoto__LargestFieldNumber__Uint__tag)) + canoto.SizeUint(c.Uint)
@@ -143,9 +137,6 @@ func (c *LargestFieldNumber[T1]) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *LargestFieldNumber[T1]) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -173,9 +164,6 @@ func (c *LargestFieldNumber[T1]) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *LargestFieldNumber[T1]) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
 	if !canoto.IsZero(c.Uint) {
 		canoto.Append(&w, canoto__LargestFieldNumber__Uint__tag)
 		canoto.AppendUint(&w, c.Uint)
@@ -381,9 +369,6 @@ func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *OneOf) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	var AOneOf uint32
 	var BOneOf uint32
 	if !canoto.IsZero(c.A1) {
@@ -418,9 +403,6 @@ func (c *OneOf) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *OneOf) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	var AOneOf uint32
 	var BOneOf uint32
@@ -459,9 +441,6 @@ func (c *OneOf) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *OneOf) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -517,9 +496,6 @@ func (c *OneOf) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *OneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
 	cachedWhichOneOfA := atomic.LoadUint32(&c.canotoData.AOneOf)
 	if cachedWhichOneOfA == 1 {
 		canoto.Append(&w, canoto__OneOf__A1__tag)
@@ -747,9 +723,6 @@ func (c *OneOfNoCopy) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *OneOfNoCopy) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	var AOneOf uint32
 	var BOneOf uint32
 	if !canoto.IsZero(c.A1) {
@@ -782,9 +755,6 @@ func (c *OneOfNoCopy) ValidCanoto() bool {
 // CalculateCanotoCache populates size and OneOf caches based on the current
 // values in the struct.
 func (c *OneOfNoCopy) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	var AOneOf uint32
 	var BOneOf uint32
@@ -823,9 +793,6 @@ func (c *OneOfNoCopy) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *OneOfNoCopy) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return c.canotoData.size.Load()
 }
 
@@ -877,9 +844,6 @@ func (c *OneOfNoCopy) MarshalCanoto() []byte {
 //
 // It is assumed that this struct is ValidCanoto.
 func (c *OneOfNoCopy) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
 	cachedWhichOneOfA := c.canotoData.AOneOf.Load()
 	if cachedWhichOneOfA == 1 {
 		canoto.Append(&w, canoto__OneOfNoCopy__A1__tag)
@@ -1037,9 +1001,6 @@ func (c *Node) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *Node) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	var OneOfOneOf uint32
 	if c.Next != nil {
 		(c.Next).CalculateCanotoCache()
@@ -1059,9 +1020,6 @@ func (c *Node) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *Node) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	var OneOfOneOf uint32
 	if !canoto.IsZero(c.Value) {
@@ -1085,9 +1043,6 @@ func (c *Node) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *Node) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -1129,9 +1084,6 @@ func (c *Node) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *Node) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
 	if !canoto.IsZero(c.Value) {
 		canoto.Append(&w, canoto__Node__Value__tag)
 		canoto.AppendInt(&w, c.Value)
@@ -1250,9 +1202,6 @@ func (c *RecursiveA) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *RecursiveA) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	if c.Next != nil && !(c.Next).ValidCanoto() {
 		return false
 	}
@@ -1264,9 +1213,6 @@ func (c *RecursiveA) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *RecursiveA) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	if c.Next != nil {
 		(c.Next).CalculateCanotoCache()
@@ -1284,9 +1230,6 @@ func (c *RecursiveA) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *RecursiveA) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -1314,9 +1257,6 @@ func (c *RecursiveA) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *RecursiveA) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
 	if c.Next != nil {
 		fieldSize := (c.Next).CachedCanotoSize()
 		canoto.Append(&w, canoto__RecursiveA__Next__tag)
@@ -1430,9 +1370,6 @@ func (c *RecursiveB) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *RecursiveB) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	if c.Next != nil && !(c.Next).ValidCanoto() {
 		return false
 	}
@@ -1444,9 +1381,6 @@ func (c *RecursiveB) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *RecursiveB) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	if c.Next != nil {
 		(c.Next).CalculateCanotoCache()
@@ -1464,9 +1398,6 @@ func (c *RecursiveB) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *RecursiveB) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -1494,9 +1425,6 @@ func (c *RecursiveB) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *RecursiveB) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
 	if c.Next != nil {
 		fieldSize := (c.Next).CachedCanotoSize()
 		canoto.Append(&w, canoto__RecursiveB__Next__tag)
@@ -1928,9 +1856,6 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *GenericField[T1, T2]) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	if !T2(&c.Value).ValidCanoto() {
 		return false
 	}
@@ -1971,9 +1896,6 @@ func (c *GenericField[T1, T2]) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *GenericField[T1, T2]) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	T2(&c.Value).CalculateCanotoCache()
 	if fieldSize := T2(&c.Value).CachedCanotoSize(); fieldSize != 0 {
@@ -2047,9 +1969,6 @@ func (c *GenericField[T1, T2]) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *GenericField[T1, T2]) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -2077,9 +1996,6 @@ func (c *GenericField[T1, T2]) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *GenericField[T1, T2]) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
 	if fieldSize := T2(&c.Value).CachedCanotoSize(); fieldSize != 0 {
 		canoto.Append(&w, canoto__GenericField__Value__tag)
 		canoto.AppendUint(&w, fieldSize)
@@ -2572,9 +2488,6 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *NestedGenericField[T1, T2]) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	if !(&c.Value).ValidCanoto() {
 		return false
 	}
@@ -2615,9 +2528,6 @@ func (c *NestedGenericField[T1, T2]) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *NestedGenericField[T1, T2]) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	(&c.Value).CalculateCanotoCache()
 	if fieldSize := (&c.Value).CachedCanotoSize(); fieldSize != 0 {
@@ -2691,9 +2601,6 @@ func (c *NestedGenericField[T1, T2]) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *NestedGenericField[T1, T2]) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -2721,9 +2628,6 @@ func (c *NestedGenericField[T1, T2]) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *NestedGenericField[T1, T2]) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
 	if fieldSize := (&c.Value).CachedCanotoSize(); fieldSize != 0 {
 		canoto.Append(&w, canoto__NestedGenericField__Value__tag)
 		canoto.AppendUint(&w, fieldSize)
@@ -3002,9 +2906,6 @@ func (c *Embedded) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *Embedded) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	if !(&c.OneOf).ValidCanoto() {
 		return false
 	}
@@ -3025,9 +2926,6 @@ func (c *Embedded) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *Embedded) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	(&c.OneOf).CalculateCanotoCache()
 	if fieldSize := (&c.OneOf).CachedCanotoSize(); fieldSize != 0 {
@@ -3059,9 +2957,6 @@ func (c *Embedded) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *Embedded) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -3089,9 +2984,6 @@ func (c *Embedded) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *Embedded) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
 	if fieldSize := (&c.OneOf).CachedCanotoSize(); fieldSize != 0 {
 		canoto.Append(&w, canoto__Embedded__OneOf__tag)
 		canoto.AppendUint(&w, fieldSize)
@@ -3206,9 +3098,6 @@ func (c *A) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *A) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	return true
 }
 
@@ -3217,9 +3106,6 @@ func (c *A) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *A) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	if !canoto.IsZero(c.B__C) {
 		size += uint64(len(canoto__A__B_1_1C__tag)) + canoto.SizeInt(c.B__C)
@@ -3235,9 +3121,6 @@ func (c *A) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *A) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -3265,9 +3148,6 @@ func (c *A) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *A) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
 	if !canoto.IsZero(c.B__C) {
 		canoto.Append(&w, canoto__A__B_1_1C__tag)
 		canoto.AppendInt(&w, c.B__C)
@@ -3363,9 +3243,6 @@ func (c *A__B) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *A__B) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	return true
 }
 
@@ -3374,9 +3251,6 @@ func (c *A__B) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *A__B) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	if !canoto.IsZero(c.C) {
 		size += uint64(len(canoto__A_1_1B__C__tag)) + canoto.SizeInt(c.C)
@@ -3392,9 +3266,6 @@ func (c *A__B) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *A__B) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -3422,9 +3293,6 @@ func (c *A__B) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *A__B) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
 	if !canoto.IsZero(c.C) {
 		canoto.Append(&w, canoto__A_1_1B__C__tag)
 		canoto.AppendInt(&w, c.C)
@@ -3520,9 +3388,6 @@ func (c *A__Pointer) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *A__Pointer) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	return true
 }
 
@@ -3531,9 +3396,6 @@ func (c *A__Pointer) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *A__Pointer) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	if !canoto.IsZero(c.C) {
 		size += uint64(len(canoto__A_1_1Pointer__C__tag)) + canoto.SizeInt(c.C)
@@ -3549,9 +3411,6 @@ func (c *A__Pointer) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *A__Pointer) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -3579,9 +3438,6 @@ func (c *A__Pointer) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *A__Pointer) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
 	if !canoto.IsZero(c.C) {
 		canoto.Append(&w, canoto__A_1_1Pointer__C__tag)
 		canoto.AppendInt(&w, c.C)
@@ -6132,9 +5988,6 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *Scalars) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	if !canoto.ValidString(c.String) {
 		return false
 	}
@@ -6197,9 +6050,6 @@ func (c *Scalars) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *Scalars) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	if !canoto.IsZero(c.Int8) {
 		size += uint64(len(canoto__Scalars__Int8__tag)) + canoto.SizeInt(c.Int8)
@@ -6577,9 +6427,6 @@ func (c *Scalars) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *Scalars) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -6607,9 +6454,6 @@ func (c *Scalars) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
 	if !canoto.IsZero(c.Int8) {
 		canoto.Append(&w, canoto__Scalars__Int8__tag)
 		canoto.AppendInt(&w, c.Int8)
@@ -7298,9 +7142,6 @@ func (c *SpecUnusedZero) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *SpecUnusedZero) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	if !canoto.ValidString(c.String) {
 		return false
 	}
@@ -7317,9 +7158,6 @@ func (c *SpecUnusedZero) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *SpecUnusedZero) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	if !canoto.IsZero(c.Bool) {
 		size += uint64(len(canoto__SpecUnusedZero__Bool__tag)) + canoto.SizeBool
@@ -7351,9 +7189,6 @@ func (c *SpecUnusedZero) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *SpecUnusedZero) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -7381,9 +7216,6 @@ func (c *SpecUnusedZero) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *SpecUnusedZero) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
 	if !canoto.IsZero(c.Bool) {
 		canoto.Append(&w, canoto__SpecUnusedZero__Bool__tag)
 		canoto.AppendBool(&w, true)
@@ -7463,9 +7295,6 @@ func (c *EmptyMessage) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *EmptyMessage) ValidCanoto() bool {
-	if c == nil {
-		return true
-	}
 	return true
 }
 
@@ -7474,9 +7303,6 @@ func (c *EmptyMessage) ValidCanoto() bool {
 //
 // It is not safe to copy this struct concurrently.
 func (c *EmptyMessage) CalculateCanotoCache() {
-	if c == nil {
-		return
-	}
 	var size uint64
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
@@ -7489,9 +7315,6 @@ func (c *EmptyMessage) CalculateCanotoCache() {
 // If the struct has been modified since the last call to CalculateCanotoCache,
 // the returned size may be incorrect.
 func (c *EmptyMessage) CachedCanotoSize() uint64 {
-	if c == nil {
-		return 0
-	}
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -7519,8 +7342,5 @@ func (c *EmptyMessage) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *EmptyMessage) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if c == nil {
-		return w
-	}
 	return w
 }
