@@ -1665,11 +1665,18 @@ func (f *FieldType) unmarshalRecursive(r *Reader, specs []*Spec) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	return f.unmarshalMessage(r, spec, specs)
+}
 
+func (f *FieldType) unmarshalSpec(r *Reader, specs []*Spec) (any, error) {
+	return f.unmarshalMessage(r, f.TypeMessage, specs)
+}
+
+func (f *FieldType) unmarshalMessage(r *Reader, spec *Spec, specs []*Spec) (any, error) {
 	if f.Pointer && f.Repeated {
 		return unmarshalUnpacked(f, r, func(msgBytes []byte) (*Any, bool, error) {
 			if len(msgBytes) == 0 {
-				return nil, false, nil
+				return nil, true, nil
 			}
 			innerBytes, err := ReadPointerPresence(msgBytes)
 			if err != nil {
@@ -1705,29 +1712,6 @@ func (f *FieldType) recursiveSpec(specs []*Spec) (*Spec, []*Spec, error) {
 	spec := specs[index]
 	specs = slices.Clone(specs[:index])
 	return spec, specs, nil
-}
-
-func (f *FieldType) unmarshalSpec(r *Reader, specs []*Spec) (any, error) {
-	if f.Pointer && f.Repeated {
-		return unmarshalUnpacked(f, r, func(msgBytes []byte) (*Any, bool, error) {
-			if len(msgBytes) == 0 {
-				return nil, false, nil
-			}
-			innerBytes, err := ReadPointerPresence(msgBytes)
-			if err != nil {
-				return nil, false, err
-			}
-			a, err := f.TypeMessage.unmarshal(&Reader{B: innerBytes}, specs)
-			return &a, false, err
-		})
-	}
-	return unmarshalUnpacked(f, r, func(msgBytes []byte) (Any, bool, error) {
-		if len(msgBytes) == 0 {
-			return Any{}, !f.Pointer, nil
-		}
-		a, err := f.TypeMessage.unmarshal(&Reader{B: msgBytes}, specs)
-		return a, false, err
-	})
 }
 
 func (f *FieldType) marshalSpec(w Writer, af *AnyField, specs []*Spec) (Writer, error) {
