@@ -1423,9 +1423,13 @@ func (f *FieldType) unmarshalFixedInt(r *Reader, _ []*Spec) (any, error) {
 }
 
 func (f *FieldType) marshalFixedInt(w Writer, value any, _ []*Spec) (Writer, error) {
-	var write func(w Writer, value int64) (Writer, error)
+	var (
+		elementSize uint64
+		write       func(w Writer, value int64) (Writer, error)
+	)
 	switch f.TypeFixedInt {
 	case SizeEnum32:
+		elementSize = SizeFint32
 		write = func(w Writer, value int64) (Writer, error) {
 			if value < math.MinInt32 || value > math.MaxInt32 {
 				return Writer{}, ErrOverflow
@@ -1434,19 +1438,13 @@ func (f *FieldType) marshalFixedInt(w Writer, value any, _ []*Spec) (Writer, err
 			return w, nil
 		}
 	case SizeEnum64:
+		elementSize = SizeFint64
 		write = func(w Writer, value int64) (Writer, error) {
 			AppendFint64(&w, value)
 			return w, nil
 		}
 	default:
 		return Writer{}, ErrUnexpectedFieldSize
-	}
-	var elementSize uint64
-	switch f.TypeFixedInt {
-	case SizeEnum32:
-		elementSize = SizeFint32
-	case SizeEnum64:
-		elementSize = SizeFint64
 	}
 	return marshalPacked(
 		f,
@@ -1484,9 +1482,13 @@ func (f *FieldType) unmarshalFixedUint(r *Reader, _ []*Spec) (any, error) {
 }
 
 func (f *FieldType) marshalFixedUint(w Writer, value any, _ []*Spec) (Writer, error) {
-	var write func(w Writer, value uint64) (Writer, error)
+	var (
+		elementSize uint64
+		write       func(w Writer, value uint64) (Writer, error)
+	)
 	switch f.TypeFixedUint {
 	case SizeEnum32:
+		elementSize = SizeFint32
 		write = func(w Writer, value uint64) (Writer, error) {
 			if value > math.MaxUint32 {
 				return Writer{}, ErrOverflow
@@ -1495,19 +1497,13 @@ func (f *FieldType) marshalFixedUint(w Writer, value any, _ []*Spec) (Writer, er
 			return w, nil
 		}
 	case SizeEnum64:
+		elementSize = SizeFint64
 		write = func(w Writer, value uint64) (Writer, error) {
 			AppendFint64(&w, value)
 			return w, nil
 		}
 	default:
 		return Writer{}, ErrUnexpectedFieldSize
-	}
-	var elementSize uint64
-	switch f.TypeFixedUint {
-	case SizeEnum32:
-		elementSize = SizeFint32
-	case SizeEnum64:
-		elementSize = SizeFint64
 	}
 	return marshalPacked(
 		f,
