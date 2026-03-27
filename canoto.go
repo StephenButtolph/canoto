@@ -274,7 +274,8 @@ type (
 
 	// Any is a generic representation of a Canoto message.
 	Any struct {
-		Fields []AnyField
+		Fields     []AnyField
+		cachedSize uint64 // accessed atomically to support concurrent marshalling
 	}
 
 	// AnyField is a generic representation of a field in a Canoto message.
@@ -737,7 +738,7 @@ func Marshal(s *Spec, a Any) ([]byte, error) {
 		return nil, err
 	}
 	w := Writer{B: make([]byte, 0, totalSize)}
-	w, err = s.marshal(w, a, nil)
+	w, err = s.marshal(w, &a, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -934,49 +935,25 @@ func (s *Spec) calculateSize(a *Any, specs []*Spec) (uint64, error) {
 			return 0, err
 		}
 
-		atomic.StoreUint64(&f.cachedSize, contentSize)
 		size += SizeUint(tag) + contentSize
 
 		minField = ft.FieldNumber + 1
 		minFieldIndex = fieldIndex + 1
 	}
-	return size, nil
-}
-
-// cachedSize re-derives the total marshalled size of a message from the
-// cached field sizes. This is used during the marshal pass for repeated
-// message elements whose per-element sizes are not stored separately.
-func (s *Spec) cachedSize(a *Any, specs []*Spec) (uint64, error) {
-	specs = append(specs, s)
-	var (
-		size          uint64
-		minFieldIndex int
-	)
-	for i := range a.Fields {
-		f := &a.Fields[i]
-		ft, fieldIndex, err := s.findFieldByName(f.Name, minFieldIndex)
-		if err != nil {
-			return 0, err
-		}
-
-		wireType, err := ft.wireType()
-		if err != nil {
-			return 0, err
-		}
-
-		tag := tagValue(ft.FieldNumber, wireType)
-		size += SizeUint(tag) + atomic.LoadUint64(&f.cachedSize)
-		minFieldIndex = fieldIndex + 1
-	}
+	atomic.StoreUint64(&a.cachedSize, size)
 	return size, nil
 }
 
 func (f *FieldType) calculateSize(af *AnyField, specs []*Spec) (uint64, error) {
+	var (
+		contentSize uint64
+		err         error
+	)
 	switch f.CachedWhichOneOfType() {
 	case FieldTypeInt:
-		return calculateSizePacked(f, af.Value, SizeInt[int64])
+		contentSize, err = calculateSizePacked(f, af.Value, SizeInt[int64])
 	case FieldTypeUint:
-		return calculateSizePacked(f, af.Value, SizeUint[uint64])
+		contentSize, err = calculateSizePacked(f, af.Value, SizeUint[uint64])
 	case FieldTypeFixedInt:
 		var elementSize uint64
 		switch f.TypeFixedInt {
@@ -987,7 +964,7 @@ func (f *FieldType) calculateSize(af *AnyField, specs []*Spec) (uint64, error) {
 		default:
 			return 0, ErrUnexpectedFieldSize
 		}
-		return calculateSizePacked(f, af.Value, func(_ int64) uint64 {
+		contentSize, err = calculateSizePacked(f, af.Value, func(_ int64) uint64 {
 			return elementSize
 		})
 	case FieldTypeFixedUint:
@@ -1000,28 +977,35 @@ func (f *FieldType) calculateSize(af *AnyField, specs []*Spec) (uint64, error) {
 		default:
 			return 0, ErrUnexpectedFieldSize
 		}
-		return calculateSizePacked(f, af.Value, func(_ uint64) uint64 {
+		contentSize, err = calculateSizePacked(f, af.Value, func(_ uint64) uint64 {
 			return elementSize
 		})
 	case FieldTypeBool:
-		return calculateSizePacked(f, af.Value, func(_ bool) uint64 {
+		contentSize, err = calculateSizePacked(f, af.Value, func(_ bool) uint64 {
 			return SizeBool
 		})
 	case FieldTypeString:
-		return calculateSizeUnpacked(f, af.Value, SizeBytes[string])
+		contentSize, err = calculateSizeUnpacked(f, af.Value, SizeBytes[string])
 	case FieldTypeBytes, FieldTypeFixedBytes:
-		return calculateSizeUnpacked(f, af.Value, SizeBytes[[]byte])
+		contentSize, err = calculateSizeUnpacked(f, af.Value, SizeBytes[[]byte])
 	case FieldTypeRecursive:
 		spec, specs, err := f.recursiveSpec(specs)
 		if err != nil {
 			return 0, err
 		}
+		// calculateSizeMessage stores cachedSize internally.
 		return f.calculateSizeMessage(af, spec, specs)
 	case FieldTypeMessage:
+		// calculateSizeMessage stores cachedSize internally.
 		return f.calculateSizeMessage(af, f.TypeMessage, specs)
 	default:
 		return 0, ErrUnknownFieldType
 	}
+	if err != nil {
+		return 0, err
+	}
+	atomic.StoreUint64(&af.cachedSize, contentSize)
+	return contentSize, nil
 }
 
 func calculateSizePacked[T comparable](
@@ -1094,6 +1078,7 @@ func (f *FieldType) calculateSizeMessage(
 		if err != nil {
 			return 0, err
 		}
+		atomic.StoreUint64(&af.cachedSize, innerSize)
 		return SizeUint(innerSize) + innerSize, nil
 	}
 
@@ -1133,6 +1118,7 @@ func (f *FieldType) calculateSizeMessage(
 			}
 			total += tagSize + elemSize
 		}
+		atomic.StoreUint64(&af.cachedSize, total)
 		return total, nil
 	}
 
@@ -1162,10 +1148,11 @@ func (f *FieldType) calculateSizeMessage(
 		}
 		total += tagSize + SizeUint(elementSize) + elementSize
 	}
+	atomic.StoreUint64(&af.cachedSize, total)
 	return total, nil
 }
 
-func (s *Spec) marshal(w Writer, a Any, specs []*Spec) (Writer, error) {
+func (s *Spec) marshal(w Writer, a *Any, specs []*Spec) (Writer, error) {
 	specs = append(specs, s)
 	var (
 		minField      uint32
@@ -1767,12 +1754,8 @@ func (f *FieldType) marshalMessage(
 		if !ok {
 			return Writer{}, ErrInvalidFieldType
 		}
-		innerSize, err := spec.cachedSize(&v, specs)
-		if err != nil {
-			return Writer{}, err
-		}
-		AppendUint(&w, innerSize)
-		return spec.marshal(w, v, specs)
+		AppendUint(&w, atomic.LoadUint64(&af.cachedSize))
+		return spec.marshal(w, &v, specs)
 	}
 
 	if f.Pointer {
@@ -1789,14 +1772,11 @@ func (f *FieldType) marshalMessage(
 				Append(&w, EmptyBytes)
 				return w, nil
 			}
-			innerSize, err := spec.cachedSize(v, specs)
-			if err != nil {
-				return Writer{}, err
-			}
+			innerSize := atomic.LoadUint64(&v.cachedSize)
 			AppendUint(&w, SizePointerPresenceTag+SizeUint(innerSize)+innerSize)
 			Append(&w, PointerPresenceTag)
 			AppendUint(&w, innerSize)
-			return spec.marshal(w, *v, specs)
+			return spec.marshal(w, v, specs)
 		}
 
 		var err error
@@ -1826,12 +1806,9 @@ func (f *FieldType) marshalMessage(
 	}
 
 	marshalElement := func(w Writer, v *Any) (Writer, error) {
-		innerSize, err := spec.cachedSize(v, specs)
-		if err != nil {
-			return Writer{}, err
-		}
+		innerSize := atomic.LoadUint64(&v.cachedSize)
 		AppendUint(&w, innerSize)
-		return spec.marshal(w, *v, specs)
+		return spec.marshal(w, v, specs)
 	}
 
 	var err error
