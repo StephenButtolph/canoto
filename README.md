@@ -132,11 +132,7 @@ If type aliases are needed, it may make sense to modify the generated proto file
 
 ### Generics
 
-There are two ways to utilize generics with canoto.
-
-#### `Value` and `Pointer` Types
-
-To guarantee safe usage of a struct, type constraints can be used to implement a struct with a generic field `T`. Canoto inspects the generic types, so the struct must include a type parameter of `canoto.FieldPointer[T]`. Such as:
+Canoto supports generic structs through the `canoto.FieldPointer[T]` constraint. To guarantee safe usage of a struct, type constraints can be used to implement a struct with a generic field `T`. Canoto inspects the generic types, so the struct must include a type parameter of `canoto.FieldPointer[T]`. For example:
 
 ```golang
 type GenericField[T any, _ canoto.FieldPointer[T]] struct {
@@ -273,9 +269,9 @@ It is valid to define a `Field` that implements a non-standard format. However, 
 
 ## Why not Proto?
 
-Proto is a fast, compact, encoding format with extensive language support. However, [Proto is not canonical](https://protobuf.dev/programming-guides/serialization-not-canonical/).
+Proto is a fast, compact encoding format with extensive language support. However, [Proto is not canonical](https://protobuf.dev/programming-guides/serialization-not-canonical/).
 
-Proto is designed to be forwards-compatible. Almost by definition, a forwards-compatible serialization format can not be canonical. The format of a field can not validated to be canonical if the expected type of the field is not known during decoding.
+Proto is designed to be forwards-compatible. Almost by definition, a forwards-compatible serialization format cannot be canonical. The format of a field cannot be validated to be canonical if the expected type of the field is not known during decoding.
 
 ## Why is being canonical important?
 

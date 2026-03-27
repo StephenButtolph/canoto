@@ -2,8 +2,10 @@
 // versions:
 // 	canoto v0.18.1
 
-// Canoto provides common functionality required for reading and writing the
-// canoto format.
+// Package canoto implements a canonical, compact, and fast serialization format
+// that is read-compatible with Protocol Buffers. It provides both low-level
+// primitives for reading and writing the wire format and high-level interfaces
+// for marshaling and unmarshaling structured messages.
 package canoto
 
 import (
@@ -87,7 +89,7 @@ const (
 	// a breaking change.
 	VersionCompatibility = 1
 
-	// EmptyBytes is the length prefixed encoding of empty bytes.
+	// EmptyBytes is the length-prefixed encoding of empty bytes.
 	EmptyBytes = "\x00" // AppendBytes(&Writer{}, []byte{}).B
 
 	// PointerPresenceTag is the tag used to encode the presence of a non-nil
@@ -108,24 +110,21 @@ const (
 )
 
 var (
-	// Code is the actual golang code for this library; including this comment.
+	// Code is the source of this file, embedded as a string. It can be used
+	// during code generation to produce standalone copies of this library.
 	//
-	// This variable is not used internally, so the compiler is smart enough to
-	// omit this value from the binary if the user of this library does not
-	// utilize this variable; at least at the time of writing.
-	//
-	// This can be used during codegen to generate this library.
+	// This variable is not referenced internally, so the compiler omits it
+	// from the binary if unused.
 	//
 	//go:embed canoto.go
 	Code string
 
-	// GeneratedCode is the actual auto-generated golang code for this library.
+	// GeneratedCode is the source of the auto-generated canoto.canoto.go
+	// file, embedded as a string. It can be used during code generation to
+	// produce standalone copies of this library.
 	//
-	// This variable is not used internally, so the compiler is smart enough to
-	// omit this value from the binary if the user of this library does not
-	// utilize this variable; at least at the time of writing.
-	//
-	// This can be used during codegen to generate this library.
+	// This variable is not referenced internally, so the compiler omits it
+	// from the binary if unused.
 	//
 	//go:embed canoto.canoto.go
 	GeneratedCode string
@@ -204,7 +203,7 @@ type (
 		UnmarshalCanoto(bytes []byte) error
 	}
 
-	// Field defines a type that can be included inside of a Canoto message.
+	// Field defines a type that can be included in a Canoto message.
 	Field interface {
 		// CanotoSpec returns the specification of this canoto message.
 		//
@@ -235,9 +234,10 @@ type (
 		ValidCanoto() bool
 	}
 
-	// FieldPointer is a pointer to a concrete Field value T.
+	// FieldPointer is a constraint that requires *T to implement [Field].
 	//
-	// This type must be used when implementing a value for a generic Field.
+	// This must be used as a type parameter when defining a generic struct
+	// that contains a [Field] value. See the README for usage examples.
 	FieldPointer[T any] interface {
 		Field
 		*T
@@ -253,7 +253,11 @@ type (
 	// The functions in this package are not methods on the Reader type to
 	// enable the usage of generics.
 	Reader struct {
-		B      []byte
+		// B is the remaining bytes to be read.
+		B []byte
+		// Unsafe, when true, avoids copying during unmarshaling. Decoded
+		// strings and byte slices will alias the original input buffer,
+		// which must not be modified after unmarshaling.
 		Unsafe bool
 		// Context is a user-defined value that can be used to pass additional
 		// state during the unmarshaling process.
@@ -265,6 +269,7 @@ type (
 	// The functions in this package are not methods on the Writer type to
 	// enable the usage of generics.
 	Writer struct {
+		// B is the accumulated output bytes.
 		B []byte
 	}
 
@@ -304,7 +309,7 @@ type (
 		canotoData canotoData_FieldType
 	}
 
-	// SizeEnum indicate the size of an integer type in canoto specifications.
+	// SizeEnum indicates the size of an integer type in canoto specifications.
 	SizeEnum uint8
 
 	// Any is a generic representation of a Canoto message.
@@ -394,8 +399,8 @@ func (s SizeEnum) NumBytes() (uint64, bool) {
 	}
 }
 
-// ReadPointerPresence removes the presence wrapper from a repeated pointer
-// element.
+// ReadPointerPresence unwraps a repeated pointer element by stripping the
+// tag and length prefix that encodes the presence of a non-nil pointer.
 func ReadPointerPresence(b []byte) ([]byte, error) {
 	if !HasPrefix(b, PointerPresenceTag) {
 		return nil, ErrUnknownField
@@ -419,7 +424,7 @@ func HasNext(r *Reader) bool {
 	return len(r.B) > 0
 }
 
-// Append writes unprefixed bytes to the writer.
+// Append writes raw bytes to the writer without a length prefix.
 func Append[T Bytes](w *Writer, v T) {
 	w.B = append(w.B, v...)
 }
@@ -807,7 +812,9 @@ func (a Any) MarshalJSON() ([]byte, error) {
 	return []byte(sb.String()), nil
 }
 
-// FieldTypeFromFint creates a FieldType from a fixed-length integer.
+// FieldTypeFromFint creates a [FieldType] specification for a fixed-size
+// integer field. This is primarily used by generated code to build [Spec]
+// values.
 func FieldTypeFromFint[T integer](
 	field T,
 	fieldNumber uint32,
@@ -836,7 +843,9 @@ func FieldTypeFromFint[T integer](
 	}
 }
 
-// FieldTypeFromField creates a FieldType from a field.
+// FieldTypeFromField creates a [FieldType] specification for a message or
+// custom [Field] type. This is primarily used by generated code to build [Spec]
+// values.
 func FieldTypeFromField[T Field](
 	field T,
 	fieldNumber uint32,

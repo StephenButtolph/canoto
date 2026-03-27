@@ -1,3 +1,4 @@
-// Generate exposes functionality to generate code for reading and writing the
-// canoto format.
+// Package generate provides code generation for canoto serialization. It parses
+// Go source files for canoto struct tags and generates marshaling,
+// unmarshaling, and optionally proto file outputs.
 package generate
