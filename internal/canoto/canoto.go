@@ -1710,7 +1710,7 @@ func (f *FieldType) recursiveSpec(specs []*Spec) (*Spec, []*Spec, error) {
 	}
 	index := numSpecs - f.TypeRecursive
 	spec := specs[index]
-	specs = slices.Clone(specs[:index])
+	specs = specs[:index:index]
 	return spec, specs, nil
 }
 
@@ -1846,9 +1846,8 @@ func unmarshalPackedVarint[T comparable](
 		count = CountInts(msgBytes)
 	}
 	values := make([]T, count)
-	r = &Reader{
-		B: msgBytes,
-	}
+	remainingBytes := r.B
+	r.B = msgBytes
 	isZero := true
 	for i := range values {
 		value, err := unmarshal(r)
@@ -1864,6 +1863,7 @@ func unmarshalPackedVarint[T comparable](
 	if f.FixedLength > 0 && isZero {
 		return nil, ErrZeroValue
 	}
+	r.B = remainingBytes
 	return values, nil
 }
 
@@ -1946,9 +1946,8 @@ func unmarshalPackedFixed[T comparable](
 	}
 
 	values := make([]T, count)
-	r = &Reader{
-		B: msgBytes,
-	}
+	remainingBytes := r.B
+	r.B = msgBytes
 	isZero := true
 	for i := range values {
 		value, err := unmarshal(r)
@@ -1964,6 +1963,7 @@ func unmarshalPackedFixed[T comparable](
 	if f.FixedLength > 0 && isZero {
 		return nil, ErrZeroValue
 	}
+	r.B = remainingBytes
 	return values, nil
 }
 
