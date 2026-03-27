@@ -1103,6 +1103,27 @@ func FuzzSpec(f *testing.F) {
 	})
 }
 
+func TestMarshalConcurrent(t *testing.T) {
+	v := fullSpecFuzzer(t)
+	spec := v.CanotoSpec()
+	a, err := Unmarshal(spec, v.MarshalCanoto())
+	require.NoError(t, err)
+
+	// Marshal the same Any value concurrently from multiple goroutines to
+	// verify there are no data races.
+	const goroutines = 10
+	errs := make(chan error, goroutines)
+	for range goroutines {
+		go func() {
+			_, err := Marshal(spec, a)
+			errs <- err
+		}()
+	}
+	for range goroutines {
+		require.NoError(t, <-errs)
+	}
+}
+
 func BenchmarkSpec(b *testing.B) {
 	v := fullSpecFuzzer(b)
 	spec := v.CanotoSpec()
