@@ -1708,7 +1708,7 @@ func (f *FieldType) recursiveSpec(specs []*Spec) (*Spec, []*Spec, error) {
 	}
 	index := numSpecs - f.TypeRecursive
 	spec := specs[index]
-	specs = slices.Clone(specs[:index])
+	specs = specs[:index:index]
 	return spec, specs, nil
 }
 
