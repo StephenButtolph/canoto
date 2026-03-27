@@ -274,6 +274,7 @@ type (
 	// Any is a generic representation of a Canoto message.
 	Any struct {
 		Fields []AnyField
+		size   uint64 // cached marshalled content size (set by calculateSize)
 	}
 
 	// AnyField is a generic representation of a field in a Canoto message.
@@ -726,10 +727,15 @@ func Unmarshal(s *Spec, b []byte) (Any, error) {
 // directly. This function should only be used when the concrete type can not be
 // known ahead of time.
 func Marshal(s *Spec, a Any) ([]byte, error) {
-	// TODO: Implement size calculations to avoid quadratic marshalling
-	// complexity.
-	w, err := s.marshal(a, nil)
-	return w.B, err
+	if err := s.calculateSize(&a, nil); err != nil {
+		return nil, err
+	}
+	w := Writer{B: make([]byte, 0, a.size)}
+	w, err := s.marshal(w, a, nil)
+	if err != nil {
+		return nil, err
+	}
+	return w.B, nil
 }
 
 func (a Any) MarshalJSON() ([]byte, error) {
@@ -891,10 +897,243 @@ func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 	return a, nil
 }
 
-func (s *Spec) marshal(a Any, specs []*Spec) (Writer, error) {
+func (s *Spec) calculateSize(a *Any, specs []*Spec) error {
 	specs = append(specs, s)
 	var (
-		w             Writer
+		size          uint64
+		minField      uint32
+		minFieldIndex int
+	)
+	for i := range a.Fields {
+		f := &a.Fields[i]
+		ft, fieldIndex, err := s.findFieldByName(f.Name, minFieldIndex)
+		if err != nil {
+			return err
+		}
+		if ft.FieldNumber == 0 || ft.FieldNumber > MaxFieldNumber {
+			return ErrUnknownField
+		}
+		if ft.FieldNumber < minField {
+			return ErrInvalidFieldOrder
+		}
+
+		wireType, err := ft.wireType()
+		if err != nil {
+			return err
+		}
+
+		tag := tagValue(ft.FieldNumber, wireType)
+		contentSize, err := ft.calculateSize(f, specs)
+		if err != nil {
+			return err
+		}
+
+		size += SizeUint(tag) + contentSize
+
+		minField = ft.FieldNumber + 1
+		minFieldIndex = fieldIndex + 1
+	}
+	a.size = size
+	return nil
+}
+
+func (f *FieldType) calculateSize(af *AnyField, specs []*Spec) (uint64, error) {
+	switch f.CachedWhichOneOfType() {
+	case FieldTypeInt:
+		return calculateSizePacked(f, af.Value, SizeInt[int64])
+	case FieldTypeUint:
+		return calculateSizePacked(f, af.Value, SizeUint[uint64])
+	case FieldTypeFixedInt:
+		var elementSize uint64
+		switch f.TypeFixedInt {
+		case SizeEnum32:
+			elementSize = SizeFint32
+		case SizeEnum64:
+			elementSize = SizeFint64
+		default:
+			return 0, ErrUnexpectedFieldSize
+		}
+		return calculateSizePacked(f, af.Value, func(_ int64) uint64 {
+			return elementSize
+		})
+	case FieldTypeFixedUint:
+		var elementSize uint64
+		switch f.TypeFixedUint {
+		case SizeEnum32:
+			elementSize = SizeFint32
+		case SizeEnum64:
+			elementSize = SizeFint64
+		default:
+			return 0, ErrUnexpectedFieldSize
+		}
+		return calculateSizePacked(f, af.Value, func(_ uint64) uint64 {
+			return elementSize
+		})
+	case FieldTypeBool:
+		return calculateSizePacked(f, af.Value, func(_ bool) uint64 {
+			return SizeBool
+		})
+	case FieldTypeString:
+		return calculateSizeUnpacked(f, af.Value, SizeBytes[string])
+	case FieldTypeBytes, FieldTypeFixedBytes:
+		return calculateSizeUnpacked(f, af.Value, SizeBytes[[]byte])
+	case FieldTypeRecursive:
+		spec, specs, err := f.recursiveSpec(specs)
+		if err != nil {
+			return 0, err
+		}
+		return f.calculateSizeMessage(af, spec, specs)
+	case FieldTypeMessage:
+		return f.calculateSizeMessage(af, f.TypeMessage, specs)
+	default:
+		return 0, ErrUnknownFieldType
+	}
+}
+
+func calculateSizePacked[T comparable](
+	f *FieldType,
+	value any,
+	size func(T) uint64,
+) (uint64, error) {
+	if !f.Repeated {
+		v, ok := value.(T)
+		if !ok {
+			return 0, ErrInvalidFieldType
+		}
+		return size(v), nil
+	}
+
+	vl, ok := value.([]T)
+	if !ok {
+		return 0, ErrInvalidFieldType
+	}
+
+	var packedSize uint64
+	for _, v := range vl {
+		packedSize += size(v)
+	}
+	return SizeUint(packedSize) + packedSize, nil
+}
+
+func calculateSizeUnpacked[T any](
+	f *FieldType,
+	value any,
+	size func(T) uint64,
+) (uint64, error) {
+	if !f.Repeated {
+		v, ok := value.(T)
+		if !ok {
+			return 0, ErrInvalidFieldType
+		}
+		return size(v), nil
+	}
+
+	vl, ok := value.([]T)
+	if !ok {
+		return 0, ErrInvalidFieldType
+	}
+
+	if len(vl) == 0 {
+		return 0, ErrInvalidLength
+	}
+
+	total := size(vl[0])
+	tag := tagValue(f.FieldNumber, Len)
+	tagSize := SizeUint(tag)
+	for _, v := range vl[1:] {
+		total += tagSize + size(v)
+	}
+	return total, nil
+}
+
+func (f *FieldType) calculateSizeMessage(
+	af *AnyField,
+	spec *Spec,
+	specs []*Spec,
+) (uint64, error) {
+	if !f.Repeated {
+		v, ok := af.Value.(Any)
+		if !ok {
+			return 0, ErrInvalidFieldType
+		}
+		if err := spec.calculateSize(&v, specs); err != nil {
+			return 0, err
+		}
+		af.Value = v // preserve cached size
+		return SizeUint(v.size) + v.size, nil
+	}
+
+	if f.Pointer {
+		vl, ok := af.Value.([]*Any)
+		if !ok {
+			return 0, ErrInvalidFieldType
+		}
+
+		if len(vl) == 0 {
+			return 0, ErrInvalidLength
+		}
+
+		sizeElement := func(v *Any) (uint64, error) {
+			if v == nil {
+				return uint64(len(EmptyBytes)), nil
+			}
+			if err := spec.calculateSize(v, specs); err != nil {
+				return 0, err
+			}
+			innerSize := v.size
+			outerLen := SizePointerPresenceTag + SizeUint(innerSize) + innerSize
+			return SizeUint(outerLen) + outerLen, nil
+		}
+
+		total, err := sizeElement(vl[0])
+		if err != nil {
+			return 0, err
+		}
+
+		tag := tagValue(f.FieldNumber, Len)
+		tagSize := SizeUint(tag)
+		for _, v := range vl[1:] {
+			elemSize, err := sizeElement(v)
+			if err != nil {
+				return 0, err
+			}
+			total += tagSize + elemSize
+		}
+		return total, nil
+	}
+
+	// Repeated non-pointer: []Any
+	vl, ok := af.Value.([]Any)
+	if !ok {
+		return 0, ErrInvalidFieldType
+	}
+
+	if len(vl) == 0 {
+		return 0, ErrInvalidLength
+	}
+
+	v := &vl[0]
+	if err := spec.calculateSize(v, specs); err != nil {
+		return 0, err
+	}
+	total := SizeUint(v.size) + v.size
+
+	tag := tagValue(f.FieldNumber, Len)
+	tagSize := SizeUint(tag)
+	rvl := vl[1:]
+	for i := range rvl {
+		v := &rvl[i]
+		if err := spec.calculateSize(v, specs); err != nil {
+			return 0, err
+		}
+		total += tagSize + SizeUint(v.size) + v.size
+	}
+	return total, nil
+}
+
+func (s *Spec) marshal(w Writer, a Any, specs []*Spec) (Writer, error) {
+	specs = append(specs, s)
+	var (
 		minField      uint32
 		minFieldIndex int
 	)
@@ -1082,6 +1321,7 @@ func (f *FieldType) marshalInt(w Writer, value any, _ []*Spec) (Writer, error) {
 		f,
 		w,
 		value,
+		SizeInt[int64],
 		func(w Writer, value int64) (Writer, error) {
 			if value < minimum || value > maximum {
 				return Writer{}, ErrOverflow
@@ -1131,6 +1371,7 @@ func (f *FieldType) marshalUint(w Writer, value any, _ []*Spec) (Writer, error) 
 		f,
 		w,
 		value,
+		SizeUint[uint64],
 		func(w Writer, value uint64) (Writer, error) {
 			if value > maximum {
 				return Writer{}, ErrOverflow
@@ -1186,10 +1427,18 @@ func (f *FieldType) marshalFixedInt(w Writer, value any, _ []*Spec) (Writer, err
 	default:
 		return Writer{}, ErrUnexpectedFieldSize
 	}
+	var elementSize uint64
+	switch f.TypeFixedInt {
+	case SizeEnum32:
+		elementSize = SizeFint32
+	case SizeEnum64:
+		elementSize = SizeFint64
+	}
 	return marshalPacked(
 		f,
 		w,
 		value,
+		func(_ int64) uint64 { return elementSize },
 		write,
 	)
 }
@@ -1239,10 +1488,18 @@ func (f *FieldType) marshalFixedUint(w Writer, value any, _ []*Spec) (Writer, er
 	default:
 		return Writer{}, ErrUnexpectedFieldSize
 	}
+	var elementSize uint64
+	switch f.TypeFixedUint {
+	case SizeEnum32:
+		elementSize = SizeFint32
+	case SizeEnum64:
+		elementSize = SizeFint64
+	}
 	return marshalPacked(
 		f,
 		w,
 		value,
+		func(_ uint64) uint64 { return elementSize },
 		write,
 	)
 }
@@ -1265,6 +1522,7 @@ func (f *FieldType) marshalBool(w Writer, value any, _ []*Spec) (Writer, error) 
 		f,
 		w,
 		value,
+		func(_ bool) uint64 { return SizeBool },
 		func(w Writer, value bool) (Writer, error) {
 			AppendBool(&w, value)
 			return w, nil
@@ -1431,23 +1689,16 @@ func (f *FieldType) marshalRecursive(w Writer, value any, specs []*Spec) (Writer
 				Append(&w, EmptyBytes)
 				return w, nil
 			}
-			tw, err := spec.marshal(*value, specs)
-			if err != nil {
-				return Writer{}, err
-			}
-			AppendUint(&w, SizePointerPresenceTag+SizeBytes(tw.B))
+			innerSize := value.size
+			AppendUint(&w, SizePointerPresenceTag+SizeUint(innerSize)+innerSize)
 			Append(&w, PointerPresenceTag)
-			AppendBytes(&w, tw.B)
-			return w, nil
+			AppendUint(&w, innerSize)
+			return spec.marshal(w, *value, specs)
 		})
 	}
 	return marshalUnpacked(f, w, value, func(w Writer, value Any) (Writer, error) {
-		tw, err := spec.marshal(value, specs)
-		if err != nil {
-			return Writer{}, err
-		}
-		AppendBytes(&w, tw.B)
-		return w, nil
+		AppendUint(&w, value.size)
+		return spec.marshal(w, value, specs)
 	})
 }
 
@@ -1492,23 +1743,16 @@ func (f *FieldType) marshalSpec(w Writer, value any, specs []*Spec) (Writer, err
 				Append(&w, EmptyBytes)
 				return w, nil
 			}
-			tw, err := f.TypeMessage.marshal(*value, specs)
-			if err != nil {
-				return Writer{}, err
-			}
-			AppendUint(&w, SizePointerPresenceTag+SizeBytes(tw.B))
+			innerSize := value.size
+			AppendUint(&w, SizePointerPresenceTag+SizeUint(innerSize)+innerSize)
 			Append(&w, PointerPresenceTag)
-			AppendBytes(&w, tw.B)
-			return w, nil
+			AppendUint(&w, innerSize)
+			return f.TypeMessage.marshal(w, *value, specs)
 		})
 	}
 	return marshalUnpacked(f, w, value, func(w Writer, value Any) (Writer, error) {
-		tw, err := f.TypeMessage.marshal(value, specs)
-		if err != nil {
-			return Writer{}, err
-		}
-		AppendBytes(&w, tw.B)
-		return w, nil
+		AppendUint(&w, value.size)
+		return f.TypeMessage.marshal(w, value, specs)
 	})
 }
 
@@ -1580,6 +1824,7 @@ func marshalPacked[T comparable](
 	f *FieldType,
 	w Writer,
 	value any,
+	size func(T) uint64,
 	marshal func(w Writer, value T) (Writer, error),
 ) (Writer, error) {
 	if !f.Repeated {
@@ -1596,17 +1841,19 @@ func marshalPacked[T comparable](
 		return Writer{}, ErrInvalidFieldType
 	}
 
-	var (
-		tw  Writer
-		err error
-	)
+	var packedSize uint64
 	for _, v := range vl {
-		tw, err = marshal(tw, v)
+		packedSize += size(v)
+	}
+	AppendUint(&w, packedSize)
+
+	var err error
+	for _, v := range vl {
+		w, err = marshal(w, v)
 		if err != nil {
 			return Writer{}, err
 		}
 	}
-	AppendBytes(&w, tw.B)
 	return w, nil
 }
 
