@@ -1068,38 +1068,40 @@ func FuzzSpec(f *testing.F) {
 	full := fullSpecFuzzer(f)
 	f.Add(full.MarshalCanoto())
 
-	spec := (*SpecFuzzer)(nil).CanotoSpec()
 	f.Fuzz(func(t *testing.T, b []byte) {
-		var (
-			require       = require.New(t)
-			originalBytes = slices.Clone(b)
-		)
+		require := require.New(t)
 
 		// Verify that unmarshalling the message using [Unmarshal] returns the
 		// same error as the unmarshalling the message directly.
-		var msg SpecFuzzer
-		expectedErr := msg.UnmarshalCanoto(b)
-		anyMSG, actualErr := Unmarshal(spec, b)
+		var (
+			msg              SpecFuzzer
+			spec             = msg.CanotoSpec()
+			unmarshaledBytes = slices.Clone(b)
+		)
+		expectedErr := msg.UnmarshalCanoto(unmarshaledBytes)
+		require.Equal(b, unmarshaledBytes)
+		anyMSG, actualErr := Unmarshal(spec, unmarshaledBytes)
+		require.Equal(b, unmarshaledBytes)
 		require.Equal(expectedErr, actualErr)
 
 		if expectedErr != nil {
 			return
 		}
 
-		// Modify the original bytes to ensure that [Unmarshal] does not hold a
-		// reference to the originally passed in slice.
-		for i := range b {
-			b[i]++
+		// Modify the bytes to ensure that [Unmarshal] does not hold a reference
+		// to the provided slice.
+		for i := range unmarshaledBytes {
+			unmarshaledBytes[i]++
 		}
 
 		// Ensure the generated code isn't impacted by the mutation of b.
-		require.True(bytes.Equal(originalBytes, msg.MarshalCanoto()))
+		require.True(bytes.Equal(b, msg.MarshalCanoto()))
 
 		// Verify that re-marshalling the unmarshalled message returns the same
 		// bytes as the original message.
 		actualBytes, err := Marshal(spec, anyMSG)
 		require.NoError(err)
-		require.True(bytes.Equal(originalBytes, actualBytes))
+		require.True(bytes.Equal(b, actualBytes))
 	})
 }
 
