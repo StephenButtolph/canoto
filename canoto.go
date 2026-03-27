@@ -1115,7 +1115,6 @@ func (f *FieldType) calculateSizeMessage(
 		return total, nil
 	}
 
-	// Repeated non-pointer: []Any
 	vl, ok := af.Value.([]Any)
 	if !ok {
 		return 0, ErrInvalidFieldType
@@ -1786,7 +1785,6 @@ func (f *FieldType) marshalMessage(
 		return w, nil
 	}
 
-	// Repeated non-pointer: []Any
 	vl, ok := af.Value.([]Any)
 	if !ok {
 		return Writer{}, ErrInvalidFieldType
