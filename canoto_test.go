@@ -5,6 +5,7 @@ package canoto
 import (
 	"bytes"
 	"encoding/hex"
+	"errors"
 	"io"
 	"math"
 	"slices"
@@ -1101,6 +1102,37 @@ func FuzzSpec(f *testing.F) {
 		require.NoError(err)
 		require.True(bytes.Equal(originalBytes, actualBytes))
 	})
+}
+
+func TestMarshalConcurrent(t *testing.T) {
+	v := fullSpecFuzzer(t)
+	spec := v.CanotoSpec()
+
+	expectedBytes := v.MarshalCanoto()
+	a, err := Unmarshal(spec, expectedBytes)
+	require.NoError(t, err)
+
+	// Marshal the same Any value concurrently from multiple goroutines to
+	// verify there are no data races.
+	const goroutines = 10
+	errs := make(chan error, goroutines)
+	for range goroutines {
+		go func() {
+			b, err := Marshal(spec, a)
+			if err != nil {
+				errs <- err
+				return
+			}
+			if !bytes.Equal(expectedBytes, b) {
+				errs <- errors.New("concurrent marshal produced different bytes")
+				return
+			}
+			errs <- nil
+		}()
+	}
+	for range goroutines {
+		require.NoError(t, <-errs)
+	}
 }
 
 func BenchmarkSpec(b *testing.B) {

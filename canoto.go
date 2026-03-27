@@ -14,6 +14,7 @@ import (
 	"reflect"
 	"slices"
 	"strings"
+	"sync/atomic"
 	"unicode/utf8"
 	"unsafe"
 
@@ -274,7 +275,6 @@ type (
 	// Any is a generic representation of a Canoto message.
 	Any struct {
 		Fields []AnyField
-		size   uint64 // cached marshalled content size (set by calculateSize)
 	}
 
 	// AnyField is a generic representation of a field in a Canoto message.
@@ -295,6 +295,11 @@ type (
 		// Notice that *Any is not allowed. A nil pointer should not have any
 		// field entry.
 		Value any
+
+		// cachedSize is the content size of this field after the tag,
+		// set by calculateSize and read during marshal. Accessed atomically
+		// to support concurrent marshalling of the same message.
+		cachedSize uint64
 	}
 )
 
@@ -727,11 +732,12 @@ func Unmarshal(s *Spec, b []byte) (Any, error) {
 // directly. This function should only be used when the concrete type can not be
 // known ahead of time.
 func Marshal(s *Spec, a Any) ([]byte, error) {
-	if err := s.calculateSize(&a, nil); err != nil {
+	totalSize, err := s.calculateSize(&a, nil)
+	if err != nil {
 		return nil, err
 	}
-	w := Writer{B: make([]byte, 0, a.size)}
-	w, err := s.marshal(w, a, nil)
+	w := Writer{B: make([]byte, 0, totalSize)}
+	w, err = s.marshal(w, a, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -897,7 +903,7 @@ func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 	return a, nil
 }
 
-func (s *Spec) calculateSize(a *Any, specs []*Spec) error {
+func (s *Spec) calculateSize(a *Any, specs []*Spec) (uint64, error) {
 	specs = append(specs, s)
 	var (
 		size          uint64
@@ -908,33 +914,61 @@ func (s *Spec) calculateSize(a *Any, specs []*Spec) error {
 		f := &a.Fields[i]
 		ft, fieldIndex, err := s.findFieldByName(f.Name, minFieldIndex)
 		if err != nil {
-			return err
+			return 0, err
 		}
 		if ft.FieldNumber == 0 || ft.FieldNumber > MaxFieldNumber {
-			return ErrUnknownField
+			return 0, ErrUnknownField
 		}
 		if ft.FieldNumber < minField {
-			return ErrInvalidFieldOrder
+			return 0, ErrInvalidFieldOrder
 		}
 
 		wireType, err := ft.wireType()
 		if err != nil {
-			return err
+			return 0, err
 		}
 
 		tag := tagValue(ft.FieldNumber, wireType)
 		contentSize, err := ft.calculateSize(f, specs)
 		if err != nil {
-			return err
+			return 0, err
 		}
 
+		atomic.StoreUint64(&f.cachedSize, contentSize)
 		size += SizeUint(tag) + contentSize
 
 		minField = ft.FieldNumber + 1
 		minFieldIndex = fieldIndex + 1
 	}
-	a.size = size
-	return nil
+	return size, nil
+}
+
+// cachedSize re-derives the total marshalled size of a message from the
+// cached field sizes. This is used during the marshal pass for repeated
+// message elements whose per-element sizes are not stored separately.
+func (s *Spec) cachedSize(a *Any, specs []*Spec) (uint64, error) {
+	specs = append(specs, s)
+	var (
+		size          uint64
+		minFieldIndex int
+	)
+	for i := range a.Fields {
+		f := &a.Fields[i]
+		ft, fieldIndex, err := s.findFieldByName(f.Name, minFieldIndex)
+		if err != nil {
+			return 0, err
+		}
+
+		wireType, err := ft.wireType()
+		if err != nil {
+			return 0, err
+		}
+
+		tag := tagValue(ft.FieldNumber, wireType)
+		size += SizeUint(tag) + atomic.LoadUint64(&f.cachedSize)
+		minFieldIndex = fieldIndex + 1
+	}
+	return size, nil
 }
 
 func (f *FieldType) calculateSize(af *AnyField, specs []*Spec) (uint64, error) {
@@ -1056,11 +1090,11 @@ func (f *FieldType) calculateSizeMessage(
 		if !ok {
 			return 0, ErrInvalidFieldType
 		}
-		if err := spec.calculateSize(&v, specs); err != nil {
+		innerSize, err := spec.calculateSize(&v, specs)
+		if err != nil {
 			return 0, err
 		}
-		af.Value = v // preserve cached size
-		return SizeUint(v.size) + v.size, nil
+		return SizeUint(innerSize) + innerSize, nil
 	}
 
 	if f.Pointer {
@@ -1077,10 +1111,10 @@ func (f *FieldType) calculateSizeMessage(
 			if v == nil {
 				return uint64(len(EmptyBytes)), nil
 			}
-			if err := spec.calculateSize(v, specs); err != nil {
+			innerSize, err := spec.calculateSize(v, specs)
+			if err != nil {
 				return 0, err
 			}
-			innerSize := v.size
 			outerLen := SizePointerPresenceTag + SizeUint(innerSize) + innerSize
 			return SizeUint(outerLen) + outerLen, nil
 		}
@@ -1112,21 +1146,21 @@ func (f *FieldType) calculateSizeMessage(
 		return 0, ErrInvalidLength
 	}
 
-	v := &vl[0]
-	if err := spec.calculateSize(v, specs); err != nil {
+	elementSize, err := spec.calculateSize(&vl[0], specs)
+	if err != nil {
 		return 0, err
 	}
-	total := SizeUint(v.size) + v.size
+	total := SizeUint(elementSize) + elementSize
 
 	tag := tagValue(f.FieldNumber, Len)
 	tagSize := SizeUint(tag)
 	rvl := vl[1:]
 	for i := range rvl {
-		v := &rvl[i]
-		if err := spec.calculateSize(v, specs); err != nil {
+		elementSize, err := spec.calculateSize(&rvl[i], specs)
+		if err != nil {
 			return 0, err
 		}
-		total += tagSize + SizeUint(v.size) + v.size
+		total += tagSize + SizeUint(elementSize) + elementSize
 	}
 	return total, nil
 }
@@ -1137,7 +1171,8 @@ func (s *Spec) marshal(w Writer, a Any, specs []*Spec) (Writer, error) {
 		minField      uint32
 		minFieldIndex int
 	)
-	for _, f := range a.Fields {
+	for i := range a.Fields {
+		f := &a.Fields[i]
 		ft, fieldIndex, err := s.findFieldByName(f.Name, minFieldIndex)
 		if err != nil {
 			return Writer{}, err
@@ -1157,7 +1192,7 @@ func (s *Spec) marshal(w Writer, a Any, specs []*Spec) (Writer, error) {
 		tag := tagValue(ft.FieldNumber, wireType)
 		AppendUint(&w, tag)
 
-		w, err = ft.marshal(w, f.Value, specs)
+		w, err = ft.marshal(w, f, specs)
 		if err != nil {
 			return Writer{}, err
 		}
@@ -1252,31 +1287,29 @@ func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 	return unmarshal(f, r, specs)
 }
 
-func (f *FieldType) marshal(w Writer, value any, specs []*Spec) (Writer, error) {
-	var marshal func(f *FieldType, w Writer, value any, specs []*Spec) (Writer, error)
+func (f *FieldType) marshal(w Writer, af *AnyField, specs []*Spec) (Writer, error) {
 	switch f.CachedWhichOneOfType() {
 	case FieldTypeInt:
-		marshal = (*FieldType).marshalInt
+		return f.marshalInt(w, af.Value, specs)
 	case FieldTypeUint:
-		marshal = (*FieldType).marshalUint
+		return f.marshalUint(w, af.Value, specs)
 	case FieldTypeFixedInt:
-		marshal = (*FieldType).marshalFixedInt
+		return f.marshalFixedInt(w, af.Value, specs)
 	case FieldTypeFixedUint:
-		marshal = (*FieldType).marshalFixedUint
+		return f.marshalFixedUint(w, af.Value, specs)
 	case FieldTypeBool:
-		marshal = (*FieldType).marshalBool
+		return f.marshalBool(w, af.Value, specs)
 	case FieldTypeString:
-		marshal = (*FieldType).marshalString
+		return f.marshalString(w, af.Value, specs)
 	case FieldTypeBytes, FieldTypeFixedBytes:
-		marshal = (*FieldType).marshalBytes
+		return f.marshalBytes(w, af.Value, specs)
 	case FieldTypeRecursive:
-		marshal = (*FieldType).marshalRecursive
+		return f.marshalRecursive(w, af, specs)
 	case FieldTypeMessage:
-		marshal = (*FieldType).marshalSpec
+		return f.marshalSpec(w, af, specs)
 	default:
 		return Writer{}, ErrUnknownFieldType
 	}
-	return marshal(f, w, value, specs)
 }
 
 func (f *FieldType) unmarshalInt(r *Reader, _ []*Spec) (any, error) {
@@ -1677,29 +1710,12 @@ func (f *FieldType) unmarshalRecursive(r *Reader, specs []*Spec) (any, error) {
 	})
 }
 
-func (f *FieldType) marshalRecursive(w Writer, value any, specs []*Spec) (Writer, error) {
+func (f *FieldType) marshalRecursive(w Writer, af *AnyField, specs []*Spec) (Writer, error) {
 	spec, specs, err := f.recursiveSpec(specs)
 	if err != nil {
 		return Writer{}, err
 	}
-
-	if f.Pointer && f.Repeated {
-		return marshalUnpacked(f, w, value, func(w Writer, value *Any) (Writer, error) {
-			if value == nil {
-				Append(&w, EmptyBytes)
-				return w, nil
-			}
-			innerSize := value.size
-			AppendUint(&w, SizePointerPresenceTag+SizeUint(innerSize)+innerSize)
-			Append(&w, PointerPresenceTag)
-			AppendUint(&w, innerSize)
-			return spec.marshal(w, *value, specs)
-		})
-	}
-	return marshalUnpacked(f, w, value, func(w Writer, value Any) (Writer, error) {
-		AppendUint(&w, value.size)
-		return spec.marshal(w, value, specs)
-	})
+	return f.marshalMessage(w, af, spec, specs)
 }
 
 func (f *FieldType) recursiveSpec(specs []*Spec) (*Spec, []*Spec, error) {
@@ -1736,24 +1752,104 @@ func (f *FieldType) unmarshalSpec(r *Reader, specs []*Spec) (any, error) {
 	})
 }
 
-func (f *FieldType) marshalSpec(w Writer, value any, specs []*Spec) (Writer, error) {
-	if f.Pointer && f.Repeated {
-		return marshalUnpacked(f, w, value, func(w Writer, value *Any) (Writer, error) {
-			if value == nil {
+func (f *FieldType) marshalSpec(w Writer, af *AnyField, specs []*Spec) (Writer, error) {
+	return f.marshalMessage(w, af, f.TypeMessage, specs)
+}
+
+func (f *FieldType) marshalMessage(
+	w Writer,
+	af *AnyField,
+	spec *Spec,
+	specs []*Spec,
+) (Writer, error) {
+	if !f.Repeated {
+		v, ok := af.Value.(Any)
+		if !ok {
+			return Writer{}, ErrInvalidFieldType
+		}
+		innerSize, err := spec.cachedSize(&v, specs)
+		if err != nil {
+			return Writer{}, err
+		}
+		AppendUint(&w, innerSize)
+		return spec.marshal(w, v, specs)
+	}
+
+	if f.Pointer {
+		vl, ok := af.Value.([]*Any)
+		if !ok {
+			return Writer{}, ErrInvalidFieldType
+		}
+		if len(vl) == 0 {
+			return Writer{}, ErrInvalidLength
+		}
+
+		marshalElement := func(w Writer, v *Any) (Writer, error) {
+			if v == nil {
 				Append(&w, EmptyBytes)
 				return w, nil
 			}
-			innerSize := value.size
+			innerSize, err := spec.cachedSize(v, specs)
+			if err != nil {
+				return Writer{}, err
+			}
 			AppendUint(&w, SizePointerPresenceTag+SizeUint(innerSize)+innerSize)
 			Append(&w, PointerPresenceTag)
 			AppendUint(&w, innerSize)
-			return f.TypeMessage.marshal(w, *value, specs)
-		})
+			return spec.marshal(w, *v, specs)
+		}
+
+		var err error
+		w, err = marshalElement(w, vl[0])
+		if err != nil {
+			return Writer{}, err
+		}
+
+		tag := tagValue(f.FieldNumber, Len)
+		for _, v := range vl[1:] {
+			AppendUint(&w, tag)
+			w, err = marshalElement(w, v)
+			if err != nil {
+				return Writer{}, err
+			}
+		}
+		return w, nil
 	}
-	return marshalUnpacked(f, w, value, func(w Writer, value Any) (Writer, error) {
-		AppendUint(&w, value.size)
-		return f.TypeMessage.marshal(w, value, specs)
-	})
+
+	// Repeated non-pointer: []Any
+	vl, ok := af.Value.([]Any)
+	if !ok {
+		return Writer{}, ErrInvalidFieldType
+	}
+	if len(vl) == 0 {
+		return Writer{}, ErrInvalidLength
+	}
+
+	marshalElement := func(w Writer, v *Any) (Writer, error) {
+		innerSize, err := spec.cachedSize(v, specs)
+		if err != nil {
+			return Writer{}, err
+		}
+		AppendUint(&w, innerSize)
+		return spec.marshal(w, *v, specs)
+	}
+
+	var err error
+	w, err = marshalElement(w, &vl[0])
+	if err != nil {
+		return Writer{}, err
+	}
+
+	tag := tagValue(f.FieldNumber, Len)
+	rvl := vl[1:]
+	for i := range rvl {
+		AppendUint(&w, tag)
+		w, err = marshalElement(w, &rvl[i])
+		if err != nil {
+			return Writer{}, err
+		}
+	}
+	return w, nil
 }
 
 func unmarshalInt[T Int](r *Reader) (int64, error) {
