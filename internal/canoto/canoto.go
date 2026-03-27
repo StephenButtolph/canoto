@@ -299,9 +299,9 @@ type (
 		// field entry.
 		Value any
 
-		// cachedSize is used to cache the size of Value when it is an Any type.
-		// It is populated by [FieldType.calculateSizeMessage].
-		cachedSize uint64
+		// cachedSize is only used to cache the size of Value when it is [Any].
+		// Normally, [Any.cachedSize] should be used instead.
+		cachedSize uint64 // populated by [FieldType.calculateSizeMessage]
 	}
 )
 
