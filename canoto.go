@@ -1844,9 +1844,8 @@ func unmarshalPackedVarint[T comparable](
 		count = CountInts(msgBytes)
 	}
 	values := make([]T, count)
-	r = &Reader{
-		B: msgBytes,
-	}
+	savedB := r.B
+	r.B = msgBytes
 	isZero := true
 	for i := range values {
 		value, err := unmarshal(r)
@@ -1859,6 +1858,7 @@ func unmarshalPackedVarint[T comparable](
 	if HasNext(r) {
 		return nil, ErrInvalidLength
 	}
+	r.B = savedB
 	if f.FixedLength > 0 && isZero {
 		return nil, ErrZeroValue
 	}
@@ -1944,9 +1944,8 @@ func unmarshalPackedFixed[T comparable](
 	}
 
 	values := make([]T, count)
-	r = &Reader{
-		B: msgBytes,
-	}
+	savedB := r.B
+	r.B = msgBytes
 	isZero := true
 	for i := range values {
 		value, err := unmarshal(r)
@@ -1959,6 +1958,7 @@ func unmarshalPackedFixed[T comparable](
 	if HasNext(r) {
 		return nil, ErrInvalidLength
 	}
+	r.B = savedB
 	if f.FixedLength > 0 && isZero {
 		return nil, ErrZeroValue
 	}
