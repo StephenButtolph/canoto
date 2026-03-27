@@ -24,11 +24,15 @@ import (
 )
 
 const (
+	// Varint represents the variable-length integer wire type.
 	Varint WireType = iota
+	// I64 represents the 64-bit fixed-length wire type.
 	I64
+	// Len represents the length-delimited wire type.
 	Len
 	_ // SGROUP is deprecated and not supported
 	_ // EGROUP is deprecated and not supported
+	// I32 represents the 32-bit fixed-length wire type.
 	I32
 
 	// SizeEnum8 indicates either an int8 or uint8.
@@ -126,38 +130,67 @@ var (
 	//go:embed canoto.canoto.go
 	GeneratedCode string
 
-	ErrInvalidFieldOrder  = errors.New("invalid field order")
+	// ErrInvalidFieldOrder is returned when fields are not encoded in ascending
+	// field number order.
+	ErrInvalidFieldOrder = errors.New("invalid field order")
+	// ErrUnexpectedWireType is returned when a field's wire type does not match
+	// the expected wire type.
 	ErrUnexpectedWireType = errors.New("unexpected wire type")
-	ErrDuplicateOneOf     = errors.New("duplicate oneof field")
-	ErrInvalidLength      = errors.New("decoded length is invalid")
-	ErrZeroValue          = errors.New("zero value")
-	ErrUnknownField       = errors.New("unknown field")
-	ErrPaddedZeroes       = errors.New("padded zeroes")
+	// ErrDuplicateOneOf is returned when multiple fields in the same OneOf
+	// group are set.
+	ErrDuplicateOneOf = errors.New("duplicate oneof field")
+	// ErrInvalidLength is returned when a decoded length is invalid.
+	ErrInvalidLength = errors.New("decoded length is invalid")
+	// ErrZeroValue is returned when a field contains a zero value, which is not
+	// permitted in canoto encoding.
+	ErrZeroValue = errors.New("zero value")
+	// ErrUnknownField is returned when a field number is not recognized by the
+	// message specification.
+	ErrUnknownField = errors.New("unknown field")
+	// ErrPaddedZeroes is returned when a varint contains unnecessary leading
+	// zero bytes, violating canonical encoding.
+	ErrPaddedZeroes = errors.New("padded zeroes")
 
+	// ErrInvalidRecursiveDepth is returned when a recursive type references a
+	// depth that exceeds the available specification stack.
 	ErrInvalidRecursiveDepth = errors.New("invalid recursive depth")
-	ErrUnknownFieldType      = errors.New("unknown field type")
-	ErrUnexpectedFieldSize   = errors.New("unexpected field size")
-	ErrInvalidFieldType      = errors.New("invalid field type")
+	// ErrUnknownFieldType is returned when a field type is not recognized.
+	ErrUnknownFieldType = errors.New("unknown field type")
+	// ErrUnexpectedFieldSize is returned when a field's size does not match the
+	// expected size for its type.
+	ErrUnexpectedFieldSize = errors.New("unexpected field size")
+	// ErrInvalidFieldType is returned when the value provided for a field does
+	// not match the expected Go type.
+	ErrInvalidFieldType = errors.New("invalid field type")
 
-	ErrOverflow        = errors.New("overflow")
+	// ErrOverflow is returned when a decoded integer overflows the target type.
+	ErrOverflow = errors.New("overflow")
+	// ErrInvalidWireType is returned when a wire type value is not valid.
 	ErrInvalidWireType = errors.New("invalid wire type")
-	ErrInvalidBool     = errors.New("decoded bool is neither true nor false")
-	ErrStringNotUTF8   = errors.New("decoded string is not UTF-8")
+	// ErrInvalidBool is returned when a decoded boolean is neither 0 nor 1.
+	ErrInvalidBool = errors.New("decoded bool is neither true nor false")
+	// ErrStringNotUTF8 is returned when a decoded string is not valid UTF-8.
+	ErrStringNotUTF8 = errors.New("decoded string is not UTF-8")
 
 	_ json.Marshaler = Any{}
 )
 
 type (
+	// Int is a constraint that permits any signed integer type.
 	Int interface {
 		~int8 | ~int16 | ~int32 | ~int64
 	}
+	// Uint is a constraint that permits any unsigned integer type.
 	Uint interface {
 		~uint8 | ~uint16 | ~uint32 | ~uint64
 	}
 	integer interface{ Int | Uint }
-	Int32   interface{ ~int32 | ~uint32 }
-	Int64   interface{ ~int64 | ~uint64 }
-	Bytes   interface{ ~string | ~[]byte }
+	// Int32 is a constraint that permits int32 and uint32 types.
+	Int32 interface{ ~int32 | ~uint32 }
+	// Int64 is a constraint that permits int64 and uint64 types.
+	Int64 interface{ ~int64 | ~uint64 }
+	// Bytes is a constraint that permits string and byte slice types.
+	Bytes interface{ ~string | ~[]byte }
 
 	// Message defines a type that can be a stand-alone Canoto message.
 	Message interface {
@@ -305,6 +338,7 @@ type (
 	}
 )
 
+// IsValid returns true if the wire type is a recognized wire type.
 func (w WireType) IsValid() bool {
 	switch w {
 	case Varint, I64, Len, I32:
@@ -314,6 +348,7 @@ func (w WireType) IsValid() bool {
 	}
 }
 
+// String returns the string representation of the wire type.
 func (w WireType) String() string {
 	switch w {
 	case Varint:
@@ -329,6 +364,8 @@ func (w WireType) String() string {
 	}
 }
 
+// FixedWireType returns the wire type for fixed-size integers of this size. It
+// returns false if this size does not correspond to a fixed-size wire type.
 func (s SizeEnum) FixedWireType() (WireType, bool) {
 	switch s {
 	case SizeEnum32:
@@ -340,6 +377,8 @@ func (s SizeEnum) FixedWireType() (WireType, bool) {
 	}
 }
 
+// NumBytes returns the number of bytes for an integer of this size. It returns
+// false if this size is not valid.
 func (s SizeEnum) NumBytes() (uint64, bool) {
 	switch s {
 	case SizeEnum8:
@@ -747,6 +786,7 @@ func Marshal(s *Spec, a Any) ([]byte, error) {
 	return w.B, nil
 }
 
+// MarshalJSON implements the [json.Marshaler] interface.
 func (a Any) MarshalJSON() ([]byte, error) {
 	var sb strings.Builder
 	sb.WriteString("{")
