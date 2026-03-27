@@ -1,4 +1,4 @@
-//go:generate canoto --proto $GOFILE
+//go:generate go run github.com/StephenButtolph/canoto/canoto --proto $GOFILE
 //go:generate buf generate
 
 package examples

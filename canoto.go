@@ -1,4 +1,4 @@
-//go:generate canoto --internal $GOFILE
+//go:generate go run github.com/StephenButtolph/canoto/canoto --internal $GOFILE
 
 // Canoto provides common functionality required for reading and writing the
 // canoto format.

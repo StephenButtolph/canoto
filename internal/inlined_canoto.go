@@ -1,4 +1,4 @@
-//go:generate canoto --library=./ --import=github.com/StephenButtolph/canoto/internal/canoto $GOFILE
+//go:generate go run github.com/StephenButtolph/canoto/canoto --library=./ --import=github.com/StephenButtolph/canoto/internal/canoto $GOFILE
 
 package examples
 

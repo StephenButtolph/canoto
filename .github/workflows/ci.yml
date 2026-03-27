@@ -63,8 +63,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           version: "1.59.0"
       - shell: bash
-        run: go install ./canoto
-      - shell: bash
         run: go generate ./...
       - shell: bash
         run: .github/workflows/check-clean-branch.sh
