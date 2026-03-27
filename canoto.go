@@ -1268,28 +1268,30 @@ func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 }
 
 func (f *FieldType) marshal(w Writer, af *AnyField, specs []*Spec) (Writer, error) {
+	var marshal func(f *FieldType, w Writer, af *AnyField, specs []*Spec) (Writer, error)
 	switch f.CachedWhichOneOfType() {
 	case FieldTypeInt:
-		return f.marshalInt(w, af.Value, specs)
+		marshal = (*FieldType).marshalInt
 	case FieldTypeUint:
-		return f.marshalUint(w, af.Value, specs)
+		marshal = (*FieldType).marshalUint
 	case FieldTypeFixedInt:
-		return f.marshalFixedInt(w, af.Value, specs)
+		marshal = (*FieldType).marshalFixedInt
 	case FieldTypeFixedUint:
-		return f.marshalFixedUint(w, af.Value, specs)
+		marshal = (*FieldType).marshalFixedUint
 	case FieldTypeBool:
-		return f.marshalBool(w, af.Value, specs)
+		marshal = (*FieldType).marshalBool
 	case FieldTypeString:
-		return f.marshalString(w, af.Value, specs)
+		marshal = (*FieldType).marshalString
 	case FieldTypeBytes, FieldTypeFixedBytes:
-		return f.marshalBytes(w, af.Value, specs)
+		marshal = (*FieldType).marshalBytes
 	case FieldTypeRecursive:
-		return f.marshalRecursive(w, af, specs)
+		marshal = (*FieldType).marshalRecursive
 	case FieldTypeMessage:
-		return f.marshalSpec(w, af, specs)
+		marshal = (*FieldType).marshalSpec
 	default:
 		return Writer{}, ErrUnknownFieldType
 	}
+	return marshal(f, w, af, specs)
 }
 
 func (f *FieldType) unmarshalInt(r *Reader, _ []*Spec) (any, error) {
@@ -1313,7 +1315,7 @@ func (f *FieldType) unmarshalInt(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalInt(w Writer, value any, _ []*Spec) (Writer, error) {
+func (f *FieldType) marshalInt(w Writer, af *AnyField, _ []*Spec) (Writer, error) {
 	var (
 		minimum int64
 		maximum int64
@@ -1333,7 +1335,7 @@ func (f *FieldType) marshalInt(w Writer, value any, _ []*Spec) (Writer, error) {
 	return marshalPacked(
 		f,
 		w,
-		value,
+		af.Value,
 		SizeInt[int64],
 		func(w Writer, value int64) (Writer, error) {
 			if value < minimum || value > maximum {
@@ -1366,7 +1368,7 @@ func (f *FieldType) unmarshalUint(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalUint(w Writer, value any, _ []*Spec) (Writer, error) {
+func (f *FieldType) marshalUint(w Writer, af *AnyField, _ []*Spec) (Writer, error) {
 	var maximum uint64
 	switch f.TypeUint {
 	case SizeEnum8:
@@ -1383,7 +1385,7 @@ func (f *FieldType) marshalUint(w Writer, value any, _ []*Spec) (Writer, error) 
 	return marshalPacked(
 		f,
 		w,
-		value,
+		af.Value,
 		SizeUint[uint64],
 		func(w Writer, value uint64) (Writer, error) {
 			if value > maximum {
@@ -1421,7 +1423,7 @@ func (f *FieldType) unmarshalFixedInt(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalFixedInt(w Writer, value any, _ []*Spec) (Writer, error) {
+func (f *FieldType) marshalFixedInt(w Writer, af *AnyField, _ []*Spec) (Writer, error) {
 	var (
 		elementSize uint64
 		write       func(w Writer, value int64) (Writer, error)
@@ -1448,7 +1450,7 @@ func (f *FieldType) marshalFixedInt(w Writer, value any, _ []*Spec) (Writer, err
 	return marshalPacked(
 		f,
 		w,
-		value,
+		af.Value,
 		func(int64) uint64 { return elementSize },
 		write,
 	)
@@ -1480,7 +1482,7 @@ func (f *FieldType) unmarshalFixedUint(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalFixedUint(w Writer, value any, _ []*Spec) (Writer, error) {
+func (f *FieldType) marshalFixedUint(w Writer, af *AnyField, _ []*Spec) (Writer, error) {
 	var (
 		elementSize uint64
 		write       func(w Writer, value uint64) (Writer, error)
@@ -1507,7 +1509,7 @@ func (f *FieldType) marshalFixedUint(w Writer, value any, _ []*Spec) (Writer, er
 	return marshalPacked(
 		f,
 		w,
-		value,
+		af.Value,
 		func(uint64) uint64 { return elementSize },
 		write,
 	)
@@ -1526,11 +1528,11 @@ func (f *FieldType) unmarshalBool(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalBool(w Writer, value any, _ []*Spec) (Writer, error) {
+func (f *FieldType) marshalBool(w Writer, af *AnyField, _ []*Spec) (Writer, error) {
 	return marshalPacked(
 		f,
 		w,
-		value,
+		af.Value,
 		func(bool) uint64 { return SizeBool },
 		func(w Writer, value bool) (Writer, error) {
 			AppendBool(&w, value)
@@ -1552,11 +1554,11 @@ func (f *FieldType) unmarshalString(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalString(w Writer, value any, _ []*Spec) (Writer, error) {
+func (f *FieldType) marshalString(w Writer, af *AnyField, _ []*Spec) (Writer, error) {
 	return marshalUnpacked(
 		f,
 		w,
-		value,
+		af.Value,
 		func(w Writer, value string) (Writer, error) {
 			AppendBytes(&w, value)
 			return w, nil
@@ -1574,11 +1576,11 @@ func (f *FieldType) unmarshalBytes(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalBytes(w Writer, value any, _ []*Spec) (Writer, error) {
+func (f *FieldType) marshalBytes(w Writer, af *AnyField, _ []*Spec) (Writer, error) {
 	return marshalUnpacked(
 		f,
 		w,
-		value,
+		af.Value,
 		func(w Writer, value []byte) (Writer, error) {
 			AppendBytes(&w, value)
 			return w, nil
