@@ -1680,7 +1680,10 @@ func (f *FieldType) unmarshalMessage(r *Reader, spec *Spec, specs []*Spec) (any,
 			if err != nil {
 				return nil, false, err
 			}
-			a, err := spec.unmarshal(&Reader{B: innerBytes}, specs)
+			remainingBytes := r.B
+			r.B = innerBytes
+			a, err := spec.unmarshal(r, specs)
+			r.B = remainingBytes
 			return &a, false, err
 		})
 	}
@@ -1688,7 +1691,10 @@ func (f *FieldType) unmarshalMessage(r *Reader, spec *Spec, specs []*Spec) (any,
 		if len(msgBytes) == 0 {
 			return Any{}, !f.Pointer, nil
 		}
-		a, err := spec.unmarshal(&Reader{B: msgBytes}, specs)
+		remainingBytes := r.B
+		r.B = msgBytes
+		a, err := spec.unmarshal(r, specs)
+		r.B = remainingBytes
 		return a, false, err
 	})
 }
