@@ -1,4 +1,4 @@
 // Package generate provides code generation for canoto serialization. It parses
-// Go source files for canoto struct tags and generates marshaling,
-// unmarshaling, and optionally proto file outputs.
+// Go source files for canoto struct tags and generates marshaling and
+// unmarshaling code, proto file definitions, and standalone library copies.
 package generate

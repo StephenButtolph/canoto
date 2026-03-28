@@ -235,7 +235,7 @@ type (
 	// FieldPointer is a constraint that requires *T to implement [Field].
 	//
 	// This must be used as a type parameter when defining a generic struct
-	// that contains a [Field] value. See the README for usage examples.
+	// that contains a [Field] value.
 	FieldPointer[T any] interface {
 		Field
 		*T
