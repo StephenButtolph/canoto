@@ -173,11 +173,11 @@ var (
 )
 
 type (
-	// Int is a constraint that permits any signed integer type.
+	// Int is a constraint that permits any sized signed integer type.
 	Int interface {
 		~int8 | ~int16 | ~int32 | ~int64
 	}
-	// Uint is a constraint that permits any unsigned integer type.
+	// Uint is a constraint that permits any sized unsigned integer type.
 	Uint interface {
 		~uint8 | ~uint16 | ~uint32 | ~uint64
 	}
