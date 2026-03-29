@@ -253,15 +253,16 @@ type OneOf struct {
 
 For every OneOf group, the generated code includes a helper method that lets you quickly determine which field was populated.
 
-In the example above, the method `CachedWhichOneOfType` will be generated.
+In the example above, the method `CachedWhichOneOfType` will be generated, and it returns the typed enum `OneOf__Type`.
 
 All OneOf accessor methods follow the naming pattern:
 ```
 CachedWhichOneOf<GroupName>
 ```
 
-After the cache has been initialized by calling one of `UnmarshalCanoto`, `UnmarshalCanotoFrom`, or `CalculateCanotoCache`, the method returns the field number of the populated field.
-If no field in the OneOf group was set, the method returns `0`.
+After the cache has been initialized by calling one of `UnmarshalCanoto`, `UnmarshalCanotoFrom`, or `CalculateCanotoCache`, the method returns the populated field's enum value.
+If no field in the OneOf group was set, the method returns `OneOf__Type__Unset`.
+The enum values match the underlying field numbers on the wire.
 
 ### Non-standard encoding
 

@@ -635,8 +635,8 @@ func TestScalars_Concurrent_MarshalCanoto(t *testing.T) {
 		expectedOneOfA = s.OneOf.CachedWhichOneOfA()
 		expectedOneOfB = s.OneOf.CachedWhichOneOfB()
 		actualBytes    = make(chan []byte, numRoutines)
-		actualOneOfA   = make(chan uint32, numRoutines)
-		actualOneOfB   = make(chan uint32, numRoutines)
+		actualOneOfA   = make(chan OneOf__A, numRoutines)
+		actualOneOfB   = make(chan OneOf__B, numRoutines)
 	)
 	for range numRoutines {
 		go func() {
