@@ -327,7 +327,7 @@ func makeConstants(m message) string {
 %s)
 
 `
-	return fmt.Sprintf(template, makeNumberConstants(m), makeTagConstants(m))
+	return fmt.Sprintf(template, makeNumberConstants(m), makeTagConstants(m)) + makeOneOfCaseTypes(m)
 }
 
 func makeNumberConstants(m message) string {
@@ -389,6 +389,46 @@ func makeTagConstants(m message) string {
 		tagString.WriteString(`"`)
 
 		fmt.Fprintf(&sb, template, tag, &tagString, field, wireType)
+	}
+	return sb.String()
+}
+
+func makeOneOfCaseTypes(m message) string {
+	oneOfNames := m.OneOfs()
+	if len(oneOfNames) == 0 {
+		return ""
+	}
+
+	groups := make(map[string][]field)
+	for _, f := range m.fields {
+		if f.oneOfName != "" {
+			groups[f.oneOfName] = append(groups[f.oneOfName], f)
+		}
+	}
+
+	var sb strings.Builder
+	for _, oneOf := range oneOfNames {
+		fields := groups[oneOf]
+		caseType := m.name + "__" + oneOf
+
+		maxWidth := len(caseType + "__Unset")
+		for _, f := range fields {
+			maxWidth = max(maxWidth, len(caseType+"__"+f.name))
+		}
+
+		fmt.Fprintf(&sb, "// %s identifies which field is populated in %s.\n", caseType, oneOf)
+		fmt.Fprintf(&sb, "type %s uint32\n\nconst (\n", caseType)
+		fmt.Fprintf(&sb, "\t%-*s %s = 0\n", maxWidth, caseType+"__Unset", caseType)
+		for _, f := range fields {
+			fmt.Fprintf(&sb, "\t%-*s %s = canoto__%s__%s\n",
+				maxWidth,
+				caseType+"__"+f.name,
+				caseType,
+				m.canonicalizedName,
+				f.canonicalizedName,
+			)
+		}
+		sb.WriteString(")\n\n")
 	}
 	return sb.String()
 }
@@ -1814,12 +1854,12 @@ func makeOneOfCacheAccessors(m message) string {
 // This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CalculateCanotoCache.
 //
-// If the field has not yet been cached, it will return 0.
+// If the field has not yet been cached, it will return ${structName}__${oneOf}__Unset.
 //
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
-func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() uint32 {
-	return ${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix}
+func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${structName}__${oneOf} {
+	return ${structName}__${oneOf}(${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix})
 }`
 	var (
 		sb         strings.Builder
