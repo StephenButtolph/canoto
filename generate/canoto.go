@@ -1854,12 +1854,12 @@ func makeOneOfCacheAccessors(m message) string {
 // This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CalculateCanotoCache.
 //
-// If the field has not yet been cached, it will return ${oneOfCaseType}__Unset.
+// If the field has not yet been cached, it will return ${structName}__${oneOf}__Unset.
 //
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
-func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${oneOfCaseType} {
-	return ${oneOfCaseType}(${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix})
+func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${structName}__${oneOf} {
+	return ${structName}__${oneOf}(${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix})
 }`
 	var (
 		sb         strings.Builder
@@ -1873,12 +1873,11 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${oneOfCaseType} {
 	}
 	for _, oneOf := range m.OneOfs() {
 		_ = writeTemplate(&sb, template, map[string]string{
-			"oneOf":         oneOf,
-			"structName":    m.name,
-			"generics":      generics,
-			"loadPrefix":    loadPrefix,
-			"loadSuffix":    loadSuffix,
-			"oneOfCaseType": m.name + "__" + oneOf,
+			"oneOf":      oneOf,
+			"structName": m.name,
+			"generics":   generics,
+			"loadPrefix": loadPrefix,
+			"loadSuffix": loadSuffix,
 		})
 	}
 	return sb.String()
