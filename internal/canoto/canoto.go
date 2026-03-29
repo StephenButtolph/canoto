@@ -2,8 +2,10 @@
 // versions:
 // 	canoto v0.18.1
 
-// Canoto provides common functionality required for reading and writing the
-// canoto format.
+// Package canoto implements a canonical, compact, and fast serialization format
+// that is read-compatible with Protocol Buffers. It provides both low-level
+// primitives for reading and writing the wire format and high-level interfaces
+// for marshaling and unmarshaling structured messages.
 package canoto
 
 import (
@@ -24,20 +26,24 @@ import (
 )
 
 const (
+	// Varint represents the variable-length integer wire type.
 	Varint WireType = iota
+	// I64 represents the 64-bit fixed-length wire type.
 	I64
+	// Len represents the length-delimited wire type.
 	Len
 	_ // SGROUP is deprecated and not supported
 	_ // EGROUP is deprecated and not supported
+	// I32 represents the 32-bit fixed-length wire type.
 	I32
 
-	// SizeEnum8 indicates either an int8 or uint8.
+	// SizeEnum8 indicates either an [int8] or [uint8].
 	SizeEnum8 SizeEnum = 1
-	// SizeEnum16 indicates either an int16 or uint16.
+	// SizeEnum16 indicates either an [int16] or [uint16].
 	SizeEnum16 SizeEnum = 2
-	// SizeEnum32 indicates either an int32 or uint32.
+	// SizeEnum32 indicates either an [int32] or [uint32].
 	SizeEnum32 SizeEnum = 3
-	// SizeEnum64 indicates either an int64 or uint64.
+	// SizeEnum64 indicates either an [int64] or [uint64].
 	SizeEnum64 SizeEnum = 4
 
 	// SizeFint32 is the size of a 32-bit fixed size integer in bytes.
@@ -47,29 +53,29 @@ const (
 	// SizeBool is the size of a boolean in bytes.
 	SizeBool = 1
 
-	// FieldTypeInt is the field number of an int in the FieldType OneOf.
+	// FieldTypeInt is the field number of an int in the [FieldType] OneOf.
 	FieldTypeInt = canoto__FieldType__TypeInt
-	// FieldTypeUint is the field number of a uint in the FieldType OneOf.
+	// FieldTypeUint is the field number of a uint in the [FieldType] OneOf.
 	FieldTypeUint = canoto__FieldType__TypeUint
-	// FieldTypeFixedInt is the field number of a fixed int in the FieldType
+	// FieldTypeFixedInt is the field number of a fixed int in the [FieldType]
 	// OneOf.
 	FieldTypeFixedInt = canoto__FieldType__TypeFixedInt
-	// FieldTypeFixedUint is the field number of a fixed uint in the FieldType
+	// FieldTypeFixedUint is the field number of a fixed uint in the [FieldType]
 	// OneOf.
 	FieldTypeFixedUint = canoto__FieldType__TypeFixedUint
-	// FieldTypeBool is the field number of a bool in the FieldType OneOf.
+	// FieldTypeBool is the field number of a bool in the [FieldType] OneOf.
 	FieldTypeBool = canoto__FieldType__TypeBool
-	// FieldTypeString is the field number of a string in the FieldType OneOf.
+	// FieldTypeString is the field number of a string in the [FieldType] OneOf.
 	FieldTypeString = canoto__FieldType__TypeString
-	// FieldTypeBytes is the field number of bytes in the FieldType OneOf.
+	// FieldTypeBytes is the field number of bytes in the [FieldType] OneOf.
 	FieldTypeBytes = canoto__FieldType__TypeBytes
-	// FieldTypeFixedBytes is the field number of fixed bytes in the FieldType
+	// FieldTypeFixedBytes is the field number of fixed bytes in the [FieldType]
 	// OneOf.
 	FieldTypeFixedBytes = canoto__FieldType__TypeFixedBytes
-	// FieldTypeMessage is the field number of a message in the FieldType OneOf.
+	// FieldTypeMessage is the field number of a message in the [FieldType] OneOf.
 	FieldTypeMessage = canoto__FieldType__TypeMessage
 	// FieldTypeRecursive is the field number of a recursive type in the
-	// FieldType OneOf.
+	// [FieldType] OneOf.
 	FieldTypeRecursive = canoto__FieldType__TypeRecursive
 
 	// MaxFieldNumber is the maximum field number allowed to be used in a Tag.
@@ -83,7 +89,7 @@ const (
 	// a breaking change.
 	VersionCompatibility = 1
 
-	// EmptyBytes is the length prefixed encoding of empty bytes.
+	// EmptyBytes is the length-prefixed encoding of empty bytes.
 	EmptyBytes = "\x00" // AppendBytes(&Writer{}, []byte{}).B
 
 	// PointerPresenceTag is the tag used to encode the presence of a non-nil
@@ -104,60 +110,86 @@ const (
 )
 
 var (
-	// Code is the actual golang code for this library; including this comment.
+	// Code is the source of this file, embedded as a string. It can be used
+	// during code generation to produce standalone copies of this library.
 	//
-	// This variable is not used internally, so the compiler is smart enough to
-	// omit this value from the binary if the user of this library does not
-	// utilize this variable; at least at the time of writing.
-	//
-	// This can be used during codegen to generate this library.
+	// This variable is not referenced internally, so the compiler omits it
+	// from the binary if unused.
 	//
 	//go:embed canoto.go
 	Code string
 
-	// GeneratedCode is the actual auto-generated golang code for this library.
+	// GeneratedCode is the source of the auto-generated canoto.canoto.go
+	// file, embedded as a string. It can be used during code generation to
+	// produce standalone copies of this library.
 	//
-	// This variable is not used internally, so the compiler is smart enough to
-	// omit this value from the binary if the user of this library does not
-	// utilize this variable; at least at the time of writing.
-	//
-	// This can be used during codegen to generate this library.
+	// This variable is not referenced internally, so the compiler omits it
+	// from the binary if unused.
 	//
 	//go:embed canoto.canoto.go
 	GeneratedCode string
 
-	ErrInvalidFieldOrder  = errors.New("invalid field order")
+	// ErrInvalidFieldOrder is returned when fields are not encoded in ascending
+	// field number order.
+	ErrInvalidFieldOrder = errors.New("invalid field order")
+	// ErrUnexpectedWireType is returned when a field's wire type does not match
+	// the expected wire type.
 	ErrUnexpectedWireType = errors.New("unexpected wire type")
-	ErrDuplicateOneOf     = errors.New("duplicate oneof field")
-	ErrInvalidLength      = errors.New("decoded length is invalid")
-	ErrZeroValue          = errors.New("zero value")
-	ErrUnknownField       = errors.New("unknown field")
-	ErrPaddedZeroes       = errors.New("padded zeroes")
+	// ErrDuplicateOneOf is returned when multiple fields in the same OneOf
+	// group are set.
+	ErrDuplicateOneOf = errors.New("duplicate oneof field")
+	// ErrInvalidLength is returned when a decoded length is invalid.
+	ErrInvalidLength = errors.New("decoded length is invalid")
+	// ErrZeroValue is returned when a field contains a zero value, which is not
+	// permitted in canoto encoding.
+	ErrZeroValue = errors.New("zero value")
+	// ErrUnknownField is returned when a field number is not recognized by the
+	// message specification.
+	ErrUnknownField = errors.New("unknown field")
+	// ErrPaddedZeroes is returned when a varint contains unnecessary leading
+	// zero bytes, violating canonical encoding.
+	ErrPaddedZeroes = errors.New("padded zeroes")
 
+	// ErrInvalidRecursiveDepth is returned when a recursive type references a
+	// depth that exceeds the available specification stack.
 	ErrInvalidRecursiveDepth = errors.New("invalid recursive depth")
-	ErrUnknownFieldType      = errors.New("unknown field type")
-	ErrUnexpectedFieldSize   = errors.New("unexpected field size")
-	ErrInvalidFieldType      = errors.New("invalid field type")
+	// ErrUnknownFieldType is returned when a field type is not recognized.
+	ErrUnknownFieldType = errors.New("unknown field type")
+	// ErrUnexpectedFieldSize is returned when a field's size does not match the
+	// expected size for its type.
+	ErrUnexpectedFieldSize = errors.New("unexpected field size")
+	// ErrInvalidFieldType is returned when the value provided for a field does
+	// not match the expected Go type.
+	ErrInvalidFieldType = errors.New("invalid field type")
 
-	ErrOverflow        = errors.New("overflow")
+	// ErrOverflow is returned when a decoded integer overflows the target type.
+	ErrOverflow = errors.New("overflow")
+	// ErrInvalidWireType is returned when a wire type value is not valid.
 	ErrInvalidWireType = errors.New("invalid wire type")
-	ErrInvalidBool     = errors.New("decoded bool is neither true nor false")
-	ErrStringNotUTF8   = errors.New("decoded string is not UTF-8")
+	// ErrInvalidBool is returned when a decoded boolean is neither 0 nor 1.
+	ErrInvalidBool = errors.New("decoded bool is neither true nor false")
+	// ErrStringNotUTF8 is returned when a decoded string is not valid UTF-8.
+	ErrStringNotUTF8 = errors.New("decoded string is not UTF-8")
 
 	_ json.Marshaler = Any{}
 )
 
 type (
+	// Int is a constraint that permits any sized signed integer type.
 	Int interface {
 		~int8 | ~int16 | ~int32 | ~int64
 	}
+	// Uint is a constraint that permits any sized unsigned integer type.
 	Uint interface {
 		~uint8 | ~uint16 | ~uint32 | ~uint64
 	}
 	integer interface{ Int | Uint }
-	Int32   interface{ ~int32 | ~uint32 }
-	Int64   interface{ ~int64 | ~uint64 }
-	Bytes   interface{ ~string | ~[]byte }
+	// Int32 is a constraint that permits [int32] and [uint32] types.
+	Int32 interface{ ~int32 | ~uint32 }
+	// Int64 is a constraint that permits [int64] and [uint64] types.
+	Int64 interface{ ~int64 | ~uint64 }
+	// Bytes is a constraint that permits [string] and byte slice types.
+	Bytes interface{ ~string | ~[]byte }
 
 	// Message defines a type that can be a stand-alone Canoto message.
 	Message interface {
@@ -171,7 +203,7 @@ type (
 		UnmarshalCanoto(bytes []byte) error
 	}
 
-	// Field defines a type that can be included inside of a Canoto message.
+	// Field defines a type that can be included in a Canoto message.
 	Field interface {
 		// CanotoSpec returns the specification of this canoto message.
 		//
@@ -202,9 +234,10 @@ type (
 		ValidCanoto() bool
 	}
 
-	// FieldPointer is a pointer to a concrete Field value T.
+	// FieldPointer is a constraint that requires *T to implement [Field].
 	//
-	// This type must be used when implementing a value for a generic Field.
+	// This must be used as a type parameter when defining a generic struct
+	// that contains a [Field] value.
 	FieldPointer[T any] interface {
 		Field
 		*T
@@ -220,7 +253,11 @@ type (
 	// The functions in this package are not methods on the Reader type to
 	// enable the usage of generics.
 	Reader struct {
-		B      []byte
+		// B is the remaining bytes to be read.
+		B []byte
+		// Unsafe, when true, avoids copying during unmarshaling. Decoded
+		// strings and byte slices will alias the original input buffer,
+		// which must not be modified after unmarshaling.
 		Unsafe bool
 		// Context is a user-defined value that can be used to pass additional
 		// state during the unmarshaling process.
@@ -232,6 +269,7 @@ type (
 	// The functions in this package are not methods on the Writer type to
 	// enable the usage of generics.
 	Writer struct {
+		// B is the accumulated output bytes.
 		B []byte
 	}
 
@@ -271,7 +309,7 @@ type (
 		canotoData canotoData_FieldType
 	}
 
-	// SizeEnum indicate the size of an integer type in canoto specifications.
+	// SizeEnum indicates the size of an integer type in canoto specifications.
 	SizeEnum uint8
 
 	// Any is a generic representation of a Canoto message.
@@ -305,6 +343,7 @@ type (
 	}
 )
 
+// IsValid returns true if the wire type is a recognized wire type.
 func (w WireType) IsValid() bool {
 	switch w {
 	case Varint, I64, Len, I32:
@@ -314,6 +353,7 @@ func (w WireType) IsValid() bool {
 	}
 }
 
+// String returns the string representation of the wire type.
 func (w WireType) String() string {
 	switch w {
 	case Varint:
@@ -329,6 +369,8 @@ func (w WireType) String() string {
 	}
 }
 
+// FixedWireType returns the wire type for fixed-size integers of this size. It
+// returns false if this size does not correspond to a fixed-size wire type.
 func (s SizeEnum) FixedWireType() (WireType, bool) {
 	switch s {
 	case SizeEnum32:
@@ -340,6 +382,8 @@ func (s SizeEnum) FixedWireType() (WireType, bool) {
 	}
 }
 
+// NumBytes returns the number of bytes for an integer of this size. It returns
+// false if this size is not valid.
 func (s SizeEnum) NumBytes() (uint64, bool) {
 	switch s {
 	case SizeEnum8:
@@ -355,8 +399,8 @@ func (s SizeEnum) NumBytes() (uint64, bool) {
 	}
 }
 
-// ReadPointerPresence removes the presence wrapper from a repeated pointer
-// element.
+// ReadPointerPresence unwraps a repeated pointer element by stripping the
+// tag and length prefix that encodes the presence of a non-nil pointer.
 func ReadPointerPresence(b []byte) ([]byte, error) {
 	if !HasPrefix(b, PointerPresenceTag) {
 		return nil, ErrUnknownField
@@ -380,7 +424,7 @@ func HasNext(r *Reader) bool {
 	return len(r.B) > 0
 }
 
-// Append writes unprefixed bytes to the writer.
+// Append writes raw bytes to the writer without a length prefix.
 func Append[T Bytes](w *Writer, v T) {
 	w.B = append(w.B, v...)
 }
@@ -747,6 +791,7 @@ func Marshal(s *Spec, a Any) ([]byte, error) {
 	return w.B, nil
 }
 
+// MarshalJSON implements the [json.Marshaler] interface.
 func (a Any) MarshalJSON() ([]byte, error) {
 	var sb strings.Builder
 	sb.WriteString("{")
@@ -767,7 +812,9 @@ func (a Any) MarshalJSON() ([]byte, error) {
 	return []byte(sb.String()), nil
 }
 
-// FieldTypeFromFint creates a FieldType from a fixed-length integer.
+// FieldTypeFromFint creates a [FieldType] specification for a fixed-size
+// integer field. This is primarily used by generated code to build [Spec]
+// values.
 func FieldTypeFromFint[T integer](
 	field T,
 	fieldNumber uint32,
@@ -796,7 +843,9 @@ func FieldTypeFromFint[T integer](
 	}
 }
 
-// FieldTypeFromField creates a FieldType from a field.
+// FieldTypeFromField creates a [FieldType] specification for a message or
+// custom [Field] type. This is primarily used by generated code to build [Spec]
+// values.
 func FieldTypeFromField[T Field](
 	field T,
 	fieldNumber uint32,

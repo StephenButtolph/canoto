@@ -91,7 +91,7 @@ func main() {
 	flags.String(libraryFlag, "", "Generate the canoto library in the specified directory")
 	flags.Bool(protoFlag, false, "Generate proto file")
 	flags.String(importFlag, "github.com/StephenButtolph/canoto", "Package to depend on for canoto serialization primitives")
-	flags.Bool(internalFlag, false, "Generate a file that assumes the canoto functional does not need to be imported")
+	flags.Bool(internalFlag, false, "Generate a file that assumes the canoto package does not need to be imported")
 
 	if err := cmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "command failed %v\n", err)
