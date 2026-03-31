@@ -4053,22 +4053,22 @@ const (
 	canotoTag_OneOf__A2 = "\x38" // canoto.Tag(canotoNumber_OneOf__A2, canoto.Varint)
 )
 
-// OneOf__A identifies which field is populated in A.
-type OneOf__A uint32
+// canotoOneOf_OneOf__A identifies which field is populated in A.
+type canotoOneOf_OneOf__A uint32
 
 const (
-	OneOf__A__Unset OneOf__A = 0
-	OneOf__A__A1    OneOf__A = canoto__OneOf__A1
-	OneOf__A__A2    OneOf__A = canoto__OneOf__A2
+	canotoOneOf_OneOf__A__Unset canotoOneOf_OneOf__A = 0
+	canotoOneOf_OneOf__A__A1    canotoOneOf_OneOf__A = canotoNumber_OneOf__A1
+	canotoOneOf_OneOf__A__A2    canotoOneOf_OneOf__A = canotoNumber_OneOf__A2
 )
 
-// OneOf__B identifies which field is populated in B.
-type OneOf__B uint32
+// canotoOneOf_OneOf__B identifies which field is populated in B.
+type canotoOneOf_OneOf__B uint32
 
 const (
-	OneOf__B__Unset OneOf__B = 0
-	OneOf__B__B1    OneOf__B = canoto__OneOf__B1
-	OneOf__B__B2    OneOf__B = canoto__OneOf__B2
+	canotoOneOf_OneOf__B__Unset canotoOneOf_OneOf__B = 0
+	canotoOneOf_OneOf__B__B1    canotoOneOf_OneOf__B = canotoNumber_OneOf__B1
+	canotoOneOf_OneOf__B__B2    canotoOneOf_OneOf__B = canotoNumber_OneOf__B2
 )
 
 type canotoData_OneOf struct {
@@ -4334,12 +4334,12 @@ func (c *OneOf) CachedCanotoSize() uint64 {
 // This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CalculateCanotoCache.
 //
-// If the field has not yet been cached, it will return OneOf__A__Unset.
+// If the field has not yet been cached, it will return 0.
 //
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
-func (c *OneOf) CachedWhichOneOfA() OneOf__A {
-	return OneOf__A(atomic.LoadUint32(&c.canotoData.AOneOf))
+func (c *OneOf) CachedWhichOneOfA() canotoOneOf_OneOf__A {
+	return canotoOneOf_OneOf__A(atomic.LoadUint32(&c.canotoData.AOneOf))
 }
 
 // CachedWhichOneOfB returns the previously calculated field number used
@@ -4348,12 +4348,12 @@ func (c *OneOf) CachedWhichOneOfA() OneOf__A {
 // This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CalculateCanotoCache.
 //
-// If the field has not yet been cached, it will return OneOf__B__Unset.
+// If the field has not yet been cached, it will return 0.
 //
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
-func (c *OneOf) CachedWhichOneOfB() OneOf__B {
-	return OneOf__B(atomic.LoadUint32(&c.canotoData.BOneOf))
+func (c *OneOf) CachedWhichOneOfB() canotoOneOf_OneOf__B {
+	return canotoOneOf_OneOf__B(atomic.LoadUint32(&c.canotoData.BOneOf))
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.

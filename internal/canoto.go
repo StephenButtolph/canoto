@@ -1,5 +1,4 @@
 //go:generate go run github.com/StephenButtolph/canoto/canoto --proto $GOFILE
-//go:generate buf generate
 
 package examples
 
@@ -107,7 +106,7 @@ type Embedded struct {
 }
 
 // Check for name collisions. Because we use "__" as a separator, the unescaped
-// name would conflict as canoto__A__B__C__tag.
+// name would conflict in generated identifiers like canotoNumber_A__B__C.
 //
 //nolint:stylecheck // This is checking for name collisions.
 type A struct {

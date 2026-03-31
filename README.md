@@ -180,11 +180,12 @@ Will generate the canoto library in `./internal/canoto` and will import `"github
 
 ### Custom Identifiers
 
-Three CLI flags control the naming of generated Go identifiers:
+Four CLI flags control the naming of generated Go identifiers:
 
 1. `--format-cache` (default: `canotoData_{struct}`) — the name of the generated cache struct type
 2. `--format-number` (default: `canotoNumber_{cStruct}__{cField}`) — the name of generated field number constants
 3. `--format-tag` (default: `canotoTag_{cStruct}__{cField}`) — the name of generated field tag constants
+4. `--format-oneof` (default: `canotoOneOf_{cStruct}__{cOneOf}`) — the name of generated oneof enum identifiers
 
 Each flag accepts a template string with the following variables:
 
@@ -194,16 +195,20 @@ Each flag accepts a template string with the following variables:
 | `{cStruct}` | Canonicalized struct name: `_` replaced with `_1` (e.g. `My_1Struct`) |
 | `{field}`   | Original field name                                                   |
 | `{cField}`  | Canonicalized field name: `_` replaced with `_1`                      |
+| `{oneOf}`   | Original OneOf name                                                   |
+| `{cOneOf}`  | Canonicalized OneOf name: `_` replaced with `_1`                      |
 
-`--format-cache` is struct-level and only supports `{struct}` and `{cStruct}`. The `_` → `_1` canonicalization prevents ambiguity with `__`, which can be used as a separator between struct and field names.
+`--format-cache` is struct-level and only supports `{struct}` and `{cStruct}`. `--format-oneof` is oneof-level and supports struct and oneof variables.
+
+ The `_` → `_1` canonicalization prevents ambiguity with `__`, which can be used as a separator between struct and field names.
 
 For example:
 
 ```sh
-canoto --format-cache="cache_{struct}" --format-number="fieldNum_{cStruct}__{cField}" --format-tag="fieldTag_{cStruct}__{cField}" example.go
+canoto --format-cache="cache_{struct}" --format-number="fieldNum_{cStruct}__{cField}" --format-tag="fieldTag_{cStruct}__{cField}" --format-oneof="{struct}{oneOf}" example.go
 ```
 
-For a struct `Foo` with a field `Bar`, this would generate:
+For a struct `Foo` with a OneOf `Type` and a field `Bar`, this would generate:
 
 ```go
 type cache_Foo struct { ... }
@@ -211,6 +216,13 @@ type cache_Foo struct { ... }
 const (
     fieldNum_Foo__Bar = 1
     fieldTag_Foo__Bar = "\x0a"
+)
+
+type FooType uint32
+
+const (
+    FooType__Unset FooType = 0
+    FooType__Bar   FooType = fieldNum_Foo__Bar
 )
 ```
 
@@ -289,15 +301,19 @@ type OneOf struct {
 
 For every OneOf group, the generated code includes a helper method that lets you quickly determine which field was populated.
 
-In the example above, the method `CachedWhichOneOfType` will be generated, and it returns the typed enum `OneOf__Type`.
+In the example above, the method `CachedWhichOneOfType` will be generated, and it returns a generated typed enum for the `Type` OneOf.
 
 All OneOf accessor methods follow the naming pattern:
 ```
 CachedWhichOneOf<GroupName>
 ```
 
+By default, that enum uses collision-resistant `canoto...` identifiers. If you want the enum type and its constants exported, customize `--format-oneof`.
+
+The enum's underlying values still match the generated field number constants, so exported number constants can be used in comparisons.
+
 After the cache has been initialized by calling one of `UnmarshalCanoto`, `UnmarshalCanotoFrom`, or `CalculateCanotoCache`, the method returns the populated field's enum value.
-If no field in the OneOf group was set, the method returns `OneOf__Type__Unset`.
+If no field in the OneOf group was set, the method returns `0`.
 The enum values match the underlying field numbers on the wire.
 
 ### Non-standard encoding

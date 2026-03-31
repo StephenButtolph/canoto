@@ -14,6 +14,7 @@ type message struct {
 	cacheTemplate     string
 	numberTemplate    string
 	tagTemplate       string
+	oneOfTemplate     string
 }
 
 func (m *message) OneOfs() []string {

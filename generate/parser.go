@@ -51,6 +51,7 @@ func parse(
 	cacheTemplate string,
 	numberTemplate string,
 	tagTemplate string,
+	oneOfTemplate string,
 ) (string, []message, error) {
 	var (
 		canotoImportName string
@@ -97,6 +98,7 @@ func parse(
 			cacheTemplate:     cacheTemplate,
 			numberTemplate:    numberTemplate,
 			tagTemplate:       tagTemplate,
+			oneOfTemplate:     oneOfTemplate,
 		}
 
 		genericPointers := make(map[string]int)

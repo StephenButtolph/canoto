@@ -24,6 +24,7 @@ const (
 	formatCacheFlag  = "format-cache"
 	formatNumberFlag = "format-number"
 	formatTagFlag    = "format-tag"
+	formatOneOfFlag  = "format-oneof"
 )
 
 func init() {
@@ -93,10 +94,13 @@ func main() {
 			if err != nil {
 				return err
 			}
-
+			oneOfTemplate, err := getFormat(formatOneOfFlag)
+			if err != nil {
+				return err
+			}
 			for _, arg := range args {
 				if canoto {
-					if err := generate.Canoto(arg, canotoImport, internal, cacheTemplate, numberTemplate, tagTemplate); err != nil {
+					if err := generate.Canoto(arg, canotoImport, internal, cacheTemplate, numberTemplate, tagTemplate, oneOfTemplate); err != nil {
 						return fmt.Errorf("failed to generate canoto for %q: %w", arg, err)
 					}
 				}
@@ -120,6 +124,7 @@ func main() {
 	flags.String(formatCacheFlag, "canotoData_{struct}", "Format to use when generating the canoto cache")
 	flags.String(formatNumberFlag, "canotoNumber_{cStruct}__{cField}", "Format to use when generating canoto field number constants")
 	flags.String(formatTagFlag, "canotoTag_{cStruct}__{cField}", "Format to use when generating canoto field tag constants")
+	flags.String(formatOneOfFlag, "canotoOneOf_{cStruct}__{cOneOf}", "Format to use when generating canoto oneof enum identifiers")
 
 	if err := cmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "command failed %v\n", err)

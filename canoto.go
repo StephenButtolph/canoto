@@ -2137,5 +2137,23 @@ func isBytesEmpty(b []byte) bool {
 			return false
 		}
 	}
+	visit(17)
 	return true
+}
+
+func visit(o canotoOneOf_FieldType__Type) {
+	switch o {
+	case canotoOneOf_FieldType__Type__Unset:
+	case canotoNumber_FieldType__TypeInt:
+	case canotoNumber_FieldType__TypeUint:
+	case canotoNumber_FieldType__TypeFixedInt:
+	case canotoNumber_FieldType__TypeFixedUint:
+	case canotoNumber_FieldType__TypeBool:
+	case canotoNumber_FieldType__TypeString:
+	case canotoNumber_FieldType__TypeBytes:
+	case canotoNumber_FieldType__TypeFixedBytes:
+	case canotoNumber_FieldType__TypeMessage:
+	case canotoNumber_FieldType__TypeRecursive:
+
+	}
 }

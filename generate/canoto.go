@@ -35,6 +35,7 @@ func Canoto(
 	cacheTemplate string,
 	numberTemplate string,
 	tagTemplate string,
+	oneOfTemplate string,
 ) error {
 	var outputFilePath string
 	switch {
@@ -53,7 +54,7 @@ func Canoto(
 		return err
 	}
 
-	packageName, messages, err := parse(fs, f, canotoImport, internal, cacheTemplate, numberTemplate, tagTemplate)
+	packageName, messages, err := parse(fs, f, canotoImport, internal, cacheTemplate, numberTemplate, tagTemplate, oneOfTemplate)
 	if err != nil {
 		return err
 	}
@@ -415,23 +416,23 @@ func makeOneOfCaseTypes(m message) string {
 	var sb strings.Builder
 	for _, oneOf := range oneOfNames {
 		fields := groups[oneOf]
-		caseType := m.name + "__" + oneOf
+		caseType := oneOfTypeName(m, oneOf)
+		unsetCase := oneOfUnsetName(m, oneOf)
 
-		maxWidth := len(caseType + "__Unset")
+		maxWidth := len(unsetCase)
 		for _, f := range fields {
-			maxWidth = max(maxWidth, len(caseType+"__"+f.name))
+			maxWidth = max(maxWidth, len(oneOfFieldName(m, f)))
 		}
 
 		fmt.Fprintf(&sb, "// %s identifies which field is populated in %s.\n", caseType, oneOf)
 		fmt.Fprintf(&sb, "type %s uint32\n\nconst (\n", caseType)
-		fmt.Fprintf(&sb, "\t%-*s %s = 0\n", maxWidth, caseType+"__Unset", caseType)
+		fmt.Fprintf(&sb, "\t%-*s %s = 0\n", maxWidth, unsetCase, caseType)
 		for _, f := range fields {
-			fmt.Fprintf(&sb, "\t%-*s %s = canoto__%s__%s\n",
+			fmt.Fprintf(&sb, "\t%-*s %s = %s\n",
 				maxWidth,
-				caseType+"__"+f.name,
+				oneOfFieldName(m, f),
 				caseType,
-				m.canonicalizedName,
-				f.canonicalizedName,
+				makeTemplate(m.numberTemplate, cliEnvArgs(m, f)),
 			)
 		}
 		sb.WriteString(")\n\n")
@@ -1858,12 +1859,12 @@ func makeOneOfCacheAccessors(m message) string {
 // This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CalculateCanotoCache.
 //
-// If the field has not yet been cached, it will return ${structName}__${oneOf}__Unset.
+// If the field has not yet been cached, it will return 0.
 //
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
-func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${structName}__${oneOf} {
-	return ${structName}__${oneOf}(${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix})
+func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${oneOfType} {
+	return ${oneOfType}(${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix})
 }`
 	var (
 		sb         strings.Builder
@@ -1882,6 +1883,7 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${structName}__${o
 			"generics":   generics,
 			"loadPrefix": loadPrefix,
 			"loadSuffix": loadSuffix,
+			"oneOfType":  oneOfTypeName(m, oneOf),
 		})
 	}
 	return sb.String()
@@ -2285,6 +2287,23 @@ func cliEnvArgs(m message, f field) map[string]string {
 		"field":   f.name,
 		"cField":  f.canonicalizedName,
 	}
+}
+
+func oneOfTypeName(m message, oneOf string) string {
+	return makeTemplate(m.oneOfTemplate, map[string]string{
+		"struct":  m.name,
+		"cStruct": m.canonicalizedName,
+		"oneOf":   oneOf,
+		"cOneOf":  canonicalizeName(oneOf),
+	})
+}
+
+func oneOfUnsetName(m message, oneOf string) string {
+	return fmt.Sprintf("%s__Unset", oneOfTypeName(m, oneOf))
+}
+
+func oneOfFieldName(m message, f field) string {
+	return fmt.Sprintf("%s__%s", oneOfTypeName(m, f.oneOfName), f.canonicalizedName)
 }
 
 func makeTemplate(template string, args ...map[string]string) string {
