@@ -346,8 +346,8 @@ func makeConstants(m message) string {
 %s
 %s)
 
-`
-	return fmt.Sprintf(template, makeNumberConstants(m), makeTagConstants(m)) + makeOneOfCaseTypes(m)
+%s`
+	return fmt.Sprintf(template, makeNumberConstants(m), makeTagConstants(m), makeOneOfCaseTypes(m))
 }
 
 func makeNumberConstants(m message) string {
