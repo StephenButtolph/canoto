@@ -23,12 +23,6 @@ const (
 	canotoTestExtension = ".canoto_test.go"
 
 	defaultCanotoImporter = "canoto."
-
-	// The following templates are added to the package scope. They must be
-	// correctly namespaced to prevent collisions.
-	dataTemplate   = "canotoData_${struct}"
-	numberTemplate = "canotoNumber_${cStruct}__${cField}"
-	tagTemplate    = "canotoTag_${cStruct}__${cField}"
 )
 
 var errNonGoExtension = errors.New("file must be a go file")
@@ -38,6 +32,9 @@ func Canoto(
 	inputFilePath string,
 	canotoImport string,
 	internal bool,
+	dataTemplate string,
+	numberTemplate string,
+	tagTemplate string,
 ) error {
 	var outputFilePath string
 	switch {
@@ -56,7 +53,7 @@ func Canoto(
 		return err
 	}
 
-	packageName, messages, err := parse(fs, f, canotoImport, internal)
+	packageName, messages, err := parse(fs, f, canotoImport, internal, dataTemplate, numberTemplate, tagTemplate)
 	if err != nil {
 		return err
 	}
@@ -256,7 +253,7 @@ ${marshal}	return w
 	}
 
 	return writeTemplate(w, structTemplate, map[string]string{
-		"canotoData": makeTemplate(dataTemplate, map[string]string{
+		"canotoData": makeTemplate(m.dataTemplate, map[string]string{
 			"struct":  m.name,
 			"cStruct": m.canonicalizedName,
 		}),
@@ -343,7 +340,7 @@ func makeConstants(m message) string {
 func makeNumberConstants(m message) string {
 	var largestNumberConstSize int
 	for _, f := range m.fields {
-		field := makeTemplate(numberTemplate, map[string]string{
+		field := makeTemplate(m.numberTemplate, map[string]string{
 			"struct":  m.name,
 			"cStruct": m.canonicalizedName,
 			"field":   f.name,
@@ -359,7 +356,7 @@ func makeNumberConstants(m message) string {
 		sb strings.Builder
 	)
 	for _, f := range m.fields {
-		field := makeTemplate(numberTemplate, map[string]string{
+		field := makeTemplate(m.numberTemplate, map[string]string{
 			"struct":  m.name,
 			"cStruct": m.canonicalizedName,
 			"field":   f.name,
@@ -376,7 +373,7 @@ func makeTagConstants(m message) string {
 		largestTagSize      int
 	)
 	for _, f := range m.fields {
-		tag := makeTemplate(tagTemplate, map[string]string{
+		tag := makeTemplate(m.tagTemplate, map[string]string{
 			"struct":  m.name,
 			"cStruct": m.canonicalizedName,
 			"field":   f.name,
@@ -404,8 +401,8 @@ func makeTagConstants(m message) string {
 			"field":   f.name,
 			"cField":  f.canonicalizedName,
 		}
-		field := makeTemplate(numberTemplate, args)
-		tag := makeTemplate(tagTemplate, args)
+		field := makeTemplate(m.numberTemplate, args)
+		tag := makeTemplate(m.tagTemplate, args)
 
 		var tagString strings.Builder
 		tagString.WriteString(`"`)
@@ -2135,7 +2132,7 @@ func makeMarshal(m message) string {
 				"field":   field.name,
 				"cField":  field.canonicalizedName,
 			}
-			fieldNumber := makeTemplate(numberTemplate, args)
+			fieldNumber := makeTemplate(m.numberTemplate, args)
 			fmt.Fprintf(&sb, "\tif %s == %s {\n", varName, fieldNumber)
 			_ = writeField(&sb, m, field, oneOfTmpl)
 		} else {
@@ -2147,7 +2144,7 @@ func makeMarshal(m message) string {
 					"field":   field.name,
 					"cField":  field.canonicalizedName,
 				}
-				fieldNumber := makeTemplate(numberTemplate, args)
+				fieldNumber := makeTemplate(m.numberTemplate, args)
 				fmt.Fprintf(&sb, "\tcase %s:\n", fieldNumber)
 				_ = writeField(&sb, m, field, oneOfTmpl)
 			}
@@ -2271,8 +2268,8 @@ func writeField(w io.Writer, m message, f field, t messageTemplate) error {
 		"cField":  f.canonicalizedName,
 	}
 	return writeTemplate(w, template, f.templateArgs, map[string]string{
-		"fieldNumberConst": makeTemplate(numberTemplate, args),
-		"fieldTagConst":    makeTemplate(tagTemplate, args),
+		"fieldNumberConst": makeTemplate(m.numberTemplate, args),
+		"fieldTagConst":    makeTemplate(m.tagTemplate, args),
 	})
 }
 

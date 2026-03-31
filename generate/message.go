@@ -11,6 +11,9 @@ type message struct {
 	numTypes          int
 	fields            []field
 	noCopy            bool
+	dataTemplate      string
+	numberTemplate    string
+	tagTemplate       string
 }
 
 func (m *message) OneOfs() []string {

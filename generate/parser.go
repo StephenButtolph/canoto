@@ -48,6 +48,9 @@ func parse(
 	f ast.Node,
 	canotoImport string,
 	internal bool,
+	dataTemplate string,
+	numberTemplate string,
+	tagTemplate string,
 ) (string, []message, error) {
 	var (
 		canotoImportName string
@@ -91,6 +94,9 @@ func parse(
 		message := message{
 			name:              name,
 			canonicalizedName: canonicalizeName(name),
+			dataTemplate:      dataTemplate,
+			numberTemplate:    numberTemplate,
+			tagTemplate:       tagTemplate,
 		}
 
 		genericPointers := make(map[string]int)
@@ -168,6 +174,7 @@ func parse(
 				fs,
 				message.name,
 				message.canonicalizedName,
+				numberTemplate,
 				noCopy,
 				internal,
 				genericPointers,
@@ -261,6 +268,7 @@ func parseField(
 	fs *token.FileSet,
 	structName string,
 	canonicalizedStructName string,
+	numberTemplate string,
 	noCopy bool,
 	internal bool,
 	genericTypes map[string]int,
