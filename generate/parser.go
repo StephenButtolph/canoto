@@ -357,10 +357,10 @@ func parseField(
 			}`
 		}
 		fieldNumberConst := makeTemplate(numberTemplate, map[string]string{
-			"structName":          structName,
-			"canonicalStructName": canonicalizedStructName,
-			"fieldName":           name,
-			"canonicalFieldName":  canonicalizedName,
+			"struct":  structName,
+			"cStruct": canonicalizedStructName,
+			"field":   name,
+			"cField":  canonicalizedName,
 		})
 		unmarshalOneOf = fmt.Sprintf(unmarshalOneOfTemplate,
 			oneOfName,

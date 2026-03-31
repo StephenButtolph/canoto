@@ -26,9 +26,9 @@ const (
 
 	// The following templates are added to the package scope. They must be
 	// correctly namespaced to prevent collisions.
-	dataTemplate   = "canotoData_${structName}"
-	numberTemplate = "canotoNumber_${canonicalStructName}__${canonicalFieldName}"
-	tagTemplate    = "canotoTag_${canonicalStructName}__${canonicalFieldName}"
+	dataTemplate   = "canotoData_${struct}"
+	numberTemplate = "canotoNumber_${cStruct}__${cField}"
+	tagTemplate    = "canotoTag_${cStruct}__${cField}"
 )
 
 var errNonGoExtension = errors.New("file must be a go file")
@@ -257,8 +257,8 @@ ${marshal}	return w
 
 	return writeTemplate(w, structTemplate, map[string]string{
 		"canotoData": makeTemplate(dataTemplate, map[string]string{
-			"structName":          m.name,
-			"canonicalStructName": m.canonicalizedName,
+			"struct":  m.name,
+			"cStruct": m.canonicalizedName,
 		}),
 		"typesDecl":           typesDecl,
 		"appendTypes":         appendTypes,
@@ -344,10 +344,10 @@ func makeNumberConstants(m message) string {
 	var largestNumberConstSize int
 	for _, f := range m.fields {
 		field := makeTemplate(numberTemplate, map[string]string{
-			"structName":          m.name,
-			"canonicalStructName": m.canonicalizedName,
-			"fieldName":           f.name,
-			"canonicalFieldName":  f.canonicalizedName,
+			"struct":  m.name,
+			"cStruct": m.canonicalizedName,
+			"field":   f.name,
+			"cField":  f.canonicalizedName,
 		})
 		largestNumberConstSize = max(largestNumberConstSize, len(field))
 	}
@@ -360,10 +360,10 @@ func makeNumberConstants(m message) string {
 	)
 	for _, f := range m.fields {
 		field := makeTemplate(numberTemplate, map[string]string{
-			"structName":          m.name,
-			"canonicalStructName": m.canonicalizedName,
-			"fieldName":           f.name,
-			"canonicalFieldName":  f.canonicalizedName,
+			"struct":  m.name,
+			"cStruct": m.canonicalizedName,
+			"field":   f.name,
+			"cField":  f.canonicalizedName,
 		})
 		fmt.Fprintf(&sb, template, field, f.fieldNumber)
 	}
@@ -377,10 +377,10 @@ func makeTagConstants(m message) string {
 	)
 	for _, f := range m.fields {
 		tag := makeTemplate(tagTemplate, map[string]string{
-			"structName":          m.name,
-			"canonicalStructName": m.canonicalizedName,
-			"fieldName":           f.name,
-			"canonicalFieldName":  f.canonicalizedName,
+			"struct":  m.name,
+			"cStruct": m.canonicalizedName,
+			"field":   f.name,
+			"cField":  f.canonicalizedName,
 		})
 		largestTagConstSize = max(largestTagConstSize, len(tag))
 
@@ -399,10 +399,10 @@ func makeTagConstants(m message) string {
 	)
 	for _, f := range m.fields {
 		args := map[string]string{
-			"structName":          m.name,
-			"canonicalStructName": m.canonicalizedName,
-			"fieldName":           f.name,
-			"canonicalFieldName":  f.canonicalizedName,
+			"struct":  m.name,
+			"cStruct": m.canonicalizedName,
+			"field":   f.name,
+			"cField":  f.canonicalizedName,
 		}
 		field := makeTemplate(numberTemplate, args)
 		tag := makeTemplate(tagTemplate, args)
@@ -2130,10 +2130,10 @@ func makeMarshal(m message) string {
 		if len(currentOneOfFields) == 1 {
 			field := currentOneOfFields[0]
 			args := map[string]string{
-				"structName":          m.name,
-				"canonicalStructName": m.canonicalizedName,
-				"fieldName":           field.name,
-				"canonicalFieldName":  field.canonicalizedName,
+				"struct":  m.name,
+				"cStruct": m.canonicalizedName,
+				"field":   field.name,
+				"cField":  field.canonicalizedName,
 			}
 			fieldNumber := makeTemplate(numberTemplate, args)
 			fmt.Fprintf(&sb, "\tif %s == %s {\n", varName, fieldNumber)
@@ -2142,10 +2142,10 @@ func makeMarshal(m message) string {
 			fmt.Fprintf(&sb, "\tswitch %s {\n", varName)
 			for _, field := range currentOneOfFields {
 				args := map[string]string{
-					"structName":          m.name,
-					"canonicalStructName": m.canonicalizedName,
-					"fieldName":           field.name,
-					"canonicalFieldName":  field.canonicalizedName,
+					"struct":  m.name,
+					"cStruct": m.canonicalizedName,
+					"field":   field.name,
+					"cField":  field.canonicalizedName,
 				}
 				fieldNumber := makeTemplate(numberTemplate, args)
 				fmt.Fprintf(&sb, "\tcase %s:\n", fieldNumber)
@@ -2265,10 +2265,10 @@ func writeField(w io.Writer, m message, f field, t messageTemplate) error {
 	}
 
 	args := map[string]string{
-		"structName":          m.name,
-		"canonicalStructName": m.canonicalizedName,
-		"fieldName":           f.name,
-		"canonicalFieldName":  f.canonicalizedName,
+		"struct":  m.name,
+		"cStruct": m.canonicalizedName,
+		"field":   f.name,
+		"cField":  f.canonicalizedName,
 	}
 	return writeTemplate(w, template, f.templateArgs, map[string]string{
 		"fieldNumberConst": makeTemplate(numberTemplate, args),
