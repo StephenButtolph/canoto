@@ -3051,9 +3051,9 @@ func (c *Embedded) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 }
 
 const (
-	canotoNumber_A__B_11_11C = 1
+	canotoNumber_A__B_1_1C = 1
 
-	canotoTag_A__B_11_11C = "\x08" // canoto.Tag(canotoNumber_A__B_11_11C, canoto.Varint)
+	canotoTag_A__B_1_1C = "\x08" // canoto.Tag(canotoNumber_A__B_1_1C, canoto.Varint)
 )
 
 type canotoData_A struct {
@@ -3067,7 +3067,7 @@ func (*A) CanotoSpec(...reflect.Type) *canoto.Spec {
 		Name: "A",
 		Fields: []canoto.FieldType{
 			{
-				FieldNumber: canotoNumber_A__B_11_11C,
+				FieldNumber: canotoNumber_A__B_1_1C,
 				Name:        "B__C",
 				OneOf:       "",
 				TypeInt:     canoto.SizeOf(zero.B__C),
@@ -3110,7 +3110,7 @@ func (c *A) UnmarshalCanotoFrom(r canoto.Reader) error {
 		}
 
 		switch field {
-		case canotoNumber_A__B_11_11C:
+		case canotoNumber_A__B_1_1C:
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
@@ -3148,7 +3148,7 @@ func (c *A) ValidCanoto() bool {
 func (c *A) CalculateCanotoCache() {
 	var size uint64
 	if !canoto.IsZero(c.B__C) {
-		size += uint64(len(canotoTag_A__B_11_11C)) + canoto.SizeInt(c.B__C)
+		size += uint64(len(canotoTag_A__B_1_1C)) + canoto.SizeInt(c.B__C)
 	}
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
@@ -3189,7 +3189,7 @@ func (c *A) MarshalCanoto() []byte {
 // It is not safe to copy this struct concurrently.
 func (c *A) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.B__C) {
-		canoto.Append(&w, canotoTag_A__B_11_11C)
+		canoto.Append(&w, canotoTag_A__B_1_1C)
 		canoto.AppendInt(&w, c.B__C)
 	}
 	return w

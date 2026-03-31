@@ -2316,7 +2316,7 @@ func oneOfEnv(m message, oneOf string) map[string]string {
 func fieldEnv(m message, f field) map[string]string {
 	env := oneOfEnv(m, f.oneOfName)
 	env["field"] = f.name
-	env["cField"] = canonicalizeName(f.canonicalizedName)
+	env["cField"] = f.canonicalizedName
 	return env
 }
 
