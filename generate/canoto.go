@@ -340,12 +340,7 @@ func makeConstants(m message) string {
 func makeNumberConstants(m message) string {
 	var largestNumberConstSize int
 	for _, f := range m.fields {
-		field := makeTemplate(m.numberTemplate, map[string]string{
-			"struct":  m.name,
-			"cStruct": m.canonicalizedName,
-			"field":   f.name,
-			"cField":  f.canonicalizedName,
-		})
+		field := makeTemplate(m.numberTemplate, cliEnvArgs(m, f))
 		largestNumberConstSize = max(largestNumberConstSize, len(field))
 	}
 
@@ -356,12 +351,7 @@ func makeNumberConstants(m message) string {
 		sb strings.Builder
 	)
 	for _, f := range m.fields {
-		field := makeTemplate(m.numberTemplate, map[string]string{
-			"struct":  m.name,
-			"cStruct": m.canonicalizedName,
-			"field":   f.name,
-			"cField":  f.canonicalizedName,
-		})
+		field := makeTemplate(m.numberTemplate, cliEnvArgs(m, f))
 		fmt.Fprintf(&sb, template, field, f.fieldNumber)
 	}
 	return sb.String()
@@ -373,12 +363,7 @@ func makeTagConstants(m message) string {
 		largestTagSize      int
 	)
 	for _, f := range m.fields {
-		tag := makeTemplate(m.tagTemplate, map[string]string{
-			"struct":  m.name,
-			"cStruct": m.canonicalizedName,
-			"field":   f.name,
-			"cField":  f.canonicalizedName,
-		})
+		tag := makeTemplate(m.tagTemplate, cliEnvArgs(m, f))
 		largestTagConstSize = max(largestTagConstSize, len(tag))
 
 		wireType := f.canotoType.WireType()
@@ -395,12 +380,7 @@ func makeTagConstants(m message) string {
 		sb strings.Builder
 	)
 	for _, f := range m.fields {
-		args := map[string]string{
-			"struct":  m.name,
-			"cStruct": m.canonicalizedName,
-			"field":   f.name,
-			"cField":  f.canonicalizedName,
-		}
+		args := cliEnvArgs(m, f)
 		field := makeTemplate(m.numberTemplate, args)
 		tag := makeTemplate(m.tagTemplate, args)
 
@@ -2126,24 +2106,14 @@ func makeMarshal(m message) string {
 
 		if len(currentOneOfFields) == 1 {
 			field := currentOneOfFields[0]
-			args := map[string]string{
-				"struct":  m.name,
-				"cStruct": m.canonicalizedName,
-				"field":   field.name,
-				"cField":  field.canonicalizedName,
-			}
+			args := cliEnvArgs(m, field)
 			fieldNumber := makeTemplate(m.numberTemplate, args)
 			fmt.Fprintf(&sb, "\tif %s == %s {\n", varName, fieldNumber)
 			_ = writeField(&sb, m, field, oneOfTmpl)
 		} else {
 			fmt.Fprintf(&sb, "\tswitch %s {\n", varName)
 			for _, field := range currentOneOfFields {
-				args := map[string]string{
-					"struct":  m.name,
-					"cStruct": m.canonicalizedName,
-					"field":   field.name,
-					"cField":  field.canonicalizedName,
-				}
+				args := cliEnvArgs(m, field)
 				fieldNumber := makeTemplate(m.numberTemplate, args)
 				fmt.Fprintf(&sb, "\tcase %s:\n", fieldNumber)
 				_ = writeField(&sb, m, field, oneOfTmpl)
@@ -2261,16 +2231,20 @@ func writeField(w io.Writer, m message, f field, t messageTemplate) error {
 		template = t.pointers.fixedRepeated
 	}
 
-	args := map[string]string{
+	args := cliEnvArgs(m, f)
+	return writeTemplate(w, template, f.templateArgs, map[string]string{
+		"fieldNumberConst": makeTemplate(m.numberTemplate, args),
+		"fieldTagConst":    makeTemplate(m.tagTemplate, args),
+	})
+}
+
+func cliEnvArgs(m message, f field) map[string]string {
+	return map[string]string{
 		"struct":  m.name,
 		"cStruct": m.canonicalizedName,
 		"field":   f.name,
 		"cField":  f.canonicalizedName,
 	}
-	return writeTemplate(w, template, f.templateArgs, map[string]string{
-		"fieldNumberConst": makeTemplate(m.numberTemplate, args),
-		"fieldTagConst":    makeTemplate(m.tagTemplate, args),
-	})
 }
 
 func makeTemplate(template string, args ...map[string]string) string {
