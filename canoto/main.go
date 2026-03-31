@@ -21,10 +21,12 @@ const (
 	importFlag   = "import"
 	internalFlag = "internal"
 
-	formatCacheFlag  = "format-cache"
-	formatNumberFlag = "format-number"
-	formatTagFlag    = "format-tag"
-	formatOneOfFlag  = "format-oneof"
+	formatCacheFlag      = "format-cache"
+	formatNumberFlag     = "format-number"
+	formatTagFlag        = "format-tag"
+	formatOneOfTypeFlag  = "format-oneof-type"
+	formatOneOfUnsetFlag = "format-oneof-unset"
+	formatOneOfFieldFlag = "format-oneof-field"
 )
 
 func init() {
@@ -94,14 +96,22 @@ func main() {
 			if err != nil {
 				return err
 			}
-			oneOfTemplate, err := getFormat(formatOneOfFlag)
+			oneOfTypeTemplate, err := getFormat(formatOneOfTypeFlag)
+			if err != nil {
+				return err
+			}
+			oneOfUnsetTemplate, err := getFormat(formatOneOfUnsetFlag)
+			if err != nil {
+				return err
+			}
+			oneOfFieldTemplate, err := getFormat(formatOneOfFieldFlag)
 			if err != nil {
 				return err
 			}
 
 			for _, arg := range args {
 				if canoto {
-					if err := generate.Canoto(arg, canotoImport, internal, cacheTemplate, numberTemplate, tagTemplate, oneOfTemplate); err != nil {
+					if err := generate.Canoto(arg, canotoImport, internal, cacheTemplate, numberTemplate, tagTemplate, oneOfTypeTemplate, oneOfUnsetTemplate, oneOfFieldTemplate); err != nil {
 						return fmt.Errorf("failed to generate canoto for %q: %w", arg, err)
 					}
 				}
@@ -125,7 +135,9 @@ func main() {
 	flags.String(formatCacheFlag, "canotoData_{struct}", "Format to use when generating the canoto cache")
 	flags.String(formatNumberFlag, "canotoNumber_{cStruct}__{cField}", "Format to use when generating canoto field number constants")
 	flags.String(formatTagFlag, "canotoTag_{cStruct}__{cField}", "Format to use when generating canoto field tag constants")
-	flags.String(formatOneOfFlag, "canotoOneOf_{cStruct}__{cOneOf}", "Format to use when generating canoto oneof enum identifiers")
+	flags.String(formatOneOfTypeFlag, "canotoOneOfType_{cStruct}__{cOneOf}", "Format to use when generating canoto oneOf types")
+	flags.String(formatOneOfUnsetFlag, "canotoOneOfUnset_{cStruct}__{cOneOf}", "Format to use when generating canoto unset oneOf constants")
+	flags.String(formatOneOfFieldFlag, "canotoOneOf_{cStruct}__{cField}", "Format to use when generating canoto oneOf field constants")
 
 	if err := cmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "command failed %v\n", err)

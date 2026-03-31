@@ -35,7 +35,9 @@ func Canoto(
 	cacheTemplate string,
 	numberTemplate string,
 	tagTemplate string,
-	oneOfTemplate string,
+	oneOfTypeTemplate string,
+	oneOfUnsetTemplate string,
+	oneOfFieldTemplate string,
 ) error {
 	var outputFilePath string
 	switch {
@@ -54,7 +56,20 @@ func Canoto(
 		return err
 	}
 
-	packageName, messages, err := parse(fs, f, canotoImport, internal, cacheTemplate, numberTemplate, tagTemplate, oneOfTemplate)
+	packageName, messages, err := parse(
+		fs,
+		f,
+		canotoImport,
+		internal,
+		templates{
+			cache:      cacheTemplate,
+			number:     numberTemplate,
+			tag:        tagTemplate,
+			oneOfType:  oneOfTypeTemplate,
+			oneOfUnset: oneOfUnsetTemplate,
+			oneOfField: oneOfFieldTemplate,
+		},
+	)
 	if err != nil {
 		return err
 	}
@@ -254,10 +269,7 @@ ${marshal}	return w
 	}
 
 	return writeTemplate(w, structTemplate, map[string]string{
-		"canotoData": makeTemplate(m.cacheTemplate, map[string]string{
-			"struct":  m.name,
-			"cStruct": m.canonicalizedName,
-		}),
+		"canotoData":          makeTemplate(m.template.cache, messageEnv(m)),
 		"typesDecl":           typesDecl,
 		"appendTypes":         appendTypes,
 		"constants":           makeConstants(m),
@@ -334,14 +346,14 @@ func makeConstants(m message) string {
 %s
 %s)
 
-`
-	return fmt.Sprintf(template, makeNumberConstants(m), makeTagConstants(m)) + makeOneOfCaseTypes(m)
+%s`
+	return fmt.Sprintf(template, makeNumberConstants(m), makeTagConstants(m), makeOneOfCaseTypes(m))
 }
 
 func makeNumberConstants(m message) string {
 	var largestNumberConstSize int
 	for _, f := range m.fields {
-		field := makeTemplate(m.numberTemplate, cliEnvArgs(m, f))
+		field := makeTemplate(m.template.number, fieldEnv(m, f))
 		largestNumberConstSize = max(largestNumberConstSize, len(field))
 	}
 
@@ -352,7 +364,7 @@ func makeNumberConstants(m message) string {
 		sb strings.Builder
 	)
 	for _, f := range m.fields {
-		field := makeTemplate(m.numberTemplate, cliEnvArgs(m, f))
+		field := makeTemplate(m.template.number, fieldEnv(m, f))
 		fmt.Fprintf(&sb, template, field, f.fieldNumber)
 	}
 	return sb.String()
@@ -364,7 +376,7 @@ func makeTagConstants(m message) string {
 		largestTagSize      int
 	)
 	for _, f := range m.fields {
-		tag := makeTemplate(m.tagTemplate, cliEnvArgs(m, f))
+		tag := makeTemplate(m.template.tag, fieldEnv(m, f))
 		largestTagConstSize = max(largestTagConstSize, len(tag))
 
 		wireType := f.canotoType.WireType()
@@ -381,9 +393,9 @@ func makeTagConstants(m message) string {
 		sb strings.Builder
 	)
 	for _, f := range m.fields {
-		args := cliEnvArgs(m, f)
-		field := makeTemplate(m.numberTemplate, args)
-		tag := makeTemplate(m.tagTemplate, args)
+		env := fieldEnv(m, f)
+		field := makeTemplate(m.template.number, env)
+		tag := makeTemplate(m.template.tag, env)
 
 		var tagString strings.Builder
 		tagString.WriteString(`"`)
@@ -415,24 +427,29 @@ func makeOneOfCaseTypes(m message) string {
 
 	var sb strings.Builder
 	for _, oneOf := range oneOfNames {
-		fields := groups[oneOf]
-		caseType := oneOfTypeName(m, oneOf)
-		unsetCase := oneOfUnsetName(m, oneOf)
+		env := oneOfEnv(m, oneOf)
+		caseType := makeTemplate(m.template.oneOfType, env)
+		unset := makeTemplate(m.template.oneOfUnset, env)
 
-		maxWidth := len(unsetCase)
+		fields := groups[oneOf]
+		maxWidth := len(unset)
 		for _, f := range fields {
-			maxWidth = max(maxWidth, len(oneOfFieldName(m, f)))
+			field := makeTemplate(m.template.oneOfField, fieldEnv(m, f))
+			maxWidth = max(maxWidth, len(field))
 		}
 
 		fmt.Fprintf(&sb, "// %s identifies which field is populated in %s.\n", caseType, oneOf)
 		fmt.Fprintf(&sb, "type %s uint32\n\nconst (\n", caseType)
-		fmt.Fprintf(&sb, "\t%-*s %s = 0\n", maxWidth, unsetCase, caseType)
+		fmt.Fprintf(&sb, "\t%-*s %s = 0\n", maxWidth, unset, caseType)
 		for _, f := range fields {
+			env := fieldEnv(m, f)
+			fieldOneOf := makeTemplate(m.template.oneOfField, env)
+			fieldNumber := makeTemplate(m.template.number, env)
 			fmt.Fprintf(&sb, "\t%-*s %s = %s\n",
 				maxWidth,
-				oneOfFieldName(m, f),
+				fieldOneOf,
 				caseType,
-				makeTemplate(m.numberTemplate, cliEnvArgs(m, f)),
+				fieldNumber,
 			)
 		}
 		sb.WriteString(")\n\n")
@@ -1864,7 +1881,7 @@ func makeOneOfCacheAccessors(m message) string {
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
 func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${oneOfType} {
-	return ${oneOfType}(${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix})
+	return ${oneOfCast}(${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix})
 }`
 	var (
 		sb         strings.Builder
@@ -1877,13 +1894,20 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${oneOfType} {
 		loadSuffix = ".Load()"
 	}
 	for _, oneOf := range m.OneOfs() {
+		oneOfType := makeTemplate(m.template.oneOfType, oneOfEnv(m, oneOf))
+		oneOfCast := oneOfType
+		if !token.IsExported(oneOfType) {
+			oneOfType = "uint32"
+			oneOfCast = ""
+		}
 		_ = writeTemplate(&sb, template, map[string]string{
 			"oneOf":      oneOf,
 			"structName": m.name,
 			"generics":   generics,
 			"loadPrefix": loadPrefix,
 			"loadSuffix": loadSuffix,
-			"oneOfType":  oneOfTypeName(m, oneOf),
+			"oneOfType":  oneOfType,
+			"oneOfCast":  oneOfCast,
 		})
 	}
 	return sb.String()
@@ -2148,15 +2172,15 @@ func makeMarshal(m message) string {
 
 		if len(currentOneOfFields) == 1 {
 			field := currentOneOfFields[0]
-			args := cliEnvArgs(m, field)
-			fieldNumber := makeTemplate(m.numberTemplate, args)
+			env := fieldEnv(m, field)
+			fieldNumber := makeTemplate(m.template.number, env)
 			fmt.Fprintf(&sb, "\tif %s == %s {\n", varName, fieldNumber)
 			_ = writeField(&sb, m, field, oneOfTmpl)
 		} else {
 			fmt.Fprintf(&sb, "\tswitch %s {\n", varName)
 			for _, field := range currentOneOfFields {
-				args := cliEnvArgs(m, field)
-				fieldNumber := makeTemplate(m.numberTemplate, args)
+				env := fieldEnv(m, field)
+				fieldNumber := makeTemplate(m.template.number, env)
 				fmt.Fprintf(&sb, "\tcase %s:\n", fieldNumber)
 				_ = writeField(&sb, m, field, oneOfTmpl)
 			}
@@ -2273,43 +2297,38 @@ func writeField(w io.Writer, m message, f field, t messageTemplate) error {
 		template = t.pointers.fixedRepeated
 	}
 
-	args := cliEnvArgs(m, f)
+	env := fieldEnv(m, f)
 	return writeTemplate(w, template, f.templateArgs, map[string]string{
-		"fieldNumberConst": makeTemplate(m.numberTemplate, args),
-		"fieldTagConst":    makeTemplate(m.tagTemplate, args),
+		"fieldNumberConst": makeTemplate(m.template.number, env),
+		"fieldTagConst":    makeTemplate(m.template.tag, env),
 	})
 }
 
-func cliEnvArgs(m message, f field) map[string]string {
+func messageEnv(m message) map[string]string {
 	return map[string]string{
 		"struct":  m.name,
 		"cStruct": m.canonicalizedName,
-		"field":   f.name,
-		"cField":  f.canonicalizedName,
 	}
 }
 
-func oneOfTypeName(m message, oneOf string) string {
-	return makeTemplate(m.oneOfTemplate, map[string]string{
-		"struct":  m.name,
-		"cStruct": m.canonicalizedName,
-		"oneOf":   oneOf,
-		"cOneOf":  canonicalizeName(oneOf),
-	})
+func oneOfEnv(m message, oneOf string) map[string]string {
+	env := messageEnv(m)
+	env["oneOf"] = oneOf
+	env["cOneOf"] = canonicalizeName(oneOf)
+	return env
 }
 
-func oneOfUnsetName(m message, oneOf string) string {
-	return fmt.Sprintf("%s__Unset", oneOfTypeName(m, oneOf))
+func fieldEnv(m message, f field) map[string]string {
+	env := oneOfEnv(m, f.oneOfName)
+	env["field"] = f.name
+	env["cField"] = f.canonicalizedName
+	return env
 }
 
-func oneOfFieldName(m message, f field) string {
-	return fmt.Sprintf("%s__%s", oneOfTypeName(m, f.oneOfName), f.canonicalizedName)
-}
-
-func makeTemplate(template string, args ...map[string]string) string {
+func makeTemplate(template string, envs ...map[string]string) string {
 	return os.Expand(template, func(key string) string {
-		for _, args := range args {
-			if v, ok := args[key]; ok {
+		for _, env := range envs {
+			if v, ok := env[key]; ok {
 				return v
 			}
 		}
@@ -2317,8 +2336,8 @@ func makeTemplate(template string, args ...map[string]string) string {
 	})
 }
 
-func writeTemplate(w io.Writer, template string, args ...map[string]string) error {
-	s := makeTemplate(template, args...)
+func writeTemplate(w io.Writer, template string, envs ...map[string]string) error {
+	s := makeTemplate(template, envs...)
 	_, err := w.Write([]byte(s))
 	return err
 }

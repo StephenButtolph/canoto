@@ -293,21 +293,21 @@ const (
 	canotoTag_FieldType__TypeRecursive  = "\x80\x01" // canoto.Tag(canotoNumber_FieldType__TypeRecursive, canoto.Varint)
 )
 
-// canotoOneOf_FieldType__Type identifies which field is populated in Type.
-type canotoOneOf_FieldType__Type uint32
+// canotoOneOfType_FieldType__Type identifies which field is populated in Type.
+type canotoOneOfType_FieldType__Type uint32
 
 const (
-	canotoOneOf_FieldType__Type__Unset          canotoOneOf_FieldType__Type = 0
-	canotoOneOf_FieldType__Type__TypeInt        canotoOneOf_FieldType__Type = canotoNumber_FieldType__TypeInt
-	canotoOneOf_FieldType__Type__TypeUint       canotoOneOf_FieldType__Type = canotoNumber_FieldType__TypeUint
-	canotoOneOf_FieldType__Type__TypeFixedInt   canotoOneOf_FieldType__Type = canotoNumber_FieldType__TypeFixedInt
-	canotoOneOf_FieldType__Type__TypeFixedUint  canotoOneOf_FieldType__Type = canotoNumber_FieldType__TypeFixedUint
-	canotoOneOf_FieldType__Type__TypeBool       canotoOneOf_FieldType__Type = canotoNumber_FieldType__TypeBool
-	canotoOneOf_FieldType__Type__TypeString     canotoOneOf_FieldType__Type = canotoNumber_FieldType__TypeString
-	canotoOneOf_FieldType__Type__TypeBytes      canotoOneOf_FieldType__Type = canotoNumber_FieldType__TypeBytes
-	canotoOneOf_FieldType__Type__TypeFixedBytes canotoOneOf_FieldType__Type = canotoNumber_FieldType__TypeFixedBytes
-	canotoOneOf_FieldType__Type__TypeMessage    canotoOneOf_FieldType__Type = canotoNumber_FieldType__TypeMessage
-	canotoOneOf_FieldType__Type__TypeRecursive  canotoOneOf_FieldType__Type = canotoNumber_FieldType__TypeRecursive
+	canotoOneOfUnset_FieldType__Type      canotoOneOfType_FieldType__Type = 0
+	canotoOneOf_FieldType__TypeInt        canotoOneOfType_FieldType__Type = canotoNumber_FieldType__TypeInt
+	canotoOneOf_FieldType__TypeUint       canotoOneOfType_FieldType__Type = canotoNumber_FieldType__TypeUint
+	canotoOneOf_FieldType__TypeFixedInt   canotoOneOfType_FieldType__Type = canotoNumber_FieldType__TypeFixedInt
+	canotoOneOf_FieldType__TypeFixedUint  canotoOneOfType_FieldType__Type = canotoNumber_FieldType__TypeFixedUint
+	canotoOneOf_FieldType__TypeBool       canotoOneOfType_FieldType__Type = canotoNumber_FieldType__TypeBool
+	canotoOneOf_FieldType__TypeString     canotoOneOfType_FieldType__Type = canotoNumber_FieldType__TypeString
+	canotoOneOf_FieldType__TypeBytes      canotoOneOfType_FieldType__Type = canotoNumber_FieldType__TypeBytes
+	canotoOneOf_FieldType__TypeFixedBytes canotoOneOfType_FieldType__Type = canotoNumber_FieldType__TypeFixedBytes
+	canotoOneOf_FieldType__TypeMessage    canotoOneOfType_FieldType__Type = canotoNumber_FieldType__TypeMessage
+	canotoOneOf_FieldType__TypeRecursive  canotoOneOfType_FieldType__Type = canotoNumber_FieldType__TypeRecursive
 )
 
 type canotoData_FieldType struct {
@@ -861,8 +861,8 @@ func (c *FieldType) CachedCanotoSize() uint64 {
 //
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
-func (c *FieldType) CachedWhichOneOfType() canotoOneOf_FieldType__Type {
-	return canotoOneOf_FieldType__Type(atomic.LoadUint32(&c.canotoData.TypeOneOf))
+func (c *FieldType) CachedWhichOneOfType() uint32 {
+	return (atomic.LoadUint32(&c.canotoData.TypeOneOf))
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
