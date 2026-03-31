@@ -1876,7 +1876,7 @@ func makeOneOfCacheAccessors(m message) string {
 // This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CalculateCanotoCache.
 //
-// If the field has not yet been cached, it will return ${oneOfUnset}.
+// If the field has not yet been cached, it will return 0.
 //
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
@@ -1894,15 +1894,18 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${oneOfType} {
 		loadSuffix = ".Load()"
 	}
 	for _, oneOf := range m.OneOfs() {
-		env := oneOfEnv(m, oneOf)
+		oneOfType := makeTemplate(m.template.oneOfType, oneOfEnv(m, oneOf))
+		// TODO: If oneOfType is unexported (first character is lowercase)
+		if false {
+			oneOfType = "uint32"
+		}
 		_ = writeTemplate(&sb, template, map[string]string{
 			"oneOf":      oneOf,
 			"structName": m.name,
 			"generics":   generics,
 			"loadPrefix": loadPrefix,
 			"loadSuffix": loadSuffix,
-			"oneOfType":  makeTemplate(m.template.oneOfType, env),
-			"oneOfUnset": makeTemplate(m.template.oneOfUnset, env),
+			"oneOfType":  oneOfType,
 		})
 	}
 	return sb.String()
