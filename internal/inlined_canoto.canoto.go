@@ -23,9 +23,9 @@ const (
 var _ = io.ErrUnexpectedEOF
 
 const (
-	canoto__justAnInt__Int8 = 1
+	canotoNumber_justAnInt__Int8 = 1
 
-	canoto__justAnInt__Int8__tag = "\x08" // canoto.Tag(canoto__justAnInt__Int8, canoto.Varint)
+	canotoTag_justAnInt__Int8 = "\x08" // canoto.Tag(canotoNumber_justAnInt__Int8, canoto.Varint)
 )
 
 type canotoData_justAnInt struct {
@@ -39,7 +39,7 @@ func (*justAnInt) CanotoSpec(...reflect.Type) *canoto.Spec {
 		Name: "justAnInt",
 		Fields: []canoto.FieldType{
 			{
-				FieldNumber: canoto__justAnInt__Int8,
+				FieldNumber: canotoNumber_justAnInt__Int8,
 				Name:        "Int8",
 				OneOf:       "",
 				TypeInt:     canoto.SizeOf(zero.Int8),
@@ -82,7 +82,7 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) error {
 		}
 
 		switch field {
-		case canoto__justAnInt__Int8:
+		case canotoNumber_justAnInt__Int8:
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
@@ -118,7 +118,7 @@ func (c *justAnInt) ValidCanoto() bool {
 func (c *justAnInt) CalculateCanotoCache() {
 	var size uint64
 	if !canoto.IsZero(c.Int8) {
-		size += uint64(len(canoto__justAnInt__Int8__tag)) + canoto.SizeInt(c.Int8)
+		size += uint64(len(canotoTag_justAnInt__Int8)) + canoto.SizeInt(c.Int8)
 	}
 	c.canotoData.size.Store(size)
 }
@@ -155,7 +155,7 @@ func (c *justAnInt) MarshalCanoto() []byte {
 // It is assumed that this struct is ValidCanoto.
 func (c *justAnInt) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.Int8) {
-		canoto.Append(&w, canoto__justAnInt__Int8__tag)
+		canoto.Append(&w, canotoTag_justAnInt__Int8)
 		canoto.AppendInt(&w, c.Int8)
 	}
 	return w

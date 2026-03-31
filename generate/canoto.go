@@ -32,6 +32,12 @@ func Canoto(
 	inputFilePath string,
 	canotoImport string,
 	internal bool,
+	cacheTemplate string,
+	numberTemplate string,
+	tagTemplate string,
+	oneOfTypeTemplate string,
+	oneOfUnsetTemplate string,
+	oneOfFieldTemplate string,
 ) error {
 	var outputFilePath string
 	switch {
@@ -50,7 +56,20 @@ func Canoto(
 		return err
 	}
 
-	packageName, messages, err := parse(fs, f, canotoImport, internal)
+	packageName, messages, err := parse(
+		fs,
+		f,
+		canotoImport,
+		internal,
+		templates{
+			cache:      cacheTemplate,
+			number:     numberTemplate,
+			tag:        tagTemplate,
+			oneOfType:  oneOfTypeTemplate,
+			oneOfUnset: oneOfUnsetTemplate,
+			oneOfField: oneOfFieldTemplate,
+		},
+	)
 	if err != nil {
 		return err
 	}
@@ -128,7 +147,7 @@ var _ = io.ErrUnexpectedEOF
 
 func writeStruct(w io.Writer, m message, canotoSelector string) error {
 	const structTemplate = `
-${constants}type canotoData_${structName} struct {
+${constants}type ${canotoData} struct {
 ${sizeCache}${oneOfCache}}
 
 // CanotoSpec returns the specification of this canoto message.
@@ -250,6 +269,7 @@ ${marshal}	return w
 	}
 
 	return writeTemplate(w, structTemplate, map[string]string{
+		"canotoData":          makeTemplate(m.template.cache, messageEnv(m)),
 		"typesDecl":           typesDecl,
 		"appendTypes":         appendTypes,
 		"constants":           makeConstants(m),
@@ -331,11 +351,10 @@ func makeConstants(m message) string {
 }
 
 func makeNumberConstants(m message) string {
-	const fieldSizeOverhead = len("canoto____")
 	var largestNumberConstSize int
 	for _, f := range m.fields {
-		numberConstSize := fieldSizeOverhead + len(m.canonicalizedName) + len(f.canonicalizedName)
-		largestNumberConstSize = max(largestNumberConstSize, numberConstSize)
+		field := makeTemplate(m.template.number, fieldEnv(m, f))
+		largestNumberConstSize = max(largestNumberConstSize, len(field))
 	}
 
 	var (
@@ -345,21 +364,20 @@ func makeNumberConstants(m message) string {
 		sb strings.Builder
 	)
 	for _, f := range m.fields {
-		field := fmt.Sprintf("canoto__%s__%s", m.canonicalizedName, f.canonicalizedName)
+		field := makeTemplate(m.template.number, fieldEnv(m, f))
 		fmt.Fprintf(&sb, template, field, f.fieldNumber)
 	}
 	return sb.String()
 }
 
 func makeTagConstants(m message) string {
-	const tagSizeOverhead = len("canoto______tag")
 	var (
 		largestTagConstSize int
 		largestTagSize      int
 	)
 	for _, f := range m.fields {
-		tagConstSize := tagSizeOverhead + len(m.canonicalizedName) + len(f.canonicalizedName)
-		largestTagConstSize = max(largestTagConstSize, tagConstSize)
+		tag := makeTemplate(m.template.tag, fieldEnv(m, f))
+		largestTagConstSize = max(largestTagConstSize, len(tag))
 
 		wireType := f.canotoType.WireType()
 		tagBytes := canoto.Tag(f.fieldNumber, wireType)
@@ -375,8 +393,9 @@ func makeTagConstants(m message) string {
 		sb strings.Builder
 	)
 	for _, f := range m.fields {
-		field := fmt.Sprintf("canoto__%s__%s", m.canonicalizedName, f.canonicalizedName)
-		tag := field + "__tag"
+		env := fieldEnv(m, f)
+		field := makeTemplate(m.template.number, env)
+		tag := makeTemplate(m.template.tag, env)
 
 		var tagString strings.Builder
 		tagString.WriteString(`"`)
@@ -408,24 +427,29 @@ func makeOneOfCaseTypes(m message) string {
 
 	var sb strings.Builder
 	for _, oneOf := range oneOfNames {
-		fields := groups[oneOf]
-		caseType := m.name + "__" + oneOf
+		env := oneOfEnv(m, oneOf)
+		caseType := makeTemplate(m.template.oneOfType, env)
+		unset := makeTemplate(m.template.oneOfUnset, env)
 
-		maxWidth := len(caseType + "__Unset")
+		fields := groups[oneOf]
+		maxWidth := len(unset)
 		for _, f := range fields {
-			maxWidth = max(maxWidth, len(caseType+"__"+f.name))
+			field := makeTemplate(m.template.oneOfField, fieldEnv(m, f))
+			maxWidth = max(maxWidth, len(field))
 		}
 
 		fmt.Fprintf(&sb, "// %s identifies which field is populated in %s.\n", caseType, oneOf)
 		fmt.Fprintf(&sb, "type %s uint32\n\nconst (\n", caseType)
-		fmt.Fprintf(&sb, "\t%-*s %s = 0\n", maxWidth, caseType+"__Unset", caseType)
+		fmt.Fprintf(&sb, "\t%-*s %s = 0\n", maxWidth, unset, caseType)
 		for _, f := range fields {
-			fmt.Fprintf(&sb, "\t%-*s %s = canoto__%s__%s\n",
+			env := fieldEnv(m, f)
+			fieldOneOf := makeTemplate(m.template.oneOfField, env)
+			fieldNumber := makeTemplate(m.template.number, env)
+			fmt.Fprintf(&sb, "\t%-*s %s = %s\n",
 				maxWidth,
-				caseType+"__"+f.name,
+				fieldOneOf,
 				caseType,
-				m.canonicalizedName,
-				f.canonicalizedName,
+				fieldNumber,
 			)
 		}
 		sb.WriteString(")\n\n")
@@ -771,12 +795,10 @@ ${unmarshal}		default:
 `
 	}
 
-	var sb strings.Builder
-	_ = writeTemplate(&sb, template, map[string]string{
+	return makeTemplate(template, map[string]string{
 		"canotoSelector": canotoSelector,
 		"unmarshal":      makeUnmarshal(m),
 	})
-	return sb.String()
 }
 
 func makeUnmarshal(m message) string {
@@ -885,7 +907,7 @@ func makeUnmarshal(m message) string {
 			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
-			countMinus1, err := ${selector}CountBytes(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag)
+			countMinus1, err := ${selector}CountBytes(r.B, ${fieldTagConst})
 			if err != nil {
 				return err
 			}
@@ -902,7 +924,7 @@ func makeUnmarshal(m message) string {
 			// Read the rest of the entries, stripping the tag each time.
 			field = field[1:]
 			for i := range field {
-				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
+				r.B = r.B[len(${fieldTagConst}):]
 				if err := ${selector}Read${suffix}(&r, &field[i]); err != nil {
 					return err
 				}
@@ -926,10 +948,10 @@ func makeUnmarshal(m message) string {
 			isZero := len((&c.${fieldName})[0]) == 0
 			field := (&c.${fieldName})[1:]
 			for i := range field {
-				if !${selector}HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
+				if !${selector}HasPrefix(r.B, ${fieldTagConst}) {
 					return ${selector}ErrUnknownField
 				}
-				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
+				r.B = r.B[len(${fieldTagConst}):]
 				if err := ${selector}Read${suffix}(&r, &field[i]); err != nil {
 					return err
 				}
@@ -1078,7 +1100,7 @@ func makeUnmarshal(m message) string {
 			r.B = r.B[expectedLength:]
 
 			// Count the number of additional entries after the first entry.
-			countMinus1, err := ${selector}CountBytes(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag)
+			countMinus1, err := ${selector}CountBytes(r.B, ${fieldTagConst})
 			if err != nil {
 				return err
 			}
@@ -1090,7 +1112,7 @@ func makeUnmarshal(m message) string {
 			// Read the rest of the entries, stripping the tag each time.
 			field = field[1:]
 			for i := range field {
-				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
+				r.B = r.B[len(${fieldTagConst}):]
 				if err := ${selector}ReadUint(&r, &length); err != nil {
 					return err
 				}
@@ -1139,10 +1161,10 @@ func makeUnmarshal(m message) string {
 			// Read the rest of the entries, stripping the tag each time.
 			field := (&c.${fieldName})[1:]
 			for i := range field {
-				if !${selector}HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
+				if !${selector}HasPrefix(r.B, ${fieldTagConst}) {
 					return ${selector}ErrUnknownField
 				}
-				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
+				r.B = r.B[len(${fieldTagConst}):]
 
 				if err := ${selector}ReadUint(&r, &length); err != nil {
 					return err
@@ -1204,7 +1226,7 @@ func makeUnmarshal(m message) string {
 			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
-			countMinus1, err := ${selector}CountBytes(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag)
+			countMinus1, err := ${selector}CountBytes(r.B, ${fieldTagConst})
 			if err != nil {
 				return err
 			}
@@ -1223,7 +1245,7 @@ func makeUnmarshal(m message) string {
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
-				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
+				r.B = r.B[len(${fieldTagConst}):]
 				r.Unsafe = true
 				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
 					return err
@@ -1272,10 +1294,10 @@ func makeUnmarshal(m message) string {
 			// Read the rest of the entries, stripping the tag each time.
 			field := c.${fieldName}[1:]
 			for i := range field {
-				if !${selector}HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
+				if !${selector}HasPrefix(r.B, ${fieldTagConst}) {
 					return ${selector}ErrUnknownField
 				}
-				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
+				r.B = r.B[len(${fieldTagConst}):]
 				r.Unsafe = true
 				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
 					return err
@@ -1338,7 +1360,7 @@ func makeUnmarshal(m message) string {
 			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
-			countMinus1, err := ${selector}CountBytes(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag)
+			countMinus1, err := ${selector}CountBytes(r.B, ${fieldTagConst})
 			if err != nil {
 				return err
 			}
@@ -1362,7 +1384,7 @@ func makeUnmarshal(m message) string {
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
-				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
+				r.B = r.B[len(${fieldTagConst}):]
 				r.Unsafe = true
 				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
 					return err
@@ -1421,10 +1443,10 @@ func makeUnmarshal(m message) string {
 			// Read the rest of the entries, stripping the tag each time.
 			field := c.${fieldName}[1:]
 			for i := range field {
-				if !${selector}HasPrefix(r.B, canoto__${escapedStructName}__${escapedFieldName}__tag) {
+				if !${selector}HasPrefix(r.B, ${fieldTagConst}) {
 					return ${selector}ErrUnknownField
 				}
-				r.B = r.B[len(canoto__${escapedStructName}__${escapedFieldName}__tag):]
+				r.B = r.B[len(${fieldTagConst}):]
 				r.Unsafe = true
 				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
 					return err
@@ -1568,7 +1590,7 @@ func makeValidOneOf(m message) string {
 			continue
 		}
 
-		_ = writeField(&sb, f, t)
+		_ = writeField(&sb, m, f, t)
 	}
 	return sb.String()
 }
@@ -1655,32 +1677,32 @@ func makeSizeVars(m message) string {
 func makeSize(m message) string {
 	const (
 		fixedSizeTemplate = `	if !${selector}IsZero(c.${fieldName}) {
-		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}Size${suffix}${sizeOneOf}
+		size += uint64(len(${fieldTagConst})) + ${selector}Size${suffix}${sizeOneOf}
 	}
 `
 		repeatedFixedSizeTemplate = `	if num := uint64(len(c.${fieldName})); num != 0 {
 		fieldSize := num * ${selector}Size${suffix}
-		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
+		size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
 	}
 `
 		fixedRepeatedFixedSizeTemplate = `	if !${selector}IsZero(c.${fieldName}) {
 		const fieldSize = uint64(len(c.${fieldName})) * ${selector}Size${suffix}
-		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + fieldSize + ${selector}SizeUint(fieldSize)${sizeOneOf}
+		size += uint64(len(${fieldTagConst})) + fieldSize + ${selector}SizeUint(fieldSize)${sizeOneOf}
 	}
 `
 		bytesTemplate = `	if len(c.${fieldName}) != 0 {
-		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeBytes(c.${fieldName})${sizeOneOf}
+		size += uint64(len(${fieldTagConst})) + ${selector}SizeBytes(c.${fieldName})${sizeOneOf}
 	}
 `
 		repeatedBytesTemplate = `	for _, v := range c.${fieldName} {
-		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeBytes(v)${sizeOneOf}
+		size += uint64(len(${fieldTagConst})) + ${selector}SizeBytes(v)${sizeOneOf}
 	}
 `
 	)
 	return writeMessage(m, messageTemplate{
 		ints: typeTemplate{
 			single: `	if !${selector}IsZero(c.${fieldName}) {
-		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}Size${suffix}(c.${fieldName})${sizeOneOf}
+		size += uint64(len(${fieldTagConst})) + ${selector}Size${suffix}(c.${fieldName})${sizeOneOf}
 	}
 `,
 			repeated: `	if len(c.${fieldName}) != 0 {
@@ -1688,7 +1710,7 @@ func makeSize(m message) string {
 		for _, v := range c.${fieldName} {
 			fieldSize += ${selector}Size${suffix}(v)
 		}
-		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize
+		size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize
 		${storePrefix}c.canotoData.${fieldName}Size${storeJoin}fieldSize${storeSuffix}${sizeOneOf}
 	}
 `,
@@ -1697,7 +1719,7 @@ func makeSize(m message) string {
 		for _, v := range &c.${fieldName} {
 			fieldSize += ${selector}Size${suffix}(v)
 		}
-		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize
+		size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize
 		${storePrefix}c.canotoData.${fieldName}Size${storeJoin}fieldSize${storeSuffix}${sizeOneOf}
 	}
 `,
@@ -1717,7 +1739,7 @@ func makeSize(m message) string {
 			repeated: repeatedBytesTemplate,
 			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
 		for _, v := range &c.${fieldName} {
-			size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeBytes(v)
+			size += uint64(len(${fieldTagConst})) + ${selector}SizeBytes(v)
 		}${sizeOneOf}
 	}
 `,
@@ -1725,11 +1747,11 @@ func makeSize(m message) string {
 		bytesTemplate:         bytesTemplate,
 		repeatedBytesTemplate: repeatedBytesTemplate,
 		fixedBytesTemplate: `	if !${selector}IsZero(c.${fieldName}) {
-		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeBytes((&c.${fieldName})[:])${sizeOneOf}
+		size += uint64(len(${fieldTagConst})) + ${selector}SizeBytes((&c.${fieldName})[:])${sizeOneOf}
 	}
 `,
 		repeatedFixedBytesTemplate: `	if num := uint64(len(c.${fieldName})); num != 0 {
-		fieldSize := uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeBytes((&c.${fieldName}[0])[:])
+		fieldSize := uint64(len(${fieldTagConst})) + ${selector}SizeBytes((&c.${fieldName}[0])[:])
 		size += num * fieldSize${sizeOneOf}
 	}
 `,
@@ -1743,21 +1765,21 @@ func makeSize(m message) string {
 		}
 		if !isZero {
 			for _, v := range c.${fieldName} {
-				size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeBytes(v)
+				size += uint64(len(${fieldTagConst})) + ${selector}SizeBytes(v)
 			}${sizeOneOfIndent}
 		}
 	}
 `,
 		fixedRepeatedFixedBytesTemplate: `	if !${selector}IsZero(c.${fieldName}) {
 		for i := range c.${fieldName} {
-			size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeBytes((&(&c.${fieldName})[i])[:])
+			size += uint64(len(${fieldTagConst})) + ${selector}SizeBytes((&(&c.${fieldName})[i])[:])
 		}${sizeOneOf}
 	}
 `,
 		values: typeTemplate{
 			single: `	${genericTypeCast}(&c.${fieldName}).CalculateCanotoCache()
 	if fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
-		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
+		size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
 	}
 `,
 			repeated: `	{
@@ -1765,7 +1787,7 @@ func makeSize(m message) string {
 		for i := range field {
 			${genericTypeCast}(&field[i]).CalculateCanotoCache()
 			fieldSize := ${genericTypeCast}(&field[i]).CachedCanotoSize()
-			size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
+			size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
 		}
 	}
 `,
@@ -1779,7 +1801,7 @@ func makeSize(m message) string {
 			${genericTypeCast}(&field[i]).CalculateCanotoCache()
 			fieldSize := ${genericTypeCast}(&field[i]).CachedCanotoSize()
 			fieldSizeSum += fieldSize
-			totalSize += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize
+			totalSize += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize
 		}
 		if fieldSizeSum != 0 {
 			size += totalSize${sizeOneOfIndent}
@@ -1791,7 +1813,7 @@ func makeSize(m message) string {
 			single: `	if c.${fieldName} != nil {
 		${genericTypeCast}(c.${fieldName}).CalculateCanotoCache()
 		fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize()
-		size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
+		size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
 	}
 `,
 			repeated: `	{
@@ -1803,7 +1825,7 @@ func makeSize(m message) string {
 				innerSize := ${genericTypeCast}(field[i]).CachedCanotoSize()
 				fieldSize = ${selector}SizePointerPresenceTag + ${selector}SizeUint(innerSize) + innerSize
 			}
-			size += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
+			size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
 		}
 	}
 `,
@@ -1819,7 +1841,7 @@ func makeSize(m message) string {
 				innerSize := ${genericTypeCast}(field[i]).CachedCanotoSize()
 				fieldSize = ${selector}SizePointerPresenceTag + ${selector}SizeUint(innerSize) + innerSize
 			}
-			totalSize += uint64(len(canoto__${escapedStructName}__${escapedFieldName}__tag)) + ${selector}SizeUint(fieldSize) + fieldSize
+			totalSize += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize
 		}
 		size += totalSize${sizeOneOf}
 	}
@@ -1854,12 +1876,12 @@ func makeOneOfCacheAccessors(m message) string {
 // This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CalculateCanotoCache.
 //
-// If the field has not yet been cached, it will return ${structName}__${oneOf}__Unset.
+// If the field has not yet been cached, it will return ${oneOfUnset}.
 //
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
-func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${structName}__${oneOf} {
-	return ${structName}__${oneOf}(${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix})
+func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${oneOfType} {
+	return ${oneOfType}(${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix})
 }`
 	var (
 		sb         strings.Builder
@@ -1872,12 +1894,15 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${structName}__${o
 		loadSuffix = ".Load()"
 	}
 	for _, oneOf := range m.OneOfs() {
+		env := oneOfEnv(m, oneOf)
 		_ = writeTemplate(&sb, template, map[string]string{
 			"oneOf":      oneOf,
 			"structName": m.name,
 			"generics":   generics,
 			"loadPrefix": loadPrefix,
 			"loadSuffix": loadSuffix,
+			"oneOfType":  makeTemplate(m.template.oneOfType, env),
+			"oneOfUnset": makeTemplate(m.template.oneOfUnset, env),
 		})
 	}
 	return sb.String()
@@ -1885,38 +1910,38 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${structName}__${o
 
 func getMarshalTemplate(isOneOf bool) messageTemplate {
 	const (
-		intTemplateBody = `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		intTemplateBody = `		${selector}Append(&w, ${fieldTagConst})
 		${selector}Append${suffix}(&w, c.${fieldName})
 `
-		boolTemplateBody = `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		boolTemplateBody = `		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendBool(&w, true)
 `
-		bytesTemplateBody = `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		bytesTemplateBody = `		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendBytes(&w, c.${fieldName})
 `
-		fixedBytesTemplateBody = `		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		fixedBytesTemplateBody = `		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendBytes(&w, (&c.${fieldName})[:])
 `
 		valueTemplateBodyOneOf = `		fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize()
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendUint(&w, fieldSize)
 		w = ${genericTypeCast}(&c.${fieldName}).MarshalCanotoInto(w)
 `
 		pointerTemplateBodyOneOf = `		fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize()
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendUint(&w, fieldSize)
 		w = ${genericTypeCast}(c.${fieldName}).MarshalCanotoInto(w)
 `
 
 		valueTemplateRegular = `	if fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendUint(&w, fieldSize)
 		w = ${genericTypeCast}(&c.${fieldName}).MarshalCanotoInto(w)
 	}
 `
 		pointerTemplateRegular = `	if c.${fieldName} != nil {
 		fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize()
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendUint(&w, fieldSize)
 		w = ${genericTypeCast}(c.${fieldName}).MarshalCanotoInto(w)
 	}
@@ -1943,7 +1968,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 
 	const (
 		repeatedFintTemplate = `	if num := uint64(len(c.${fieldName})); num != 0 {
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendUint(&w, num*${selector}Size${suffix})
 		for _, v := range c.${fieldName} {
 			${selector}Append${suffix}(&w, v)
@@ -1952,7 +1977,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 `
 		fixedRepeatedFintTemplate = `	if !${selector}IsZero(c.${fieldName}) {
 		const fieldSize = uint64(len(c.${fieldName})) * ${selector}Size${suffix}
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendUint(&w, fieldSize)
 		for _, v := range &c.${fieldName} {
 			${selector}Append${suffix}(&w, v)
@@ -1960,7 +1985,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 	}
 `
 		repeatedBytesTemplate = `	for _, v := range c.${fieldName} {
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendBytes(&w, v)
 	}
 `
@@ -1969,7 +1994,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 		ints: typeTemplate{
 			single: intTemplate,
 			repeated: `	if len(c.${fieldName}) != 0 {
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendUint(&w, ${loadPrefix}c.canotoData.${fieldName}Size${loadSuffix})
 		for _, v := range c.${fieldName} {
 			${selector}Append${suffix}(&w, v)
@@ -1977,7 +2002,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 	}
 `,
 			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
-		${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendUint(&w, ${loadPrefix}c.canotoData.${fieldName}Size${loadSuffix})
 		for _, v := range &c.${fieldName} {
 			${selector}Append${suffix}(&w, v)
@@ -2000,7 +2025,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 			repeated: repeatedBytesTemplate,
 			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
 		for _, v := range &c.${fieldName} {
-			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+			${selector}Append(&w, ${fieldTagConst})
 			${selector}AppendBytes(&w, v)
 		}
 	}
@@ -2012,7 +2037,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 		repeatedFixedBytesTemplate: `	{
 		field := c.${fieldName}
 		for i := range field {
-			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+			${selector}Append(&w, ${fieldTagConst})
 			${selector}AppendBytes(&w, (&field[i])[:])
 		}
 	}
@@ -2027,7 +2052,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 		}
 		if !isZero {
 			for _, v := range c.${fieldName} {
-				${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+				${selector}Append(&w, ${fieldTagConst})
 				${selector}AppendBytes(&w, v)
 			}
 		}
@@ -2035,7 +2060,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 `,
 		fixedRepeatedFixedBytesTemplate: `	if !${selector}IsZero(c.${fieldName}) {
 		for i := range c.${fieldName} {
-			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+			${selector}Append(&w, ${fieldTagConst})
 			${selector}AppendBytes(&w, (&(&c.${fieldName})[i])[:])
 		}
 	}
@@ -2045,7 +2070,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 			repeated: `	{
 		field := c.${fieldName}
 		for i := range field {
-			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+			${selector}Append(&w, ${fieldTagConst})
 			${selector}AppendUint(&w, ${genericTypeCast}(&field[i]).CachedCanotoSize())
 			w = ${genericTypeCast}(&field[i]).MarshalCanotoInto(w)
 		}
@@ -2062,7 +2087,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 		}
 		if !isZero {
 			for i := range field {
-				${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+				${selector}Append(&w, ${fieldTagConst})
 				${selector}AppendUint(&w, ${genericTypeCast}(&field[i]).CachedCanotoSize())
 				w = ${genericTypeCast}(&field[i]).MarshalCanotoInto(w)
 			}
@@ -2075,7 +2100,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 			repeated: `	{
 		field := c.${fieldName}
 		for i := range field {
-			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+			${selector}Append(&w, ${fieldTagConst})
 			if field[i] == nil {
 				${selector}Append(&w, ${selector}EmptyBytes)
 			} else {
@@ -2091,7 +2116,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 `,
 			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
 		for i := range &c.${fieldName} {
-			${selector}Append(&w, canoto__${escapedStructName}__${escapedFieldName}__tag)
+			${selector}Append(&w, ${fieldTagConst})
 			if (&c.${fieldName})[i] == nil {
 				${selector}Append(&w, ${selector}EmptyBytes)
 			} else {
@@ -2141,13 +2166,18 @@ func makeMarshal(m message) string {
 		}
 
 		if len(currentOneOfFields) == 1 {
-			fmt.Fprintf(&sb, "\tif %s == %d {\n", varName, currentOneOfFields[0].fieldNumber)
-			_ = writeField(&sb, currentOneOfFields[0], oneOfTmpl)
+			field := currentOneOfFields[0]
+			env := fieldEnv(m, field)
+			fieldNumber := makeTemplate(m.template.number, env)
+			fmt.Fprintf(&sb, "\tif %s == %s {\n", varName, fieldNumber)
+			_ = writeField(&sb, m, field, oneOfTmpl)
 		} else {
 			fmt.Fprintf(&sb, "\tswitch %s {\n", varName)
 			for _, field := range currentOneOfFields {
-				fmt.Fprintf(&sb, "\tcase canoto__%s__%s:\n", m.canonicalizedName, field.canonicalizedName)
-				_ = writeField(&sb, field, oneOfTmpl)
+				env := fieldEnv(m, field)
+				fieldNumber := makeTemplate(m.template.number, env)
+				fmt.Fprintf(&sb, "\tcase %s:\n", fieldNumber)
+				_ = writeField(&sb, m, field, oneOfTmpl)
 			}
 		}
 
@@ -2165,7 +2195,7 @@ func makeMarshal(m message) string {
 		flushOneOf()
 
 		if f.oneOfName == "" {
-			_ = writeField(&sb, f, regularTmpl)
+			_ = writeField(&sb, m, f, regularTmpl)
 			continue
 		}
 
@@ -2204,12 +2234,12 @@ type typeTemplate struct {
 func writeMessage(m message, t messageTemplate) string {
 	var sb strings.Builder
 	for _, f := range m.fields {
-		_ = writeField(&sb, f, t)
+		_ = writeField(&sb, m, f, t)
 	}
 	return sb.String()
 }
 
-func writeField(w io.Writer, f field, t messageTemplate) error {
+func writeField(w io.Writer, m message, f field, t messageTemplate) error {
 	var template string
 	switch c := f.canotoType; c {
 	case canotoInt, canotoUint:
@@ -2261,17 +2291,48 @@ func writeField(w io.Writer, f field, t messageTemplate) error {
 	default:
 		template = t.pointers.fixedRepeated
 	}
-	return writeTemplate(w, template, f.templateArgs)
-}
 
-func makeTemplate(template string, args map[string]string) string {
-	return os.Expand(template, func(key string) string {
-		return args[key]
+	env := fieldEnv(m, f)
+	return writeTemplate(w, template, f.templateArgs, map[string]string{
+		"fieldNumberConst": makeTemplate(m.template.number, env),
+		"fieldTagConst":    makeTemplate(m.template.tag, env),
 	})
 }
 
-func writeTemplate(w io.Writer, template string, args map[string]string) error {
-	s := makeTemplate(template, args)
+func messageEnv(m message) map[string]string {
+	return map[string]string{
+		"struct":  m.name,
+		"cStruct": m.canonicalizedName,
+	}
+}
+
+func oneOfEnv(m message, oneOf string) map[string]string {
+	env := messageEnv(m)
+	env["oneOf"] = oneOf
+	env["cOneOf"] = canonicalizeName(oneOf)
+	return env
+}
+
+func fieldEnv(m message, f field) map[string]string {
+	env := oneOfEnv(m, f.oneOfName)
+	env["field"] = f.name
+	env["cField"] = canonicalizeName(f.canonicalizedName)
+	return env
+}
+
+func makeTemplate(template string, envs ...map[string]string) string {
+	return os.Expand(template, func(key string) string {
+		for _, env := range envs {
+			if v, ok := env[key]; ok {
+				return v
+			}
+		}
+		return ""
+	})
+}
+
+func writeTemplate(w io.Writer, template string, envs ...map[string]string) error {
+	s := makeTemplate(template, envs...)
 	_, err := w.Write([]byte(s))
 	return err
 }

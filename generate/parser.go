@@ -48,6 +48,7 @@ func parse(
 	f ast.Node,
 	canotoImport string,
 	internal bool,
+	template templates,
 ) (string, []message, error) {
 	var (
 		canotoImportName string
@@ -91,6 +92,7 @@ func parse(
 		message := message{
 			name:              name,
 			canonicalizedName: canonicalizeName(name),
+			template:          template,
 		}
 
 		genericPointers := make(map[string]int)
@@ -166,7 +168,9 @@ func parse(
 			)
 			field, hasTag, err = parseField(
 				fs,
+				message.name,
 				message.canonicalizedName,
+				template.number,
 				noCopy,
 				internal,
 				genericPointers,
@@ -258,7 +262,9 @@ func parseCanotoData(
 
 func parseField(
 	fs *token.FileSet,
+	structName string,
 	canonicalizedStructName string,
+	numberTemplate string,
 	noCopy bool,
 	internal bool,
 	genericTypes map[string]int,
@@ -287,35 +293,6 @@ func parseField(
 	var selector string
 	if !internal {
 		selector = defaultCanotoImporter
-	}
-
-	var (
-		unmarshalOneOf  string
-		sizeOneOf       string
-		sizeOneOfIndent string
-	)
-	if oneOfName != "" {
-		var unmarshalOneOfTemplate string
-		if noCopy {
-			unmarshalOneOfTemplate = `
-			if c.canotoData.%sOneOf.Swap(%d) != 0 {
-				return %sErrDuplicateOneOf
-			}`
-		} else {
-			unmarshalOneOfTemplate = `
-			if atomic.SwapUint32(&c.canotoData.%sOneOf, %d) != 0 {
-				return %sErrDuplicateOneOf
-			}`
-		}
-		unmarshalOneOf = fmt.Sprintf(unmarshalOneOfTemplate,
-			oneOfName,
-			fieldNumber,
-			selector,
-		)
-
-		assignOneOf := fmt.Sprintf("%sOneOf = %d", oneOfName, fieldNumber)
-		sizeOneOf = "\n\t\t" + assignOneOf
-		sizeOneOfIndent = "\n\t\t\t" + assignOneOf
 	}
 
 	var (
@@ -363,13 +340,50 @@ func parseField(
 			fs.Position(af.Pos()),
 		)
 	}
+	canonicalizedName := canonicalizeName(name)
+
+	var (
+		unmarshalOneOf  string
+		sizeOneOf       string
+		sizeOneOfIndent string
+	)
+	if oneOfName != "" {
+		var unmarshalOneOfTemplate string
+		if noCopy {
+			unmarshalOneOfTemplate = `
+			if c.canotoData.%sOneOf.Swap(%s) != 0 {
+				return %sErrDuplicateOneOf
+			}`
+		} else {
+			unmarshalOneOfTemplate = `
+			if atomic.SwapUint32(&c.canotoData.%sOneOf, %s) != 0 {
+				return %sErrDuplicateOneOf
+			}`
+		}
+		fieldNumberConst := makeTemplate(numberTemplate, map[string]string{
+			"struct":  structName,
+			"cStruct": canonicalizedStructName,
+			"oneOf":   oneOfName,
+			"cOneOf":  canonicalizeName(oneOfName),
+			"field":   name,
+			"cField":  canonicalizedName,
+		})
+		unmarshalOneOf = fmt.Sprintf(unmarshalOneOfTemplate,
+			oneOfName,
+			fieldNumberConst,
+			selector,
+		)
+
+		assignOneOf := fmt.Sprintf("%sOneOf = %s", oneOfName, fieldNumberConst)
+		sizeOneOf = "\n\t\t" + assignOneOf
+		sizeOneOfIndent = "\n\t\t\t" + assignOneOf
+	}
 
 	var genericTypeCast string
 	if genericType, ok := genericTypes[goType]; ok {
 		genericTypeCast = fmt.Sprintf("T%d", genericType)
 	}
 
-	canonicalizedName := canonicalizeName(name)
 	protoType := canotoType.ProtoType(goType)
 
 	var signedSpace string
@@ -385,31 +399,28 @@ func parseField(
 		fieldNumber:       fieldNumber,
 		oneOfName:         oneOfName,
 		templateArgs: map[string]string{
-			"selector":          selector,
-			"loadPrefix":        loadPrefix,
-			"loadSuffix":        loadSuffix,
-			"storePrefix":       storePrefix,
-			"storeJoin":         storeJoin,
-			"storeSuffix":       storeSuffix,
-			"escapedStructName": canonicalizedStructName,
-			"fieldNumber":       strconv.FormatUint(uint64(fieldNumber), 10),
-			"fieldNumberConst":  fmt.Sprintf("canoto__%s__%s", canonicalizedStructName, canonicalizedName),
-			"wireType":          canotoType.WireType().String(),
-			"goType":            goType,
-			"genericTypeCast":   genericTypeCast,
-			"protoType":         protoType,
-			"protoTypePrefix":   canotoType.ProtoTypePrefix(),
-			"protoTypeSuffix":   canotoType.ProtoTypeSuffix(),
-			"fieldName":         name,
-			"escapedFieldName":  canonicalizedName,
-			"suffix":            canotoType.Suffix(),
-			"oneOf":             oneOfName,
-			"unmarshalOneOf":    unmarshalOneOf,
-			"sizeOneOf":         sizeOneOf,
-			"sizeOneOfIndent":   sizeOneOfIndent,
-			"signedSpace":       signedSpace,
-			"canonicalGoType":   canonicalizeName(goType),
-			"wrapperName":       canonicalizeName(goType) + "__Pointer",
+			"selector":        selector,
+			"loadPrefix":      loadPrefix,
+			"loadSuffix":      loadSuffix,
+			"storePrefix":     storePrefix,
+			"storeJoin":       storeJoin,
+			"storeSuffix":     storeSuffix,
+			"fieldNumber":     strconv.FormatUint(uint64(fieldNumber), 10),
+			"wireType":        canotoType.WireType().String(),
+			"goType":          goType,
+			"genericTypeCast": genericTypeCast,
+			"protoType":       protoType,
+			"protoTypePrefix": canotoType.ProtoTypePrefix(),
+			"protoTypeSuffix": canotoType.ProtoTypeSuffix(),
+			"fieldName":       name,
+			"suffix":          canotoType.Suffix(),
+			"oneOf":           oneOfName,
+			"unmarshalOneOf":  unmarshalOneOf,
+			"sizeOneOf":       sizeOneOf,
+			"sizeOneOfIndent": sizeOneOfIndent,
+			"signedSpace":     signedSpace,
+			"canonicalGoType": canonicalizeName(goType),
+			"wrapperName":     canonicalizeName(goType) + "__Pointer",
 		},
 	}, true, nil
 }
