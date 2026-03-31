@@ -23,7 +23,15 @@ const (
 	canotoTestExtension = ".canoto_test.go"
 
 	defaultCanotoImporter = "canoto."
+
+	dataTemplate   = "canotoData_${structName}"
+	numberTemplate = "canoto__${canonicalStructName}__${canonicalFieldName}"
+	tagTemplate    = "canoto__${canonicalStructName}__${canonicalFieldName}__tag"
 )
+
+// `canoto__StructName__FieldName`
+// `canoto__StructName__FieldName__tag`
+// `canotoData_StructName`
 
 var errNonGoExtension = errors.New("file must be a go file")
 
@@ -128,7 +136,7 @@ var _ = io.ErrUnexpectedEOF
 
 func writeStruct(w io.Writer, m message, canotoSelector string) error {
 	const structTemplate = `
-${constants}type canotoData_${structName} struct {
+${constants}type ${canotoData} struct {
 ${sizeCache}${oneOfCache}}
 
 // CanotoSpec returns the specification of this canoto message.
@@ -250,6 +258,10 @@ ${marshal}	return w
 	}
 
 	return writeTemplate(w, structTemplate, map[string]string{
+		"canotoData": makeTemplate(dataTemplate, map[string]string{
+			"structName":          m.name,
+			"canonicalStructName": m.canonicalizedName,
+		}),
 		"typesDecl":           typesDecl,
 		"appendTypes":         appendTypes,
 		"constants":           makeConstants(m),
@@ -331,11 +343,15 @@ func makeConstants(m message) string {
 }
 
 func makeNumberConstants(m message) string {
-	const fieldSizeOverhead = len("canoto____")
 	var largestNumberConstSize int
 	for _, f := range m.fields {
-		numberConstSize := fieldSizeOverhead + len(m.canonicalizedName) + len(f.canonicalizedName)
-		largestNumberConstSize = max(largestNumberConstSize, numberConstSize)
+		field := makeTemplate(numberTemplate, map[string]string{
+			"structName":          m.name,
+			"canonicalStructName": m.canonicalizedName,
+			"fieldName":           f.name,
+			"canonicalFieldName":  f.canonicalizedName,
+		})
+		largestNumberConstSize = max(largestNumberConstSize, len(field))
 	}
 
 	var (
@@ -345,21 +361,30 @@ func makeNumberConstants(m message) string {
 		sb strings.Builder
 	)
 	for _, f := range m.fields {
-		field := fmt.Sprintf("canoto__%s__%s", m.canonicalizedName, f.canonicalizedName)
+		field := makeTemplate(numberTemplate, map[string]string{
+			"structName":          m.name,
+			"canonicalStructName": m.canonicalizedName,
+			"fieldName":           f.name,
+			"canonicalFieldName":  f.canonicalizedName,
+		})
 		fmt.Fprintf(&sb, template, field, f.fieldNumber)
 	}
 	return sb.String()
 }
 
 func makeTagConstants(m message) string {
-	const tagSizeOverhead = len("canoto______tag")
 	var (
 		largestTagConstSize int
 		largestTagSize      int
 	)
 	for _, f := range m.fields {
-		tagConstSize := tagSizeOverhead + len(m.canonicalizedName) + len(f.canonicalizedName)
-		largestTagConstSize = max(largestTagConstSize, tagConstSize)
+		tag := makeTemplate(tagTemplate, map[string]string{
+			"structName":          m.name,
+			"canonicalStructName": m.canonicalizedName,
+			"fieldName":           f.name,
+			"canonicalFieldName":  f.canonicalizedName,
+		})
+		largestTagConstSize = max(largestTagConstSize, len(tag))
 
 		wireType := f.canotoType.WireType()
 		tagBytes := canoto.Tag(f.fieldNumber, wireType)
@@ -376,7 +401,12 @@ func makeTagConstants(m message) string {
 	)
 	for _, f := range m.fields {
 		field := fmt.Sprintf("canoto__%s__%s", m.canonicalizedName, f.canonicalizedName)
-		tag := field + "__tag"
+		tag := makeTemplate(tagTemplate, map[string]string{
+			"structName":          m.name,
+			"canonicalStructName": m.canonicalizedName,
+			"fieldName":           f.name,
+			"canonicalFieldName":  f.canonicalizedName,
+		})
 
 		var tagString strings.Builder
 		tagString.WriteString(`"`)
@@ -731,12 +761,10 @@ ${unmarshal}		default:
 `
 	}
 
-	var sb strings.Builder
-	_ = writeTemplate(&sb, template, map[string]string{
+	return makeTemplate(template, map[string]string{
 		"canotoSelector": canotoSelector,
 		"unmarshal":      makeUnmarshal(m),
 	})
-	return sb.String()
 }
 
 func makeUnmarshal(m message) string {
