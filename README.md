@@ -329,7 +329,6 @@ The enum's underlying values still match the generated field number constants, s
 
 After the cache has been initialized by calling one of `UnmarshalCanoto`, `UnmarshalCanotoFrom`, or `CalculateCanotoCache`, the method returns the populated field's enum value.
 If no field in the OneOf group was set, the method returns `0`.
-The enum values match the underlying field numbers on the wire.
 
 ### Non-standard encoding
 
