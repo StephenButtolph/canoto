@@ -182,14 +182,14 @@ Will generate the canoto library in `./internal/canoto` and will import `"github
 
 Six CLI flags control the naming of generated Go identifiers:
 
-| Flag                  | Default                              | Scope   | Description                                   |
-|-----------------------|--------------------------------------|---------|-----------------------------------------------|
-| `--format-cache`      | `canotoData_{struct}`                | Message | Name of the generated cache struct type       |
-| `--format-number`     | `canotoNumber_{cStruct}__{cField}`   | Field   | Name of generated field number constants      |
-| `--format-tag`        | `canotoTag_{cStruct}__{cField}`      | Field   | Name of generated field tag constants         |
-| `--format-oneof-type` | `canotoOneOfType_{cStruct}__{cOneOf}`| OneOf   | Name of generated oneOf type aliases          |
-| `--format-oneof-unset`| `canotoOneOfUnset_{cStruct}__{cOneOf}`| OneOf  | Name of generated unset oneOf constants       |
-| `--format-oneof-field`| `canotoOneOf_{cStruct}__{cField}`    | Field   | Name of generated oneOf field constants       |
+| Flag                   | Default                                | Scope   | Description                              |
+|------------------------|----------------------------------------|---------|------------------------------------------|
+| `--format-cache`       | `canotoData_{struct}`                  | Message | Name of the generated cache struct type  |
+| `--format-number`      | `canotoNumber_{cStruct}__{cField}`     | Field   | Name of generated field number constants |
+| `--format-tag`         | `canotoTag_{cStruct}__{cField}`        | Field   | Name of generated field tag constants    |
+| `--format-oneof-type`  | `canotoOneOfType_{cStruct}__{cOneOf}`  | OneOf   | Name of generated oneOf type aliases     |
+| `--format-oneof-unset` | `canotoOneOfUnset_{cStruct}__{cOneOf}` | OneOf   | Name of generated unset oneOf constants  |
+| `--format-oneof-field` | `canotoOneOf_{cStruct}__{cField}`      | Field   | Name of generated oneOf field constants  |
 
 Each flag accepts a template string. The available variables depend on the flag's scope, and each scope extends the one above it:
 
