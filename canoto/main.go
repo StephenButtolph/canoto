@@ -98,6 +98,7 @@ func main() {
 			if err != nil {
 				return err
 			}
+
 			for _, arg := range args {
 				if canoto {
 					if err := generate.Canoto(arg, canotoImport, internal, cacheTemplate, numberTemplate, tagTemplate, oneOfTemplate); err != nil {
