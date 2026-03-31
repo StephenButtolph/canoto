@@ -24,14 +24,12 @@ const (
 
 	defaultCanotoImporter = "canoto."
 
+	// The following templates are added to the package scope. They must be
+	// correctly namespaced to prevent collisions.
 	dataTemplate   = "canotoData_${structName}"
 	numberTemplate = "canoto__${canonicalStructName}__${canonicalFieldName}"
 	tagTemplate    = "canoto__${canonicalStructName}__${canonicalFieldName}__tag"
 )
-
-// `canoto__StructName__FieldName`
-// `canoto__StructName__FieldName__tag`
-// `canotoData_StructName`
 
 var errNonGoExtension = errors.New("file must be a go file")
 
