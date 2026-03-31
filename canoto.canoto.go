@@ -857,12 +857,12 @@ func (c *FieldType) CachedCanotoSize() uint64 {
 // This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CalculateCanotoCache.
 //
-// If the field has not yet been cached, it will return canotoOneOfUnset_FieldType__Type.
+// If the field has not yet been cached, it will return 0.
 //
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
-func (c *FieldType) CachedWhichOneOfType() canotoOneOfType_FieldType__Type {
-	return canotoOneOfType_FieldType__Type(atomic.LoadUint32(&c.canotoData.TypeOneOf))
+func (c *FieldType) CachedWhichOneOfType() uint32 {
+	return (atomic.LoadUint32(&c.canotoData.TypeOneOf))
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.

@@ -4334,12 +4334,12 @@ func (c *OneOf) CachedCanotoSize() uint64 {
 // This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CalculateCanotoCache.
 //
-// If the field has not yet been cached, it will return canotoOneOfUnset_OneOf__A.
+// If the field has not yet been cached, it will return 0.
 //
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
-func (c *OneOf) CachedWhichOneOfA() canotoOneOfType_OneOf__A {
-	return canotoOneOfType_OneOf__A(atomic.LoadUint32(&c.canotoData.AOneOf))
+func (c *OneOf) CachedWhichOneOfA() uint32 {
+	return (atomic.LoadUint32(&c.canotoData.AOneOf))
 }
 
 // CachedWhichOneOfB returns the previously calculated field number used
@@ -4348,12 +4348,12 @@ func (c *OneOf) CachedWhichOneOfA() canotoOneOfType_OneOf__A {
 // This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CalculateCanotoCache.
 //
-// If the field has not yet been cached, it will return canotoOneOfUnset_OneOf__B.
+// If the field has not yet been cached, it will return 0.
 //
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
-func (c *OneOf) CachedWhichOneOfB() canotoOneOfType_OneOf__B {
-	return canotoOneOfType_OneOf__B(atomic.LoadUint32(&c.canotoData.BOneOf))
+func (c *OneOf) CachedWhichOneOfB() uint32 {
+	return (atomic.LoadUint32(&c.canotoData.BOneOf))
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.

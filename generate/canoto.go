@@ -1881,7 +1881,7 @@ func makeOneOfCacheAccessors(m message) string {
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
 func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${oneOfType} {
-	return ${oneOfType}(${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix})
+	return ${oneOfCast}(${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix})
 }`
 	var (
 		sb         strings.Builder
@@ -1895,8 +1895,10 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${oneOfType} {
 	}
 	for _, oneOf := range m.OneOfs() {
 		oneOfType := makeTemplate(m.template.oneOfType, oneOfEnv(m, oneOf))
+		oneOfCast := oneOfType
 		if !token.IsExported(oneOfType) {
 			oneOfType = "uint32"
+			oneOfCast = ""
 		}
 		_ = writeTemplate(&sb, template, map[string]string{
 			"oneOf":      oneOf,
@@ -1905,6 +1907,7 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${oneOfType} {
 			"loadPrefix": loadPrefix,
 			"loadSuffix": loadSuffix,
 			"oneOfType":  oneOfType,
+			"oneOfCast":  oneOfCast,
 		})
 	}
 	return sb.String()
