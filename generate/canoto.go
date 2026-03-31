@@ -1895,8 +1895,7 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${oneOfType} {
 	}
 	for _, oneOf := range m.OneOfs() {
 		oneOfType := makeTemplate(m.template.oneOfType, oneOfEnv(m, oneOf))
-		// TODO: If oneOfType is unexported (first character is lowercase)
-		if false {
+		if !token.IsExported(oneOfType) {
 			oneOfType = "uint32"
 		}
 		_ = writeTemplate(&sb, template, map[string]string{
