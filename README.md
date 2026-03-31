@@ -181,6 +181,7 @@ Will generate the canoto library in `./internal/canoto` and will import `"github
 ### Custom Identifiers
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Six CLI flags control the naming of generated Go identifiers:
 
 | Flag                  | Default                              | Scope   | Description                                   |
@@ -192,12 +193,15 @@ Six CLI flags control the naming of generated Go identifiers:
 | `--format-oneof-unset`| `canotoOneOfUnset_{cStruct}__{cOneOf}`| OneOf  | Name of generated unset oneOf constants       |
 | `--format-oneof-field`| `canotoOneOf_{cStruct}__{cField}`    | Field   | Name of generated oneOf field constants       |
 =======
+=======
+>>>>>>> 33dfac36ce3c28de64ec69ad70cbe97d38466697
 Four CLI flags control the naming of generated Go identifiers:
 
 1. `--format-cache` (default: `canotoData_{struct}`) — the name of the generated cache struct type
 2. `--format-number` (default: `canotoNumber_{cStruct}__{cField}`) — the name of generated field number constants
 3. `--format-tag` (default: `canotoTag_{cStruct}__{cField}`) — the name of generated field tag constants
 4. `--format-oneof` (default: `canotoOneOf_{cStruct}__{cOneOf}`) — the name of generated oneof enum identifiers
+<<<<<<< HEAD
 >>>>>>> 33dfac36ce3c28de64ec69ad70cbe97d38466697
 
 Each flag accepts a template string. The available variables depend on the flag's scope, and each scope extends the one above it:
@@ -220,6 +224,15 @@ Each flag accepts a template string. The available variables depend on the flag'
 
 The `_` → `_1` canonicalization prevents ambiguity with `__`, which can be used as a separator between variables.
 =======
+=======
+
+Each flag accepts a template string with the following variables:
+
+| Variable    | Description                                                           |
+|-------------|-----------------------------------------------------------------------|
+| `{struct}`  | Original struct name (e.g. `My_Struct`)                               |
+| `{cStruct}` | Canonicalized struct name: `_` replaced with `_1` (e.g. `My_1Struct`) |
+>>>>>>> 33dfac36ce3c28de64ec69ad70cbe97d38466697
 | `{field}`   | Original field name                                                   |
 | `{cField}`  | Canonicalized field name: `_` replaced with `_1`                      |
 | `{oneOf}`   | Original OneOf name                                                   |
@@ -228,6 +241,9 @@ The `_` → `_1` canonicalization prevents ambiguity with `__`, which can be use
 `--format-cache` is struct-level and only supports `{struct}` and `{cStruct}`. `--format-oneof` is oneof-level and supports struct and oneof variables.
 
  The `_` → `_1` canonicalization prevents ambiguity with `__`, which can be used as a separator between struct and field names.
+<<<<<<< HEAD
+>>>>>>> 33dfac36ce3c28de64ec69ad70cbe97d38466697
+=======
 >>>>>>> 33dfac36ce3c28de64ec69ad70cbe97d38466697
 
 For example:
