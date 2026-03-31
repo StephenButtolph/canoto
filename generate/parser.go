@@ -166,6 +166,7 @@ func parse(
 			)
 			field, hasTag, err = parseField(
 				fs,
+				message.name,
 				message.canonicalizedName,
 				noCopy,
 				internal,
@@ -258,6 +259,7 @@ func parseCanotoData(
 
 func parseField(
 	fs *token.FileSet,
+	structName string,
 	canonicalizedStructName string,
 	noCopy bool,
 	internal bool,
@@ -287,35 +289,6 @@ func parseField(
 	var selector string
 	if !internal {
 		selector = defaultCanotoImporter
-	}
-
-	var (
-		unmarshalOneOf  string
-		sizeOneOf       string
-		sizeOneOfIndent string
-	)
-	if oneOfName != "" {
-		var unmarshalOneOfTemplate string
-		if noCopy {
-			unmarshalOneOfTemplate = `
-			if c.canotoData.%sOneOf.Swap(%d) != 0 {
-				return %sErrDuplicateOneOf
-			}`
-		} else {
-			unmarshalOneOfTemplate = `
-			if atomic.SwapUint32(&c.canotoData.%sOneOf, %d) != 0 {
-				return %sErrDuplicateOneOf
-			}`
-		}
-		unmarshalOneOf = fmt.Sprintf(unmarshalOneOfTemplate,
-			oneOfName,
-			fieldNumber,
-			selector,
-		)
-
-		assignOneOf := fmt.Sprintf("%sOneOf = %d", oneOfName, fieldNumber)
-		sizeOneOf = "\n\t\t" + assignOneOf
-		sizeOneOfIndent = "\n\t\t\t" + assignOneOf
 	}
 
 	var (
@@ -363,13 +336,48 @@ func parseField(
 			fs.Position(af.Pos()),
 		)
 	}
+	canonicalizedName := canonicalizeName(name)
+
+	var (
+		unmarshalOneOf  string
+		sizeOneOf       string
+		sizeOneOfIndent string
+	)
+	if oneOfName != "" {
+		var unmarshalOneOfTemplate string
+		if noCopy {
+			unmarshalOneOfTemplate = `
+			if c.canotoData.%sOneOf.Swap(%s) != 0 {
+				return %sErrDuplicateOneOf
+			}`
+		} else {
+			unmarshalOneOfTemplate = `
+			if atomic.SwapUint32(&c.canotoData.%sOneOf, %s) != 0 {
+				return %sErrDuplicateOneOf
+			}`
+		}
+		fieldNumberConst := makeTemplate(numberTemplate, map[string]string{
+			"structName":          structName,
+			"canonicalStructName": canonicalizedStructName,
+			"fieldName":           name,
+			"canonicalFieldName":  canonicalizedName,
+		})
+		unmarshalOneOf = fmt.Sprintf(unmarshalOneOfTemplate,
+			oneOfName,
+			fieldNumberConst,
+			selector,
+		)
+
+		assignOneOf := fmt.Sprintf("%sOneOf = %s", oneOfName, fieldNumberConst)
+		sizeOneOf = "\n\t\t" + assignOneOf
+		sizeOneOfIndent = "\n\t\t\t" + assignOneOf
+	}
 
 	var genericTypeCast string
 	if genericType, ok := genericTypes[goType]; ok {
 		genericTypeCast = fmt.Sprintf("T%d", genericType)
 	}
 
-	canonicalizedName := canonicalizeName(name)
 	protoType := canotoType.ProtoType(goType)
 
 	var signedSpace string

@@ -1555,7 +1555,7 @@ func makeValidOneOf(m message) string {
 			continue
 		}
 
-		_ = writeField(&sb, f, t)
+		_ = writeField(&sb, m, f, t)
 	}
 	return sb.String()
 }
@@ -2128,13 +2128,28 @@ func makeMarshal(m message) string {
 		}
 
 		if len(currentOneOfFields) == 1 {
-			fmt.Fprintf(&sb, "\tif %s == %d {\n", varName, currentOneOfFields[0].fieldNumber)
-			_ = writeField(&sb, currentOneOfFields[0], oneOfTmpl)
+			field := currentOneOfFields[0]
+			args := map[string]string{
+				"structName":          m.name,
+				"canonicalStructName": m.canonicalizedName,
+				"fieldName":           field.name,
+				"canonicalFieldName":  field.canonicalizedName,
+			}
+			fieldNumber := makeTemplate(numberTemplate, args)
+			fmt.Fprintf(&sb, "\tif %s == %s {\n", varName, fieldNumber)
+			_ = writeField(&sb, m, field, oneOfTmpl)
 		} else {
 			fmt.Fprintf(&sb, "\tswitch %s {\n", varName)
 			for _, field := range currentOneOfFields {
-				fmt.Fprintf(&sb, "\tcase canoto__%s__%s:\n", m.canonicalizedName, field.canonicalizedName)
-				_ = writeField(&sb, field, oneOfTmpl)
+				args := map[string]string{
+					"structName":          m.name,
+					"canonicalStructName": m.canonicalizedName,
+					"fieldName":           field.name,
+					"canonicalFieldName":  field.canonicalizedName,
+				}
+				fieldNumber := makeTemplate(numberTemplate, args)
+				fmt.Fprintf(&sb, "\tcase %s:\n", fieldNumber)
+				_ = writeField(&sb, m, field, oneOfTmpl)
 			}
 		}
 
@@ -2152,7 +2167,7 @@ func makeMarshal(m message) string {
 		flushOneOf()
 
 		if f.oneOfName == "" {
-			_ = writeField(&sb, f, regularTmpl)
+			_ = writeField(&sb, m, f, regularTmpl)
 			continue
 		}
 
@@ -2191,21 +2206,12 @@ type typeTemplate struct {
 func writeMessage(m message, t messageTemplate) string {
 	var sb strings.Builder
 	for _, f := range m.fields {
-		args := map[string]string{
-			"structName":          m.name,
-			"canonicalStructName": m.canonicalizedName,
-			"fieldName":           f.name,
-			"canonicalFieldName":  f.canonicalizedName,
-		}
-		_ = writeField(&sb, f, t, map[string]string{
-			"fieldNumberConst": makeTemplate(numberTemplate, args),
-			"fieldTagConst":    makeTemplate(tagTemplate, args),
-		})
+		_ = writeField(&sb, m, f, t)
 	}
 	return sb.String()
 }
 
-func writeField(w io.Writer, f field, t messageTemplate, args ...map[string]string) error {
+func writeField(w io.Writer, m message, f field, t messageTemplate) error {
 	var template string
 	switch c := f.canotoType; c {
 	case canotoInt, canotoUint:
@@ -2257,7 +2263,17 @@ func writeField(w io.Writer, f field, t messageTemplate, args ...map[string]stri
 	default:
 		template = t.pointers.fixedRepeated
 	}
-	return writeTemplate(w, template, append([]map[string]string{f.templateArgs}, args...)...)
+
+	args := map[string]string{
+		"structName":          m.name,
+		"canonicalStructName": m.canonicalizedName,
+		"fieldName":           f.name,
+		"canonicalFieldName":  f.canonicalizedName,
+	}
+	return writeTemplate(w, template, f.templateArgs, map[string]string{
+		"fieldNumberConst": makeTemplate(numberTemplate, args),
+		"fieldTagConst":    makeTemplate(tagTemplate, args),
+	})
 }
 
 func makeTemplate(template string, args ...map[string]string) string {
