@@ -21,7 +21,7 @@ const (
 	importFlag   = "import"
 	internalFlag = "internal"
 
-	formatDataFlag   = "format-data"
+	formatCacheFlag  = "format-cache"
 	formatNumberFlag = "format-number"
 	formatTagFlag    = "format-tag"
 )
@@ -81,7 +81,7 @@ func main() {
 				}
 				return strings.ReplaceAll(template, "{", "${"), nil
 			}
-			dataTemplate, err := getFormat(formatDataFlag)
+			cacheTemplate, err := getFormat(formatCacheFlag)
 			if err != nil {
 				return err
 			}
@@ -96,7 +96,7 @@ func main() {
 
 			for _, arg := range args {
 				if canoto {
-					if err := generate.Canoto(arg, canotoImport, internal, dataTemplate, numberTemplate, tagTemplate); err != nil {
+					if err := generate.Canoto(arg, canotoImport, internal, cacheTemplate, numberTemplate, tagTemplate); err != nil {
 						return fmt.Errorf("failed to generate canoto for %q: %w", arg, err)
 					}
 				}
@@ -117,7 +117,7 @@ func main() {
 	flags.Bool(protoFlag, false, "Generate proto file")
 	flags.String(importFlag, "github.com/StephenButtolph/canoto", "Package to depend on for canoto serialization primitives")
 	flags.Bool(internalFlag, false, "Generate a file that assumes the canoto package does not need to be imported")
-	flags.String(formatDataFlag, "canotoData_{struct}", "Format to use when generating the canoto cache")
+	flags.String(formatCacheFlag, "canotoData_{struct}", "Format to use when generating the canoto cache")
 	flags.String(formatNumberFlag, "canotoNumber_{cStruct}__{cField}", "Format to use when generating canoto field number constants")
 	flags.String(formatTagFlag, "canotoTag_{cStruct}__{cField}", "Format to use when generating canoto field tag constants")
 

@@ -32,7 +32,7 @@ func Canoto(
 	inputFilePath string,
 	canotoImport string,
 	internal bool,
-	dataTemplate string,
+	cacheTemplate string,
 	numberTemplate string,
 	tagTemplate string,
 ) error {
@@ -53,7 +53,7 @@ func Canoto(
 		return err
 	}
 
-	packageName, messages, err := parse(fs, f, canotoImport, internal, dataTemplate, numberTemplate, tagTemplate)
+	packageName, messages, err := parse(fs, f, canotoImport, internal, cacheTemplate, numberTemplate, tagTemplate)
 	if err != nil {
 		return err
 	}
@@ -253,7 +253,7 @@ ${marshal}	return w
 	}
 
 	return writeTemplate(w, structTemplate, map[string]string{
-		"canotoData": makeTemplate(m.dataTemplate, map[string]string{
+		"canotoData": makeTemplate(m.cacheTemplate, map[string]string{
 			"struct":  m.name,
 			"cStruct": m.canonicalizedName,
 		}),

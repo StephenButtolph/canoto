@@ -11,7 +11,7 @@ type message struct {
 	numTypes          int
 	fields            []field
 	noCopy            bool
-	dataTemplate      string
+	cacheTemplate     string
 	numberTemplate    string
 	tagTemplate       string
 }

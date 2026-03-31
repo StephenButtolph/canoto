@@ -48,7 +48,7 @@ func parse(
 	f ast.Node,
 	canotoImport string,
 	internal bool,
-	dataTemplate string,
+	cacheTemplate string,
 	numberTemplate string,
 	tagTemplate string,
 ) (string, []message, error) {
@@ -94,7 +94,7 @@ func parse(
 		message := message{
 			name:              name,
 			canonicalizedName: canonicalizeName(name),
-			dataTemplate:      dataTemplate,
+			cacheTemplate:     cacheTemplate,
 			numberTemplate:    numberTemplate,
 			tagTemplate:       tagTemplate,
 		}

@@ -28,7 +28,7 @@ const (
 	CustomFormatUintTag = "\x08" // canoto.Tag(CustomFormatUintNumber, canoto.Varint)
 )
 
-type CustomFormatData struct {
+type CustomFormatCache struct {
 	size uint64
 }
 
