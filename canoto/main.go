@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -19,6 +20,10 @@ const (
 	versionFlag  = "version"
 	importFlag   = "import"
 	internalFlag = "internal"
+
+	formatCacheFlag  = "format-cache"
+	formatNumberFlag = "format-number"
+	formatTagFlag    = "format-tag"
 )
 
 func init() {
@@ -69,9 +74,29 @@ func main() {
 				return fmt.Errorf("failed to get internal flag: %w", err)
 			}
 
+			getFormat := func(key string) (string, error) {
+				template, err := flags.GetString(key)
+				if err != nil {
+					return "", fmt.Errorf("failed to get %s flag: %w", key, err)
+				}
+				return strings.ReplaceAll(template, "{", "${"), nil
+			}
+			cacheTemplate, err := getFormat(formatCacheFlag)
+			if err != nil {
+				return err
+			}
+			numberTemplate, err := getFormat(formatNumberFlag)
+			if err != nil {
+				return err
+			}
+			tagTemplate, err := getFormat(formatTagFlag)
+			if err != nil {
+				return err
+			}
+
 			for _, arg := range args {
 				if canoto {
-					if err := generate.Canoto(arg, canotoImport, internal); err != nil {
+					if err := generate.Canoto(arg, canotoImport, internal, cacheTemplate, numberTemplate, tagTemplate); err != nil {
 						return fmt.Errorf("failed to generate canoto for %q: %w", arg, err)
 					}
 				}
@@ -92,6 +117,9 @@ func main() {
 	flags.Bool(protoFlag, false, "Generate proto file")
 	flags.String(importFlag, "github.com/StephenButtolph/canoto", "Package to depend on for canoto serialization primitives")
 	flags.Bool(internalFlag, false, "Generate a file that assumes the canoto package does not need to be imported")
+	flags.String(formatCacheFlag, "canotoData_{struct}", "Format to use when generating the canoto cache")
+	flags.String(formatNumberFlag, "canotoNumber_{cStruct}__{cField}", "Format to use when generating canoto field number constants")
+	flags.String(formatTagFlag, "canotoTag_{cStruct}__{cField}", "Format to use when generating canoto field tag constants")
 
 	if err := cmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "command failed %v\n", err)

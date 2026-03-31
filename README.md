@@ -178,6 +178,42 @@ canoto --library="./internal" --import="github.com/StephenButtolph/canoto/intern
 
 Will generate the canoto library in `./internal/canoto` and will import `"github.com/StephenButtolph/canoto/internal/canoto"` rather than the default `"github.com/StephenButtolph/canoto"` when generating `./canoto.canoto.go`.
 
+### Custom Identifiers
+
+Three CLI flags control the naming of generated Go identifiers:
+
+1. `--format-cache` (default: `canotoData_{struct}`) — the name of the generated cache struct type
+2. `--format-number` (default: `canotoNumber_{cStruct}__{cField}`) — the name of generated field number constants
+3. `--format-tag` (default: `canotoTag_{cStruct}__{cField}`) — the name of generated field tag constants
+
+Each flag accepts a template string with the following variables:
+
+| Variable    | Description                                                           |
+|-------------|-----------------------------------------------------------------------|
+| `{struct}`  | Original struct name (e.g. `My_Struct`)                               |
+| `{cStruct}` | Canonicalized struct name: `_` replaced with `_1` (e.g. `My_1Struct`) |
+| `{field}`   | Original field name                                                   |
+| `{cField}`  | Canonicalized field name: `_` replaced with `_1`                      |
+
+`--format-cache` is struct-level and only supports `{struct}` and `{cStruct}`. The `_` → `_1` canonicalization prevents ambiguity with `__`, which can be used as a separator between struct and field names.
+
+For example:
+
+```sh
+canoto --format-cache="cache_{struct}" --format-number="fieldNum_{cStruct}__{cField}" --format-tag="fieldTag_{cStruct}__{cField}" example.go
+```
+
+For a struct `Foo` with a field `Bar`, this would generate:
+
+```go
+type cache_Foo struct { ... }
+
+const (
+    fieldNum_Foo__Bar = 1
+    fieldTag_Foo__Bar = "\x0a"
+)
+```
+
 ## Supported Types
 
 | go type         | canoto type                  | proto type                 | wire type |
