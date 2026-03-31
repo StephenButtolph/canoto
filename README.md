@@ -199,14 +199,14 @@ Each flag accepts a template string. The available variables depend on the flag'
 | OneOf   | `{struct}`, `{cStruct}`, `{oneOf}`, `{cOneOf}`                        |
 | Field   | `{struct}`, `{cStruct}`, `{oneOf}`, `{cOneOf}`, `{field}`, `{cField}` |
 
-| Variable    | Description                                                            |
-|-------------|------------------------------------------------------------------------|
-| `{struct}`  | Original struct name (e.g. `My_Struct`)                                |
-| `{cStruct}` | Canonicalized struct name: `_` replaced with `_1` (e.g. `My_1Struct`)  |
-| `{oneOf}`   | Original oneOf name                                                    |
-| `{cOneOf}`  | Canonicalized oneOf name: `_` replaced with `_1`                       |
-| `{field}`   | Original field name                                                    |
-| `{cField}`  | Canonicalized field name: `_` replaced with `_1`                       |
+| Variable    | Description                                                           |
+|-------------|-----------------------------------------------------------------------|
+| `{struct}`  | Original struct name (e.g. `My_Struct`)                               |
+| `{cStruct}` | Canonicalized struct name: `_` replaced with `_1` (e.g. `My_1Struct`) |
+| `{oneOf}`   | Original oneOf name                                                   |
+| `{cOneOf}`  | Canonicalized oneOf name: `_` replaced with `_1`                      |
+| `{field}`   | Original field name                                                   |
+| `{cField}`  | Canonicalized field name: `_` replaced with `_1`                      |
 
 The `_` → `_1` canonicalization prevents ambiguity with `__`, which can be used as a separator between variables.
 
