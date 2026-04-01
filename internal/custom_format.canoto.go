@@ -23,13 +23,26 @@ const (
 var _ = io.ErrUnexpectedEOF
 
 const (
-	CustomFormatUintNumber = 1
+	CustomFormatANumber = 1
+	CustomFormatBNumber = 2
 
-	CustomFormatUintTag = "\x08" // canoto.Tag(CustomFormatUintNumber, canoto.Varint)
+	CustomFormatATag = "\x08" // canoto.Tag(CustomFormatANumber, canoto.Varint)
+	CustomFormatBTag = "\x10" // canoto.Tag(CustomFormatBNumber, canoto.Varint)
+)
+
+// CustomFormatFields identifies which field is populated in Fields.
+type CustomFormatFields uint32
+
+const (
+	CustomFormatFieldsUnset CustomFormatFields = 0
+	CustomFormatFieldsA     CustomFormatFields = CustomFormatANumber
+	CustomFormatFieldsB     CustomFormatFields = CustomFormatBNumber
 )
 
 type CustomFormatCache struct {
 	size uint64
+
+	FieldsOneOf uint32
 }
 
 // CanotoSpec returns the specification of this canoto message.
@@ -39,10 +52,16 @@ func (*CustomFormat) CanotoSpec(...reflect.Type) *canoto.Spec {
 		Name: "CustomFormat",
 		Fields: []canoto.FieldType{
 			{
-				FieldNumber: CustomFormatUintNumber,
-				Name:        "Uint",
-				OneOf:       "",
-				TypeUint:    canoto.SizeOf(zero.Uint),
+				FieldNumber: CustomFormatANumber,
+				Name:        "A",
+				OneOf:       "Fields",
+				TypeUint:    canoto.SizeOf(zero.A),
+			},
+			{
+				FieldNumber: CustomFormatBNumber,
+				Name:        "B",
+				OneOf:       "Fields",
+				TypeUint:    canoto.SizeOf(zero.B),
 			},
 		},
 	}
@@ -82,15 +101,32 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) error {
 		}
 
 		switch field {
-		case CustomFormatUintNumber:
+		case CustomFormatANumber:
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
+			if atomic.SwapUint32(&c.canotoData.FieldsOneOf, CustomFormatANumber) != 0 {
+				return canoto.ErrDuplicateOneOf
+			}
 
-			if err := canoto.ReadUint(&r, &c.Uint); err != nil {
+			if err := canoto.ReadUint(&r, &c.A); err != nil {
 				return err
 			}
-			if canoto.IsZero(c.Uint) {
+			if canoto.IsZero(c.A) {
+				return canoto.ErrZeroValue
+			}
+		case CustomFormatBNumber:
+			if wireType != canoto.Varint {
+				return canoto.ErrUnexpectedWireType
+			}
+			if atomic.SwapUint32(&c.canotoData.FieldsOneOf, CustomFormatBNumber) != 0 {
+				return canoto.ErrDuplicateOneOf
+			}
+
+			if err := canoto.ReadUint(&r, &c.B); err != nil {
+				return err
+			}
+			if canoto.IsZero(c.B) {
 				return canoto.ErrZeroValue
 			}
 		default:
@@ -110,6 +146,19 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) error {
 // 2. All strings are valid utf-8.
 // 3. All custom fields are ValidCanoto.
 func (c *CustomFormat) ValidCanoto() bool {
+	var FieldsOneOf uint32
+	if !canoto.IsZero(c.A) {
+		if FieldsOneOf != 0 {
+			return false
+		}
+		FieldsOneOf = CustomFormatANumber
+	}
+	if !canoto.IsZero(c.B) {
+		if FieldsOneOf != 0 {
+			return false
+		}
+		FieldsOneOf = CustomFormatBNumber
+	}
 	return true
 }
 
@@ -119,10 +168,17 @@ func (c *CustomFormat) ValidCanoto() bool {
 // It is not safe to copy this struct concurrently.
 func (c *CustomFormat) CalculateCanotoCache() {
 	var size uint64
-	if !canoto.IsZero(c.Uint) {
-		size += uint64(len(CustomFormatUintTag)) + canoto.SizeUint(c.Uint)
+	var FieldsOneOf uint32
+	if !canoto.IsZero(c.A) {
+		size += uint64(len(CustomFormatATag)) + canoto.SizeUint(c.A)
+		FieldsOneOf = CustomFormatANumber
+	}
+	if !canoto.IsZero(c.B) {
+		size += uint64(len(CustomFormatBTag)) + canoto.SizeUint(c.B)
+		FieldsOneOf = CustomFormatBNumber
 	}
 	atomic.StoreUint64(&c.canotoData.size, size)
+	atomic.StoreUint32(&c.canotoData.FieldsOneOf, FieldsOneOf)
 }
 
 // CachedCanotoSize returns the previously calculated size of the Canoto
@@ -134,6 +190,20 @@ func (c *CustomFormat) CalculateCanotoCache() {
 // the returned size may be incorrect.
 func (c *CustomFormat) CachedCanotoSize() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
+}
+
+// CachedWhichOneOfFields returns the previously calculated field number used
+// to represent Fields.
+//
+// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CalculateCanotoCache.
+//
+// If the field has not yet been cached, it will return 0.
+//
+// If the struct has been modified since the field was last cached, the returned
+// field number may be incorrect.
+func (c *CustomFormat) CachedWhichOneOfFields() CustomFormatFields {
+	return CustomFormatFields(atomic.LoadUint32(&c.canotoData.FieldsOneOf))
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -160,9 +230,14 @@ func (c *CustomFormat) MarshalCanoto() []byte {
 //
 // It is not safe to copy this struct concurrently.
 func (c *CustomFormat) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if !canoto.IsZero(c.Uint) {
-		canoto.Append(&w, CustomFormatUintTag)
-		canoto.AppendUint(&w, c.Uint)
+	cachedWhichOneOfFields := atomic.LoadUint32(&c.canotoData.FieldsOneOf)
+	switch cachedWhichOneOfFields {
+	case CustomFormatANumber:
+		canoto.Append(&w, CustomFormatATag)
+		canoto.AppendUint(&w, c.A)
+	case CustomFormatBNumber:
+		canoto.Append(&w, CustomFormatBTag)
+		canoto.AppendUint(&w, c.B)
 	}
 	return w
 }

@@ -11,9 +11,16 @@ type message struct {
 	numTypes          int
 	fields            []field
 	noCopy            bool
-	cacheTemplate     string
-	numberTemplate    string
-	tagTemplate       string
+	template          templates
+}
+
+type templates struct {
+	cache      string
+	number     string
+	tag        string
+	oneOfType  string
+	oneOfUnset string
+	oneOfField string
 }
 
 func (m *message) OneOfs() []string {

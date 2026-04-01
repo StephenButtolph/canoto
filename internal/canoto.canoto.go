@@ -183,6 +183,24 @@ const (
 	canotoTag_OneOf__A2 = "\x38" // canoto.Tag(canotoNumber_OneOf__A2, canoto.Varint)
 )
 
+// canotoOneOfType_OneOf__A identifies which field is populated in A.
+type canotoOneOfType_OneOf__A uint32
+
+const (
+	canotoOneOfUnset_OneOf__A canotoOneOfType_OneOf__A = 0
+	canotoOneOf_OneOf__A1     canotoOneOfType_OneOf__A = canotoNumber_OneOf__A1
+	canotoOneOf_OneOf__A2     canotoOneOfType_OneOf__A = canotoNumber_OneOf__A2
+)
+
+// canotoOneOfType_OneOf__B identifies which field is populated in B.
+type canotoOneOfType_OneOf__B uint32
+
+const (
+	canotoOneOfUnset_OneOf__B canotoOneOfType_OneOf__B = 0
+	canotoOneOf_OneOf__B1     canotoOneOfType_OneOf__B = canotoNumber_OneOf__B1
+	canotoOneOf_OneOf__B2     canotoOneOfType_OneOf__B = canotoNumber_OneOf__B2
+)
+
 type canotoData_OneOf struct {
 	size uint64
 
@@ -451,7 +469,7 @@ func (c *OneOf) CachedCanotoSize() uint64 {
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
 func (c *OneOf) CachedWhichOneOfA() uint32 {
-	return atomic.LoadUint32(&c.canotoData.AOneOf)
+	return (atomic.LoadUint32(&c.canotoData.AOneOf))
 }
 
 // CachedWhichOneOfB returns the previously calculated field number used
@@ -465,7 +483,7 @@ func (c *OneOf) CachedWhichOneOfA() uint32 {
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
 func (c *OneOf) CachedWhichOneOfB() uint32 {
-	return atomic.LoadUint32(&c.canotoData.BOneOf)
+	return (atomic.LoadUint32(&c.canotoData.BOneOf))
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -535,6 +553,24 @@ const (
 	canotoTag_OneOfNoCopy__C  = "\x28" // canoto.Tag(canotoNumber_OneOfNoCopy__C, canoto.Varint)
 	canotoTag_OneOfNoCopy__D  = "\x30" // canoto.Tag(canotoNumber_OneOfNoCopy__D, canoto.Varint)
 	canotoTag_OneOfNoCopy__A2 = "\x38" // canoto.Tag(canotoNumber_OneOfNoCopy__A2, canoto.Varint)
+)
+
+// canotoOneOfType_OneOfNoCopy__A identifies which field is populated in A.
+type canotoOneOfType_OneOfNoCopy__A uint32
+
+const (
+	canotoOneOfUnset_OneOfNoCopy__A canotoOneOfType_OneOfNoCopy__A = 0
+	canotoOneOf_OneOfNoCopy__A1     canotoOneOfType_OneOfNoCopy__A = canotoNumber_OneOfNoCopy__A1
+	canotoOneOf_OneOfNoCopy__A2     canotoOneOfType_OneOfNoCopy__A = canotoNumber_OneOfNoCopy__A2
+)
+
+// canotoOneOfType_OneOfNoCopy__B identifies which field is populated in B.
+type canotoOneOfType_OneOfNoCopy__B uint32
+
+const (
+	canotoOneOfUnset_OneOfNoCopy__B canotoOneOfType_OneOfNoCopy__B = 0
+	canotoOneOf_OneOfNoCopy__B1     canotoOneOfType_OneOfNoCopy__B = canotoNumber_OneOfNoCopy__B1
+	canotoOneOf_OneOfNoCopy__B2     canotoOneOfType_OneOfNoCopy__B = canotoNumber_OneOfNoCopy__B2
 )
 
 type canotoData_OneOfNoCopy struct {
@@ -803,7 +839,7 @@ func (c *OneOfNoCopy) CachedCanotoSize() uint64 {
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
 func (c *OneOfNoCopy) CachedWhichOneOfA() uint32 {
-	return c.canotoData.AOneOf.Load()
+	return (c.canotoData.AOneOf.Load())
 }
 
 // CachedWhichOneOfB returns the previously calculated field number used
@@ -817,7 +853,7 @@ func (c *OneOfNoCopy) CachedWhichOneOfA() uint32 {
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
 func (c *OneOfNoCopy) CachedWhichOneOfB() uint32 {
-	return c.canotoData.BOneOf.Load()
+	return (c.canotoData.BOneOf.Load())
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -875,6 +911,14 @@ const (
 
 	canotoTag_Node__Value = "\x08" // canoto.Tag(canotoNumber_Node__Value, canoto.Varint)
 	canotoTag_Node__Next  = "\x12" // canoto.Tag(canotoNumber_Node__Next, canoto.Len)
+)
+
+// canotoOneOfType_Node__OneOf identifies which field is populated in OneOf.
+type canotoOneOfType_Node__OneOf uint32
+
+const (
+	canotoOneOfUnset_Node__OneOf canotoOneOfType_Node__OneOf = 0
+	canotoOneOf_Node__Next       canotoOneOfType_Node__OneOf = canotoNumber_Node__Next
 )
 
 type canotoData_Node struct {
@@ -1053,7 +1097,7 @@ func (c *Node) CachedCanotoSize() uint64 {
 // If the struct has been modified since the field was last cached, the returned
 // field number may be incorrect.
 func (c *Node) CachedWhichOneOfOneOf() uint32 {
-	return atomic.LoadUint32(&c.canotoData.OneOfOneOf)
+	return (atomic.LoadUint32(&c.canotoData.OneOfOneOf))
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.

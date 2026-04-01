@@ -48,9 +48,7 @@ func parse(
 	f ast.Node,
 	canotoImport string,
 	internal bool,
-	cacheTemplate string,
-	numberTemplate string,
-	tagTemplate string,
+	template templates,
 ) (string, []message, error) {
 	var (
 		canotoImportName string
@@ -94,9 +92,7 @@ func parse(
 		message := message{
 			name:              name,
 			canonicalizedName: canonicalizeName(name),
-			cacheTemplate:     cacheTemplate,
-			numberTemplate:    numberTemplate,
-			tagTemplate:       tagTemplate,
+			template:          template,
 		}
 
 		genericPointers := make(map[string]int)
@@ -174,7 +170,7 @@ func parse(
 				fs,
 				message.name,
 				message.canonicalizedName,
-				numberTemplate,
+				template.number,
 				noCopy,
 				internal,
 				genericPointers,
@@ -367,6 +363,8 @@ func parseField(
 		fieldNumberConst := makeTemplate(numberTemplate, map[string]string{
 			"struct":  structName,
 			"cStruct": canonicalizedStructName,
+			"oneOf":   oneOfName,
+			"cOneOf":  canonicalizeName(oneOfName),
 			"field":   name,
 			"cField":  canonicalizedName,
 		})
