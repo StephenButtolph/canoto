@@ -80,7 +80,7 @@ const (
 	MaxFieldNumber = 1<<29 - 1
 
 	// Version is the current version of the canoto library.
-	Version = "v0.18.1"
+	Version = "v0.19.0"
 
 	// VersionCompatibility is used to ensure generated code is compatible with
 	// the library it is using. It is incremented whenever the library includes
