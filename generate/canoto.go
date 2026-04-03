@@ -357,15 +357,10 @@ func makeNumberConstants(m message) string {
 		largestNumberConstSize = max(largestNumberConstSize, len(field))
 	}
 
-	var (
-		template = fmt.Sprintf("\t%%-%ds = %%d\n",
-			largestNumberConstSize,
-		)
-		sb strings.Builder
-	)
+	var sb strings.Builder
 	for _, f := range m.fields {
 		field := makeTemplate(m.template.number, fieldEnv(m, f))
-		fmt.Fprintf(&sb, template, field, f.fieldNumber)
+		fmt.Fprintf(&sb, "\t%-*s = %d\n", largestNumberConstSize, field, f.fieldNumber)
 	}
 	return sb.String()
 }
@@ -385,13 +380,7 @@ func makeTagConstants(m message) string {
 		largestTagSize = max(largestTagSize, tagSize)
 	}
 
-	var (
-		template = fmt.Sprintf("\t%%-%ds = %%-%ds // canoto.Tag(%%s, canoto.%%s)\n",
-			largestTagConstSize,
-			largestTagSize,
-		)
-		sb strings.Builder
-	)
+	var sb strings.Builder
 	for _, f := range m.fields {
 		env := fieldEnv(m, f)
 		field := makeTemplate(m.template.number, env)
@@ -407,7 +396,14 @@ func makeTagConstants(m message) string {
 		}
 		tagString.WriteString(`"`)
 
-		fmt.Fprintf(&sb, template, tag, &tagString, field, wireType)
+		fmt.Fprintf(&sb, "\t%-*s = %-*s // canoto.Tag(%s, canoto.%s)\n",
+			largestTagConstSize,
+			tag,
+			largestTagSize,
+			&tagString,
+			field,
+			wireType,
+		)
 	}
 	return sb.String()
 }
@@ -468,7 +464,8 @@ func makeSizeCache(m message) string {
 			continue
 		}
 
-		largestNameSize = max(largestNameSize, len(f.name)+len(sizeSuffix))
+		name := f.name + sizeSuffix
+		largestNameSize = max(largestNameSize, len(name))
 	}
 
 	sizeType := "uint64"
@@ -476,17 +473,15 @@ func makeSizeCache(m message) string {
 		sizeType = "atomic.Uint64"
 	}
 
-	var (
-		sb       strings.Builder
-		template = fmt.Sprintf("\t%%-%ds %s\n", largestNameSize, sizeType)
-	)
-	fmt.Fprintf(&sb, template, sizeVar)
+	var sb strings.Builder
+	fmt.Fprintf(&sb, "\t%-*s %s\n", largestNameSize, sizeVar, sizeType)
 	for _, f := range m.fields {
 		if !f.canotoType.IsRepeated() || !f.canotoType.IsVarint() {
 			continue
 		}
 
-		fmt.Fprintf(&sb, template, f.name+sizeSuffix)
+		name := f.name + sizeSuffix
+		fmt.Fprintf(&sb, "\t%-*s %s\n", largestNameSize, name, sizeType)
 	}
 	return sb.String()
 }
@@ -497,9 +492,11 @@ func makeOneOfCache(m message) string {
 		return ""
 	}
 
+	const oneOfSuffix = "OneOf"
 	var largestNameSize int
 	for _, oneOf := range oneOfs {
-		largestNameSize = max(largestNameSize, len(oneOf))
+		name := oneOf + oneOfSuffix
+		largestNameSize = max(largestNameSize, len(name))
 	}
 
 	oneOfType := "uint32"
@@ -507,14 +504,11 @@ func makeOneOfCache(m message) string {
 		oneOfType = "atomic.Uint32"
 	}
 
-	const oneOfSuffix = "OneOf"
-	var (
-		template = fmt.Sprintf("\t%%-%ds %s\n", largestNameSize+len(oneOfSuffix), oneOfType)
-		sb       strings.Builder
-	)
+	var sb strings.Builder
 	sb.WriteString("\n")
 	for _, oneOf := range oneOfs {
-		fmt.Fprintf(&sb, template, oneOf+oneOfSuffix)
+		name := oneOf + oneOfSuffix
+		fmt.Fprintf(&sb, "\t%-*s %s\n", largestNameSize, name, oneOfType)
 	}
 	return sb.String()
 }
