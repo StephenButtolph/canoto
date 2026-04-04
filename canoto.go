@@ -461,10 +461,7 @@ func ReadTag(r *Reader) (uint32, WireType, error) {
 
 // SizeUint calculates the size of an unsigned integer when encoded as a varint.
 func SizeUint[T Uint](v T) uint64 {
-	if v == 0 {
-		return 1
-	}
-	return uint64(bits.Len64(uint64(v))+6) / 7 //#nosec G115 // False positive
+	return uint64(bits.Len64(uint64(v)|1)+6) / 7 //#nosec G115 // False positive
 }
 
 // CountInts counts the number of varints that are encoded in bytes.
