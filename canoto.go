@@ -461,10 +461,7 @@ func ReadTag(r *Reader) (uint32, WireType, error) {
 
 // SizeUint calculates the size of an unsigned integer when encoded as a varint.
 func SizeUint[T Uint](v T) uint64 {
-	if v == 0 {
-		return 1
-	}
-	return uint64(bits.Len64(uint64(v))+6) / 7 //#nosec G115 // False positive
+	return uint64(bits.Len64(uint64(v)|1)+6) / 7 //#nosec G115 // False positive
 }
 
 // CountInts counts the number of varints that are encoded in bytes.
@@ -506,18 +503,11 @@ func AppendUint[T Uint](w *Writer, v T) {
 }
 
 // SizeInt calculates the size of an integer when zigzag encoded as a varint.
+//
+// #nosec G115 // Overflows are expected in the bitwise logic.
 func SizeInt[T Int](v T) uint64 {
-	if v == 0 {
-		return 1
-	}
-
-	var uv uint64
-	if v > 0 {
-		uv = uint64(v) << 1
-	} else {
-		uv = ^uint64(v)<<1 | 1
-	}
-	return uint64(bits.Len64(uv)+6) / 7 //#nosec G115 // False positive
+	uv := uint64(v)<<1 ^ uint64(int64(v)>>63)
+	return uint64(bits.Len64(uv|1)+6) / 7
 }
 
 // ReadInt reads a zigzag encoded integer from the reader.
@@ -545,11 +535,8 @@ func ReadInt[T Int](r *Reader, v *T) error {
 
 // AppendInt writes an integer to the writer as a zigzag encoded varint.
 func AppendInt[T Int](w *Writer, v T) {
-	if v >= 0 {
-		w.B = binary.AppendUvarint(w.B, uint64(v)<<1)
-	} else {
-		w.B = binary.AppendUvarint(w.B, ^uint64(v)<<1|1)
-	}
+	uv := uint64(v)<<1 ^ uint64(int64(v)>>63) //#nosec G115 // Zigzag encoding
+	w.B = binary.AppendUvarint(w.B, uv)
 }
 
 // ReadFint32 reads a 32-bit fixed size integer from the reader.
