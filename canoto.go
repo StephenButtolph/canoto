@@ -380,20 +380,21 @@ func (s SizeEnum) FixedWireType() (WireType, bool) {
 	}
 }
 
-// NumBytes returns the number of bytes for an integer of this size. It returns
-// false if this size is not valid.
-func (s SizeEnum) NumBytes() (uint64, bool) {
+// Shift returns the log2 of the number of bytes and the corresponding bitmask
+// (numBytes - 1) for an integer of this size. It returns false if this size is
+// not valid.
+func (s SizeEnum) Shift() (shift uint64, mask uint64, ok bool) {
 	switch s {
 	case SizeEnum8:
-		return 1, true
+		return 0, 0b000, true
 	case SizeEnum16:
-		return 2, true
+		return 1, 0b001, true
 	case SizeEnum32:
-		return 4, true
+		return 2, 0b011, true
 	case SizeEnum64:
-		return 8, true
+		return 3, 0b111, true
 	default:
-		return 0, false
+		return 0, 0, false
 	}
 }
 
@@ -1977,14 +1978,14 @@ func unmarshalPackedFixed[T comparable](
 			return nil, ErrZeroValue
 		}
 
-		size, ok := sizeEnum.NumBytes()
+		shift, mask, ok := sizeEnum.Shift()
 		if !ok {
 			return nil, ErrUnexpectedFieldSize
 		}
-		if numMsgBytes%size != 0 {
+		if numMsgBytes&mask != 0 {
 			return nil, ErrInvalidLength
 		}
-		count = numMsgBytes / size
+		count = numMsgBytes >> shift
 	}
 
 	values := make([]T, count)
