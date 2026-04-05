@@ -24,6 +24,27 @@ type Templates struct {
 	OneOfField string
 }
 
+func (t *Templates) setDefaults() {
+	if t.Cache == "" {
+		t.Cache = defaultCacheTemplate
+	}
+	if t.Number == "" {
+		t.Number = defaultNumberTemplate
+	}
+	if t.Tag == "" {
+		t.Tag = defaultTagTemplate
+	}
+	if t.OneOfType == "" {
+		t.OneOfType = defaultOneOfTypeTemplate
+	}
+	if t.OneOfUnset == "" {
+		t.OneOfUnset = defaultOneOfUnsetTemplate
+	}
+	if t.OneOfField == "" {
+		t.OneOfField = defaultOneOfFieldTemplate
+	}
+}
+
 func (m *message) OneOfs() []string {
 	oneOfs := make(map[string]struct{})
 	for _, f := range m.fields {

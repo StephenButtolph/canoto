@@ -46,9 +46,7 @@ var (
 func parse(
 	fs *token.FileSet,
 	f ast.Node,
-	canotoImport string,
-	internal bool,
-	template Templates,
+	opts CanotoOptions,
 ) (string, []message, error) {
 	var (
 		canotoImportName string
@@ -67,7 +65,7 @@ func parse(
 		}
 
 		if f, ok := n.(*ast.ImportSpec); ok {
-			if f.Path.Value != canotoImport {
+			if f.Path.Value != opts.CanotoImport {
 				return false
 			}
 			if f.Name == nil {
@@ -92,7 +90,7 @@ func parse(
 		message := message{
 			name:              name,
 			canonicalizedName: canonicalizeName(name),
-			template:          template,
+			template:          opts.Templates,
 		}
 
 		genericPointers := make(map[string]int)
@@ -115,7 +113,7 @@ func parse(
 				}
 
 				var typeName string
-				if canotoImportName == "." || internal {
+				if canotoImportName == "." || opts.Internal {
 					x, ok := t.X.(*ast.Ident)
 					if !ok {
 						continue
@@ -170,9 +168,9 @@ func parse(
 				fs,
 				message.name,
 				message.canonicalizedName,
-				template.Number,
+				opts.Templates.Number,
 				noCopy,
-				internal,
+				opts.Internal,
 				genericPointers,
 				sf,
 			)

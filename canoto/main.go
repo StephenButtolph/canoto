@@ -71,7 +71,6 @@ func main() {
 			if err != nil {
 				return fmt.Errorf("failed to get import flag: %w", err)
 			}
-			canotoImport = `"` + canotoImport + `"`
 			internal, err := flags.GetBool(internalFlag)
 			if err != nil {
 				return fmt.Errorf("failed to get internal flag: %w", err)
@@ -109,21 +108,21 @@ func main() {
 				return err
 			}
 
+			opts := generate.CanotoOptions{
+				CanotoImport: canotoImport,
+				Internal:     internal,
+				Templates: generate.Templates{
+					Cache:      cacheTemplate,
+					Number:     numberTemplate,
+					Tag:        tagTemplate,
+					OneOfType:  oneOfTypeTemplate,
+					OneOfUnset: oneOfUnsetTemplate,
+					OneOfField: oneOfFieldTemplate,
+				},
+			}
 			for _, arg := range args {
 				if canoto {
-					if err := generate.Canoto(generate.CanotoOptions{
-						InputFilePath: arg,
-						CanotoImport:  canotoImport,
-						Internal:      internal,
-						Templates: generate.Templates{
-							Cache:      cacheTemplate,
-							Number:     numberTemplate,
-							Tag:        tagTemplate,
-							OneOfType:  oneOfTypeTemplate,
-							OneOfUnset: oneOfUnsetTemplate,
-							OneOfField: oneOfFieldTemplate,
-						},
-					}); err != nil {
+					if err := generate.Canoto(arg, opts); err != nil {
 						return fmt.Errorf("failed to generate canoto for %q: %w", arg, err)
 					}
 				}

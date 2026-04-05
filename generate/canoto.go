@@ -27,44 +27,56 @@ const (
 
 var errNonGoExtension = errors.New("file must be a go file")
 
-// CanotoOptions configures code generation for a single Go source file.
+const (
+	// DefaultCanotoImport is the default import path for the canoto package.
+	DefaultCanotoImport = "github.com/StephenButtolph/canoto"
+
+	defaultCacheTemplate      = "canotoData_${struct}"
+	defaultNumberTemplate     = "canotoNumber_${cStruct}__${cField}"
+	defaultTagTemplate        = "canotoTag_${cStruct}__${cField}"
+	defaultOneOfTypeTemplate  = "canotoOneOfType_${cStruct}__${cOneOf}"
+	defaultOneOfUnsetTemplate = "canotoOneOfUnset_${cStruct}__${cOneOf}"
+	defaultOneOfFieldTemplate = "canotoOneOf_${cStruct}__${cField}"
+)
+
+// CanotoOptions configures optional behavior for code generation.
 type CanotoOptions struct {
-	// InputFilePath is the path to the Go source file to process.
-	InputFilePath string
-	// CanotoImport is the quoted import path for the canoto package.
+	// CanotoImport is the import path for the canoto package. If empty,
+	// [DefaultCanotoImport] is used.
 	CanotoImport string
 	// Internal indicates that the canoto package does not need to be imported.
 	Internal bool
-	// Templates controls the naming patterns used in generated code.
+	// Templates controls the naming patterns used in generated code. Zero
+	// values are replaced with defaults.
 	Templates Templates
 }
 
 // Canoto generates the canoto serialization logic for the provided file.
-func Canoto(opts CanotoOptions) error {
+func Canoto(inputFilePath string, opts CanotoOptions) error {
+	if opts.CanotoImport == "" {
+		opts.CanotoImport = DefaultCanotoImport
+	}
+	opts.CanotoImport = `"` + opts.CanotoImport + `"`
+	opts.Templates.setDefaults()
+
 	var outputFilePath string
 	switch {
-	case strings.HasSuffix(opts.InputFilePath, goTestExtension):
-		outputFilePath = opts.InputFilePath[:len(opts.InputFilePath)-len(goTestExtension)] + canotoTestExtension
-	case strings.HasSuffix(opts.InputFilePath, goExtension):
-		outputFilePath = opts.InputFilePath[:len(opts.InputFilePath)-len(goExtension)] + canotoExtension
+	case strings.HasSuffix(inputFilePath, goTestExtension):
+		outputFilePath = inputFilePath[:len(inputFilePath)-len(goTestExtension)] + canotoTestExtension
+	case strings.HasSuffix(inputFilePath, goExtension):
+		outputFilePath = inputFilePath[:len(inputFilePath)-len(goExtension)] + canotoExtension
 	default:
 		return errNonGoExtension
 	}
 
 	// Create a new parser
 	fs := token.NewFileSet()
-	f, err := parser.ParseFile(fs, opts.InputFilePath, nil, parser.ParseComments)
+	f, err := parser.ParseFile(fs, inputFilePath, nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 
-	packageName, messages, err := parse(
-		fs,
-		f,
-		opts.CanotoImport,
-		opts.Internal,
-		opts.Templates,
-	)
+	packageName, messages, err := parse(fs, f, opts)
 	if err != nil {
 		return err
 	}
@@ -78,7 +90,7 @@ func Canoto(opts CanotoOptions) error {
 	}
 	defer outputFile.Close()
 
-	return writeCanoto(outputFile, opts.InputFilePath, packageName, messages, opts.CanotoImport, opts.Internal)
+	return writeCanoto(outputFile, inputFilePath, packageName, messages, opts.CanotoImport, opts.Internal)
 }
 
 func writeCanoto(
