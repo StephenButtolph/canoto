@@ -5,7 +5,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -41,7 +40,7 @@ func main() {
 			flags := c.Flags()
 			showVersion, err := flags.GetBool(versionFlag)
 			if err != nil {
-				return fmt.Errorf("failed to get version flag: %w", err)
+				return fmt.Errorf("getting %q: %w", versionFlag, err)
 			}
 			if showVersion {
 				fmt.Println("canoto/" + canoto.Version)
@@ -50,65 +49,58 @@ func main() {
 
 			library, err := flags.GetString(libraryFlag)
 			if err != nil {
-				return fmt.Errorf("failed to get library flag: %w", err)
+				return fmt.Errorf("getting %q: %w", libraryFlag, err)
 			}
 			if library != "" {
 				if err := generate.Library(library); err != nil {
-					return fmt.Errorf("failed to generate library in %q: %w", library, err)
+					return fmt.Errorf("generating library in %q: %w", library, err)
 				}
 			}
 
 			canoto, err := flags.GetBool(canotoFlag)
 			if err != nil {
-				return fmt.Errorf("failed to get canoto flag: %w", err)
+				return fmt.Errorf("getting %q: %w", canotoFlag, err)
 			}
 			proto, err := flags.GetBool(protoFlag)
 			if err != nil {
-				return fmt.Errorf("failed to get proto flag: %w", err)
+				return fmt.Errorf("getting %q: %w", protoFlag, err)
 			}
 
 			canotoImport, err := flags.GetString(importFlag)
 			if err != nil {
-				return fmt.Errorf("failed to get import flag: %w", err)
+				return fmt.Errorf("getting %q: %w", importFlag, err)
 			}
 			internal, err := flags.GetBool(internalFlag)
 			if err != nil {
-				return fmt.Errorf("failed to get internal flag: %w", err)
+				return fmt.Errorf("getting %q: %w", internalFlag, err)
 			}
 
-			getFormat := func(key string) (string, error) {
-				template, err := flags.GetString(key)
-				if err != nil {
-					return "", fmt.Errorf("failed to get %s flag: %w", key, err)
-				}
-				return strings.ReplaceAll(template, "{", "${"), nil
-			}
-			cacheTemplate, err := getFormat(formatCacheFlag)
+			cacheTemplate, err := flags.GetString(formatCacheFlag)
 			if err != nil {
-				return err
+				return fmt.Errorf("getting %q: %w", formatCacheFlag, err)
 			}
-			numberTemplate, err := getFormat(formatNumberFlag)
+			numberTemplate, err := flags.GetString(formatNumberFlag)
 			if err != nil {
-				return err
+				return fmt.Errorf("getting %q: %w", formatNumberFlag, err)
 			}
-			tagTemplate, err := getFormat(formatTagFlag)
+			tagTemplate, err := flags.GetString(formatTagFlag)
 			if err != nil {
-				return err
+				return fmt.Errorf("getting %q: %w", formatTagFlag, err)
 			}
-			oneOfTypeTemplate, err := getFormat(formatOneOfTypeFlag)
+			oneOfTypeTemplate, err := flags.GetString(formatOneOfTypeFlag)
 			if err != nil {
-				return err
+				return fmt.Errorf("getting %q: %w", formatOneOfTypeFlag, err)
 			}
-			oneOfUnsetTemplate, err := getFormat(formatOneOfUnsetFlag)
+			oneOfUnsetTemplate, err := flags.GetString(formatOneOfUnsetFlag)
 			if err != nil {
-				return err
+				return fmt.Errorf("getting %q: %w", formatOneOfUnsetFlag, err)
 			}
-			oneOfFieldTemplate, err := getFormat(formatOneOfFieldFlag)
+			oneOfFieldTemplate, err := flags.GetString(formatOneOfFieldFlag)
 			if err != nil {
-				return err
+				return fmt.Errorf("getting %q: %w", formatOneOfFieldFlag, err)
 			}
 
-			opts := generate.CanotoOptions{
+			opts := generate.Options{
 				CanotoImport: canotoImport,
 				Internal:     internal,
 				Templates: generate.Templates{
@@ -123,12 +115,12 @@ func main() {
 			for _, arg := range args {
 				if canoto {
 					if err := generate.Canoto(arg, opts); err != nil {
-						return fmt.Errorf("failed to generate canoto for %q: %w", arg, err)
+						return fmt.Errorf("generating canoto for %q: %w", arg, err)
 					}
 				}
 				if proto {
-					if err := generate.Proto(arg, canotoImport, internal); err != nil {
-						return fmt.Errorf("failed to generate proto for %q: %w", arg, err)
+					if err := generate.Proto(arg, opts); err != nil {
+						return fmt.Errorf("generating proto for %q: %w", arg, err)
 					}
 				}
 			}
@@ -141,14 +133,14 @@ func main() {
 	flags.Bool(canotoFlag, true, "Generate canoto file")
 	flags.String(libraryFlag, "", "Generate the canoto library in the specified directory")
 	flags.Bool(protoFlag, false, "Generate proto file")
-	flags.String(importFlag, "github.com/StephenButtolph/canoto", "Package to depend on for canoto serialization primitives")
+	flags.String(importFlag, "", "Package to depend on for canoto serialization primitives")
 	flags.Bool(internalFlag, false, "Generate a file that assumes the canoto package does not need to be imported")
-	flags.String(formatCacheFlag, "canotoData_{struct}", "Format to use when generating the canoto cache")
-	flags.String(formatNumberFlag, "canotoNumber_{cStruct}__{cField}", "Format to use when generating canoto field number constants")
-	flags.String(formatTagFlag, "canotoTag_{cStruct}__{cField}", "Format to use when generating canoto field tag constants")
-	flags.String(formatOneOfTypeFlag, "canotoOneOfType_{cStruct}__{cOneOf}", "Format to use when generating canoto oneOf types")
-	flags.String(formatOneOfUnsetFlag, "canotoOneOfUnset_{cStruct}__{cOneOf}", "Format to use when generating canoto unset oneOf constants")
-	flags.String(formatOneOfFieldFlag, "canotoOneOf_{cStruct}__{cField}", "Format to use when generating canoto oneOf field constants")
+	flags.String(formatCacheFlag, "", "Format to use when generating the canoto cache")
+	flags.String(formatNumberFlag, "", "Format to use when generating canoto field number constants")
+	flags.String(formatTagFlag, "", "Format to use when generating canoto field tag constants")
+	flags.String(formatOneOfTypeFlag, "", "Format to use when generating canoto oneOf types")
+	flags.String(formatOneOfUnsetFlag, "", "Format to use when generating canoto unset oneOf constants")
+	flags.String(formatOneOfFieldFlag, "", "Format to use when generating canoto oneOf field constants")
 
 	if err := cmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "command failed %v\n", err)

@@ -46,7 +46,7 @@ var (
 func parse(
 	fs *token.FileSet,
 	f ast.Node,
-	opts CanotoOptions,
+	opts Options,
 ) (string, []message, error) {
 	var (
 		canotoImportName string

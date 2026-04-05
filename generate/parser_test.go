@@ -73,7 +73,7 @@ func TestParse(t *testing.T) {
 			f, err := parser.ParseFile(fs, test.filePath, nil, parser.ParseComments)
 			require.NoError(err)
 
-			packageName, messages, err := parse(fs, f, CanotoOptions{
+			packageName, messages, err := parse(fs, f, Options{
 				CanotoImport: test.canotoImport,
 				Internal:     test.internal,
 			})

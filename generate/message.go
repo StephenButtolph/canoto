@@ -3,6 +3,7 @@ package generate
 import (
 	"maps"
 	"slices"
+	"strings"
 )
 
 type message struct {
@@ -24,24 +25,29 @@ type Templates struct {
 	OneOfField string
 }
 
-func (t *Templates) setDefaults() {
+func (t *Templates) init() {
 	if t.Cache == "" {
-		t.Cache = defaultCacheTemplate
+		t.Cache = "canotoData_{struct}"
 	}
 	if t.Number == "" {
-		t.Number = defaultNumberTemplate
+		t.Number = "canotoNumber_{cStruct}__{cField}"
 	}
 	if t.Tag == "" {
-		t.Tag = defaultTagTemplate
+		t.Tag = "canotoTag_{cStruct}__{cField}"
 	}
 	if t.OneOfType == "" {
-		t.OneOfType = defaultOneOfTypeTemplate
+		t.OneOfType = "canotoOneOfType_{cStruct}__{cOneOf}"
 	}
 	if t.OneOfUnset == "" {
-		t.OneOfUnset = defaultOneOfUnsetTemplate
+		t.OneOfUnset = "canotoOneOfUnset_{cStruct}__{cOneOf}"
 	}
 	if t.OneOfField == "" {
-		t.OneOfField = defaultOneOfFieldTemplate
+		t.OneOfField = "canotoOneOf_{cStruct}__{cField}"
+	}
+
+	fields := []*string{&t.Cache, &t.Number, &t.Tag, &t.OneOfType, &t.OneOfUnset, &t.OneOfField}
+	for _, s := range fields {
+		*s = strings.ReplaceAll(*s, "{", "${")
 	}
 }
 

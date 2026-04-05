@@ -27,37 +27,27 @@ const (
 
 var errNonGoExtension = errors.New("file must be a go file")
 
-const (
-	// DefaultCanotoImport is the default import path for the canoto package.
-	DefaultCanotoImport = "github.com/StephenButtolph/canoto"
-
-	defaultCacheTemplate      = "canotoData_${struct}"
-	defaultNumberTemplate     = "canotoNumber_${cStruct}__${cField}"
-	defaultTagTemplate        = "canotoTag_${cStruct}__${cField}"
-	defaultOneOfTypeTemplate  = "canotoOneOfType_${cStruct}__${cOneOf}"
-	defaultOneOfUnsetTemplate = "canotoOneOfUnset_${cStruct}__${cOneOf}"
-	defaultOneOfFieldTemplate = "canotoOneOf_${cStruct}__${cField}"
-)
-
-// CanotoOptions configures optional behavior for code generation.
-type CanotoOptions struct {
-	// CanotoImport is the import path for the canoto package. If empty,
-	// [DefaultCanotoImport] is used.
+// Options configures optional behavior for code generation.
+type Options struct {
+	// CanotoImport is the import path for the canoto package.
 	CanotoImport string
 	// Internal indicates that the canoto package does not need to be imported.
 	Internal bool
-	// Templates controls the naming patterns used in generated code. Zero
-	// values are replaced with defaults.
+	// Templates defines the format for identifiers in generated code.
 	Templates Templates
 }
 
-// Canoto generates the canoto serialization logic for the provided file.
-func Canoto(inputFilePath string, opts CanotoOptions) error {
-	if opts.CanotoImport == "" {
-		opts.CanotoImport = DefaultCanotoImport
+func (o *Options) init() {
+	if o.CanotoImport == "" {
+		o.CanotoImport = "github.com/StephenButtolph/canoto"
 	}
-	opts.CanotoImport = `"` + opts.CanotoImport + `"`
-	opts.Templates.setDefaults()
+	o.CanotoImport = `"` + o.CanotoImport + `"`
+	o.Templates.init()
+}
+
+// Canoto generates the canoto serialization logic for the provided file.
+func Canoto(inputFilePath string, opts Options) error {
+	opts.init()
 
 	var outputFilePath string
 	switch {
