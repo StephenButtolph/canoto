@@ -344,13 +344,12 @@ type (
 )
 
 // IsValid returns true if the wire type is a recognized wire type.
+//
+// Valid wire types are Varint(0), I64(1), Len(2), and I32(5).
+// The bitmask 0x27 (0b00100111) has bits set at exactly those positions,
+// so a single shift-and-mask replaces the switch with branchless code.
 func (w WireType) IsValid() bool {
-	switch w {
-	case Varint, I64, Len, I32:
-		return true
-	default:
-		return false
-	}
+	return uint8(0x27)>>w&1 != 0
 }
 
 // String returns the string representation of the wire type.
