@@ -15,7 +15,7 @@ type message struct {
 	template          Templates
 }
 
-// Templates controls the naming patterns used in generated code.
+// Templates used to format identifiers in generated code.
 type Templates struct {
 	Cache      string
 	Number     string

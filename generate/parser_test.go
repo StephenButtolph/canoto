@@ -12,9 +12,8 @@ func TestParse(t *testing.T) {
 	tests := []struct {
 		name string
 
-		filePath     string
-		canotoImport string
-		internal     bool
+		filePath string
+		opts     Options
 
 		wantPackageName string
 		wantMessages    []message
@@ -73,10 +72,7 @@ func TestParse(t *testing.T) {
 			f, err := parser.ParseFile(fs, test.filePath, nil, parser.ParseComments)
 			require.NoError(err)
 
-			packageName, messages, err := parse(fs, f, Options{
-				CanotoImport: test.canotoImport,
-				Internal:     test.internal,
-			})
+			packageName, messages, err := parse(fs, f, test.opts)
 			require.ErrorIs(err, test.wantErr)
 			require.Equal(test.wantPackageName, packageName)
 			require.Equal(test.wantMessages, messages)
