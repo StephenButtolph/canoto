@@ -3,6 +3,7 @@ package generate
 import (
 	"maps"
 	"slices"
+	"strings"
 )
 
 type message struct {
@@ -11,16 +12,43 @@ type message struct {
 	numTypes          int
 	fields            []field
 	noCopy            bool
-	template          templates
+	template          Templates
 }
 
-type templates struct {
-	cache      string
-	number     string
-	tag        string
-	oneOfType  string
-	oneOfUnset string
-	oneOfField string
+// Templates used to format identifiers in generated code.
+type Templates struct {
+	Cache      string
+	Number     string
+	Tag        string
+	OneOfType  string
+	OneOfUnset string
+	OneOfField string
+}
+
+func (t *Templates) init() {
+	if t.Cache == "" {
+		t.Cache = "canotoData_{struct}"
+	}
+	if t.Number == "" {
+		t.Number = "canotoNumber_{cStruct}__{cField}"
+	}
+	if t.Tag == "" {
+		t.Tag = "canotoTag_{cStruct}__{cField}"
+	}
+	if t.OneOfType == "" {
+		t.OneOfType = "canotoOneOfType_{cStruct}__{cOneOf}"
+	}
+	if t.OneOfUnset == "" {
+		t.OneOfUnset = "canotoOneOfUnset_{cStruct}__{cOneOf}"
+	}
+	if t.OneOfField == "" {
+		t.OneOfField = "canotoOneOf_{cStruct}__{cField}"
+	}
+
+	fields := []*string{&t.Cache, &t.Number, &t.Tag, &t.OneOfType, &t.OneOfUnset, &t.OneOfField}
+	for _, s := range fields {
+		*s = strings.ReplaceAll(*s, "{", "${")
+	}
 }
 
 func (m *message) OneOfs() []string {

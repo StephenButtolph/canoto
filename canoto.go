@@ -367,9 +367,9 @@ func (w WireType) String() string {
 	}
 }
 
-// FixedWireType returns the wire type for fixed-size integers of this size. It
+// fixedWireType returns the wire type for fixed-size integers of this size. It
 // returns false if this size does not correspond to a fixed-size wire type.
-func (s SizeEnum) FixedWireType() (WireType, bool) {
+func (s SizeEnum) fixedWireType() (WireType, bool) {
 	switch s {
 	case SizeEnum32:
 		return I32, true
@@ -380,10 +380,10 @@ func (s SizeEnum) FixedWireType() (WireType, bool) {
 	}
 }
 
-// Shift returns the log2 of the number of bytes and the corresponding bitmask
+// shift returns the log2 of the number of bytes and the corresponding bitmask
 // (numBytes - 1) for an integer of this size. It returns false if this size is
 // not valid.
-func (s SizeEnum) Shift() (shift uint64, mask uint64, ok bool) {
+func (s SizeEnum) shift() (shift uint64, mask uint64, ok bool) {
 	switch s {
 	case SizeEnum8:
 		return 0, 0b000, true
@@ -1256,7 +1256,7 @@ func (f *FieldType) wireType() (WireType, error) {
 		if f.Repeated {
 			return Len, nil
 		}
-		w, ok := f.TypeFixedInt.FixedWireType()
+		w, ok := f.TypeFixedInt.fixedWireType()
 		if !ok {
 			return 0, ErrUnexpectedFieldSize
 		}
@@ -1265,7 +1265,7 @@ func (f *FieldType) wireType() (WireType, error) {
 		if f.Repeated {
 			return Len, nil
 		}
-		w, ok := f.TypeFixedUint.FixedWireType()
+		w, ok := f.TypeFixedUint.fixedWireType()
 		if !ok {
 			return 0, ErrUnexpectedFieldSize
 		}
@@ -1978,7 +1978,7 @@ func unmarshalPackedFixed[T comparable](
 			return nil, ErrZeroValue
 		}
 
-		shift, mask, ok := sizeEnum.Shift()
+		shift, mask, ok := sizeEnum.shift()
 		if !ok {
 			return nil, ErrUnexpectedFieldSize
 		}

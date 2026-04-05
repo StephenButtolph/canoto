@@ -27,18 +27,28 @@ const (
 
 var errNonGoExtension = errors.New("file must be a go file")
 
+// Options configures optional behavior for code generation.
+type Options struct {
+	// CanotoImport is the import path for the canoto package.
+	CanotoImport string
+	// Internal indicates that the canoto package does not need to be imported.
+	Internal bool
+	// Templates defines the format for identifiers in generated code.
+	Templates Templates
+}
+
+func (o *Options) init() {
+	if o.CanotoImport == "" {
+		o.CanotoImport = "github.com/StephenButtolph/canoto"
+	}
+	o.CanotoImport = `"` + o.CanotoImport + `"`
+	o.Templates.init()
+}
+
 // Canoto generates the canoto serialization logic for the provided file.
-func Canoto(
-	inputFilePath string,
-	canotoImport string,
-	internal bool,
-	cacheTemplate string,
-	numberTemplate string,
-	tagTemplate string,
-	oneOfTypeTemplate string,
-	oneOfUnsetTemplate string,
-	oneOfFieldTemplate string,
-) error {
+func Canoto(inputFilePath string, opts Options) error {
+	opts.init()
+
 	var outputFilePath string
 	switch {
 	case strings.HasSuffix(inputFilePath, goTestExtension):
@@ -56,20 +66,7 @@ func Canoto(
 		return err
 	}
 
-	packageName, messages, err := parse(
-		fs,
-		f,
-		canotoImport,
-		internal,
-		templates{
-			cache:      cacheTemplate,
-			number:     numberTemplate,
-			tag:        tagTemplate,
-			oneOfType:  oneOfTypeTemplate,
-			oneOfUnset: oneOfUnsetTemplate,
-			oneOfField: oneOfFieldTemplate,
-		},
-	)
+	packageName, messages, err := parse(fs, f, opts)
 	if err != nil {
 		return err
 	}
@@ -83,7 +80,7 @@ func Canoto(
 	}
 	defer outputFile.Close()
 
-	return writeCanoto(outputFile, inputFilePath, packageName, messages, canotoImport, internal)
+	return writeCanoto(outputFile, inputFilePath, packageName, messages, opts.CanotoImport, opts.Internal)
 }
 
 func writeCanoto(
@@ -269,7 +266,7 @@ ${marshal}	return w
 	}
 
 	return writeTemplate(w, structTemplate, map[string]string{
-		"canotoData":          makeTemplate(m.template.cache, messageEnv(m)),
+		"canotoData":          makeTemplate(m.template.Cache, messageEnv(m)),
 		"typesDecl":           typesDecl,
 		"appendTypes":         appendTypes,
 		"constants":           makeConstants(m),
@@ -353,13 +350,13 @@ func makeConstants(m message) string {
 func makeNumberConstants(m message) string {
 	var largestNumberConstSize int
 	for _, f := range m.fields {
-		field := makeTemplate(m.template.number, fieldEnv(m, f))
+		field := makeTemplate(m.template.Number, fieldEnv(m, f))
 		largestNumberConstSize = max(largestNumberConstSize, len(field))
 	}
 
 	var sb strings.Builder
 	for _, f := range m.fields {
-		field := makeTemplate(m.template.number, fieldEnv(m, f))
+		field := makeTemplate(m.template.Number, fieldEnv(m, f))
 		fmt.Fprintf(&sb, "\t%-*s = %d\n", largestNumberConstSize, field, f.fieldNumber)
 	}
 	return sb.String()
@@ -371,7 +368,7 @@ func makeTagConstants(m message) string {
 		largestTagSize      int
 	)
 	for _, f := range m.fields {
-		tag := makeTemplate(m.template.tag, fieldEnv(m, f))
+		tag := makeTemplate(m.template.Tag, fieldEnv(m, f))
 		largestTagConstSize = max(largestTagConstSize, len(tag))
 
 		wireType := f.canotoType.WireType()
@@ -383,8 +380,8 @@ func makeTagConstants(m message) string {
 	var sb strings.Builder
 	for _, f := range m.fields {
 		env := fieldEnv(m, f)
-		field := makeTemplate(m.template.number, env)
-		tag := makeTemplate(m.template.tag, env)
+		field := makeTemplate(m.template.Number, env)
+		tag := makeTemplate(m.template.Tag, env)
 
 		var tagString strings.Builder
 		tagString.WriteString(`"`)
@@ -424,13 +421,13 @@ func makeOneOfCaseTypes(m message) string {
 	var sb strings.Builder
 	for _, oneOf := range oneOfNames {
 		env := oneOfEnv(m, oneOf)
-		caseType := makeTemplate(m.template.oneOfType, env)
-		unset := makeTemplate(m.template.oneOfUnset, env)
+		caseType := makeTemplate(m.template.OneOfType, env)
+		unset := makeTemplate(m.template.OneOfUnset, env)
 
 		fields := groups[oneOf]
 		maxWidth := len(unset)
 		for _, f := range fields {
-			field := makeTemplate(m.template.oneOfField, fieldEnv(m, f))
+			field := makeTemplate(m.template.OneOfField, fieldEnv(m, f))
 			maxWidth = max(maxWidth, len(field))
 		}
 
@@ -439,8 +436,8 @@ func makeOneOfCaseTypes(m message) string {
 		fmt.Fprintf(&sb, "\t%-*s %s = 0\n", maxWidth, unset, caseType)
 		for _, f := range fields {
 			env := fieldEnv(m, f)
-			fieldOneOf := makeTemplate(m.template.oneOfField, env)
-			fieldNumber := makeTemplate(m.template.number, env)
+			fieldOneOf := makeTemplate(m.template.OneOfField, env)
+			fieldNumber := makeTemplate(m.template.Number, env)
 			fmt.Fprintf(&sb, "\t%-*s %s = %s\n",
 				maxWidth,
 				fieldOneOf,
@@ -1888,7 +1885,7 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${oneOfType} {
 		loadSuffix = ".Load()"
 	}
 	for _, oneOf := range m.OneOfs() {
-		oneOfType := makeTemplate(m.template.oneOfType, oneOfEnv(m, oneOf))
+		oneOfType := makeTemplate(m.template.OneOfType, oneOfEnv(m, oneOf))
 		oneOfCast := oneOfType
 		if !token.IsExported(oneOfType) {
 			oneOfType = "uint32"
@@ -2167,14 +2164,14 @@ func makeMarshal(m message) string {
 		if len(currentOneOfFields) == 1 {
 			field := currentOneOfFields[0]
 			env := fieldEnv(m, field)
-			fieldNumber := makeTemplate(m.template.number, env)
+			fieldNumber := makeTemplate(m.template.Number, env)
 			fmt.Fprintf(&sb, "\tif %s == %s {\n", varName, fieldNumber)
 			_ = writeField(&sb, m, field, oneOfTmpl)
 		} else {
 			fmt.Fprintf(&sb, "\tswitch %s {\n", varName)
 			for _, field := range currentOneOfFields {
 				env := fieldEnv(m, field)
-				fieldNumber := makeTemplate(m.template.number, env)
+				fieldNumber := makeTemplate(m.template.Number, env)
 				fmt.Fprintf(&sb, "\tcase %s:\n", fieldNumber)
 				_ = writeField(&sb, m, field, oneOfTmpl)
 			}
@@ -2293,8 +2290,8 @@ func writeField(w io.Writer, m message, f field, t messageTemplate) error {
 
 	env := fieldEnv(m, f)
 	return writeTemplate(w, template, f.templateArgs, map[string]string{
-		"fieldNumberConst": makeTemplate(m.template.number, env),
-		"fieldTagConst":    makeTemplate(m.template.tag, env),
+		"fieldNumberConst": makeTemplate(m.template.Number, env),
+		"fieldTagConst":    makeTemplate(m.template.Tag, env),
 	})
 }
 

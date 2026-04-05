@@ -15,11 +15,9 @@ import (
 const protoExtension = ".proto"
 
 // Proto generates a corresponding proto file for the provided file.
-func Proto(
-	inputFilePath string,
-	canotoImport string,
-	internal bool,
-) error {
+func Proto(inputFilePath string, opts Options) error {
+	opts.init()
+
 	extension := filepath.Ext(inputFilePath)
 	if extension != goExtension {
 		return fmt.Errorf("%w not %q", errNonGoExtension, extension)
@@ -32,7 +30,7 @@ func Proto(
 		return err
 	}
 
-	packageName, messages, err := parse(fs, f, canotoImport, internal, templates{})
+	packageName, messages, err := parse(fs, f, opts)
 	if err != nil {
 		return err
 	}
