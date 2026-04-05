@@ -341,13 +341,12 @@ type (
 	}
 )
 
-// IsValid returns true if the wire type is a recognized wire type.
+// isValid returns true if the wire type is a recognized wire type.
 //
 // Valid wire types are Varint(0), I64(1), Len(2), and I32(5).
-// The bitmask 0x27 (0b00100111) has bits set at exactly those positions,
-// so a single shift-and-mask replaces the switch with branchless code.
-func (w WireType) IsValid() bool {
-	return uint8(0x27)>>w&1 != 0
+func (w WireType) isValid() bool {
+	// The bitmask (0b100111) has bits set at the valid positions.
+	return 0b100111>>w&1 != 0
 }
 
 // String returns the string representation of the wire type.
@@ -452,7 +451,7 @@ func ReadTag(r *Reader) (uint32, WireType, error) {
 	}
 
 	wireType := WireType(val & wireTypeMask)
-	if !wireType.IsValid() {
+	if !wireType.isValid() {
 		return 0, 0, ErrInvalidWireType
 	}
 

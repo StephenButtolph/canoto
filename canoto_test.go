@@ -46,7 +46,7 @@ func TestIsValid(t *testing.T) {
 	}
 	for i := range 256 {
 		w := WireType(i)
-		require.Equal(t, valid[w], w.IsValid(), "WireType(%d)", i)
+		require.Equal(t, valid[w], w.isValid(), "WireType(%d)", i)
 	}
 }
 
