@@ -37,6 +37,19 @@ func (v invalidTest) Bytes(t *testing.T) []byte {
 	return bytes
 }
 
+func TestIsValid(t *testing.T) {
+	valid := map[WireType]bool{
+		Varint: true,
+		I64:    true,
+		Len:    true,
+		I32:    true,
+	}
+	for i := range 256 {
+		w := WireType(i)
+		require.Equal(t, valid[w], w.IsValid(), "WireType(%d)", i)
+	}
+}
+
 func BenchmarkTag(b *testing.B) {
 	fieldNumbers := []uint32{
 		1,
