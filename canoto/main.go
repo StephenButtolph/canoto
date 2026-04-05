@@ -111,7 +111,19 @@ func main() {
 
 			for _, arg := range args {
 				if canoto {
-					if err := generate.Canoto(arg, canotoImport, internal, cacheTemplate, numberTemplate, tagTemplate, oneOfTypeTemplate, oneOfUnsetTemplate, oneOfFieldTemplate); err != nil {
+					if err := generate.Canoto(generate.CanotoOptions{
+						InputFilePath: arg,
+						CanotoImport:  canotoImport,
+						Internal:      internal,
+						Templates: generate.Templates{
+							Cache:      cacheTemplate,
+							Number:     numberTemplate,
+							Tag:        tagTemplate,
+							OneOfType:  oneOfTypeTemplate,
+							OneOfUnset: oneOfUnsetTemplate,
+							OneOfField: oneOfFieldTemplate,
+						},
+					}); err != nil {
 						return fmt.Errorf("failed to generate canoto for %q: %w", arg, err)
 					}
 				}

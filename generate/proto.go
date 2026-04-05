@@ -32,7 +32,7 @@ func Proto(
 		return err
 	}
 
-	packageName, messages, err := parse(fs, f, canotoImport, internal, templates{})
+	packageName, messages, err := parse(fs, f, canotoImport, internal, Templates{})
 	if err != nil {
 		return err
 	}

@@ -11,16 +11,17 @@ type message struct {
 	numTypes          int
 	fields            []field
 	noCopy            bool
-	template          templates
+	template          Templates
 }
 
-type templates struct {
-	cache      string
-	number     string
-	tag        string
-	oneOfType  string
-	oneOfUnset string
-	oneOfField string
+// Templates controls the naming patterns used in generated code.
+type Templates struct {
+	Cache      string
+	Number     string
+	Tag        string
+	OneOfType  string
+	OneOfUnset string
+	OneOfField string
 }
 
 func (m *message) OneOfs() []string {

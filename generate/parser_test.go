@@ -73,7 +73,7 @@ func TestParse(t *testing.T) {
 			f, err := parser.ParseFile(fs, test.filePath, nil, parser.ParseComments)
 			require.NoError(err)
 
-			packageName, messages, err := parse(fs, f, test.canotoImport, test.internal, templates{})
+			packageName, messages, err := parse(fs, f, test.canotoImport, test.internal, Templates{})
 			require.ErrorIs(err, test.wantErr)
 			require.Equal(test.wantPackageName, packageName)
 			require.Equal(test.wantMessages, messages)

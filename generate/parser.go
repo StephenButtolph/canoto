@@ -48,7 +48,7 @@ func parse(
 	f ast.Node,
 	canotoImport string,
 	internal bool,
-	template templates,
+	template Templates,
 ) (string, []message, error) {
 	var (
 		canotoImportName string
@@ -170,7 +170,7 @@ func parse(
 				fs,
 				message.name,
 				message.canonicalizedName,
-				template.number,
+				template.Number,
 				noCopy,
 				internal,
 				genericPointers,
