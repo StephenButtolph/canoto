@@ -431,7 +431,7 @@ func makeOneOfCaseTypes(m message) string {
 			maxWidth = max(maxWidth, len(field))
 		}
 
-		fmt.Fprintf(&sb, "// %s identifies which field is populated in %s.\n", caseType, oneOf)
+		fmt.Fprintf(&sb, "// %s identifies the field in [%s] populating the %s oneOf.\n", caseType, m.name, oneOf)
 		fmt.Fprintf(&sb, "type %s uint32\n\nconst (\n", caseType)
 		fmt.Fprintf(&sb, "\t%-*s %s = 0\n", maxWidth, unset, caseType)
 		for _, f := range fields {

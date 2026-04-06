@@ -2,6 +2,8 @@
 // versions:
 // 	canoto v0.19.0
 
+//go:generate go run github.com/StephenButtolph/canoto/canoto --internal --format-oneof-type={struct}OneOf --format-oneof-unset={struct}Unset --format-oneof-field=Field{field} $GOFILE
+
 // Package canoto implements a canonical, compact, and fast serialization format
 // that is read-compatible with Protocol Buffers. It provides both low-level
 // primitives for reading and writing the wire format and high-level interfaces
@@ -52,31 +54,6 @@ const (
 	SizeFint64 = 8
 	// SizeBool is the size of a boolean in bytes.
 	SizeBool = 1
-
-	// FieldTypeInt is the field number of an int in the [FieldType] OneOf.
-	FieldTypeInt = canotoNumber_FieldType__TypeInt
-	// FieldTypeUint is the field number of a uint in the [FieldType] OneOf.
-	FieldTypeUint = canotoNumber_FieldType__TypeUint
-	// FieldTypeFixedInt is the field number of a fixed int in the [FieldType]
-	// OneOf.
-	FieldTypeFixedInt = canotoNumber_FieldType__TypeFixedInt
-	// FieldTypeFixedUint is the field number of a fixed uint in the [FieldType]
-	// OneOf.
-	FieldTypeFixedUint = canotoNumber_FieldType__TypeFixedUint
-	// FieldTypeBool is the field number of a bool in the [FieldType] OneOf.
-	FieldTypeBool = canotoNumber_FieldType__TypeBool
-	// FieldTypeString is the field number of a string in the [FieldType] OneOf.
-	FieldTypeString = canotoNumber_FieldType__TypeString
-	// FieldTypeBytes is the field number of bytes in the [FieldType] OneOf.
-	FieldTypeBytes = canotoNumber_FieldType__TypeBytes
-	// FieldTypeFixedBytes is the field number of fixed bytes in the [FieldType]
-	// OneOf.
-	FieldTypeFixedBytes = canotoNumber_FieldType__TypeFixedBytes
-	// FieldTypeMessage is the field number of a message in the [FieldType] OneOf.
-	FieldTypeMessage = canotoNumber_FieldType__TypeMessage
-	// FieldTypeRecursive is the field number of a recursive type in the
-	// [FieldType] OneOf.
-	FieldTypeRecursive = canotoNumber_FieldType__TypeRecursive
 
 	// MaxFieldNumber is the maximum field number allowed to be used in a Tag.
 	MaxFieldNumber = 1<<29 - 1
@@ -1245,8 +1222,7 @@ func (s *Spec) findFieldByName(name string, startIndex int) (*FieldType, int, er
 }
 
 func (f *FieldType) wireType() (WireType, error) {
-	whichOneOf := f.CachedWhichOneOfType()
-	switch whichOneOf {
+	switch f.CachedWhichOneOfType() {
 	case FieldTypeInt, FieldTypeUint, FieldTypeBool:
 		if f.Repeated {
 			return Len, nil

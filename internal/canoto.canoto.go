@@ -183,7 +183,7 @@ const (
 	canotoTag_OneOf__A2 = "\x38" // canoto.Tag(canotoNumber_OneOf__A2, canoto.Varint)
 )
 
-// canotoOneOfType_OneOf__A identifies which field is populated in A.
+// canotoOneOfType_OneOf__A identifies the field in [OneOf] populating the A oneOf.
 type canotoOneOfType_OneOf__A uint32
 
 const (
@@ -192,7 +192,7 @@ const (
 	canotoOneOf_OneOf__A2     canotoOneOfType_OneOf__A = canotoNumber_OneOf__A2
 )
 
-// canotoOneOfType_OneOf__B identifies which field is populated in B.
+// canotoOneOfType_OneOf__B identifies the field in [OneOf] populating the B oneOf.
 type canotoOneOfType_OneOf__B uint32
 
 const (
@@ -555,7 +555,7 @@ const (
 	canotoTag_OneOfNoCopy__A2 = "\x38" // canoto.Tag(canotoNumber_OneOfNoCopy__A2, canoto.Varint)
 )
 
-// canotoOneOfType_OneOfNoCopy__A identifies which field is populated in A.
+// canotoOneOfType_OneOfNoCopy__A identifies the field in [OneOfNoCopy] populating the A oneOf.
 type canotoOneOfType_OneOfNoCopy__A uint32
 
 const (
@@ -564,7 +564,7 @@ const (
 	canotoOneOf_OneOfNoCopy__A2     canotoOneOfType_OneOfNoCopy__A = canotoNumber_OneOfNoCopy__A2
 )
 
-// canotoOneOfType_OneOfNoCopy__B identifies which field is populated in B.
+// canotoOneOfType_OneOfNoCopy__B identifies the field in [OneOfNoCopy] populating the B oneOf.
 type canotoOneOfType_OneOfNoCopy__B uint32
 
 const (
@@ -913,7 +913,7 @@ const (
 	canotoTag_Node__Next  = "\x12" // canoto.Tag(canotoNumber_Node__Next, canoto.Len)
 )
 
-// canotoOneOfType_Node__OneOf identifies which field is populated in OneOf.
+// canotoOneOfType_Node__OneOf identifies the field in [Node] populating the OneOf oneOf.
 type canotoOneOfType_Node__OneOf uint32
 
 const (

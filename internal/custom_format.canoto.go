@@ -30,7 +30,7 @@ const (
 	CustomFormatBTag = "\x10" // canoto.Tag(CustomFormatBNumber, canoto.Varint)
 )
 
-// CustomFormatFields identifies which field is populated in Fields.
+// CustomFormatFields identifies the field in [CustomFormat] populating the Fields oneOf.
 type CustomFormatFields uint32
 
 const (
