@@ -150,8 +150,7 @@ ${sizeCache}${oneOfCache}}
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*${structName}${generics}) CanotoSpec(${typesDecl}...reflect.Type) *${selector}Spec {

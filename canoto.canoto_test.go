@@ -173,8 +173,7 @@ type canotoData_SpecFuzzer struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
@@ -3744,8 +3743,7 @@ type canotoData_LargestFieldNumber struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*LargestFieldNumber[T1]) CanotoSpec(...reflect.Type) *Spec {
@@ -3896,8 +3894,7 @@ type canotoData_SpecFuzzerPointer struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*SpecFuzzerPointer) CanotoSpec(types ...reflect.Type) *Spec {
@@ -4102,8 +4099,7 @@ type canotoData_OneOf struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*OneOf) CanotoSpec(...reflect.Type) *Spec {

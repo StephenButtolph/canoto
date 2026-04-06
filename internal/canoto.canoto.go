@@ -35,8 +35,7 @@ type canotoData_LargestFieldNumber struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*LargestFieldNumber[T1]) CanotoSpec(...reflect.Type) *canoto.Spec {
@@ -218,8 +217,7 @@ type canotoData_OneOf struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*OneOf) CanotoSpec(...reflect.Type) *canoto.Spec {
@@ -597,8 +595,7 @@ type canotoData_OneOfNoCopy struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*OneOfNoCopy) CanotoSpec(...reflect.Type) *canoto.Spec {
@@ -951,8 +948,7 @@ type canotoData_Node struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*Node) CanotoSpec(types ...reflect.Type) *canoto.Spec {
@@ -1179,8 +1175,7 @@ type canotoData_RecursiveA struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*RecursiveA) CanotoSpec(types ...reflect.Type) *canoto.Spec {
@@ -1354,8 +1349,7 @@ type canotoData_RecursiveB struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*RecursiveB) CanotoSpec(types ...reflect.Type) *canoto.Spec {
@@ -1539,8 +1533,7 @@ type canotoData_GenericField struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*GenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
@@ -2178,8 +2171,7 @@ type canotoData_NestedGenericField struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*NestedGenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
@@ -2813,8 +2805,7 @@ type canotoData_Embedded struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*Embedded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
@@ -3126,8 +3117,7 @@ type canotoData_A struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*A) CanotoSpec(...reflect.Type) *canoto.Spec {
@@ -3278,8 +3268,7 @@ type canotoData_A__B struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*A__B) CanotoSpec(...reflect.Type) *canoto.Spec {
@@ -3430,8 +3419,7 @@ type canotoData_A__Pointer struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*A__Pointer) CanotoSpec(...reflect.Type) *canoto.Spec {
@@ -3727,8 +3715,7 @@ type canotoData_Scalars struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
@@ -7036,8 +7023,7 @@ type canotoData_SpecUnusedZero struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*SpecUnusedZero) CanotoSpec(...reflect.Type) *canoto.Spec {
@@ -7391,8 +7377,7 @@ type canotoData_EmptyMessage struct {
 // CanotoSpec returns the specification of this canoto message, describing its
 // fields and their wire types.
 //
-// types is used as a stack of ancestor messages to detect recursive field
-// types.
+// types is used as a stack of ancestor messages to detect recursive specs.
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*EmptyMessage) CanotoSpec(...reflect.Type) *canoto.Spec {
