@@ -32,7 +32,13 @@ type canotoData_LargestFieldNumber struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*LargestFieldNumber[T1]) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero LargestFieldNumber[T1]
 	s := &canoto.Spec{
@@ -106,9 +112,10 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r canoto.Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *LargestFieldNumber[T1]) ValidCanoto() bool {
 	return true
 }
@@ -208,7 +215,13 @@ type canotoData_OneOf struct {
 	BOneOf uint32
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*OneOf) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero OneOf
 	s := &canoto.Spec{
@@ -379,9 +392,10 @@ func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *OneOf) ValidCanoto() bool {
 	var AOneOf uint32
 	var BOneOf uint32
@@ -580,7 +594,13 @@ type canotoData_OneOfNoCopy struct {
 	BOneOf atomic.Uint32
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*OneOfNoCopy) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero OneOfNoCopy
 	s := &canoto.Spec{
@@ -751,9 +771,10 @@ func (c *OneOfNoCopy) UnmarshalCanotoFrom(r canoto.Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *OneOfNoCopy) ValidCanoto() bool {
 	var AOneOf uint32
 	var BOneOf uint32
@@ -927,7 +948,13 @@ type canotoData_Node struct {
 	OneOfOneOf uint32
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*Node) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[Node]())
 	var zero Node
@@ -1037,9 +1064,10 @@ func (c *Node) UnmarshalCanotoFrom(r canoto.Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *Node) ValidCanoto() bool {
 	var OneOfOneOf uint32
 	if c.Next != nil {
@@ -1148,7 +1176,13 @@ type canotoData_RecursiveA struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*RecursiveA) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[RecursiveA]())
 	var zero RecursiveA
@@ -1238,9 +1272,10 @@ func (c *RecursiveA) UnmarshalCanotoFrom(r canoto.Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *RecursiveA) ValidCanoto() bool {
 	if c.Next != nil && !(c.Next).ValidCanoto() {
 		return false
@@ -1316,7 +1351,13 @@ type canotoData_RecursiveB struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*RecursiveB) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[RecursiveB]())
 	var zero RecursiveB
@@ -1406,9 +1447,10 @@ func (c *RecursiveB) UnmarshalCanotoFrom(r canoto.Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *RecursiveB) ValidCanoto() bool {
 	if c.Next != nil && !(c.Next).ValidCanoto() {
 		return false
@@ -1494,7 +1536,13 @@ type canotoData_GenericField struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*GenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[GenericField[T1, T2]]())
 	var zero GenericField[T1, T2]
@@ -1892,9 +1940,10 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *GenericField[T1, T2]) ValidCanoto() bool {
 	if !T2(&c.Value).ValidCanoto() {
 		return false
@@ -2126,7 +2175,13 @@ type canotoData_NestedGenericField struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*NestedGenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[NestedGenericField[T1, T2]]())
 	var zero NestedGenericField[T1, T2]
@@ -2524,9 +2579,10 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *NestedGenericField[T1, T2]) ValidCanoto() bool {
 	if !(&c.Value).ValidCanoto() {
 		return false
@@ -2754,7 +2810,13 @@ type canotoData_Embedded struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*Embedded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[Embedded]())
 	var zero Embedded
@@ -2942,9 +3004,10 @@ func (c *Embedded) UnmarshalCanotoFrom(r canoto.Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *Embedded) ValidCanoto() bool {
 	if !(&c.OneOf).ValidCanoto() {
 		return false
@@ -3060,7 +3123,13 @@ type canotoData_A struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*A) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero A
 	s := &canoto.Spec{
@@ -3134,9 +3203,10 @@ func (c *A) UnmarshalCanotoFrom(r canoto.Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *A) ValidCanoto() bool {
 	return true
 }
@@ -3205,7 +3275,13 @@ type canotoData_A__B struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*A__B) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero A__B
 	s := &canoto.Spec{
@@ -3279,9 +3355,10 @@ func (c *A__B) UnmarshalCanotoFrom(r canoto.Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *A__B) ValidCanoto() bool {
 	return true
 }
@@ -3350,7 +3427,13 @@ type canotoData_A__Pointer struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*A__Pointer) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero A__Pointer
 	s := &canoto.Spec{
@@ -3424,9 +3507,10 @@ func (c *A__Pointer) UnmarshalCanotoFrom(r canoto.Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *A__Pointer) ValidCanoto() bool {
 	return true
 }
@@ -3640,7 +3724,13 @@ type canotoData_Scalars struct {
 	ConstRepeatedUint64Size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[Scalars]())
 	var zero Scalars
@@ -6024,9 +6114,10 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *Scalars) ValidCanoto() bool {
 	if !canoto.ValidString(c.String) {
 		return false
@@ -6942,7 +7033,13 @@ type canotoData_SpecUnusedZero struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*SpecUnusedZero) CanotoSpec(...reflect.Type) *canoto.Spec {
 	s := &canoto.Spec{
 		Name: "SpecUnusedZero",
@@ -7178,9 +7275,10 @@ func (c *SpecUnusedZero) UnmarshalCanotoFrom(r canoto.Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *SpecUnusedZero) ValidCanoto() bool {
 	if !canoto.ValidString(c.String) {
 		return false
@@ -7290,7 +7388,13 @@ type canotoData_EmptyMessage struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*EmptyMessage) CanotoSpec(...reflect.Type) *canoto.Spec {
 	s := &canoto.Spec{
 		Name:   "EmptyMessage",
@@ -7331,9 +7435,10 @@ func (c *EmptyMessage) UnmarshalCanotoFrom(r canoto.Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *EmptyMessage) ValidCanoto() bool {
 	return true
 }

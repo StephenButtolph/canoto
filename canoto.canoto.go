@@ -32,7 +32,13 @@ type canotoData_Spec struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*Spec) CanotoSpec(types ...reflect.Type) *Spec {
 	types = append(types, reflect.TypeFor[Spec]())
 	var zero Spec
@@ -169,9 +175,10 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *Spec) ValidCanoto() bool {
 	if !ValidString(c.Name) {
 		return false
@@ -316,7 +323,13 @@ type canotoData_FieldType struct {
 	TypeOneOf uint32
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 	types = append(types, reflect.TypeFor[FieldType]())
 	var zero FieldType
@@ -691,9 +704,10 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *FieldType) ValidCanoto() bool {
 	var TypeOneOf uint32
 	if !IsZero(c.TypeInt) {

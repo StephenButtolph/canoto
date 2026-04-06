@@ -147,7 +147,13 @@ func writeStruct(w io.Writer, m message, canotoSelector string) error {
 ${constants}type ${canotoData} struct {
 ${sizeCache}${oneOfCache}}
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive field
+// types.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*${structName}${generics}) CanotoSpec(${typesDecl}...reflect.Type) *${selector}Spec {
 ${appendTypes}${zero}	s := &${selector}Spec{
 ${spec}	}
@@ -182,9 +188,10 @@ ${unmarshalBody}}
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *${structName}${generics}) ValidCanoto() bool {
 ${validOneOf}${valid}	return true
 }
