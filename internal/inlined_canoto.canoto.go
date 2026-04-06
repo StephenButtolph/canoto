@@ -32,7 +32,12 @@ type canotoData_justAnInt struct {
 	size atomic.Uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive specs.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*justAnInt) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero justAnInt
 	s := &canoto.Spec{
@@ -106,9 +111,10 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *justAnInt) ValidCanoto() bool {
 	return true
 }

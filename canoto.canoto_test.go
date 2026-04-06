@@ -170,7 +170,12 @@ type canotoData_SpecFuzzer struct {
 	FixedRepeatedUint64Size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive specs.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 	types = append(types, reflect.TypeFor[SpecFuzzer]())
 	var zero SpecFuzzer
@@ -2696,9 +2701,10 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *SpecFuzzer) ValidCanoto() bool {
 	if !ValidString(c.String) {
 		return false
@@ -3734,7 +3740,12 @@ type canotoData_LargestFieldNumber struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive specs.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*LargestFieldNumber[T1]) CanotoSpec(...reflect.Type) *Spec {
 	var zero LargestFieldNumber[T1]
 	s := &Spec{
@@ -3808,9 +3819,10 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *LargestFieldNumber[T1]) ValidCanoto() bool {
 	return true
 }
@@ -3879,7 +3891,12 @@ type canotoData_SpecFuzzerPointer struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive specs.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*SpecFuzzerPointer) CanotoSpec(types ...reflect.Type) *Spec {
 	types = append(types, reflect.TypeFor[SpecFuzzerPointer]())
 	var zero SpecFuzzerPointer
@@ -3971,9 +3988,10 @@ func (c *SpecFuzzerPointer) UnmarshalCanotoFrom(r Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *SpecFuzzerPointer) ValidCanoto() bool {
 	if !(&c.Value).ValidCanoto() {
 		return false
@@ -4078,7 +4096,12 @@ type canotoData_OneOf struct {
 	BOneOf uint32
 }
 
-// CanotoSpec returns the specification of this canoto message.
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive specs.
+//
+// If there is not a valid specification of this type, it returns nil.
 func (*OneOf) CanotoSpec(...reflect.Type) *Spec {
 	var zero OneOf
 	s := &Spec{
@@ -4249,9 +4272,10 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
 // Canoto format.
 //
 // Specifically, ValidCanoto ensures:
-// 1. All OneOfs are specified at most once.
-// 2. All strings are valid utf-8.
-// 3. All custom fields are ValidCanoto.
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
 func (c *OneOf) ValidCanoto() bool {
 	var AOneOf uint32
 	var BOneOf uint32

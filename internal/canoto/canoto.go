@@ -39,13 +39,13 @@ const (
 	// I32 represents the 32-bit fixed-length wire type.
 	I32
 
-	// SizeEnum8 indicates either an [int8] or [uint8].
+	// SizeEnum8 indicates either a bool or an 8-bit int type.
 	SizeEnum8 SizeEnum = 1
-	// SizeEnum16 indicates either an [int16] or [uint16].
+	// SizeEnum16 indicates a 16-bit int type.
 	SizeEnum16 SizeEnum = 2
-	// SizeEnum32 indicates either an [int32] or [uint32].
+	// SizeEnum32 indicates an [Int32].
 	SizeEnum32 SizeEnum = 3
-	// SizeEnum64 indicates either an [int64] or [uint64].
+	// SizeEnum64 indicates an [Int64].
 	SizeEnum64 SizeEnum = 4
 
 	// SizeFint32 is the size of a 32-bit fixed size integer in bytes.
@@ -161,11 +161,11 @@ type (
 		~uint8 | ~uint16 | ~uint32 | ~uint64
 	}
 	integer interface{ Int | Uint }
-	// Int32 is a constraint that permits [int32] and [uint32] types.
+	// Int32 is a constraint that permits 32-bit int types.
 	Int32 interface{ ~int32 | ~uint32 }
-	// Int64 is a constraint that permits [int64] and [uint64] types.
+	// Int64 is a constraint that permits 64-bit int types.
 	Int64 interface{ ~int64 | ~uint64 }
-	// Bytes is a constraint that permits [string] and byte slice types.
+	// Bytes is a constraint that permits string and byte slice types.
 	Bytes interface{ ~string | ~[]byte }
 
 	// Message defines a type that can be a stand-alone Canoto message.
@@ -286,7 +286,7 @@ type (
 		canotoData canotoData_FieldType
 	}
 
-	// SizeEnum indicates the size of an integer type in canoto specifications.
+	// SizeEnum indicates the size of an integer type in [FieldType].
 	SizeEnum uint8
 
 	// Any is a generic representation of a Canoto message.
@@ -1537,7 +1537,7 @@ func (f *FieldType) unmarshalBool(r *Reader, _ []*Spec) (any, error) {
 			err := ReadBool(r, &v)
 			return v, err
 		},
-		1,
+		SizeEnum8,
 	)
 }
 
