@@ -49,6 +49,17 @@ message OneOfNoCopy__Pointer {
   OneOfNoCopy value = 1;
 }
 
+message unexportedOneOf {
+  oneof A {
+    sint32 A1 = 1;
+    sint64 A2 = 2;
+  }
+}
+
+message unexportedOneOf__Pointer {
+  unexportedOneOf value = 1;
+}
+
 message Node {
   oneof OneOf {
     Node Next = 2;
