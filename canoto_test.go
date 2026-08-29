@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"io"
 	"math"
+	"math/rand/v2"
 	"slices"
 	"strconv"
 	"testing"
@@ -174,6 +175,48 @@ func testCountInts[T Uint](t *testing.T, data []byte) {
 
 	count := CountInts(w.B)
 	require.Len(nums, int(count)) //#nosec G115 // False positive
+}
+
+func BenchmarkCountInts(b *testing.B) {
+	const maxSize = 1024
+	oneByte := &Writer{}
+	for len(oneByte.B) < maxSize {
+		AppendUint(oneByte, uint64(1))
+	}
+	tenByte := &Writer{}
+	for len(tenByte.B) < maxSize {
+		AppendUint(tenByte, uint64(math.MaxUint64))
+	}
+	// Random varint lengths make the continuation-bit branch unpredictable.
+	rng := rand.New(rand.NewPCG(0, 0)) //#nosec G404 // Deterministic values keep runs comparable
+	random := &Writer{}
+	for len(random.B) < maxSize {
+		// Randomize the lengths, not just the values. Otherwise almost all of
+		// the values would be large.
+		AppendUint(random, rng.Uint64()>>rng.Uint64N(64))
+	}
+
+	patterns := []struct {
+		name  string
+		bytes []byte
+	}{
+		{"1_byte_ints", oneByte.B},
+		{"10_byte_ints", tenByte.B},
+		{"random_ints", random.B},
+	}
+	for _, pattern := range patterns {
+		// 1 maximizes the relative cost of the word-loop length check, 7
+		// never enters the word loop, and 15 runs it exactly once with the
+		// longest possible tail.
+		for _, size := range []int{1, 7, 15, maxSize} {
+			bytes := pattern.bytes[:size]
+			b.Run(pattern.name+"/"+strconv.Itoa(size), func(b *testing.B) {
+				for range b.N {
+					CountInts(bytes)
+				}
+			})
+		}
+	}
 }
 
 func TestReadUint_uint32(t *testing.T) {
