@@ -455,6 +455,8 @@ func CountInts(bytes []byte) uint64 {
 		bytes = bytes[8:]
 	}
 	for _, b := range bytes {
+		// The compiler is smart enough to avoid branching, so no need to use
+		// any bitwise tricks here.
 		if b < continuationMask {
 			count++
 		}
