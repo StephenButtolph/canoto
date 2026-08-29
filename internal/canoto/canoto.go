@@ -81,9 +81,10 @@ const (
 	wireTypeMask   = 0x07
 	maxTagLength   = 5
 
-	falseByte        = 0
-	trueByte         = 1
-	continuationMask = 0x80
+	falseByte            = 0
+	trueByte             = 1
+	continuationMask     = 0x80
+	continuationWordMask = 0x8080808080808080
 )
 
 var (
@@ -446,6 +447,13 @@ func SizeUint[T Uint](v T) uint64 {
 // CountInts counts the number of varints that are encoded in bytes.
 func CountInts(bytes []byte) uint64 {
 	var count uint64
+	// Reading 8 bytes at a time allows using a full register on 64-bit
+	// architectures, which is faster than reading one byte at a time.
+	for len(bytes) >= 8 {
+		word := binary.LittleEndian.Uint64(bytes)
+		count += 8 - uint64(bits.OnesCount64(word&continuationWordMask)) //#nosec G115 // OnesCount64 is in [0,8]
+		bytes = bytes[8:]
+	}
 	for _, b := range bytes {
 		if b < continuationMask {
 			count++
