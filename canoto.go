@@ -626,6 +626,34 @@ func ReadBool[T ~bool](r *Reader, v *T) error {
 	}
 }
 
+// ReadBools reads a length-prefixed packed repeated boolean field from the
+// reader.
+func ReadBools[S ~[]E, E ~bool](r *Reader, v *S) error {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return err
+	}
+	if length > uint64(len(r.B)) {
+		return io.ErrUnexpectedEOF
+	}
+
+	vs := make(S, length)
+	// Slicing b by len(vs) proves to the compiler that b[i] can not exceed
+	// either slice, removing all bounds checks from the loop.
+	b := r.B[:len(vs)]
+	r.B = r.B[length:]
+	for i := range vs {
+		// This branch is typically predicted correctly for valid input, which
+		// is faster than accumulating the bytes.
+		if b[i] > trueByte {
+			return ErrInvalidBool
+		}
+		vs[i] = b[i] == trueByte
+	}
+	*v = vs
+	return nil
+}
+
 // AppendBool writes a boolean to the writer.
 func AppendBool[T ~bool](w *Writer, b T) {
 	if b {
