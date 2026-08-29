@@ -678,11 +678,26 @@ func ReadBools[S ~[]E, E ~bool](r *Reader, v *S) error {
 
 // AppendBool writes a boolean to the writer.
 func AppendBool[T ~bool](w *Writer, b T) {
+	v := byte(falseByte)
 	if b {
-		w.B = append(w.B, trueByte)
-	} else {
-		w.B = append(w.B, falseByte)
+		v = trueByte
 	}
+	w.B = append(w.B, v)
+}
+
+// AppendBools writes a length-prefixed packed repeated boolean field to the
+// writer.
+func AppendBools[S ~[]E, E ~bool](w *Writer, vs S) {
+	b := w.B
+	b = binary.AppendUvarint(b, uint64(len(vs))*SizeBool)
+	for _, v := range vs {
+		t := byte(falseByte)
+		if v {
+			t = trueByte
+		}
+		b = append(b, t)
+	}
+	w.B = b
 }
 
 // SizeBytes calculates the size the length-prefixed bytes would take if
