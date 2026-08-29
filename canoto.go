@@ -568,6 +568,17 @@ func AppendFint32[T Int32](w *Writer, v T) {
 	w.B = binary.LittleEndian.AppendUint32(w.B, uint32(v))
 }
 
+// AppendFint32s writes a length-prefixed packed repeated 32-bit fixed size
+// integer field to the writer.
+func AppendFint32s[S ~[]E, E Int32](w *Writer, vs S) {
+	b := w.B
+	b = binary.AppendUvarint(b, uint64(len(vs))*SizeFint32)
+	for _, v := range vs {
+		b = binary.LittleEndian.AppendUint32(b, uint32(v))
+	}
+	w.B = b
+}
+
 // ReadFint64 reads a 64-bit fixed size integer from the reader.
 func ReadFint64[T Int64](r *Reader, v *T) error {
 	if len(r.B) < SizeFint64 {
