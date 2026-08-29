@@ -13,6 +13,7 @@ const constRepeatedUint64Len = 3
 var (
 	_ canoto.Message = (*LargestFieldNumber[uint32])(nil)
 	_ canoto.Message = (*OneOf)(nil)
+	_ canoto.Message = (*unexportedOneOf)(nil)
 	_ canoto.Message = (*GenericField[OneOf, *OneOf])(nil)
 	_ canoto.Message = (*Scalars)(nil)
 )
@@ -54,6 +55,15 @@ type OneOfNoCopy struct {
 	D  int64 `canoto:"int,6"`
 
 	canotoData canotoData_OneOfNoCopy `canoto:"nocopy"`
+}
+
+// unexportedOneOf verifies that the cached oneOf accessors of an unexported
+// struct return the unexported oneOf type rather than uint32.
+type unexportedOneOf struct {
+	A1 int32 `canoto:"int,1,A"`
+	A2 int64 `canoto:"int,2,A"`
+
+	canotoData canotoData_unexportedOneOf
 }
 
 type Node struct {
