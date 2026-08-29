@@ -817,35 +817,12 @@ func makeUnmarshal(m message) string {
 				return ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			if err := ${selector}Read${suffix}s(&r, &c.${fieldName}); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
-
-			// Verify the length of the packed field bytes.
-			numMsgBytes := uint64(len(msgBytes))
-			if numMsgBytes == 0 {
+			if len(c.${fieldName}) == 0 {
 				return ${selector}ErrZeroValue
 			}
-			if numMsgBytes%${selector}Size${suffix} != 0 {
-				return ${selector}ErrInvalidLength
-			}
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, numMsgBytes/${selector}Size${suffix})
-			field := c.${fieldName}
-			for i := range field {
-				if err := ${selector}Read${suffix}(&r, &field[i]); err != nil {
-					return err
-				}
-			}
-			r.B = remainingBytes
 `
 		fixedRepeatedFixedSizeTemplate = `		case ${fieldNumberConst}:
 			if wireType != ${selector}Len {
