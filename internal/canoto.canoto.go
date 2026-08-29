@@ -4930,171 +4930,56 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			if err := canoto.ReadFint32s(&r, &c.RepeatedSfixed32); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
-
-			// Verify the length of the packed field bytes.
-			numMsgBytes := uint64(len(msgBytes))
-			if numMsgBytes == 0 {
+			if len(c.RepeatedSfixed32) == 0 {
 				return canoto.ErrZeroValue
 			}
-			if numMsgBytes%canoto.SizeFint32 != 0 {
-				return canoto.ErrInvalidLength
-			}
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedSfixed32 = canoto.MakeSlice(c.RepeatedSfixed32, numMsgBytes/canoto.SizeFint32)
-			field := c.RepeatedSfixed32
-			for i := range field {
-				if err := canoto.ReadFint32(&r, &field[i]); err != nil {
-					return err
-				}
-			}
-			r.B = remainingBytes
 		case canotoNumber_Scalars__RepeatedFixed32:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			if err := canoto.ReadFint32s(&r, &c.RepeatedFixed32); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
-
-			// Verify the length of the packed field bytes.
-			numMsgBytes := uint64(len(msgBytes))
-			if numMsgBytes == 0 {
+			if len(c.RepeatedFixed32) == 0 {
 				return canoto.ErrZeroValue
 			}
-			if numMsgBytes%canoto.SizeFint32 != 0 {
-				return canoto.ErrInvalidLength
-			}
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedFixed32 = canoto.MakeSlice(c.RepeatedFixed32, numMsgBytes/canoto.SizeFint32)
-			field := c.RepeatedFixed32
-			for i := range field {
-				if err := canoto.ReadFint32(&r, &field[i]); err != nil {
-					return err
-				}
-			}
-			r.B = remainingBytes
 		case canotoNumber_Scalars__RepeatedSfixed64:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			if err := canoto.ReadFint64s(&r, &c.RepeatedSfixed64); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
-
-			// Verify the length of the packed field bytes.
-			numMsgBytes := uint64(len(msgBytes))
-			if numMsgBytes == 0 {
+			if len(c.RepeatedSfixed64) == 0 {
 				return canoto.ErrZeroValue
 			}
-			if numMsgBytes%canoto.SizeFint64 != 0 {
-				return canoto.ErrInvalidLength
-			}
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedSfixed64 = canoto.MakeSlice(c.RepeatedSfixed64, numMsgBytes/canoto.SizeFint64)
-			field := c.RepeatedSfixed64
-			for i := range field {
-				if err := canoto.ReadFint64(&r, &field[i]); err != nil {
-					return err
-				}
-			}
-			r.B = remainingBytes
 		case canotoNumber_Scalars__RepeatedFixed64:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			if err := canoto.ReadFint64s(&r, &c.RepeatedFixed64); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
-
-			// Verify the length of the packed field bytes.
-			numMsgBytes := uint64(len(msgBytes))
-			if numMsgBytes == 0 {
+			if len(c.RepeatedFixed64) == 0 {
 				return canoto.ErrZeroValue
 			}
-			if numMsgBytes%canoto.SizeFint64 != 0 {
-				return canoto.ErrInvalidLength
-			}
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedFixed64 = canoto.MakeSlice(c.RepeatedFixed64, numMsgBytes/canoto.SizeFint64)
-			field := c.RepeatedFixed64
-			for i := range field {
-				if err := canoto.ReadFint64(&r, &field[i]); err != nil {
-					return err
-				}
-			}
-			r.B = remainingBytes
 		case canotoNumber_Scalars__RepeatedBool:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			if err := canoto.ReadBools(&r, &c.RepeatedBool); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
-
-			// Verify the length of the packed field bytes.
-			numMsgBytes := uint64(len(msgBytes))
-			if numMsgBytes == 0 {
+			if len(c.RepeatedBool) == 0 {
 				return canoto.ErrZeroValue
 			}
-			if numMsgBytes%canoto.SizeBool != 0 {
-				return canoto.ErrInvalidLength
-			}
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedBool = canoto.MakeSlice(c.RepeatedBool, numMsgBytes/canoto.SizeBool)
-			field := c.RepeatedBool
-			for i := range field {
-				if err := canoto.ReadBool(&r, &field[i]); err != nil {
-					return err
-				}
-			}
-			r.B = remainingBytes
 		case canotoNumber_Scalars__RepeatedString:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -7349,35 +7234,12 @@ func (c *SpecUnusedZero) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			if err := canoto.ReadBools(&r, &c.RepeatedBool); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
-
-			// Verify the length of the packed field bytes.
-			numMsgBytes := uint64(len(msgBytes))
-			if numMsgBytes == 0 {
+			if len(c.RepeatedBool) == 0 {
 				return canoto.ErrZeroValue
 			}
-			if numMsgBytes%canoto.SizeBool != 0 {
-				return canoto.ErrInvalidLength
-			}
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedBool = canoto.MakeSlice(c.RepeatedBool, numMsgBytes/canoto.SizeBool)
-			field := c.RepeatedBool
-			for i := range field {
-				if err := canoto.ReadBool(&r, &field[i]); err != nil {
-					return err
-				}
-			}
-			r.B = remainingBytes
 		case canotoNumber_SpecUnusedZero__String:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType

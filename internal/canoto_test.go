@@ -1195,6 +1195,142 @@ func BenchmarkScalars_Proto(b *testing.B) {
 	}
 }
 
+// 1 maximizes the relative cost of the length checks, 5 exercises the tail of
+// any unrolled read loop, and 1024 measures throughput.
+var repeatedFintSizes = []int{1, 5, 64, 1024}
+
+func repeatedFixed32Bytes(size int) []byte {
+	vals := make([]uint32, size)
+	for i := range vals {
+		vals[i] = uint32(i) + 1 //#nosec G115 // False positive
+	}
+	s := Scalars{RepeatedFixed32: vals}
+	return s.MarshalCanoto()
+}
+
+func repeatedFixed64Bytes(size int) []byte {
+	vals := make([]uint64, size)
+	for i := range vals {
+		vals[i] = uint64(i) + 1 //#nosec G115 // False positive
+	}
+	s := Scalars{RepeatedFixed64: vals}
+	return s.MarshalCanoto()
+}
+
+func BenchmarkRepeatedFixed32_Canoto(b *testing.B) {
+	for _, size := range repeatedFintSizes {
+		bytes := repeatedFixed32Bytes(size)
+		var sanity Scalars
+		require.NoError(b, sanity.UnmarshalCanoto(bytes))
+		require.Len(b, sanity.RepeatedFixed32, size)
+
+		b.Run("unmarshal/"+strconv.Itoa(size), func(b *testing.B) {
+			for range b.N {
+				var (
+					s      Scalars
+					reader = canoto.Reader{B: bytes}
+				)
+				_ = s.UnmarshalCanotoFrom(reader)
+			}
+		})
+	}
+}
+
+func BenchmarkRepeatedFixed32_Proto(b *testing.B) {
+	for _, size := range repeatedFintSizes {
+		bytes := repeatedFixed32Bytes(size)
+		var sanity pb.Scalars
+		require.NoError(b, proto.Unmarshal(bytes, &sanity))
+		require.Len(b, sanity.RepeatedFixed32, size)
+
+		b.Run("unmarshal/"+strconv.Itoa(size), func(b *testing.B) {
+			for range b.N {
+				var s pb.Scalars
+				_ = proto.Unmarshal(bytes, &s)
+			}
+		})
+	}
+}
+
+func BenchmarkRepeatedFixed64_Canoto(b *testing.B) {
+	for _, size := range repeatedFintSizes {
+		bytes := repeatedFixed64Bytes(size)
+		var sanity Scalars
+		require.NoError(b, sanity.UnmarshalCanoto(bytes))
+		require.Len(b, sanity.RepeatedFixed64, size)
+
+		b.Run("unmarshal/"+strconv.Itoa(size), func(b *testing.B) {
+			for range b.N {
+				var (
+					s      Scalars
+					reader = canoto.Reader{B: bytes}
+				)
+				_ = s.UnmarshalCanotoFrom(reader)
+			}
+		})
+	}
+}
+
+func BenchmarkRepeatedFixed64_Proto(b *testing.B) {
+	for _, size := range repeatedFintSizes {
+		bytes := repeatedFixed64Bytes(size)
+		var sanity pb.Scalars
+		require.NoError(b, proto.Unmarshal(bytes, &sanity))
+		require.Len(b, sanity.RepeatedFixed64, size)
+
+		b.Run("unmarshal/"+strconv.Itoa(size), func(b *testing.B) {
+			for range b.N {
+				var s pb.Scalars
+				_ = proto.Unmarshal(bytes, &s)
+			}
+		})
+	}
+}
+
+func repeatedBoolBytes(size int) []byte {
+	vals := make([]bool, size)
+	for i := range vals {
+		vals[i] = i%2 == 0
+	}
+	s := Scalars{RepeatedBool: vals}
+	return s.MarshalCanoto()
+}
+
+func BenchmarkRepeatedBool_Canoto(b *testing.B) {
+	for _, size := range repeatedFintSizes {
+		bytes := repeatedBoolBytes(size)
+		var sanity Scalars
+		require.NoError(b, sanity.UnmarshalCanoto(bytes))
+		require.Len(b, sanity.RepeatedBool, size)
+
+		b.Run("unmarshal/"+strconv.Itoa(size), func(b *testing.B) {
+			for range b.N {
+				var (
+					s      Scalars
+					reader = canoto.Reader{B: bytes}
+				)
+				_ = s.UnmarshalCanotoFrom(reader)
+			}
+		})
+	}
+}
+
+func BenchmarkRepeatedBool_Proto(b *testing.B) {
+	for _, size := range repeatedFintSizes {
+		bytes := repeatedBoolBytes(size)
+		var sanity pb.Scalars
+		require.NoError(b, proto.Unmarshal(bytes, &sanity))
+		require.Len(b, sanity.RepeatedBool, size)
+
+		b.Run("unmarshal/"+strconv.Itoa(size), func(b *testing.B) {
+			for range b.N {
+				var s pb.Scalars
+				_ = proto.Unmarshal(bytes, &s)
+			}
+		})
+	}
+}
+
 func TestAppend_ProtoCompatibility(t *testing.T) {
 	tests := []struct {
 		name  string
