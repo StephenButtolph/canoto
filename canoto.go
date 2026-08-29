@@ -611,6 +611,17 @@ func AppendFint64[T Int64](w *Writer, v T) {
 	w.B = binary.LittleEndian.AppendUint64(w.B, uint64(v))
 }
 
+// AppendFint64s writes a length-prefixed packed repeated 64-bit fixed size
+// integer field to the writer.
+func AppendFint64s[S ~[]E, E Int64](w *Writer, vs S) {
+	b := w.B
+	b = binary.AppendUvarint(b, uint64(len(vs))*SizeFint64)
+	for _, v := range vs {
+		b = binary.LittleEndian.AppendUint64(b, uint64(v))
+	}
+	w.B = b
+}
+
 // ReadBool reads a boolean from the reader.
 func ReadBool[T ~bool](r *Reader, v *T) error {
 	switch {
@@ -750,8 +761,10 @@ func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 
 // AppendBytes writes a length-prefixed byte slice to the writer.
 func AppendBytes[T Bytes](w *Writer, v T) {
-	AppendUint(w, uint64(len(v)))
-	w.B = append(w.B, v...)
+	b := w.B
+	b = binary.AppendUvarint(b, uint64(len(v)))
+	b = append(b, v...)
+	w.B = b
 }
 
 // MakePointer creates a new pointer. It is equivalent to `new(T)`.
