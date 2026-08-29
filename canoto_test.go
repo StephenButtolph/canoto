@@ -696,6 +696,53 @@ func testReadFint32s[S ~[]E, E Int32](t *testing.T, data []byte) {
 	require.ErrorIs(ReadFint32s(r, &got), io.ErrUnexpectedEOF)
 }
 
+func TestAppendFint32s(t *testing.T) {
+	writers := map[string]*Writer{
+		"empty":            {},
+		"has capacity":     {B: make([]byte, 0, 64)},
+		"existing content": {B: []byte{0x2a}},
+	}
+	for name, w := range writers {
+		t.Run(name, func(t *testing.T) {
+			require := require.New(t)
+
+			prefix := hex.EncodeToString(w.B)
+			AppendFint32s(w, []uint32{1, math.MaxUint32})
+			require.Equal(prefix+"0801000000ffffffff", hex.EncodeToString(w.B))
+		})
+	}
+}
+
+func FuzzAppendFint32s_int32(f *testing.F)  { f.Fuzz(testAppendFint32s[[]int32]) }
+func FuzzAppendFint32s_uint32(f *testing.F) { f.Fuzz(testAppendFint32s[[]uint32]) }
+
+func testAppendFint32s[S ~[]E, E Int32](t *testing.T, data []byte) {
+	require := require.New(t)
+
+	var nums S
+	fz := fuzzer.NewFuzzer(data)
+	fz.Fill(&nums)
+
+	// The bulk append must produce the same bytes as appending each value
+	// individually.
+	values := &Writer{}
+	for _, num := range nums {
+		AppendFint32(values, num)
+	}
+	expected := &Writer{}
+	AppendBytes(expected, values.B)
+
+	w := &Writer{}
+	AppendFint32s(w, nums)
+	require.Equal(expected.B, w.B)
+
+	r := &Reader{B: w.B}
+	var got S
+	require.NoError(ReadFint32s(r, &got))
+	require.True(slices.Equal(nums, got))
+	require.Empty(r.B)
+}
+
 func TestReadFint64_int64(t *testing.T) {
 	validTests := []validTest[int64]{
 		{"0000000000000080", math.MinInt64},
@@ -872,6 +919,53 @@ func testReadFint64s[S ~[]E, E Int64](t *testing.T, data []byte) {
 	require.ErrorIs(ReadFint64s(r, &got), io.ErrUnexpectedEOF)
 }
 
+func TestAppendFint64s(t *testing.T) {
+	writers := map[string]*Writer{
+		"empty":            {},
+		"has capacity":     {B: make([]byte, 0, 64)},
+		"existing content": {B: []byte{0x2a}},
+	}
+	for name, w := range writers {
+		t.Run(name, func(t *testing.T) {
+			require := require.New(t)
+
+			prefix := hex.EncodeToString(w.B)
+			AppendFint64s(w, []uint64{1, math.MaxUint64})
+			require.Equal(prefix+"100100000000000000ffffffffffffffff", hex.EncodeToString(w.B))
+		})
+	}
+}
+
+func FuzzAppendFint64s_int64(f *testing.F)  { f.Fuzz(testAppendFint64s[[]int64]) }
+func FuzzAppendFint64s_uint64(f *testing.F) { f.Fuzz(testAppendFint64s[[]uint64]) }
+
+func testAppendFint64s[S ~[]E, E Int64](t *testing.T, data []byte) {
+	require := require.New(t)
+
+	var nums S
+	fz := fuzzer.NewFuzzer(data)
+	fz.Fill(&nums)
+
+	// The bulk append must produce the same bytes as appending each value
+	// individually.
+	values := &Writer{}
+	for _, num := range nums {
+		AppendFint64(values, num)
+	}
+	expected := &Writer{}
+	AppendBytes(expected, values.B)
+
+	w := &Writer{}
+	AppendFint64s(w, nums)
+	require.Equal(expected.B, w.B)
+
+	r := &Reader{B: w.B}
+	var got S
+	require.NoError(ReadFint64s(r, &got))
+	require.True(slices.Equal(nums, got))
+	require.Empty(r.B)
+}
+
 func TestReadBool(t *testing.T) {
 	validTests := []validTest[bool]{
 		{"00", false},
@@ -980,6 +1074,52 @@ func FuzzReadBools(f *testing.F) {
 		// Dropping the last byte must invalidate the length.
 		r = &Reader{B: w.B[:len(w.B)-1]}
 		require.ErrorIs(ReadBools(r, &got), io.ErrUnexpectedEOF)
+	})
+}
+
+func TestAppendBools(t *testing.T) {
+	writers := map[string]*Writer{
+		"empty":            {},
+		"has capacity":     {B: make([]byte, 0, 64)},
+		"existing content": {B: []byte{0x2a}},
+	}
+	for name, w := range writers {
+		t.Run(name, func(t *testing.T) {
+			require := require.New(t)
+
+			prefix := hex.EncodeToString(w.B)
+			AppendBools(w, []bool{true, false, true})
+			require.Equal(prefix+"03010001", hex.EncodeToString(w.B))
+		})
+	}
+}
+
+func FuzzAppendBools(f *testing.F) {
+	f.Fuzz(func(t *testing.T, data []byte) {
+		require := require.New(t)
+
+		var nums []bool
+		fz := fuzzer.NewFuzzer(data)
+		fz.Fill(&nums)
+
+		// The bulk append must produce the same bytes as appending each value
+		// individually.
+		values := &Writer{}
+		for _, num := range nums {
+			AppendBool(values, num)
+		}
+		expected := &Writer{}
+		AppendBytes(expected, values.B)
+
+		w := &Writer{}
+		AppendBools(w, nums)
+		require.Equal(expected.B, w.B)
+
+		r := &Reader{B: w.B}
+		var got []bool
+		require.NoError(ReadBools(r, &got))
+		require.True(slices.Equal(nums, got))
+		require.Empty(r.B)
 	})
 }
 

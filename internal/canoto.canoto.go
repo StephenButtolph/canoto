@@ -6804,40 +6804,25 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 			canoto.AppendUint(&w, v)
 		}
 	}
-	if num := uint64(len(c.RepeatedSfixed32)); num != 0 {
+	if len(c.RepeatedSfixed32) != 0 {
 		canoto.Append(&w, canotoTag_Scalars__RepeatedSfixed32)
-		canoto.AppendUint(&w, num*canoto.SizeFint32)
-		for _, v := range c.RepeatedSfixed32 {
-			canoto.AppendFint32(&w, v)
-		}
+		canoto.AppendFint32s(&w, c.RepeatedSfixed32)
 	}
-	if num := uint64(len(c.RepeatedFixed32)); num != 0 {
+	if len(c.RepeatedFixed32) != 0 {
 		canoto.Append(&w, canotoTag_Scalars__RepeatedFixed32)
-		canoto.AppendUint(&w, num*canoto.SizeFint32)
-		for _, v := range c.RepeatedFixed32 {
-			canoto.AppendFint32(&w, v)
-		}
+		canoto.AppendFint32s(&w, c.RepeatedFixed32)
 	}
-	if num := uint64(len(c.RepeatedSfixed64)); num != 0 {
+	if len(c.RepeatedSfixed64) != 0 {
 		canoto.Append(&w, canotoTag_Scalars__RepeatedSfixed64)
-		canoto.AppendUint(&w, num*canoto.SizeFint64)
-		for _, v := range c.RepeatedSfixed64 {
-			canoto.AppendFint64(&w, v)
-		}
+		canoto.AppendFint64s(&w, c.RepeatedSfixed64)
 	}
-	if num := uint64(len(c.RepeatedFixed64)); num != 0 {
+	if len(c.RepeatedFixed64) != 0 {
 		canoto.Append(&w, canotoTag_Scalars__RepeatedFixed64)
-		canoto.AppendUint(&w, num*canoto.SizeFint64)
-		for _, v := range c.RepeatedFixed64 {
-			canoto.AppendFint64(&w, v)
-		}
+		canoto.AppendFint64s(&w, c.RepeatedFixed64)
 	}
-	if num := uint64(len(c.RepeatedBool)); num != 0 {
+	if len(c.RepeatedBool) != 0 {
 		canoto.Append(&w, canotoTag_Scalars__RepeatedBool)
-		canoto.AppendUint(&w, num*canoto.SizeBool)
-		for _, v := range c.RepeatedBool {
-			canoto.AppendBool(&w, v)
-		}
+		canoto.AppendBools(&w, c.RepeatedBool)
 	}
 	for _, v := range c.RepeatedString {
 		canoto.Append(&w, canotoTag_Scalars__RepeatedString)
@@ -7432,12 +7417,9 @@ func (c *SpecUnusedZero) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		canoto.Append(&w, canotoTag_SpecUnusedZero__Bool)
 		canoto.AppendBool(&w, true)
 	}
-	if num := uint64(len(c.RepeatedBool)); num != 0 {
+	if len(c.RepeatedBool) != 0 {
 		canoto.Append(&w, canotoTag_SpecUnusedZero__RepeatedBool)
-		canoto.AppendUint(&w, num*canoto.SizeBool)
-		for _, v := range c.RepeatedBool {
-			canoto.AppendBool(&w, v)
-		}
+		canoto.AppendBools(&w, c.RepeatedBool)
 	}
 	if len(c.String) != 0 {
 		canoto.Append(&w, canotoTag_SpecUnusedZero__String)

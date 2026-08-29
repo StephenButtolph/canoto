@@ -3290,40 +3290,25 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 			AppendUint(&w, v)
 		}
 	}
-	if num := uint64(len(c.RepeatedSfixed32)); num != 0 {
+	if len(c.RepeatedSfixed32) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedSfixed32)
-		AppendUint(&w, num*SizeFint32)
-		for _, v := range c.RepeatedSfixed32 {
-			AppendFint32(&w, v)
-		}
+		AppendFint32s(&w, c.RepeatedSfixed32)
 	}
-	if num := uint64(len(c.RepeatedFixed32)); num != 0 {
+	if len(c.RepeatedFixed32) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedFixed32)
-		AppendUint(&w, num*SizeFint32)
-		for _, v := range c.RepeatedFixed32 {
-			AppendFint32(&w, v)
-		}
+		AppendFint32s(&w, c.RepeatedFixed32)
 	}
-	if num := uint64(len(c.RepeatedSfixed64)); num != 0 {
+	if len(c.RepeatedSfixed64) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedSfixed64)
-		AppendUint(&w, num*SizeFint64)
-		for _, v := range c.RepeatedSfixed64 {
-			AppendFint64(&w, v)
-		}
+		AppendFint64s(&w, c.RepeatedSfixed64)
 	}
-	if num := uint64(len(c.RepeatedFixed64)); num != 0 {
+	if len(c.RepeatedFixed64) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedFixed64)
-		AppendUint(&w, num*SizeFint64)
-		for _, v := range c.RepeatedFixed64 {
-			AppendFint64(&w, v)
-		}
+		AppendFint64s(&w, c.RepeatedFixed64)
 	}
-	if num := uint64(len(c.RepeatedBool)); num != 0 {
+	if len(c.RepeatedBool) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedBool)
-		AppendUint(&w, num*SizeBool)
-		for _, v := range c.RepeatedBool {
-			AppendBool(&w, v)
-		}
+		AppendBools(&w, c.RepeatedBool)
 	}
 	for _, v := range c.RepeatedString {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedString)

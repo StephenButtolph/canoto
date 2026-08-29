@@ -572,6 +572,17 @@ func AppendFint32[T Int32](w *Writer, v T) {
 	w.B = binary.LittleEndian.AppendUint32(w.B, uint32(v))
 }
 
+// AppendFint32s writes a length-prefixed packed repeated 32-bit fixed size
+// integer field to the writer.
+func AppendFint32s[S ~[]E, E Int32](w *Writer, vs S) {
+	b := w.B
+	b = binary.AppendUvarint(b, uint64(len(vs))*SizeFint32)
+	for _, v := range vs {
+		b = binary.LittleEndian.AppendUint32(b, uint32(v))
+	}
+	w.B = b
+}
+
 // ReadFint64 reads a 64-bit fixed size integer from the reader.
 func ReadFint64[T Int64](r *Reader, v *T) error {
 	if len(r.B) < SizeFint64 {
@@ -613,6 +624,17 @@ func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
 // AppendFint64 writes a 64-bit fixed size integer to the writer.
 func AppendFint64[T Int64](w *Writer, v T) {
 	w.B = binary.LittleEndian.AppendUint64(w.B, uint64(v))
+}
+
+// AppendFint64s writes a length-prefixed packed repeated 64-bit fixed size
+// integer field to the writer.
+func AppendFint64s[S ~[]E, E Int64](w *Writer, vs S) {
+	b := w.B
+	b = binary.AppendUvarint(b, uint64(len(vs))*SizeFint64)
+	for _, v := range vs {
+		b = binary.LittleEndian.AppendUint64(b, uint64(v))
+	}
+	w.B = b
 }
 
 // ReadBool reads a boolean from the reader.
@@ -660,11 +682,26 @@ func ReadBools[S ~[]E, E ~bool](r *Reader, v *S) error {
 
 // AppendBool writes a boolean to the writer.
 func AppendBool[T ~bool](w *Writer, b T) {
+	v := byte(falseByte)
 	if b {
-		w.B = append(w.B, trueByte)
-	} else {
-		w.B = append(w.B, falseByte)
+		v = trueByte
 	}
+	w.B = append(w.B, v)
+}
+
+// AppendBools writes a length-prefixed packed repeated boolean field to the
+// writer.
+func AppendBools[S ~[]E, E ~bool](w *Writer, vs S) {
+	b := w.B
+	b = binary.AppendUvarint(b, uint64(len(vs))*SizeBool)
+	for _, v := range vs {
+		t := byte(falseByte)
+		if v {
+			t = trueByte
+		}
+		b = append(b, t)
+	}
+	w.B = b
 }
 
 // SizeBytes calculates the size the length-prefixed bytes would take if
@@ -754,8 +791,10 @@ func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 
 // AppendBytes writes a length-prefixed byte slice to the writer.
 func AppendBytes[T Bytes](w *Writer, v T) {
-	AppendUint(w, uint64(len(v)))
-	w.B = append(w.B, v...)
+	b := w.B
+	b = binary.AppendUvarint(b, uint64(len(v)))
+	b = append(b, v...)
+	w.B = b
 }
 
 // MakePointer creates a new pointer. It is equivalent to `new(T)`.
