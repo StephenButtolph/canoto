@@ -924,6 +924,232 @@ func (c *OneOfNoCopy) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 }
 
 const (
+	canotoNumber_unexportedOneOf__A1 = 1
+	canotoNumber_unexportedOneOf__A2 = 2
+
+	canotoTag_unexportedOneOf__A1 = "\x08" // canoto.Tag(canotoNumber_unexportedOneOf__A1, canoto.Varint)
+	canotoTag_unexportedOneOf__A2 = "\x10" // canoto.Tag(canotoNumber_unexportedOneOf__A2, canoto.Varint)
+)
+
+// canotoOneOfType_unexportedOneOf__A identifies the field in [unexportedOneOf] populating the A oneOf.
+type canotoOneOfType_unexportedOneOf__A uint32
+
+const (
+	canotoOneOfUnset_unexportedOneOf__A canotoOneOfType_unexportedOneOf__A = 0
+	canotoOneOf_unexportedOneOf__A1     canotoOneOfType_unexportedOneOf__A = canotoNumber_unexportedOneOf__A1
+	canotoOneOf_unexportedOneOf__A2     canotoOneOfType_unexportedOneOf__A = canotoNumber_unexportedOneOf__A2
+)
+
+type canotoData_unexportedOneOf struct {
+	size uint64
+
+	AOneOf uint32
+}
+
+// CanotoSpec returns the specification of this canoto message, describing its
+// fields and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive specs.
+//
+// If there is not a valid specification of this type, it returns nil.
+func (*unexportedOneOf) CanotoSpec(...reflect.Type) *canoto.Spec {
+	var zero unexportedOneOf
+	s := &canoto.Spec{
+		Name: "unexportedOneOf",
+		Fields: []canoto.FieldType{
+			{
+				FieldNumber: canotoNumber_unexportedOneOf__A1,
+				Name:        "A1",
+				OneOf:       "A",
+				TypeInt:     canoto.SizeOf(zero.A1),
+			},
+			{
+				FieldNumber: canotoNumber_unexportedOneOf__A2,
+				Name:        "A2",
+				OneOf:       "A",
+				TypeInt:     canoto.SizeOf(zero.A2),
+			},
+		},
+	}
+	s.CalculateCanotoCache()
+	return s
+}
+
+// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
+func (c *unexportedOneOf) UnmarshalCanoto(bytes []byte) error {
+	r := canoto.Reader{
+		B: bytes,
+	}
+	return c.UnmarshalCanotoFrom(r)
+}
+
+// UnmarshalCanotoFrom populates the struct from a [canoto.Reader]. Most users
+// should just use UnmarshalCanoto.
+//
+// During parsing, the canoto cache is saved.
+//
+// This function enables configuration of reader options.
+func (c *unexportedOneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
+	// Zero the struct before unmarshaling.
+	*c = unexportedOneOf{}
+	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
+
+	var minField uint32
+	for canoto.HasNext(&r) {
+		field, wireType, err := canoto.ReadTag(&r)
+		if err != nil {
+			return err
+		}
+		if field < minField {
+			return canoto.ErrInvalidFieldOrder
+		}
+
+		switch field {
+		case canotoNumber_unexportedOneOf__A1:
+			if wireType != canoto.Varint {
+				return canoto.ErrUnexpectedWireType
+			}
+			if atomic.SwapUint32(&c.canotoData.AOneOf, canotoNumber_unexportedOneOf__A1) != 0 {
+				return canoto.ErrDuplicateOneOf
+			}
+
+			if err := canoto.ReadInt(&r, &c.A1); err != nil {
+				return err
+			}
+			if canoto.IsZero(c.A1) {
+				return canoto.ErrZeroValue
+			}
+		case canotoNumber_unexportedOneOf__A2:
+			if wireType != canoto.Varint {
+				return canoto.ErrUnexpectedWireType
+			}
+			if atomic.SwapUint32(&c.canotoData.AOneOf, canotoNumber_unexportedOneOf__A2) != 0 {
+				return canoto.ErrDuplicateOneOf
+			}
+
+			if err := canoto.ReadInt(&r, &c.A2); err != nil {
+				return err
+			}
+			if canoto.IsZero(c.A2) {
+				return canoto.ErrZeroValue
+			}
+		default:
+			return canoto.ErrUnknownField
+		}
+
+		minField = field + 1
+	}
+	return nil
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// Specifically, ValidCanoto ensures:
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields are ValidCanoto.
+func (c *unexportedOneOf) ValidCanoto() bool {
+	var AOneOf uint32
+	if !canoto.IsZero(c.A1) {
+		if AOneOf != 0 {
+			return false
+		}
+		AOneOf = canotoNumber_unexportedOneOf__A1
+	}
+	if !canoto.IsZero(c.A2) {
+		if AOneOf != 0 {
+			return false
+		}
+		AOneOf = canotoNumber_unexportedOneOf__A2
+	}
+	return true
+}
+
+// CalculateCanotoCache populates size and OneOf caches based on the current
+// values in the struct.
+//
+// It is not safe to copy this struct concurrently.
+func (c *unexportedOneOf) CalculateCanotoCache() {
+	var size uint64
+	var AOneOf uint32
+	if !canoto.IsZero(c.A1) {
+		size += uint64(len(canotoTag_unexportedOneOf__A1)) + canoto.SizeInt(c.A1)
+		AOneOf = canotoNumber_unexportedOneOf__A1
+	}
+	if !canoto.IsZero(c.A2) {
+		size += uint64(len(canotoTag_unexportedOneOf__A2)) + canoto.SizeInt(c.A2)
+		AOneOf = canotoNumber_unexportedOneOf__A2
+	}
+	atomic.StoreUint64(&c.canotoData.size, size)
+	atomic.StoreUint32(&c.canotoData.AOneOf, AOneOf)
+}
+
+// CachedCanotoSize returns the previously calculated size of the Canoto
+// representation from CalculateCanotoCache.
+//
+// If CalculateCanotoCache has not yet been called, it will return 0.
+//
+// If the struct has been modified since the last call to CalculateCanotoCache,
+// the returned size may be incorrect.
+func (c *unexportedOneOf) CachedCanotoSize() uint64 {
+	return atomic.LoadUint64(&c.canotoData.size)
+}
+
+// CachedWhichOneOfA returns the previously calculated field number used
+// to represent A.
+//
+// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CalculateCanotoCache.
+//
+// If the field has not yet been cached, it will return 0.
+//
+// If the struct has been modified since the field was last cached, the returned
+// field number may be incorrect.
+func (c *unexportedOneOf) CachedWhichOneOfA() canotoOneOfType_unexportedOneOf__A {
+	return canotoOneOfType_unexportedOneOf__A(atomic.LoadUint32(&c.canotoData.AOneOf))
+}
+
+// MarshalCanoto returns the Canoto representation of this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to copy this struct concurrently.
+func (c *unexportedOneOf) MarshalCanoto() []byte {
+	c.CalculateCanotoCache()
+	w := canoto.Writer{
+		B: make([]byte, 0, c.CachedCanotoSize()),
+	}
+	w = c.MarshalCanotoInto(w)
+	return w.B
+}
+
+// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// resulting [canoto.Writer]. Most users should just use MarshalCanoto.
+//
+// It is assumed that CalculateCanotoCache has been called since the last
+// modification to this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+//
+// It is not safe to copy this struct concurrently.
+func (c *unexportedOneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+	cachedWhichOneOfA := atomic.LoadUint32(&c.canotoData.AOneOf)
+	switch cachedWhichOneOfA {
+	case canotoNumber_unexportedOneOf__A1:
+		canoto.Append(&w, canotoTag_unexportedOneOf__A1)
+		canoto.AppendInt(&w, c.A1)
+	case canotoNumber_unexportedOneOf__A2:
+		canoto.Append(&w, canotoTag_unexportedOneOf__A2)
+		canoto.AppendInt(&w, c.A2)
+	}
+	return w
+}
+
+const (
 	canotoNumber_Node__Value = 1
 	canotoNumber_Node__Next  = 2
 

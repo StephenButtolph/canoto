@@ -1893,7 +1893,7 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${oneOfType} {
 	for _, oneOf := range m.OneOfs() {
 		oneOfType := makeTemplate(m.template.OneOfType, oneOfEnv(m, oneOf))
 		oneOfCast := oneOfType
-		if !token.IsExported(oneOfType) {
+		if token.IsExported(m.name) && !token.IsExported(oneOfType) {
 			oneOfType = "uint32"
 			oneOfCast = ""
 		}
