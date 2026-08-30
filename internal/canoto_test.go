@@ -1319,6 +1319,93 @@ func BenchmarkRepeatedFixed64_Proto(b *testing.B) {
 	}
 }
 
+// repeatedUint64Patterns exercise the varint decoding paths. Small values are
+// the common case and are encoded as single byte varints. The mixed values
+// cycle through every varint length in [1, 10].
+var repeatedUint64Patterns = []struct {
+	name string
+	vals func(size int) []uint64
+}{
+	{
+		name: "small",
+		vals: func(size int) []uint64 {
+			vals := make([]uint64, size)
+			for i := range vals {
+				vals[i] = uint64(i % 128) //#nosec G115 // False positive
+			}
+			return vals
+		},
+	},
+	{
+		name: "mixed",
+		vals: func(size int) []uint64 {
+			vals := make([]uint64, size)
+			for i := range vals {
+				vals[i] = 1 << ((i % 10) * 7)
+			}
+			return vals
+		},
+	},
+}
+
+func repeatedUint64Bytes(vals []uint64) []byte {
+	s := Scalars{RepeatedUint64: vals}
+	return s.MarshalCanoto()
+}
+
+func BenchmarkRepeatedUint64_Canoto(b *testing.B) {
+	for _, pattern := range repeatedUint64Patterns {
+		for _, size := range repeatedFintSizes {
+			vals := pattern.vals(size)
+			bytes := repeatedUint64Bytes(vals)
+			var sanity Scalars
+			require.NoError(b, sanity.UnmarshalCanoto(bytes))
+			require.Equal(b, vals, sanity.RepeatedUint64)
+
+			b.Run("marshal/"+pattern.name+"/"+strconv.Itoa(size), func(b *testing.B) {
+				s := Scalars{RepeatedUint64: vals}
+				for range b.N {
+					s.MarshalCanoto()
+				}
+			})
+			b.Run("unmarshal/"+pattern.name+"/"+strconv.Itoa(size), func(b *testing.B) {
+				for range b.N {
+					var (
+						s      Scalars
+						reader = canoto.Reader{B: bytes}
+					)
+					_ = s.UnmarshalCanotoFrom(reader)
+				}
+			})
+		}
+	}
+}
+
+func BenchmarkRepeatedUint64_Proto(b *testing.B) {
+	for _, pattern := range repeatedUint64Patterns {
+		for _, size := range repeatedFintSizes {
+			vals := pattern.vals(size)
+			bytes := repeatedUint64Bytes(vals)
+			var sanity pb.Scalars
+			require.NoError(b, proto.Unmarshal(bytes, &sanity))
+			require.Equal(b, vals, sanity.RepeatedUint64)
+
+			b.Run("marshal/"+pattern.name+"/"+strconv.Itoa(size), func(b *testing.B) {
+				s := pb.Scalars{RepeatedUint64: vals}
+				for range b.N {
+					_, _ = proto.Marshal(&s)
+				}
+			})
+			b.Run("unmarshal/"+pattern.name+"/"+strconv.Itoa(size), func(b *testing.B) {
+				for range b.N {
+					var s pb.Scalars
+					_ = proto.Unmarshal(bytes, &s)
+				}
+			})
+		}
+	}
+}
+
 func repeatedBoolVals(size int) []bool {
 	vals := make([]bool, size)
 	for i := range vals {
