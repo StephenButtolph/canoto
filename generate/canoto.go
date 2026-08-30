@@ -817,35 +817,12 @@ func makeUnmarshal(m message) string {
 				return ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			if err := ${selector}Read${suffix}s(&r, &c.${fieldName}); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
-
-			// Verify the length of the packed field bytes.
-			numMsgBytes := uint64(len(msgBytes))
-			if numMsgBytes == 0 {
+			if len(c.${fieldName}) == 0 {
 				return ${selector}ErrZeroValue
 			}
-			if numMsgBytes%${selector}Size${suffix} != 0 {
-				return ${selector}ErrInvalidLength
-			}
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, numMsgBytes/${selector}Size${suffix})
-			field := c.${fieldName}
-			for i := range field {
-				if err := ${selector}Read${suffix}(&r, &field[i]); err != nil {
-					return err
-				}
-			}
-			r.B = remainingBytes
 `
 		fixedRepeatedFixedSizeTemplate = `		case ${fieldNumberConst}:
 			if wireType != ${selector}Len {
@@ -1969,12 +1946,9 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 	}
 
 	const (
-		repeatedFintTemplate = `	if num := uint64(len(c.${fieldName})); num != 0 {
+		repeatedFixedSizeTemplate = `	if len(c.${fieldName}) != 0 {
 		${selector}Append(&w, ${fieldTagConst})
-		${selector}AppendUint(&w, num*${selector}Size${suffix})
-		for _, v := range c.${fieldName} {
-			${selector}Append${suffix}(&w, v)
-		}
+		${selector}Append${suffix}s(&w, c.${fieldName})
 	}
 `
 		fixedRepeatedFintTemplate = `	if !${selector}IsZero(c.${fieldName}) {
@@ -2014,12 +1988,12 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 		},
 		fints: typeTemplate{
 			single:        intTemplate,
-			repeated:      repeatedFintTemplate,
+			repeated:      repeatedFixedSizeTemplate,
 			fixedRepeated: fixedRepeatedFintTemplate,
 		},
 		bools: typeTemplate{
 			single:        boolTemplate,
-			repeated:      repeatedFintTemplate,
+			repeated:      repeatedFixedSizeTemplate,
 			fixedRepeated: fixedRepeatedFintTemplate,
 		},
 		strings: typeTemplate{

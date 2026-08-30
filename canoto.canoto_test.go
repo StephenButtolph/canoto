@@ -1281,171 +1281,56 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			if err := ReadFint32s(&r, &c.RepeatedSfixed32); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
-
-			// Verify the length of the packed field bytes.
-			numMsgBytes := uint64(len(msgBytes))
-			if numMsgBytes == 0 {
+			if len(c.RepeatedSfixed32) == 0 {
 				return ErrZeroValue
 			}
-			if numMsgBytes%SizeFint32 != 0 {
-				return ErrInvalidLength
-			}
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedSfixed32 = MakeSlice(c.RepeatedSfixed32, numMsgBytes/SizeFint32)
-			field := c.RepeatedSfixed32
-			for i := range field {
-				if err := ReadFint32(&r, &field[i]); err != nil {
-					return err
-				}
-			}
-			r.B = remainingBytes
 		case canotoNumber_SpecFuzzer__RepeatedFixed32:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			if err := ReadFint32s(&r, &c.RepeatedFixed32); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
-
-			// Verify the length of the packed field bytes.
-			numMsgBytes := uint64(len(msgBytes))
-			if numMsgBytes == 0 {
+			if len(c.RepeatedFixed32) == 0 {
 				return ErrZeroValue
 			}
-			if numMsgBytes%SizeFint32 != 0 {
-				return ErrInvalidLength
-			}
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedFixed32 = MakeSlice(c.RepeatedFixed32, numMsgBytes/SizeFint32)
-			field := c.RepeatedFixed32
-			for i := range field {
-				if err := ReadFint32(&r, &field[i]); err != nil {
-					return err
-				}
-			}
-			r.B = remainingBytes
 		case canotoNumber_SpecFuzzer__RepeatedSfixed64:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			if err := ReadFint64s(&r, &c.RepeatedSfixed64); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
-
-			// Verify the length of the packed field bytes.
-			numMsgBytes := uint64(len(msgBytes))
-			if numMsgBytes == 0 {
+			if len(c.RepeatedSfixed64) == 0 {
 				return ErrZeroValue
 			}
-			if numMsgBytes%SizeFint64 != 0 {
-				return ErrInvalidLength
-			}
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedSfixed64 = MakeSlice(c.RepeatedSfixed64, numMsgBytes/SizeFint64)
-			field := c.RepeatedSfixed64
-			for i := range field {
-				if err := ReadFint64(&r, &field[i]); err != nil {
-					return err
-				}
-			}
-			r.B = remainingBytes
 		case canotoNumber_SpecFuzzer__RepeatedFixed64:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			if err := ReadFint64s(&r, &c.RepeatedFixed64); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
-
-			// Verify the length of the packed field bytes.
-			numMsgBytes := uint64(len(msgBytes))
-			if numMsgBytes == 0 {
+			if len(c.RepeatedFixed64) == 0 {
 				return ErrZeroValue
 			}
-			if numMsgBytes%SizeFint64 != 0 {
-				return ErrInvalidLength
-			}
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedFixed64 = MakeSlice(c.RepeatedFixed64, numMsgBytes/SizeFint64)
-			field := c.RepeatedFixed64
-			for i := range field {
-				if err := ReadFint64(&r, &field[i]); err != nil {
-					return err
-				}
-			}
-			r.B = remainingBytes
 		case canotoNumber_SpecFuzzer__RepeatedBool:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			if err := ReadBools(&r, &c.RepeatedBool); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
-
-			// Verify the length of the packed field bytes.
-			numMsgBytes := uint64(len(msgBytes))
-			if numMsgBytes == 0 {
+			if len(c.RepeatedBool) == 0 {
 				return ErrZeroValue
 			}
-			if numMsgBytes%SizeBool != 0 {
-				return ErrInvalidLength
-			}
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.RepeatedBool = MakeSlice(c.RepeatedBool, numMsgBytes/SizeBool)
-			field := c.RepeatedBool
-			for i := range field {
-				if err := ReadBool(&r, &field[i]); err != nil {
-					return err
-				}
-			}
-			r.B = remainingBytes
 		case canotoNumber_SpecFuzzer__RepeatedString:
 			if wireType != Len {
 				return ErrUnexpectedWireType
@@ -3405,40 +3290,25 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 			AppendUint(&w, v)
 		}
 	}
-	if num := uint64(len(c.RepeatedSfixed32)); num != 0 {
+	if len(c.RepeatedSfixed32) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedSfixed32)
-		AppendUint(&w, num*SizeFint32)
-		for _, v := range c.RepeatedSfixed32 {
-			AppendFint32(&w, v)
-		}
+		AppendFint32s(&w, c.RepeatedSfixed32)
 	}
-	if num := uint64(len(c.RepeatedFixed32)); num != 0 {
+	if len(c.RepeatedFixed32) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedFixed32)
-		AppendUint(&w, num*SizeFint32)
-		for _, v := range c.RepeatedFixed32 {
-			AppendFint32(&w, v)
-		}
+		AppendFint32s(&w, c.RepeatedFixed32)
 	}
-	if num := uint64(len(c.RepeatedSfixed64)); num != 0 {
+	if len(c.RepeatedSfixed64) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedSfixed64)
-		AppendUint(&w, num*SizeFint64)
-		for _, v := range c.RepeatedSfixed64 {
-			AppendFint64(&w, v)
-		}
+		AppendFint64s(&w, c.RepeatedSfixed64)
 	}
-	if num := uint64(len(c.RepeatedFixed64)); num != 0 {
+	if len(c.RepeatedFixed64) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedFixed64)
-		AppendUint(&w, num*SizeFint64)
-		for _, v := range c.RepeatedFixed64 {
-			AppendFint64(&w, v)
-		}
+		AppendFint64s(&w, c.RepeatedFixed64)
 	}
-	if num := uint64(len(c.RepeatedBool)); num != 0 {
+	if len(c.RepeatedBool) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedBool)
-		AppendUint(&w, num*SizeBool)
-		for _, v := range c.RepeatedBool {
-			AppendBool(&w, v)
-		}
+		AppendBools(&w, c.RepeatedBool)
 	}
 	for _, v := range c.RepeatedString {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedString)

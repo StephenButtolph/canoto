@@ -541,9 +541,46 @@ func ReadFint32[T Int32](r *Reader, v *T) error {
 	return nil
 }
 
+// ReadFint32s reads a length-prefixed packed repeated 32-bit fixed size
+// integer field from the reader.
+func ReadFint32s[S ~[]E, E Int32](r *Reader, v *S) error {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return err
+	}
+	if length > uint64(len(r.B)) {
+		return io.ErrUnexpectedEOF
+	}
+	if length%SizeFint32 != 0 {
+		return ErrInvalidLength
+	}
+
+	// Iterating over a local slice enables multiple compiler optimizations.
+	b := r.B[:length]
+	r.B = r.B[length:]
+	vs := make(S, length/SizeFint32)
+	for i := range vs {
+		vs[i] = E(binary.LittleEndian.Uint32(b))
+		b = b[SizeFint32:]
+	}
+	*v = vs
+	return nil
+}
+
 // AppendFint32 writes a 32-bit fixed size integer to the writer.
 func AppendFint32[T Int32](w *Writer, v T) {
 	w.B = binary.LittleEndian.AppendUint32(w.B, uint32(v))
+}
+
+// AppendFint32s writes a length-prefixed packed repeated 32-bit fixed size
+// integer field to the writer.
+func AppendFint32s[S ~[]E, E Int32](w *Writer, vs S) {
+	b := w.B
+	b = binary.AppendUvarint(b, uint64(len(vs))*SizeFint32)
+	for _, v := range vs {
+		b = binary.LittleEndian.AppendUint32(b, uint32(v))
+	}
+	w.B = b
 }
 
 // ReadFint64 reads a 64-bit fixed size integer from the reader.
@@ -558,9 +595,46 @@ func ReadFint64[T Int64](r *Reader, v *T) error {
 	return nil
 }
 
+// ReadFint64s reads a length-prefixed packed repeated 64-bit fixed size
+// integer field from the reader.
+func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return err
+	}
+	if length > uint64(len(r.B)) {
+		return io.ErrUnexpectedEOF
+	}
+	if length%SizeFint64 != 0 {
+		return ErrInvalidLength
+	}
+
+	// Iterating over a local slice enables multiple compiler optimizations.
+	b := r.B[:length]
+	r.B = r.B[length:]
+	vs := make(S, length/SizeFint64)
+	for i := range vs {
+		vs[i] = E(binary.LittleEndian.Uint64(b))
+		b = b[SizeFint64:]
+	}
+	*v = vs
+	return nil
+}
+
 // AppendFint64 writes a 64-bit fixed size integer to the writer.
 func AppendFint64[T Int64](w *Writer, v T) {
 	w.B = binary.LittleEndian.AppendUint64(w.B, uint64(v))
+}
+
+// AppendFint64s writes a length-prefixed packed repeated 64-bit fixed size
+// integer field to the writer.
+func AppendFint64s[S ~[]E, E Int64](w *Writer, vs S) {
+	b := w.B
+	b = binary.AppendUvarint(b, uint64(len(vs))*SizeFint64)
+	for _, v := range vs {
+		b = binary.LittleEndian.AppendUint64(b, uint64(v))
+	}
+	w.B = b
 }
 
 // ReadBool reads a boolean from the reader.
@@ -578,13 +652,56 @@ func ReadBool[T ~bool](r *Reader, v *T) error {
 	}
 }
 
+// ReadBools reads a length-prefixed packed repeated boolean field from the
+// reader.
+func ReadBools[S ~[]E, E ~bool](r *Reader, v *S) error {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return err
+	}
+	if length > uint64(len(r.B)) {
+		return io.ErrUnexpectedEOF
+	}
+
+	vs := make(S, length)
+	// Slicing b by len(vs) proves to the compiler that b[i] can not exceed
+	// either slice, removing all bounds checks from the loop.
+	b := r.B[:len(vs)]
+	r.B = r.B[length:]
+	for i := range vs {
+		// This branch is typically predicted correctly for valid input, which
+		// is faster than accumulating the bytes.
+		if b[i] > trueByte {
+			return ErrInvalidBool
+		}
+		vs[i] = b[i] == trueByte
+	}
+	*v = vs
+	return nil
+}
+
 // AppendBool writes a boolean to the writer.
 func AppendBool[T ~bool](w *Writer, b T) {
+	v := byte(falseByte)
 	if b {
-		w.B = append(w.B, trueByte)
-	} else {
-		w.B = append(w.B, falseByte)
+		v = trueByte
 	}
+	w.B = append(w.B, v)
+}
+
+// AppendBools writes a length-prefixed packed repeated boolean field to the
+// writer.
+func AppendBools[S ~[]E, E ~bool](w *Writer, vs S) {
+	b := w.B
+	b = binary.AppendUvarint(b, uint64(len(vs))*SizeBool)
+	for _, v := range vs {
+		t := byte(falseByte)
+		if v {
+			t = trueByte
+		}
+		b = append(b, t)
+	}
+	w.B = b
 }
 
 // SizeBytes calculates the size the length-prefixed bytes would take if
@@ -674,8 +791,10 @@ func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 
 // AppendBytes writes a length-prefixed byte slice to the writer.
 func AppendBytes[T Bytes](w *Writer, v T) {
-	AppendUint(w, uint64(len(v)))
-	w.B = append(w.B, v...)
+	b := w.B
+	b = binary.AppendUvarint(b, uint64(len(v)))
+	b = append(b, v...)
+	w.B = b
 }
 
 // MakePointer creates a new pointer. It is equivalent to `new(T)`.
