@@ -466,24 +466,43 @@ func CountInts(bytes []byte) uint64 {
 
 // ReadUint reads a varint encoded unsigned integer from the reader.
 func ReadUint[T Uint](r *Reader, v *T) error {
-	val, bytesRead := binary.Uvarint(r.B)
-	switch {
-	case bytesRead == 0:
-		return io.ErrUnexpectedEOF
-	case bytesRead < 0 || uint64(T(val)) != val:
-		return ErrOverflow
-	// To ensure decoding is canonical, we check for padded zeroes in the
-	// varint.
-	// The last byte of the varint includes the most significant bits.
-	// If the last byte is 0, then the number should have been encoded more
-	// efficiently by removing this zero.
-	case bytesRead > 1 && r.B[bytesRead-1] == 0x00:
-		return ErrPaddedZeroes
-	default:
-		r.B = r.B[bytesRead:]
+	// Iterating over a local slice with range avoids all bounds checks on the
+	// reads and proves that the final slicing is in bounds.
+	b := r.B
+	var (
+		val   uint64
+		shift uint
+	)
+	for i, c := range b {
+		// A canonical varint is at most 10 bytes, so an 11th byte overflows
+		// regardless of its value. Waiting for the 11th byte to be observed
+		// distinguishes overflowing varints from truncated ones. Checking >
+		// rather than == removes the range guards on the shifts below.
+		if shift > 63 {
+			return ErrOverflow
+		}
+		if c >= continuationMask {
+			val |= uint64(c&^continuationMask) << shift
+			shift += 7
+			continue
+		}
+
+		// c terminates the varint and contains its most significant bits.
+		val |= uint64(c) << shift
+		switch {
+		// To ensure decoding is canonical, the varint must not include
+		// padded zeroes.
+		case shift > 0 && c == 0x00:
+			return ErrPaddedZeroes
+		// The decoded value must fit in both 64 bits and T.
+		case shift == 63 && c > 1, uint64(T(val)) != val:
+			return ErrOverflow
+		}
 		*v = T(val)
+		r.B = b[i+1:]
 		return nil
 	}
+	return io.ErrUnexpectedEOF
 }
 
 // ReadUints reads a length-prefixed packed repeated varint field from the

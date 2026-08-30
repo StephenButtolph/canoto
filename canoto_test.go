@@ -219,6 +219,35 @@ func BenchmarkCountInts(b *testing.B) {
 	}
 }
 
+func BenchmarkReadUint(b *testing.B) {
+	patterns := []struct {
+		name string
+		val  uint64
+	}{
+		{"1_byte_int", 1},
+		{"2_byte_int", 1 << 7},
+		{"5_byte_int", 1 << 28},
+		{"10_byte_int", 1 << 63},
+	}
+	for _, pattern := range patterns {
+		w := &Writer{}
+		AppendUint(w, pattern.val)
+
+		// Verify that the bytes decode cleanly so that the benchmark can
+		// ignore the errors.
+		var v uint64
+		r := Reader{B: w.B}
+		require.NoError(b, ReadUint(&r, &v))
+
+		b.Run(pattern.name, func(b *testing.B) {
+			for range b.N {
+				r := Reader{B: w.B}
+				_ = ReadUint(&r, &v)
+			}
+		})
+	}
+}
+
 func TestReadUint_uint32(t *testing.T) {
 	validTests := []validTest[uint32]{
 		{"00", 0},
