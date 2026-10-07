@@ -568,6 +568,10 @@ func AppendUint[T Uint](w *Writer, v T) {
 }
 
 // AppendUints writes unsigned integers to the writer as packed varints.
+//
+// Unlike the fixed size variants, this function does NOT write a length prefix.
+// This allows the caller to more efficiently compute the total size of the
+// packed field in advance.
 func AppendUints[S ~[]E, E Uint](w *Writer, vs S) {
 	// Accumulating into a local slice keeps the slice header in registers.
 	// Assigning w.B on every element would store and reload the header through
@@ -679,6 +683,10 @@ func AppendInt[T Int](w *Writer, v T) {
 }
 
 // AppendInts writes integers to the writer as packed zigzag encoded varints.
+//
+// Unlike the fixed size variants, this function does NOT write a length prefix.
+// This allows the caller to more efficiently compute the total size of the
+// packed field in advance.
 func AppendInts[S ~[]E, E Int](w *Writer, vs S) {
 	// Accumulating into a local slice keeps the slice header in registers.
 	// Assigning w.B on every element would store and reload the header through
