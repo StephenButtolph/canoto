@@ -571,6 +571,23 @@ func AppendUint[T Uint](w *Writer, v T) {
 	w.B = binary.AppendUvarint(w.B, uint64(v))
 }
 
+// AppendUints writes unsigned integers to the writer as packed varints.
+//
+// Unlike the fixed size variants, this function does NOT write a length prefix.
+// This allows the caller to more efficiently compute the total size of the
+// packed field in advance.
+func AppendUints[S ~[]E, E Uint](w *Writer, vs S) {
+	// Accumulating into a local slice keeps the slice header in registers.
+	// Assigning w.B on every element would store and reload the header through
+	// memory each iteration and, when w isn't known to be on the stack, add a
+	// GC write barrier check to every store.
+	b := w.B
+	for _, v := range vs {
+		b = binary.AppendUvarint(b, uint64(v))
+	}
+	w.B = b
+}
+
 // SizeInt calculates the size of an integer when zigzag encoded as a varint.
 //
 // #nosec G115 // Overflows are expected in the bitwise logic.
@@ -669,6 +686,24 @@ func AppendInt[T Int](w *Writer, v T) {
 	w.B = binary.AppendUvarint(w.B, uv)
 }
 
+// AppendInts writes integers to the writer as packed zigzag encoded varints.
+//
+// Unlike the fixed size variants, this function does NOT write a length prefix.
+// This allows the caller to more efficiently compute the total size of the
+// packed field in advance.
+func AppendInts[S ~[]E, E Int](w *Writer, vs S) {
+	// Accumulating into a local slice keeps the slice header in registers.
+	// Assigning w.B on every element would store and reload the header through
+	// memory each iteration and, when w isn't known to be on the stack, add a
+	// GC write barrier check to every store.
+	b := w.B
+	for _, v := range vs {
+		uv := uint64(v)<<1 ^ uint64(int64(v)>>63) //#nosec G115 // Zigzag encoding
+		b = binary.AppendUvarint(b, uv)
+	}
+	w.B = b
+}
+
 // ReadFint32 reads a 32-bit fixed size integer from the reader.
 func ReadFint32[T Int32](r *Reader, v *T) error {
 	if len(r.B) < SizeFint32 {
@@ -695,7 +730,12 @@ func ReadFint32s[S ~[]E, E Int32](r *Reader, v *S) error {
 		return ErrInvalidLength
 	}
 
-	// Iterating over a local slice enables multiple compiler optimizations.
+	// Advancing a local slice keeps the slice header in registers. Advancing
+	// r.B on every element would reload the header through memory each
+	// iteration, since the store to vs[i] may alias it. The reload also hides
+	// the dominating length check from bounds check elimination and, when r
+	// isn't known to be on the stack, adds a GC write barrier check to every
+	// store.
 	b := r.B[:length]
 	r.B = r.B[length:]
 	vs := make(S, length/SizeFint32)
@@ -749,7 +789,12 @@ func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
 		return ErrInvalidLength
 	}
 
-	// Iterating over a local slice enables multiple compiler optimizations.
+	// Advancing a local slice keeps the slice header in registers. Advancing
+	// r.B on every element would reload the header through memory each
+	// iteration, since the store to vs[i] may alias it. The reload also hides
+	// the dominating length check from bounds check elimination and, when r
+	// isn't known to be on the stack, adds a GC write barrier check to every
+	// store.
 	b := r.B[:length]
 	r.B = r.B[length:]
 	vs := make(S, length/SizeFint64)

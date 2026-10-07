@@ -508,6 +508,76 @@ func testReadUints[S ~[]E, E Uint](t *testing.T, data []byte) {
 	require.ErrorIs(err, io.ErrUnexpectedEOF)
 }
 
+func FuzzAppendUints_uint8(f *testing.F)  { f.Fuzz(testAppendUints[[]uint8]) }
+func FuzzAppendUints_uint16(f *testing.F) { f.Fuzz(testAppendUints[[]uint16]) }
+func FuzzAppendUints_uint32(f *testing.F) { f.Fuzz(testAppendUints[[]uint32]) }
+func FuzzAppendUints_uint64(f *testing.F) { f.Fuzz(testAppendUints[[]uint64]) }
+
+func testAppendUints[S ~[]E, E Uint](t *testing.T, data []byte) {
+	require := require.New(t)
+
+	var nums S
+	fz := fuzzer.NewFuzzer(data)
+	fz.Fill(&nums)
+
+	// The bulk append must produce the same bytes as appending each value
+	// individually.
+	expected := &Writer{}
+	for _, num := range nums {
+		AppendUint(expected, num)
+	}
+
+	w := &Writer{}
+	AppendUints(w, nums)
+	require.Equal(expected.B, w.B)
+
+	// The bulk append must round trip through the bulk read.
+	prefixed := &Writer{}
+	AppendBytes(prefixed, w.B)
+
+	r := &Reader{B: prefixed.B}
+	var got S
+	_, err := ReadUints(r, &got)
+	require.NoError(err)
+	require.True(slices.Equal(nums, got))
+	require.Empty(r.B)
+}
+
+func FuzzAppendInts_int8(f *testing.F)  { f.Fuzz(testAppendInts[[]int8]) }
+func FuzzAppendInts_int16(f *testing.F) { f.Fuzz(testAppendInts[[]int16]) }
+func FuzzAppendInts_int32(f *testing.F) { f.Fuzz(testAppendInts[[]int32]) }
+func FuzzAppendInts_int64(f *testing.F) { f.Fuzz(testAppendInts[[]int64]) }
+
+func testAppendInts[S ~[]E, E Int](t *testing.T, data []byte) {
+	require := require.New(t)
+
+	var nums S
+	fz := fuzzer.NewFuzzer(data)
+	fz.Fill(&nums)
+
+	// The bulk append must produce the same bytes as appending each value
+	// individually.
+	expected := &Writer{}
+	for _, num := range nums {
+		AppendInt(expected, num)
+	}
+
+	w := &Writer{}
+	AppendInts(w, nums)
+	require.Equal(expected.B, w.B)
+
+	// The bulk append must round trip through the bulk read.
+	prefixed := &Writer{}
+	AppendBytes(prefixed, w.B)
+
+	r := &Reader{B: prefixed.B}
+	var got S
+	_, err := ReadInts(r, &got)
+	require.NoError(err)
+	require.True(slices.Equal(nums, got))
+	require.Empty(r.B)
+}
+
 func FuzzSizeInt_int8(f *testing.F)  { f.Fuzz(testSizeInt[int8]) }
 func FuzzSizeInt_int16(f *testing.F) { f.Fuzz(testSizeInt[int16]) }
 func FuzzSizeInt_int32(f *testing.F) { f.Fuzz(testSizeInt[int32]) }
