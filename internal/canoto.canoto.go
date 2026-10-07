@@ -6599,58 +6599,42 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if len(c.RepeatedInt8) != 0 {
 		canoto.Append(&w, canotoTag_Scalars__RepeatedInt8)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.RepeatedInt8Size))
-		for _, v := range c.RepeatedInt8 {
-			canoto.AppendInt(&w, v)
-		}
+		canoto.AppendInts(&w, c.RepeatedInt8)
 	}
 	if len(c.RepeatedInt16) != 0 {
 		canoto.Append(&w, canotoTag_Scalars__RepeatedInt16)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.RepeatedInt16Size))
-		for _, v := range c.RepeatedInt16 {
-			canoto.AppendInt(&w, v)
-		}
+		canoto.AppendInts(&w, c.RepeatedInt16)
 	}
 	if len(c.RepeatedInt32) != 0 {
 		canoto.Append(&w, canotoTag_Scalars__RepeatedInt32)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.RepeatedInt32Size))
-		for _, v := range c.RepeatedInt32 {
-			canoto.AppendInt(&w, v)
-		}
+		canoto.AppendInts(&w, c.RepeatedInt32)
 	}
 	if len(c.RepeatedInt64) != 0 {
 		canoto.Append(&w, canotoTag_Scalars__RepeatedInt64)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.RepeatedInt64Size))
-		for _, v := range c.RepeatedInt64 {
-			canoto.AppendInt(&w, v)
-		}
+		canoto.AppendInts(&w, c.RepeatedInt64)
 	}
 	if len(c.RepeatedUint8) != 0 {
 		canoto.Append(&w, canotoTag_Scalars__RepeatedUint8)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.RepeatedUint8Size))
-		for _, v := range c.RepeatedUint8 {
-			canoto.AppendUint(&w, v)
-		}
+		canoto.AppendUints(&w, c.RepeatedUint8)
 	}
 	if len(c.RepeatedUint16) != 0 {
 		canoto.Append(&w, canotoTag_Scalars__RepeatedUint16)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.RepeatedUint16Size))
-		for _, v := range c.RepeatedUint16 {
-			canoto.AppendUint(&w, v)
-		}
+		canoto.AppendUints(&w, c.RepeatedUint16)
 	}
 	if len(c.RepeatedUint32) != 0 {
 		canoto.Append(&w, canotoTag_Scalars__RepeatedUint32)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.RepeatedUint32Size))
-		for _, v := range c.RepeatedUint32 {
-			canoto.AppendUint(&w, v)
-		}
+		canoto.AppendUints(&w, c.RepeatedUint32)
 	}
 	if len(c.RepeatedUint64) != 0 {
 		canoto.Append(&w, canotoTag_Scalars__RepeatedUint64)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.RepeatedUint64Size))
-		for _, v := range c.RepeatedUint64 {
-			canoto.AppendUint(&w, v)
-		}
+		canoto.AppendUints(&w, c.RepeatedUint64)
 	}
 	if len(c.RepeatedSfixed32) != 0 {
 		canoto.Append(&w, canotoTag_Scalars__RepeatedSfixed32)
@@ -6691,58 +6675,42 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.FixedRepeatedInt8) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedInt8)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedInt8Size))
-		for _, v := range &c.FixedRepeatedInt8 {
-			canoto.AppendInt(&w, v)
-		}
+		canoto.AppendInts(&w, c.FixedRepeatedInt8[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt16) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedInt16)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedInt16Size))
-		for _, v := range &c.FixedRepeatedInt16 {
-			canoto.AppendInt(&w, v)
-		}
+		canoto.AppendInts(&w, c.FixedRepeatedInt16[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt32) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedInt32)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedInt32Size))
-		for _, v := range &c.FixedRepeatedInt32 {
-			canoto.AppendInt(&w, v)
-		}
+		canoto.AppendInts(&w, c.FixedRepeatedInt32[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt64) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedInt64)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedInt64Size))
-		for _, v := range &c.FixedRepeatedInt64 {
-			canoto.AppendInt(&w, v)
-		}
+		canoto.AppendInts(&w, c.FixedRepeatedInt64[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint8) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedUint8)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedUint8Size))
-		for _, v := range &c.FixedRepeatedUint8 {
-			canoto.AppendUint(&w, v)
-		}
+		canoto.AppendUints(&w, c.FixedRepeatedUint8[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint16) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedUint16)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedUint16Size))
-		for _, v := range &c.FixedRepeatedUint16 {
-			canoto.AppendUint(&w, v)
-		}
+		canoto.AppendUints(&w, c.FixedRepeatedUint16[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint32) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedUint32)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedUint32Size))
-		for _, v := range &c.FixedRepeatedUint32 {
-			canoto.AppendUint(&w, v)
-		}
+		canoto.AppendUints(&w, c.FixedRepeatedUint32[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint64) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedUint64)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedUint64Size))
-		for _, v := range &c.FixedRepeatedUint64 {
-			canoto.AppendUint(&w, v)
-		}
+		canoto.AppendUints(&w, c.FixedRepeatedUint64[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedSfixed32) {
 		const fieldSize = uint64(len(c.FixedRepeatedSfixed32)) * canoto.SizeFint32
@@ -6842,9 +6810,7 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.ConstRepeatedUint64) {
 		canoto.Append(&w, canotoTag_Scalars__ConstRepeatedUint64)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.ConstRepeatedUint64Size))
-		for _, v := range &c.ConstRepeatedUint64 {
-			canoto.AppendUint(&w, v)
-		}
+		canoto.AppendUints(&w, c.ConstRepeatedUint64[:])
 	}
 	if fieldSize := (&c.CustomType).CachedCanotoSize(); fieldSize != 0 {
 		canoto.Append(&w, canotoTag_Scalars__CustomType)

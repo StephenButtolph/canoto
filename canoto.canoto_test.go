@@ -3085,58 +3085,42 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 	if len(c.RepeatedInt8) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedInt8)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.RepeatedInt8Size))
-		for _, v := range c.RepeatedInt8 {
-			AppendInt(&w, v)
-		}
+		AppendInts(&w, c.RepeatedInt8)
 	}
 	if len(c.RepeatedInt16) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedInt16)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.RepeatedInt16Size))
-		for _, v := range c.RepeatedInt16 {
-			AppendInt(&w, v)
-		}
+		AppendInts(&w, c.RepeatedInt16)
 	}
 	if len(c.RepeatedInt32) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedInt32)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.RepeatedInt32Size))
-		for _, v := range c.RepeatedInt32 {
-			AppendInt(&w, v)
-		}
+		AppendInts(&w, c.RepeatedInt32)
 	}
 	if len(c.RepeatedInt64) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedInt64)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.RepeatedInt64Size))
-		for _, v := range c.RepeatedInt64 {
-			AppendInt(&w, v)
-		}
+		AppendInts(&w, c.RepeatedInt64)
 	}
 	if len(c.RepeatedUint8) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedUint8)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.RepeatedUint8Size))
-		for _, v := range c.RepeatedUint8 {
-			AppendUint(&w, v)
-		}
+		AppendUints(&w, c.RepeatedUint8)
 	}
 	if len(c.RepeatedUint16) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedUint16)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.RepeatedUint16Size))
-		for _, v := range c.RepeatedUint16 {
-			AppendUint(&w, v)
-		}
+		AppendUints(&w, c.RepeatedUint16)
 	}
 	if len(c.RepeatedUint32) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedUint32)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.RepeatedUint32Size))
-		for _, v := range c.RepeatedUint32 {
-			AppendUint(&w, v)
-		}
+		AppendUints(&w, c.RepeatedUint32)
 	}
 	if len(c.RepeatedUint64) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedUint64)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.RepeatedUint64Size))
-		for _, v := range c.RepeatedUint64 {
-			AppendUint(&w, v)
-		}
+		AppendUints(&w, c.RepeatedUint64)
 	}
 	if len(c.RepeatedSfixed32) != 0 {
 		Append(&w, canotoTag_SpecFuzzer__RepeatedSfixed32)
@@ -3248,58 +3232,42 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 	if !IsZero(c.FixedRepeatedInt8) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedInt8)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedInt8Size))
-		for _, v := range &c.FixedRepeatedInt8 {
-			AppendInt(&w, v)
-		}
+		AppendInts(&w, c.FixedRepeatedInt8[:])
 	}
 	if !IsZero(c.FixedRepeatedInt16) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedInt16)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedInt16Size))
-		for _, v := range &c.FixedRepeatedInt16 {
-			AppendInt(&w, v)
-		}
+		AppendInts(&w, c.FixedRepeatedInt16[:])
 	}
 	if !IsZero(c.FixedRepeatedInt32) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedInt32)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedInt32Size))
-		for _, v := range &c.FixedRepeatedInt32 {
-			AppendInt(&w, v)
-		}
+		AppendInts(&w, c.FixedRepeatedInt32[:])
 	}
 	if !IsZero(c.FixedRepeatedInt64) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedInt64)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedInt64Size))
-		for _, v := range &c.FixedRepeatedInt64 {
-			AppendInt(&w, v)
-		}
+		AppendInts(&w, c.FixedRepeatedInt64[:])
 	}
 	if !IsZero(c.FixedRepeatedUint8) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedUint8)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedUint8Size))
-		for _, v := range &c.FixedRepeatedUint8 {
-			AppendUint(&w, v)
-		}
+		AppendUints(&w, c.FixedRepeatedUint8[:])
 	}
 	if !IsZero(c.FixedRepeatedUint16) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedUint16)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedUint16Size))
-		for _, v := range &c.FixedRepeatedUint16 {
-			AppendUint(&w, v)
-		}
+		AppendUints(&w, c.FixedRepeatedUint16[:])
 	}
 	if !IsZero(c.FixedRepeatedUint32) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedUint32)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedUint32Size))
-		for _, v := range &c.FixedRepeatedUint32 {
-			AppendUint(&w, v)
-		}
+		AppendUints(&w, c.FixedRepeatedUint32[:])
 	}
 	if !IsZero(c.FixedRepeatedUint64) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedUint64)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedUint64Size))
-		for _, v := range &c.FixedRepeatedUint64 {
-			AppendUint(&w, v)
-		}
+		AppendUints(&w, c.FixedRepeatedUint64[:])
 	}
 	if !IsZero(c.FixedRepeatedSfixed32) {
 		const fieldSize = uint64(len(c.FixedRepeatedSfixed32)) * SizeFint32

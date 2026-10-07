@@ -1953,17 +1953,13 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 			repeated: `	if len(c.${fieldName}) != 0 {
 		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendUint(&w, ${loadPrefix}c.canotoData.${fieldName}Size${loadSuffix})
-		for _, v := range c.${fieldName} {
-			${selector}Append${suffix}(&w, v)
-		}
+		${selector}Append${suffix}s(&w, c.${fieldName})
 	}
 `,
 			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
 		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendUint(&w, ${loadPrefix}c.canotoData.${fieldName}Size${loadSuffix})
-		for _, v := range &c.${fieldName} {
-			${selector}Append${suffix}(&w, v)
-		}
+		${selector}Append${suffix}s(&w, c.${fieldName}[:])
 	}
 `,
 		},
