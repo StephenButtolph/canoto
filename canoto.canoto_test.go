@@ -3270,44 +3270,24 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 		AppendUints(&w, c.FixedRepeatedUint64[:])
 	}
 	if !IsZero(c.FixedRepeatedSfixed32) {
-		const fieldSize = uint64(len(c.FixedRepeatedSfixed32)) * SizeFint32
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedSfixed32)
-		AppendUint(&w, fieldSize)
-		for _, v := range &c.FixedRepeatedSfixed32 {
-			AppendFint32(&w, v)
-		}
+		AppendFint32s(&w, c.FixedRepeatedSfixed32[:])
 	}
 	if !IsZero(c.FixedRepeatedFixed32) {
-		const fieldSize = uint64(len(c.FixedRepeatedFixed32)) * SizeFint32
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedFixed32)
-		AppendUint(&w, fieldSize)
-		for _, v := range &c.FixedRepeatedFixed32 {
-			AppendFint32(&w, v)
-		}
+		AppendFint32s(&w, c.FixedRepeatedFixed32[:])
 	}
 	if !IsZero(c.FixedRepeatedSfixed64) {
-		const fieldSize = uint64(len(c.FixedRepeatedSfixed64)) * SizeFint64
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedSfixed64)
-		AppendUint(&w, fieldSize)
-		for _, v := range &c.FixedRepeatedSfixed64 {
-			AppendFint64(&w, v)
-		}
+		AppendFint64s(&w, c.FixedRepeatedSfixed64[:])
 	}
 	if !IsZero(c.FixedRepeatedFixed64) {
-		const fieldSize = uint64(len(c.FixedRepeatedFixed64)) * SizeFint64
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedFixed64)
-		AppendUint(&w, fieldSize)
-		for _, v := range &c.FixedRepeatedFixed64 {
-			AppendFint64(&w, v)
-		}
+		AppendFint64s(&w, c.FixedRepeatedFixed64[:])
 	}
 	if !IsZero(c.FixedRepeatedBool) {
-		const fieldSize = uint64(len(c.FixedRepeatedBool)) * SizeBool
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedBool)
-		AppendUint(&w, fieldSize)
-		for _, v := range &c.FixedRepeatedBool {
-			AppendBool(&w, v)
-		}
+		AppendBools(&w, c.FixedRepeatedBool[:])
 	}
 	if !IsZero(c.FixedRepeatedString) {
 		for _, v := range &c.FixedRepeatedString {

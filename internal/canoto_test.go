@@ -1466,6 +1466,68 @@ func BenchmarkRepeatedBool_Proto(b *testing.B) {
 	}
 }
 
+func BenchmarkFixedRepeatedFint_Canoto(b *testing.B) {
+	tests := []struct {
+		name string
+		msg  func() *Scalars
+	}{
+		{
+			name: "fixed32",
+			msg: func() *Scalars {
+				return &Scalars{FixedRepeatedFixed32: [3]uint32{1, 2, 3}}
+			},
+		},
+		{
+			name: "sfixed32",
+			msg: func() *Scalars {
+				return &Scalars{FixedRepeatedSfixed32: [3]int32{1, -2, 3}}
+			},
+		},
+		{
+			name: "fixed64",
+			msg: func() *Scalars {
+				return &Scalars{FixedRepeatedFixed64: [3]uint64{1, 2, 3}}
+			},
+		},
+		{
+			name: "sfixed64",
+			msg: func() *Scalars {
+				return &Scalars{FixedRepeatedSfixed64: [3]int64{1, -2, 3}}
+			},
+		},
+		{
+			name: "bool",
+			msg: func() *Scalars {
+				return &Scalars{FixedRepeatedBool: [3]bool{true, false, true}}
+			},
+		},
+	}
+	for _, test := range tests {
+		bytes := test.msg().MarshalCanoto()
+		var sanity Scalars
+		require.NoError(b, sanity.UnmarshalCanoto(bytes))
+		require.Equal(b, bytes, sanity.MarshalCanoto())
+
+		b.Run(test.name+"/marshal", func(b *testing.B) {
+			s := test.msg()
+			s.CalculateCanotoCache()
+			w := canoto.Writer{B: make([]byte, 0, s.CachedCanotoSize())}
+			for range b.N {
+				s.MarshalCanotoInto(w)
+			}
+		})
+		b.Run(test.name+"/unmarshal", func(b *testing.B) {
+			for range b.N {
+				var (
+					s      Scalars
+					reader = canoto.Reader{B: bytes}
+				)
+				_ = s.UnmarshalCanotoFrom(reader)
+			}
+		})
+	}
+}
+
 func TestAppend_ProtoCompatibility(t *testing.T) {
 	tests := []struct {
 		name  string

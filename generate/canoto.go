@@ -1933,12 +1933,8 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 	}
 `
 		fixedRepeatedFintTemplate = `	if !${selector}IsZero(c.${fieldName}) {
-		const fieldSize = uint64(len(c.${fieldName})) * ${selector}Size${suffix}
 		${selector}Append(&w, ${fieldTagConst})
-		${selector}AppendUint(&w, fieldSize)
-		for _, v := range &c.${fieldName} {
-			${selector}Append${suffix}(&w, v)
-		}
+		${selector}Append${suffix}s(&w, c.${fieldName}[:])
 	}
 `
 		repeatedBytesTemplate = `	for _, v := range c.${fieldName} {

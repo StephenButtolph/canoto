@@ -6713,44 +6713,24 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		canoto.AppendUints(&w, c.FixedRepeatedUint64[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedSfixed32) {
-		const fieldSize = uint64(len(c.FixedRepeatedSfixed32)) * canoto.SizeFint32
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedSfixed32)
-		canoto.AppendUint(&w, fieldSize)
-		for _, v := range &c.FixedRepeatedSfixed32 {
-			canoto.AppendFint32(&w, v)
-		}
+		canoto.AppendFint32s(&w, c.FixedRepeatedSfixed32[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedFixed32) {
-		const fieldSize = uint64(len(c.FixedRepeatedFixed32)) * canoto.SizeFint32
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedFixed32)
-		canoto.AppendUint(&w, fieldSize)
-		for _, v := range &c.FixedRepeatedFixed32 {
-			canoto.AppendFint32(&w, v)
-		}
+		canoto.AppendFint32s(&w, c.FixedRepeatedFixed32[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedSfixed64) {
-		const fieldSize = uint64(len(c.FixedRepeatedSfixed64)) * canoto.SizeFint64
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedSfixed64)
-		canoto.AppendUint(&w, fieldSize)
-		for _, v := range &c.FixedRepeatedSfixed64 {
-			canoto.AppendFint64(&w, v)
-		}
+		canoto.AppendFint64s(&w, c.FixedRepeatedSfixed64[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedFixed64) {
-		const fieldSize = uint64(len(c.FixedRepeatedFixed64)) * canoto.SizeFint64
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedFixed64)
-		canoto.AppendUint(&w, fieldSize)
-		for _, v := range &c.FixedRepeatedFixed64 {
-			canoto.AppendFint64(&w, v)
-		}
+		canoto.AppendFint64s(&w, c.FixedRepeatedFixed64[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedBool) {
-		const fieldSize = uint64(len(c.FixedRepeatedBool)) * canoto.SizeBool
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedBool)
-		canoto.AppendUint(&w, fieldSize)
-		for _, v := range &c.FixedRepeatedBool {
-			canoto.AppendBool(&w, v)
-		}
+		canoto.AppendBools(&w, c.FixedRepeatedBool[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedString) {
 		for _, v := range &c.FixedRepeatedString {
