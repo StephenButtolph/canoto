@@ -51,38 +51,6 @@ func TestIsValid(t *testing.T) {
 	}
 }
 
-func BenchmarkTag(b *testing.B) {
-	fieldNumbers := []uint32{
-		1,
-		MaxFieldNumber,
-	}
-	for _, fieldNumber := range fieldNumbers {
-		fieldNumberStr := strconv.FormatUint(uint64(fieldNumber), 10)
-		b.Run(fieldNumberStr, func(b *testing.B) {
-			for range b.N {
-				Tag(fieldNumber, Varint)
-			}
-		})
-	}
-}
-
-func BenchmarkHasPrefix(b *testing.B) {
-	bytes := []byte("hello")
-	prefixes := [][]byte{
-		[]byte("hel"),
-		// golang allocates string conversions on the stack if they are <= 32 bytes
-		[]byte("helloooooooooooooooooooooooooooo"),
-		[]byte("hellooooooooooooooooooooooooooooo"),
-	}
-	for _, prefix := range prefixes {
-		b.Run(string(prefix), func(b *testing.B) {
-			for range b.N {
-				HasPrefix(bytes, prefix)
-			}
-		})
-	}
-}
-
 func TestReadTag(t *testing.T) {
 	type tag struct {
 		fieldNumber uint32
@@ -179,43 +147,27 @@ func testCountInts[T Uint](t *testing.T, data []byte) {
 
 func BenchmarkCountInts(b *testing.B) {
 	const maxSize = 1024
-	oneByte := &Writer{}
-	for len(oneByte.B) < maxSize {
-		AppendUint(oneByte, uint64(1))
-	}
-	tenByte := &Writer{}
-	for len(tenByte.B) < maxSize {
-		AppendUint(tenByte, uint64(math.MaxUint64))
-	}
-	// Random varint lengths make the continuation-bit branch unpredictable.
+	// Random varint lengths would make any branch on the continuation bit
+	// unpredictable. The current implementation is branchless, so its cost
+	// only depends on the length of the input.
 	rng := rand.New(rand.NewPCG(0, 0)) //#nosec G404 // Deterministic values keep runs comparable
-	random := &Writer{}
-	for len(random.B) < maxSize {
+	w := &Writer{}
+	for len(w.B) < maxSize {
 		// Randomize the lengths, not just the values. Otherwise almost all of
 		// the values would be large.
-		AppendUint(random, rng.Uint64()>>rng.Uint64N(64))
+		AppendUint(w, rng.Uint64()>>rng.Uint64N(64))
 	}
 
-	patterns := []struct {
-		name  string
-		bytes []byte
-	}{
-		{"1_byte_ints", oneByte.B},
-		{"10_byte_ints", tenByte.B},
-		{"random_ints", random.B},
-	}
-	for _, pattern := range patterns {
-		// 1 maximizes the relative cost of the word-loop length check, 7
-		// never enters the word loop, and 15 runs it exactly once with the
-		// longest possible tail.
-		for _, size := range []int{1, 7, 15, maxSize} {
-			bytes := pattern.bytes[:size]
-			b.Run(pattern.name+"/"+strconv.Itoa(size), func(b *testing.B) {
-				for range b.N {
-					CountInts(bytes)
-				}
-			})
-		}
+	// 1 maximizes the relative cost of the word-loop length check, 7 never
+	// enters the word loop, and 15 runs it exactly once with the longest
+	// possible tail.
+	for _, size := range []int{1, 7, 15, maxSize} {
+		bytes := w.B[:size]
+		b.Run(strconv.Itoa(size), func(b *testing.B) {
+			for range b.N {
+				CountInts(bytes)
+			}
+		})
 	}
 }
 

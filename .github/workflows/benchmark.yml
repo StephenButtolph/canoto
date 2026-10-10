@@ -17,34 +17,46 @@ concurrency:
 
 jobs:
   benchmark:
+    name: benchmark (${{ matrix.name }})
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: min-version
+            go-version: ''
+            go-version-file: new/go.mod
+          - name: latest-version
+            go-version: stable
+            go-version-file: ''
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ (github.event.inputs.new != '') && github.event.inputs.new || github.event.ref }}
+          ref: ${{ inputs.new }}
+          path: new
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.old || github.event.pull_request.base.sha }}
+          path: old
 
       - uses: actions/setup-go@v5
         with:
-          go-version-file: "go.mod"
+          go-version: ${{ matrix.go-version }}
+          go-version-file: ${{ matrix.go-version-file }}
+          check-latest: ${{ matrix.go-version == 'stable' }}
+          cache-dependency-path: '*/go.sum'
 
       - name: Install benchstat
         run: go install golang.org/x/perf/cmd/benchstat@latest
 
       - name: Run benchmarks
         run: |
-          go test -bench=. -benchmem -count=10  ./... > new
-          cat new
-
-      - name: Run benchmark for base code
-        run: |
-          git fetch origin main ${{ github.event.pull_request.base.sha }}
-          HEAD="$(git rev-parse HEAD)"
-          git reset --hard ${{ github.event.pull_request.base.sha }}
-          go test -bench=. -benchmem -count=10  ./... > old
-          cat old
-          git reset --hard "$HEAD"
+          mkdir results
+          new/.github/workflows/benchmark.sh old new results
 
       - name: Compare benchmarks
         run: |
@@ -52,70 +64,17 @@ jobs:
           {
             echo "RESULT<<$EOF"
             go version
-            benchstat old new
+            benchstat results/old results/new
             echo "$EOF"
           } >> "$GITHUB_ENV"
 
       - name: Comment benchmark result
+        if: github.event_name == 'pull_request'
         continue-on-error: true
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          header: min-version
-          hide_and_recreate: true
-          hide_classify: "OUTDATED"
-          message: |
-            ```
-            ${{ env.RESULT }}
-            ```
-  benchmark-on-latest:
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ (github.event.inputs.new != '') && github.event.inputs.new || github.event.ref }}
-      
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: 'stable'
-          check-latest: true
-
-      - name: Install benchstat
-        run: go install golang.org/x/perf/cmd/benchstat@latest
-
-      - name: Run benchmarks
-        run: |
-          go test -bench=. -benchmem -count=10  ./... > new
-          cat new
-
-      - name: Run benchmark for base code
-        run: |
-          git fetch origin main ${{ github.event.pull_request.base.sha }}
-          HEAD="$(git rev-parse HEAD)"
-          git reset --hard ${{ github.event.pull_request.base.sha }}
-          go test -bench=. -benchmem -count=10  ./... > old
-          cat old
-          git reset --hard "$HEAD"
-
-      - name: Compare benchmarks
-        run: |
-          EOF="$(dd if=/dev/urandom bs=15 count=1 status=none | base64)"
-          {
-            echo "RESULT<<$EOF"
-            go version
-            benchstat old new
-            echo "$EOF"
-          } >> "$GITHUB_ENV"
-
-      - name: Comment benchmark result
-        continue-on-error: true
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          header: latest-version
+          header: ${{ matrix.name }}
           hide_and_recreate: true
           hide_classify: "OUTDATED"
           message: |
