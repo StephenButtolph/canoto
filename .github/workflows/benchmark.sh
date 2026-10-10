@@ -16,7 +16,7 @@ fi
 
 old_dir="$1"
 new_dir="$2"
-out_dir="$(cd "$3" && pwd)"
+out_dir="$3"
 
 # Noise comes from periods when the machine is busy, which longer runs don't
 # average out. More samples do, because benchstat compares medians. Every
@@ -35,8 +35,10 @@ run_benchmarks() {
   ) >> "$2"
 }
 
+# Create or empty the output files.
 : > "$out_dir/old"
 : > "$out_dir/new"
+
 for i in $(seq "$count"); do
   echo "pass $i/$count"
   run_benchmarks "$old_dir" "$out_dir/old"
