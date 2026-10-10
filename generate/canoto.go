@@ -556,7 +556,7 @@ func makeSpecFields(m message) string {
 				FixedLength: uint64(len(zero.${fieldName})),
 				Repeated:    true,
 				OneOf:       "${oneOf}",
-				Type${suffix}:${signedSpace}    ${selector}SizeOf(${selector}MakeEntry(zero.${fieldName}[:])),
+				Type${suffix}:${signedSpace}    ${selector}SizeOf(${selector}MakeEntry((&zero.${fieldName})[:])),
 			},
 `,
 		},
@@ -580,7 +580,7 @@ func makeSpecFields(m message) string {
 			),
 `,
 			fixedRepeated: `			${selector}FieldTypeFromFint(
-				/*type inference:*/ ${selector}MakeEntry(zero.${fieldName}[:]),
+				/*type inference:*/ ${selector}MakeEntry((&zero.${fieldName})[:]),
 				/*FieldNumber:   */ ${fieldNumberConst},
 				/*Name:          */ "${fieldName}",
 				/*FixedLength:   */ uint64(len(zero.${fieldName})),
@@ -686,7 +686,7 @@ func makeSpecFields(m message) string {
 				FixedLength:    uint64(len(zero.${fieldName})),
 				Repeated:       true,
 				OneOf:          "${oneOf}",
-				TypeFixedBytes: uint64(len(zero.${fieldName}[0])),
+				TypeFixedBytes: uint64(len((&zero.${fieldName})[0])),
 			},
 `,
 		values: typeTemplate{
@@ -713,7 +713,7 @@ func makeSpecFields(m message) string {
 			),
 `,
 			fixedRepeated: `			${selector}FieldTypeFromField(
-				/*type inference:*/ ${genericTypeCast}(${selector}MakeEntryNilPointer(zero.${fieldName}[:])),
+				/*type inference:*/ ${genericTypeCast}(${selector}MakeEntryNilPointer((&zero.${fieldName})[:])),
 				/*FieldNumber:   */ ${fieldNumberConst},
 				/*Name:          */ "${fieldName}",
 				/*FixedLength:   */ uint64(len(zero.${fieldName})),
@@ -748,7 +748,7 @@ func makeSpecFields(m message) string {
 			),
 `,
 			fixedRepeated: `			${selector}FieldTypeFromField(
-				/*type inference:*/ ${genericTypeCast}(${selector}MakeEntry(zero.${fieldName}[:])),
+				/*type inference:*/ ${genericTypeCast}(${selector}MakeEntry((&zero.${fieldName})[:])),
 				/*FieldNumber:   */ ${fieldNumberConst},
 				/*Name:          */ "${fieldName}",
 				/*FixedLength:   */ uint64(len(zero.${fieldName})),
@@ -829,7 +829,7 @@ func makeUnmarshal(m message) string {
 				return ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			if err := ${selector}Read${suffix}sInto(&r, c.${fieldName}[:]); err != nil {
+			if err := ${selector}Read${suffix}sInto(&r, (&c.${fieldName})[:]); err != nil {
 				return err
 			}
 			if ${selector}IsZero(c.${fieldName}) {
@@ -1074,7 +1074,7 @@ func makeUnmarshal(m message) string {
 			const (
 				// Ensure this field has a constant length of at least one.
 				_                    = uint(len(c.${fieldName}) - 1)
-				expectedLength       = len(c.${fieldName}[0])
+				expectedLength       = len((&c.${fieldName})[0])
 				expectedLengthUint64 = uint64(expectedLength)
 			)
 
@@ -1222,14 +1222,14 @@ func makeUnmarshal(m message) string {
 			if !isZero {
 				remainingBytes := r.B
 				r.B = msgBytes
-				if err := ${genericTypeCast}(&c.${fieldName}[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ${genericTypeCast}(&(&c.${fieldName})[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			field := c.${fieldName}[1:]
+			field := (&c.${fieldName})[1:]
 			for i := range field {
 				if !${selector}HasPrefix(r.B, ${fieldTagConst}) {
 					return ${selector}ErrUnknownField
@@ -1370,15 +1370,15 @@ func makeUnmarshal(m message) string {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				c.${fieldName}[0] = ${selector}MakePointer(c.${fieldName}[0])
-				if err := ${genericTypeCast}(c.${fieldName}[0]).UnmarshalCanotoFrom(r); err != nil {
+				(&c.${fieldName})[0] = ${selector}MakePointer((&c.${fieldName})[0])
+				if err := ${genericTypeCast}((&c.${fieldName})[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			field := c.${fieldName}[1:]
+			field := (&c.${fieldName})[1:]
 			for i := range field {
 				if !${selector}HasPrefix(r.B, ${fieldTagConst}) {
 					return ${selector}ErrUnknownField
@@ -1916,7 +1916,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 `
 		fixedRepeatedFintTemplate = `	if !${selector}IsZero(c.${fieldName}) {
 		${selector}Append(&w, ${fieldTagConst})
-		${selector}Append${suffix}s(&w, c.${fieldName}[:])
+		${selector}Append${suffix}s(&w, (&c.${fieldName})[:])
 	}
 `
 		repeatedBytesTemplate = `	for _, v := range c.${fieldName} {
@@ -1937,7 +1937,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
 		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendUint(&w, ${loadPrefix}c.canotoData.${fieldName}Size${loadSuffix})
-		${selector}Append${suffix}s(&w, c.${fieldName}[:])
+		${selector}Append${suffix}s(&w, (&c.${fieldName})[:])
 	}
 `,
 		},

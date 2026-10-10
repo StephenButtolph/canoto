@@ -1200,8 +1200,10 @@ func FieldTypeFromFint[T integer](
 // FieldTypeFromField creates a [FieldType] specification for a message or
 // custom [Field] type. This is primarily used by generated code to build [Spec]
 // values.
-func FieldTypeFromField[T Field](
-	field T,
+//
+// The first argument is only used for type inference.
+func FieldTypeFromField[T any, PT FieldPointer[T]](
+	_ PT,
 	fieldNumber uint32,
 	name string,
 	fixedLength uint64,
@@ -1211,7 +1213,7 @@ func FieldTypeFromField[T Field](
 	types []reflect.Type,
 ) FieldType {
 	var (
-		fieldType = reflect.TypeFor[T]().Elem()
+		fieldType = reflect.TypeFor[T]()
 
 		typeBytes     bool
 		typeRecursive uint64
@@ -1220,7 +1222,9 @@ func FieldTypeFromField[T Field](
 	if index := slices.Index(types, fieldType); index >= 0 {
 		typeRecursive = uint64(len(types) - index) //#nosec G115 // False positive
 	} else {
-		typeMessage = field.CanotoSpec(types...)
+		// Calling CanotoSpec on a non-nil value supports implementations with
+		// value receivers.
+		typeMessage = PT(new(T)).CanotoSpec(types...)
 		// If this does not have a valid spec, it is treated as bytes.
 		if typeMessage == nil {
 			typeBytes = true
