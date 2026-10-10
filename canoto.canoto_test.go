@@ -2336,111 +2336,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 	return nil
 }
 
-// ValidCanoto validates that the struct can be correctly marshaled into the
-// Canoto format.
-//
-// Specifically, ValidCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields are ValidCanoto.
-func (c *SpecFuzzer) ValidCanoto() bool {
-	if !ValidString(c.String) {
-		return false
-	}
-	if !(&c.Value).ValidCanoto() {
-		return false
-	}
-	if c.Pointer != nil && !(c.Pointer).ValidCanoto() {
-		return false
-	}
-	if c.OneOf != nil && !(c.OneOf).ValidCanoto() {
-		return false
-	}
-	if c.Recursive != nil && !(c.Recursive).ValidCanoto() {
-		return false
-	}
-	if c.ValueRecursive != nil && !(c.ValueRecursive).ValidCanoto() {
-		return false
-	}
-	for _, v := range c.RepeatedString {
-		if !ValidString(v) {
-			return false
-		}
-	}
-	{
-		field := c.RepeatedValue
-		for i := range field {
-			if !(&field[i]).ValidCanoto() {
-				return false
-			}
-		}
-	}
-	{
-		field := c.RepeatedPointer
-		for i := range field {
-			if field[i] != nil && !(field[i]).ValidCanoto() {
-				return false
-			}
-		}
-	}
-	{
-		field := c.RepeatedOneOf
-		for i := range field {
-			if field[i] != nil && !(field[i]).ValidCanoto() {
-				return false
-			}
-		}
-	}
-	{
-		field := c.RepeatedRecursive
-		for i := range field {
-			if field[i] != nil && !(field[i]).ValidCanoto() {
-				return false
-			}
-		}
-	}
-	{
-		field := c.RepeatedValueRecursive
-		for i := range field {
-			if field[i] != nil && !(field[i]).ValidCanoto() {
-				return false
-			}
-		}
-	}
-	for _, v := range &c.FixedRepeatedString {
-		if !ValidString(v) {
-			return false
-		}
-	}
-	for i := range &c.FixedRepeatedValue {
-		if !(&(&c.FixedRepeatedValue)[i]).ValidCanoto() {
-			return false
-		}
-	}
-	for i := range &c.FixedRepeatedPointer {
-		if (&c.FixedRepeatedPointer)[i] != nil && !((&c.FixedRepeatedPointer)[i]).ValidCanoto() {
-			return false
-		}
-	}
-	for i := range &c.FixedRepeatedOneOf {
-		if (&c.FixedRepeatedOneOf)[i] != nil && !((&c.FixedRepeatedOneOf)[i]).ValidCanoto() {
-			return false
-		}
-	}
-	for i := range &c.FixedRepeatedRecursive {
-		if (&c.FixedRepeatedRecursive)[i] != nil && !((&c.FixedRepeatedRecursive)[i]).ValidCanoto() {
-			return false
-		}
-	}
-	for i := range &c.FixedRepeatedValueRecursive {
-		if (&c.FixedRepeatedValueRecursive)[i] != nil && !((&c.FixedRepeatedValueRecursive)[i]).ValidCanoto() {
-			return false
-		}
-	}
-	return true
-}
-
 // CacheCanoto populates size and OneOf caches based on the current values in
 // the struct.
 //
@@ -2867,6 +2762,123 @@ func (c *SpecFuzzer) CacheCanoto() {
 // since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *SpecFuzzer) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// It is not safe to copy this struct concurrently.
+func (c *SpecFuzzer) ValidCanoto() bool {
+	c.CacheCanoto()
+	return c.CheckCanoto()
+}
+
+// CheckCanoto validates that the struct can be correctly marshaled into the
+// Canoto format. Most users should just use ValidCanoto.
+//
+// Specifically, CheckCanoto ensures:
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields pass CheckCanoto.
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
+func (c *SpecFuzzer) CheckCanoto() bool {
+	if !ValidString(c.String) {
+		return false
+	}
+	if !(&c.Value).CheckCanoto() {
+		return false
+	}
+	if c.Pointer != nil && !(c.Pointer).CheckCanoto() {
+		return false
+	}
+	if c.OneOf != nil && !(c.OneOf).CheckCanoto() {
+		return false
+	}
+	if c.Recursive != nil && !(c.Recursive).CheckCanoto() {
+		return false
+	}
+	if c.ValueRecursive != nil && !(c.ValueRecursive).CheckCanoto() {
+		return false
+	}
+	for _, v := range c.RepeatedString {
+		if !ValidString(v) {
+			return false
+		}
+	}
+	{
+		field := c.RepeatedValue
+		for i := range field {
+			if !(&field[i]).CheckCanoto() {
+				return false
+			}
+		}
+	}
+	{
+		field := c.RepeatedPointer
+		for i := range field {
+			if field[i] != nil && !(field[i]).CheckCanoto() {
+				return false
+			}
+		}
+	}
+	{
+		field := c.RepeatedOneOf
+		for i := range field {
+			if field[i] != nil && !(field[i]).CheckCanoto() {
+				return false
+			}
+		}
+	}
+	{
+		field := c.RepeatedRecursive
+		for i := range field {
+			if field[i] != nil && !(field[i]).CheckCanoto() {
+				return false
+			}
+		}
+	}
+	{
+		field := c.RepeatedValueRecursive
+		for i := range field {
+			if field[i] != nil && !(field[i]).CheckCanoto() {
+				return false
+			}
+		}
+	}
+	for _, v := range &c.FixedRepeatedString {
+		if !ValidString(v) {
+			return false
+		}
+	}
+	for i := range &c.FixedRepeatedValue {
+		if !(&(&c.FixedRepeatedValue)[i]).CheckCanoto() {
+			return false
+		}
+	}
+	for i := range &c.FixedRepeatedPointer {
+		if (&c.FixedRepeatedPointer)[i] != nil && !((&c.FixedRepeatedPointer)[i]).CheckCanoto() {
+			return false
+		}
+	}
+	for i := range &c.FixedRepeatedOneOf {
+		if (&c.FixedRepeatedOneOf)[i] != nil && !((&c.FixedRepeatedOneOf)[i]).CheckCanoto() {
+			return false
+		}
+	}
+	for i := range &c.FixedRepeatedRecursive {
+		if (&c.FixedRepeatedRecursive)[i] != nil && !((&c.FixedRepeatedRecursive)[i]).CheckCanoto() {
+			return false
+		}
+	}
+	for i := range &c.FixedRepeatedValueRecursive {
+		if (&c.FixedRepeatedValueRecursive)[i] != nil && !((&c.FixedRepeatedValueRecursive)[i]).CheckCanoto() {
+			return false
+		}
+	}
+	return true
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -3379,18 +3391,6 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) error {
 	return nil
 }
 
-// ValidCanoto validates that the struct can be correctly marshaled into the
-// Canoto format.
-//
-// Specifically, ValidCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields are ValidCanoto.
-func (c *LargestFieldNumber[T1]) ValidCanoto() bool {
-	return true
-}
-
 // CacheCanoto populates size and OneOf caches based on the current values in
 // the struct.
 //
@@ -3410,6 +3410,30 @@ func (c *LargestFieldNumber[T1]) CacheCanoto() {
 // since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *LargestFieldNumber[T1]) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// It is not safe to copy this struct concurrently.
+func (c *LargestFieldNumber[T1]) ValidCanoto() bool {
+	c.CacheCanoto()
+	return c.CheckCanoto()
+}
+
+// CheckCanoto validates that the struct can be correctly marshaled into the
+// Canoto format. Most users should just use ValidCanoto.
+//
+// Specifically, CheckCanoto ensures:
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields pass CheckCanoto.
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
+func (c *LargestFieldNumber[T1]) CheckCanoto() bool {
+	return true
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -3542,21 +3566,6 @@ func (c *SpecFuzzerPointer) UnmarshalCanotoFrom(r Reader) error {
 	return nil
 }
 
-// ValidCanoto validates that the struct can be correctly marshaled into the
-// Canoto format.
-//
-// Specifically, ValidCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields are ValidCanoto.
-func (c *SpecFuzzerPointer) ValidCanoto() bool {
-	if !(&c.Value).ValidCanoto() {
-		return false
-	}
-	return true
-}
-
 // CacheCanoto populates size and OneOf caches based on the current values in
 // the struct.
 //
@@ -3577,6 +3586,33 @@ func (c *SpecFuzzerPointer) CacheCanoto() {
 // since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *SpecFuzzerPointer) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// It is not safe to copy this struct concurrently.
+func (c *SpecFuzzerPointer) ValidCanoto() bool {
+	c.CacheCanoto()
+	return c.CheckCanoto()
+}
+
+// CheckCanoto validates that the struct can be correctly marshaled into the
+// Canoto format. Most users should just use ValidCanoto.
+//
+// Specifically, CheckCanoto ensures:
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields pass CheckCanoto.
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
+func (c *SpecFuzzerPointer) CheckCanoto() bool {
+	if !(&c.Value).CheckCanoto() {
+		return false
+	}
+	return true
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -3818,44 +3854,6 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
 	return nil
 }
 
-// ValidCanoto validates that the struct can be correctly marshaled into the
-// Canoto format.
-//
-// Specifically, ValidCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields are ValidCanoto.
-func (c *OneOf) ValidCanoto() bool {
-	var AOneOf uint32
-	var BOneOf uint32
-	if !IsZero(c.A1) {
-		if AOneOf != 0 {
-			return false
-		}
-		AOneOf = canotoNumber_OneOf__A1
-	}
-	if !IsZero(c.B1) {
-		if BOneOf != 0 {
-			return false
-		}
-		BOneOf = canotoNumber_OneOf__B1
-	}
-	if !IsZero(c.B2) {
-		if BOneOf != 0 {
-			return false
-		}
-		BOneOf = canotoNumber_OneOf__B2
-	}
-	if !IsZero(c.A2) {
-		if AOneOf != 0 {
-			return false
-		}
-		AOneOf = canotoNumber_OneOf__A2
-	}
-	return true
-}
-
 // CacheCanoto populates size and OneOf caches based on the current values in
 // the struct.
 //
@@ -3922,6 +3920,56 @@ func (c *OneOf) WhichCanotoA() uint32 {
 // it was last cached, the returned field number may be incorrect.
 func (c *OneOf) WhichCanotoB() uint32 {
 	return (atomic.LoadUint32(&c.canotoData.BOneOf))
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// It is not safe to copy this struct concurrently.
+func (c *OneOf) ValidCanoto() bool {
+	c.CacheCanoto()
+	return c.CheckCanoto()
+}
+
+// CheckCanoto validates that the struct can be correctly marshaled into the
+// Canoto format. Most users should just use ValidCanoto.
+//
+// Specifically, CheckCanoto ensures:
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields pass CheckCanoto.
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
+func (c *OneOf) CheckCanoto() bool {
+	var AOneOf uint32
+	var BOneOf uint32
+	if !IsZero(c.A1) {
+		if AOneOf != 0 {
+			return false
+		}
+		AOneOf = canotoNumber_OneOf__A1
+	}
+	if !IsZero(c.B1) {
+		if BOneOf != 0 {
+			return false
+		}
+		BOneOf = canotoNumber_OneOf__B1
+	}
+	if !IsZero(c.B2) {
+		if BOneOf != 0 {
+			return false
+		}
+		BOneOf = canotoNumber_OneOf__B2
+	}
+	if !IsZero(c.A2) {
+		if AOneOf != 0 {
+			return false
+		}
+		AOneOf = canotoNumber_OneOf__A2
+	}
+	return true
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.

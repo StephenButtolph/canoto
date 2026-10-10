@@ -825,6 +825,14 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 			}
 		})
 	}
+
+	for _, bm := range marshalBenchmarks {
+		b.Run("validCanoto/"+bm.name, func(b *testing.B) {
+			for range b.N {
+				bm.s.ValidCanoto()
+			}
+		})
+	}
 }
 
 func BenchmarkScalars_Proto(b *testing.B) {
@@ -1511,6 +1519,49 @@ func TestPointerNilVsZeroValue(t *testing.T) {
 			var got Scalars
 			require.NoError(t, got.UnmarshalCanoto(test.s.MarshalCanoto()))
 			require.Equal(t, test.s, &got)
+		})
+	}
+}
+
+func TestValueOneOf(t *testing.T) {
+	tests := []struct {
+		name  string
+		v     *ValueOneOf
+		valid bool
+	}{
+		{
+			name:  "Empty",
+			v:     &ValueOneOf{},
+			valid: true,
+		},
+		{
+			name:  "Value",
+			v:     &ValueOneOf{Value: OneOf{C: 1}},
+			valid: true,
+		},
+		{
+			name:  "Int",
+			v:     &ValueOneOf{Int: 1},
+			valid: true,
+		},
+		{
+			name:  "ValueAndInt",
+			v:     &ValueOneOf{Value: OneOf{C: 1}, Int: 1},
+			valid: false,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			require := require.New(t)
+
+			require.Equal(test.valid, test.v.ValidCanoto())
+			if !test.valid {
+				return
+			}
+
+			var got ValueOneOf
+			require.NoError(got.UnmarshalCanoto(test.v.MarshalCanoto()))
+			require.Equal(test.v, &got)
 		})
 	}
 }

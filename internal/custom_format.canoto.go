@@ -137,31 +137,6 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) error {
 	return nil
 }
 
-// ValidCanoto validates that the struct can be correctly marshaled into the
-// Canoto format.
-//
-// Specifically, ValidCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields are ValidCanoto.
-func (c *CustomFormat) ValidCanoto() bool {
-	var FieldsOneOf uint32
-	if !canoto.IsZero(c.A) {
-		if FieldsOneOf != 0 {
-			return false
-		}
-		FieldsOneOf = CustomFormatANumber
-	}
-	if !canoto.IsZero(c.B) {
-		if FieldsOneOf != 0 {
-			return false
-		}
-		FieldsOneOf = CustomFormatBNumber
-	}
-	return true
-}
-
 // CacheCanoto populates size and OneOf caches based on the current values in
 // the struct.
 //
@@ -200,6 +175,43 @@ func (c *CustomFormat) SizeCanoto() uint64 {
 // it was last cached, the returned field number may be incorrect.
 func (c *CustomFormat) WhichCanotoFields() CustomFormatFields {
 	return CustomFormatFields(atomic.LoadUint32(&c.canotoData.FieldsOneOf))
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// It is not safe to copy this struct concurrently.
+func (c *CustomFormat) ValidCanoto() bool {
+	c.CacheCanoto()
+	return c.CheckCanoto()
+}
+
+// CheckCanoto validates that the struct can be correctly marshaled into the
+// Canoto format. Most users should just use ValidCanoto.
+//
+// Specifically, CheckCanoto ensures:
+//
+//  1. All OneOfs are specified at most once.
+//  2. All strings are valid utf-8.
+//  3. All custom fields pass CheckCanoto.
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
+func (c *CustomFormat) CheckCanoto() bool {
+	var FieldsOneOf uint32
+	if !canoto.IsZero(c.A) {
+		if FieldsOneOf != 0 {
+			return false
+		}
+		FieldsOneOf = CustomFormatANumber
+	}
+	if !canoto.IsZero(c.B) {
+		if FieldsOneOf != 0 {
+			return false
+		}
+		FieldsOneOf = CustomFormatBNumber
+	}
+	return true
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
