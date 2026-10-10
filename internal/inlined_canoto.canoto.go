@@ -40,7 +40,7 @@ type canotoData_justAnInt struct {
 // If there is not a valid specification of this type, it returns nil.
 func (*justAnInt) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero justAnInt
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "justAnInt",
 		Fields: []canoto.FieldType{
 			{
@@ -51,8 +51,6 @@ func (*justAnInt) CanotoSpec(...reflect.Type) *canoto.Spec {
 			},
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.

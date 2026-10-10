@@ -53,7 +53,7 @@ type CustomFormatCache struct {
 // If there is not a valid specification of this type, it returns nil.
 func (*CustomFormat) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero CustomFormat
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "CustomFormat",
 		Fields: []canoto.FieldType{
 			{
@@ -70,8 +70,6 @@ func (*CustomFormat) CanotoSpec(...reflect.Type) *canoto.Spec {
 			},
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.

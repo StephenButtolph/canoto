@@ -179,7 +179,7 @@ type canotoData_SpecFuzzer struct {
 func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 	types = append(types, reflect.TypeFor[SpecFuzzer]())
 	var zero SpecFuzzer
-	s := &Spec{
+	return &Spec{
 		Name: "SpecFuzzer",
 		Fields: []FieldType{
 			{
@@ -682,8 +682,6 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 			),
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -3324,7 +3322,7 @@ type canotoData_LargestFieldNumber struct {
 // If there is not a valid specification of this type, it returns nil.
 func (*LargestFieldNumber[T1]) CanotoSpec(...reflect.Type) *Spec {
 	var zero LargestFieldNumber[T1]
-	s := &Spec{
+	return &Spec{
 		Name: "LargestFieldNumber",
 		Fields: []FieldType{
 			{
@@ -3335,8 +3333,6 @@ func (*LargestFieldNumber[T1]) CanotoSpec(...reflect.Type) *Spec {
 			},
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -3476,7 +3472,7 @@ type canotoData_SpecFuzzerPointer struct {
 func (*SpecFuzzerPointer) CanotoSpec(types ...reflect.Type) *Spec {
 	types = append(types, reflect.TypeFor[SpecFuzzerPointer]())
 	var zero SpecFuzzerPointer
-	s := &Spec{
+	return &Spec{
 		Name: "SpecFuzzerPointer",
 		Fields: []FieldType{
 			FieldTypeFromField(
@@ -3491,8 +3487,6 @@ func (*SpecFuzzerPointer) CanotoSpec(types ...reflect.Type) *Spec {
 			),
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -3680,7 +3674,7 @@ type canotoData_OneOf struct {
 // If there is not a valid specification of this type, it returns nil.
 func (*OneOf) CanotoSpec(...reflect.Type) *Spec {
 	var zero OneOf
-	s := &Spec{
+	return &Spec{
 		Name: "OneOf",
 		Fields: []FieldType{
 			{
@@ -3721,8 +3715,6 @@ func (*OneOf) CanotoSpec(...reflect.Type) *Spec {
 			},
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.

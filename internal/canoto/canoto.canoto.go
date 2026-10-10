@@ -41,7 +41,7 @@ type canotoData_Spec struct {
 func (*Spec) CanotoSpec(types ...reflect.Type) *Spec {
 	types = append(types, reflect.TypeFor[Spec]())
 	var zero Spec
-	s := &Spec{
+	return &Spec{
 		Name: "Spec",
 		Fields: []FieldType{
 			{
@@ -62,8 +62,6 @@ func (*Spec) CanotoSpec(types ...reflect.Type) *Spec {
 			),
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -331,7 +329,7 @@ type canotoData_FieldType struct {
 func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 	types = append(types, reflect.TypeFor[FieldType]())
 	var zero FieldType
-	s := &Spec{
+	return &Spec{
 		Name: "FieldType",
 		Fields: []FieldType{
 			{
@@ -436,8 +434,6 @@ func (*FieldType) CanotoSpec(types ...reflect.Type) *Spec {
 			},
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
