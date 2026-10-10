@@ -128,10 +128,8 @@ func (c *LargestFieldNumber[T1]) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *LargestFieldNumber[T1]) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
@@ -450,10 +448,8 @@ func (c *OneOf) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *OneOf) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
@@ -464,10 +460,8 @@ func (c *OneOf) SizeCanoto() uint64 {
 // This value is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CacheCanoto.
 //
-// If the value has not yet been cached, it will return 0.
-//
-// If the struct has been modified since the value was last cached, the returned
-// field number may be incorrect.
+// If the value has not yet been cached, or the struct has been modified since
+// it was last cached, the returned field number may be incorrect.
 func (c *OneOf) WhichCanotoA() uint32 {
 	return (atomic.LoadUint32(&c.canotoData.AOneOf))
 }
@@ -478,10 +472,8 @@ func (c *OneOf) WhichCanotoA() uint32 {
 // This value is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CacheCanoto.
 //
-// If the value has not yet been cached, it will return 0.
-//
-// If the struct has been modified since the value was last cached, the returned
-// field number may be incorrect.
+// If the value has not yet been cached, or the struct has been modified since
+// it was last cached, the returned field number may be incorrect.
 func (c *OneOf) WhichCanotoB() uint32 {
 	return (atomic.LoadUint32(&c.canotoData.BOneOf))
 }
@@ -820,10 +812,8 @@ func (c *OneOfNoCopy) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *OneOfNoCopy) SizeCanoto() uint64 {
 	return c.canotoData.size.Load()
 }
@@ -834,10 +824,8 @@ func (c *OneOfNoCopy) SizeCanoto() uint64 {
 // This value is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CacheCanoto.
 //
-// If the value has not yet been cached, it will return 0.
-//
-// If the struct has been modified since the value was last cached, the returned
-// field number may be incorrect.
+// If the value has not yet been cached, or the struct has been modified since
+// it was last cached, the returned field number may be incorrect.
 func (c *OneOfNoCopy) WhichCanotoA() uint32 {
 	return (c.canotoData.AOneOf.Load())
 }
@@ -848,10 +836,8 @@ func (c *OneOfNoCopy) WhichCanotoA() uint32 {
 // This value is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CacheCanoto.
 //
-// If the value has not yet been cached, it will return 0.
-//
-// If the struct has been modified since the value was last cached, the returned
-// field number may be incorrect.
+// If the value has not yet been cached, or the struct has been modified since
+// it was last cached, the returned field number may be incorrect.
 func (c *OneOfNoCopy) WhichCanotoB() uint32 {
 	return (c.canotoData.BOneOf.Load())
 }
@@ -1067,10 +1053,8 @@ func (c *unexportedOneOf) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *unexportedOneOf) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
@@ -1081,10 +1065,8 @@ func (c *unexportedOneOf) SizeCanoto() uint64 {
 // This value is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CacheCanoto.
 //
-// If the value has not yet been cached, it will return 0.
-//
-// If the struct has been modified since the value was last cached, the returned
-// field number may be incorrect.
+// If the value has not yet been cached, or the struct has been modified since
+// it was last cached, the returned field number may be incorrect.
 func (c *unexportedOneOf) WhichCanotoA() canotoOneOfType_unexportedOneOf__A {
 	return canotoOneOfType_unexportedOneOf__A(atomic.LoadUint32(&c.canotoData.AOneOf))
 }
@@ -1299,10 +1281,8 @@ func (c *Node) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *Node) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
@@ -1313,10 +1293,8 @@ func (c *Node) SizeCanoto() uint64 {
 // This value is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CacheCanoto.
 //
-// If the value has not yet been cached, it will return 0.
-//
-// If the struct has been modified since the value was last cached, the returned
-// field number may be incorrect.
+// If the value has not yet been cached, or the struct has been modified since
+// it was last cached, the returned field number may be incorrect.
 func (c *Node) WhichCanotoOneOf() uint32 {
 	return (atomic.LoadUint32(&c.canotoData.OneOfOneOf))
 }
@@ -1488,10 +1466,8 @@ func (c *RecursiveA) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *RecursiveA) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
@@ -1658,10 +1634,8 @@ func (c *RecursiveB) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *RecursiveB) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
@@ -2231,10 +2205,8 @@ func (c *GenericField[T1, T2]) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *GenericField[T1, T2]) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
@@ -2865,10 +2837,8 @@ func (c *NestedGenericField[T1, T2]) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *NestedGenericField[T1, T2]) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
@@ -3223,10 +3193,8 @@ func (c *Embedded) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *Embedded) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
@@ -3387,10 +3355,8 @@ func (c *A) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *A) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
@@ -3532,10 +3498,8 @@ func (c *A__B) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *A__B) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
@@ -3677,10 +3641,8 @@ func (c *A__Pointer) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *A__Pointer) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
@@ -6338,10 +6300,8 @@ func (c *Scalars) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *Scalars) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
@@ -7008,10 +6968,8 @@ func (c *SpecUnusedZero) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *SpecUnusedZero) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
@@ -7131,10 +7089,8 @@ func (c *EmptyMessage) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *EmptyMessage) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }

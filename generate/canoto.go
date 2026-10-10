@@ -197,10 +197,8 @@ ${sizeVars}${size}${assignSizeVars}}
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *${structName}${generics}) SizeCanoto() uint64 {
 	return ${loadPrefix}c.canotoData.size${loadSuffix}
 }${whichCanoto}
@@ -1809,10 +1807,8 @@ func makeWhichCanoto(m message) string {
 // This value is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
 // CacheCanoto.
 //
-// If the value has not yet been cached, it will return 0.
-//
-// If the struct has been modified since the value was last cached, the returned
-// field number may be incorrect.
+// If the value has not yet been cached, or the struct has been modified since
+// it was last cached, the returned field number may be incorrect.
 func (c *${structName}${generics}) WhichCanoto${oneOf}() ${oneOfType} {
 	return ${oneOfCast}(${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix})
 }`

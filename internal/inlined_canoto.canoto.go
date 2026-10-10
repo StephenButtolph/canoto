@@ -126,10 +126,8 @@ func (c *justAnInt) CacheCanoto() {
 // SizeCanoto returns the previously calculated size of the Canoto
 // representation from CacheCanoto.
 //
-// If CacheCanoto has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CacheCanoto, the
-// returned size may be incorrect.
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *justAnInt) SizeCanoto() uint64 {
 	return c.canotoData.size.Load()
 }
