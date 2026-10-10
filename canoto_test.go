@@ -5,6 +5,7 @@ package canoto
 import (
 	"bytes"
 	"encoding/hex"
+	"encoding/json"
 	"io"
 	"math"
 	"math/rand/v2"
@@ -1788,6 +1789,23 @@ func TestIsBytesEmpty(t *testing.T) {
 
 	require.False(isBytesEmpty([]byte{0: 1}))
 	require.False(isBytesEmpty([]byte{10: 1}))
+}
+
+func TestAnyMarshalJSON_EscapesNames(t *testing.T) {
+	a := Any{Fields: []AnyField{
+		{Name: `f":0,"admin":true,"x`, Value: true},
+		{Name: "a\\b\nc", Value: uint64(1)},
+	}}
+	b, err := json.Marshal(a)
+	require.NoError(t, err)
+	require.JSONEq(
+		t,
+		`{
+			"f\":0,\"admin\":true,\"x":true,
+			"a\\b\nc":1
+		}`,
+		string(b),
+	)
 }
 
 type SpecFuzzer struct {

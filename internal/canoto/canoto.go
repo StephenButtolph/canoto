@@ -1157,9 +1157,12 @@ func (a Any) MarshalJSON() ([]byte, error) {
 		if i > 0 {
 			sb.WriteString(",")
 		}
-		sb.WriteString(`"`)
-		sb.WriteString(f.Name)
-		sb.WriteString(`":`)
+		name, err := json.Marshal(f.Name)
+		if err != nil {
+			return nil, err
+		}
+		sb.Write(name)
+		sb.WriteString(":")
 		b, err := json.Marshal(f.Value)
 		if err != nil {
 			return nil, err
