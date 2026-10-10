@@ -32,13 +32,9 @@ type canotoData_justAnInt struct {
 	size atomic.Uint64
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
-//
-// types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*justAnInt) CanotoSpec(...reflect.Type) *canoto.Spec {
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
+func (*justAnInt) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	var zero justAnInt
 	return &canoto.Spec{
 		Name: "justAnInt",
@@ -117,9 +113,9 @@ func (c *justAnInt) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
-func (c *justAnInt) CalculateCanotoCache() {
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
+func (c *justAnInt) CacheCanoto() {
 	var size uint64
 	if !canoto.IsZero(c.Int8) {
 		size += uint64(len(canotoTag_justAnInt__Int8)) + canoto.SizeInt(c.Int8)
@@ -127,14 +123,12 @@ func (c *justAnInt) CalculateCanotoCache() {
 	c.canotoData.size.Store(size)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *justAnInt) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *justAnInt) SizeCanoto() uint64 {
 	return c.canotoData.size.Load()
 }
 
@@ -142,22 +136,22 @@ func (c *justAnInt) CachedCanotoSize() uint64 {
 //
 // It is assumed that this struct is ValidCanoto.
 func (c *justAnInt) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-func (c *justAnInt) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+func (c *justAnInt) AppendCanoto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.Int8) {
 		canoto.Append(&w, canotoTag_justAnInt__Int8)
 		canoto.AppendInt(&w, c.Int8)

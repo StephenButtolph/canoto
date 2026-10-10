@@ -183,33 +183,38 @@ type (
 
 	// Field defines a type that can be included in a Canoto message.
 	Field interface {
-		// CanotoSpec returns the specification of this canoto message.
+		// DescribeCanoto returns a [Spec] describing the Canoto encoding of
+		// this type.
 		//
-		// If there is not a valid specification of this type, it returns nil.
-		CanotoSpec(types ...reflect.Type) *Spec
-		// MarshalCanotoInto writes the field into a [Writer] and returns the
-		// resulting [Writer].
+		// types is used as a stack of ancestor messages to detect recursive
+		// specs.
 		//
-		// It is assumed that CalculateCanotoCache has been called since the
-		// last modification to this field.
+		// If this type does not have a valid specification, it returns nil and
+		// the type is treated as opaque bytes.
+		DescribeCanoto(types ...reflect.Type) *Spec
+		// CacheCanoto populates internal caches based on the current values in
+		// the struct.
+		CacheCanoto()
+		// SizeCanoto returns the previously calculated size of the Canoto
+		// representation from CacheCanoto.
 		//
-		// It is assumed that this field is ValidCanoto.
-		MarshalCanotoInto(w Writer) Writer
-		// CalculateCanotoCache populates internal caches based on the current
-		// values in the struct.
-		CalculateCanotoCache()
-		// CachedCanotoSize returns the previously calculated size of the Canoto
-		// representation from CalculateCanotoCache.
-		//
-		// If CalculateCanotoCache has not yet been called, or the field has
-		// been modified since the last call to CalculateCanotoCache, the
-		// returned size may be incorrect.
-		CachedCanotoSize() uint64
-		// UnmarshalCanotoFrom populates the field from a [Reader].
-		UnmarshalCanotoFrom(r Reader) error
+		// If CacheCanoto has not yet been called, or the field has been
+		// modified since the last call to CacheCanoto, the returned size may be
+		// incorrect.
+		SizeCanoto() uint64
 		// ValidCanoto validates that the field can be correctly marshaled into
 		// the Canoto format.
 		ValidCanoto() bool
+		// AppendCanoto appends the field to a [Writer] and returns the
+		// resulting [Writer].
+		//
+		// It is assumed that CacheCanoto has been called since the last
+		// modification to this field.
+		//
+		// It is assumed that this field is ValidCanoto.
+		AppendCanoto(w Writer) Writer
+		// UnmarshalCanotoFrom populates the field from a [Reader].
+		UnmarshalCanotoFrom(r Reader) error
 	}
 
 	// FieldPointer is a constraint that requires *T to implement [Field].
@@ -1124,7 +1129,7 @@ func unsafeString(b []byte) string {
 // type directly. This function should only be used when the concrete type can
 // not be known ahead of time.
 func Unmarshal(s *Spec, b []byte) (Any, error) {
-	s.CalculateCanotoCache()
+	s.CacheCanoto()
 	r := Reader{
 		B: b,
 	}
@@ -1137,7 +1142,7 @@ func Unmarshal(s *Spec, b []byte) (Any, error) {
 // directly. This function should only be used when the concrete type can not be
 // known ahead of time.
 func Marshal(s *Spec, a Any) ([]byte, error) {
-	s.CalculateCanotoCache()
+	s.CacheCanoto()
 	if err := s.calculateSize(&a, nil); err != nil {
 		return nil, err
 	}
@@ -1231,9 +1236,9 @@ func FieldTypeFromField[T any, PT FieldPointer[T]](
 	if index := slices.Index(types, fieldType); index >= 0 {
 		typeRecursive = uint64(len(types) - index) //#nosec G115 // False positive
 	} else {
-		// Calling CanotoSpec on a non-nil value supports implementations with
-		// value receivers.
-		typeMessage = PT(new(T)).CanotoSpec(types...)
+		// Calling DescribeCanoto on a non-nil value supports implementations
+		// with value receivers.
+		typeMessage = PT(new(T)).DescribeCanoto(types...)
 		// If this does not have a valid spec, it is treated as bytes.
 		if typeMessage == nil {
 			typeBytes = true
@@ -1367,7 +1372,7 @@ func (f *FieldType) calculateSize(af *AnyField, specs []*Spec) (uint64, error) {
 		size uint64
 		err  error
 	)
-	switch f.CachedWhichOneOfType() {
+	switch f.WhichCanotoType() {
 	case FieldTypeInt:
 		size, err = calculateSizePacked(f, af.Value, SizeInt[int64])
 	case FieldTypeUint:
@@ -1624,7 +1629,7 @@ func (s *Spec) findFieldByName(name string, startIndex int) (*FieldType, int, er
 }
 
 func (f *FieldType) wireType() (WireType, error) {
-	switch f.CachedWhichOneOfType() {
+	switch f.WhichCanotoType() {
 	case FieldTypeInt, FieldTypeUint, FieldTypeBool:
 		if f.Repeated {
 			return Len, nil
@@ -1657,7 +1662,7 @@ func (f *FieldType) wireType() (WireType, error) {
 
 func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 	var unmarshal func(f *FieldType, r *Reader, specs []*Spec) (any, error)
-	switch f.CachedWhichOneOfType() {
+	switch f.WhichCanotoType() {
 	case FieldTypeInt:
 		unmarshal = (*FieldType).unmarshalInt
 	case FieldTypeUint:
@@ -1685,7 +1690,7 @@ func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
 }
 
 func (f *FieldType) marshal(w Writer, af *AnyField, specs []*Spec) (Writer, error) {
-	switch f.CachedWhichOneOfType() {
+	switch f.WhichCanotoType() {
 	case FieldTypeInt:
 		return f.marshalInt(w, af.Value, specs)
 	case FieldTypeUint:

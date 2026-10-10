@@ -2006,7 +2006,7 @@ func FuzzSpec(f *testing.F) {
 		// same error as the unmarshalling the message directly.
 		var (
 			msg              SpecFuzzer
-			spec             = msg.CanotoSpec()
+			spec             = msg.DescribeCanoto()
 			unmarshaledBytes = slices.Clone(b)
 		)
 		expectedErr := msg.UnmarshalCanoto(unmarshaledBytes)
@@ -2067,7 +2067,7 @@ func TestFixedRepeatedFixedSize_InvalidLength(t *testing.T) {
 			var msg SpecFuzzer
 			require.ErrorIs(msg.UnmarshalCanoto(w.B), ErrInvalidLength)
 
-			_, err = Unmarshal(msg.CanotoSpec(), w.B)
+			_, err = Unmarshal(msg.DescribeCanoto(), w.B)
 			require.ErrorIs(err, ErrInvalidLength)
 		})
 	}
@@ -2075,7 +2075,7 @@ func TestFixedRepeatedFixedSize_InvalidLength(t *testing.T) {
 
 func TestMarshalConcurrent(t *testing.T) {
 	v := fullSpecFuzzer(t)
-	spec := v.CanotoSpec()
+	spec := v.DescribeCanoto()
 	a, err := Unmarshal(spec, v.MarshalCanoto())
 	require.NoError(t, err)
 
@@ -2096,7 +2096,7 @@ func TestMarshalConcurrent(t *testing.T) {
 
 func BenchmarkSpec(b *testing.B) {
 	v := fullSpecFuzzer(b)
-	spec := v.CanotoSpec()
+	spec := v.DescribeCanoto()
 
 	bytes := v.MarshalCanoto()
 	a, err := Unmarshal(spec, bytes)

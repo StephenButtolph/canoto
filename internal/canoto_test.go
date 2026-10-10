@@ -65,7 +65,7 @@ func canonicalizeCanotoScalars(s *Scalars) *Scalars {
 	for i := range s.FixedRepeatedBytes {
 		s.FixedRepeatedBytes[i] = canonicalizeSlice(s.FixedRepeatedBytes[i])
 	}
-	if s.CustomType.CachedCanotoSize() == 0 {
+	if s.CustomType.SizeCanoto() == 0 {
 		s.CustomType.Int = nil
 	}
 	s.CustomBytes = canonicalizeSlice(s.CustomBytes)
@@ -267,7 +267,7 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 	}
 
 	var customType []byte
-	if s.CustomType.CachedCanotoSize() != 0 {
+	if s.CustomType.SizeCanoto() != 0 {
 		customType = s.CustomType.Int.Bytes()
 	}
 
@@ -464,7 +464,7 @@ func FuzzScalars_UnmarshalCanoto(f *testing.F) {
 		}
 
 		canotoScalars = canonicalizeCanotoScalars(canotoScalars)
-		canotoScalars.CalculateCanotoCache()
+		canotoScalars.CacheCanoto()
 
 		pbScalars := canotoScalarsToProto(canotoScalars)
 		pbScalarsBytes, err := proto.Marshal(pbScalars)
@@ -498,12 +498,12 @@ func FuzzScalars_MarshalCanoto(f *testing.F) {
 			return
 		}
 
-		canotoScalars.CalculateCanotoCache()
-		size := canotoScalars.CachedCanotoSize()
+		canotoScalars.CacheCanoto()
+		size := canotoScalars.SizeCanoto()
 		w := canoto.Writer{
 			B: make([]byte, 0, size),
 		}
-		w = canotoScalars.MarshalCanotoInto(w)
+		w = canotoScalars.AppendCanoto(w)
 		require.Len(w.B, int(size)) //#nosec G115 // False positive
 
 		var pbScalars pb.Scalars
@@ -525,14 +525,14 @@ func FuzzScalars_Canonical(f *testing.F) {
 		}
 		require.True(scalars.ValidCanoto())
 
-		scalars.CalculateCanotoCache()
-		size := scalars.CachedCanotoSize()
+		scalars.CacheCanoto()
+		size := scalars.SizeCanoto()
 		require.Len(b, int(size)) //#nosec G115 // False positive
 
 		w := canoto.Writer{
 			B: make([]byte, 0, size),
 		}
-		w = scalars.MarshalCanotoInto(w)
+		w = scalars.AppendCanoto(w)
 		require.Equal(b, w.B)
 	})
 }
@@ -549,7 +549,7 @@ func FuzzScalars_UnmarshalEquals(f *testing.F) {
 			return
 		}
 		require.NoError(scalarsRecalculated.UnmarshalCanoto(b))
-		scalarsRecalculated.CalculateCanotoCache()
+		scalarsRecalculated.CacheCanoto()
 		require.Equal(&scalarsRecalculated, &scalars)
 	})
 }
@@ -632,8 +632,8 @@ func TestScalars_Concurrent_MarshalCanoto(t *testing.T) {
 	const numRoutines = 100
 	var (
 		expectedBytes  = s.MarshalCanoto()
-		expectedOneOfA = s.OneOf.CachedWhichOneOfA()
-		expectedOneOfB = s.OneOf.CachedWhichOneOfB()
+		expectedOneOfA = s.OneOf.WhichCanotoA()
+		expectedOneOfB = s.OneOf.WhichCanotoB()
 		actualBytes    = make(chan []byte, numRoutines)
 		actualOneOfA   = make(chan uint32, numRoutines)
 		actualOneOfB   = make(chan uint32, numRoutines)
@@ -641,8 +641,8 @@ func TestScalars_Concurrent_MarshalCanoto(t *testing.T) {
 	for range numRoutines {
 		go func() {
 			actualBytes <- s.MarshalCanoto()
-			actualOneOfA <- s.OneOf.CachedWhichOneOfA()
-			actualOneOfB <- s.OneOf.CachedWhichOneOfB()
+			actualOneOfA <- s.OneOf.WhichCanotoA()
+			actualOneOfB <- s.OneOf.WhichCanotoB()
 		}()
 	}
 	for range numRoutines {
@@ -746,7 +746,7 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 			Uint: 216457,
 		},
 	}
-	spec := (*Scalars)(nil).CanotoSpec()
+	spec := (*Scalars)(nil).DescribeCanoto()
 	fullBytes := full.MarshalCanoto()
 	simpleBytes := simple.MarshalCanoto()
 	fullAny, err := canoto.Unmarshal(spec, fullBytes)
@@ -819,9 +819,9 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 	}
 
 	for _, bm := range marshalBenchmarks {
-		b.Run("calculateCache/"+bm.name, func(b *testing.B) {
+		b.Run("cacheCanoto/"+bm.name, func(b *testing.B) {
 			for range b.N {
-				bm.s.CalculateCanotoCache()
+				bm.s.CacheCanoto()
 			}
 		})
 	}
@@ -1279,10 +1279,10 @@ func BenchmarkFixedRepeatedFint_Canoto(b *testing.B) {
 
 		b.Run(test.name+"/marshal", func(b *testing.B) {
 			s := test.msg()
-			s.CalculateCanotoCache()
-			w := canoto.Writer{B: make([]byte, 0, s.CachedCanotoSize())}
+			s.CacheCanoto()
+			w := canoto.Writer{B: make([]byte, 0, s.SizeCanoto())}
 			for range b.N {
-				s.MarshalCanotoInto(w)
+				s.AppendCanoto(w)
 			}
 		})
 		b.Run(test.name+"/unmarshal", func(b *testing.B) {

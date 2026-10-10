@@ -57,7 +57,7 @@ type OneOfNoCopy struct {
 	canotoData canotoData_OneOfNoCopy `canoto:"nocopy"`
 }
 
-// unexportedOneOf verifies that the cached oneOf accessors of an unexported
+// unexportedOneOf verifies that the WhichCanoto accessors of an unexported
 // struct return the unexported oneOf type rather than uint32.
 type unexportedOneOf struct {
 	A1 int32 `canoto:"int,1,A"`

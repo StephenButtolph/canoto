@@ -32,13 +32,9 @@ type canotoData_LargestFieldNumber struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
-//
-// types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*LargestFieldNumber[T1]) CanotoSpec(...reflect.Type) *canoto.Spec {
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
+func (*LargestFieldNumber[T1]) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	var zero LargestFieldNumber[T1]
 	return &canoto.Spec{
 		Name: "LargestFieldNumber",
@@ -117,11 +113,11 @@ func (c *LargestFieldNumber[T1]) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
 //
 // It is not safe to copy this struct concurrently.
-func (c *LargestFieldNumber[T1]) CalculateCanotoCache() {
+func (c *LargestFieldNumber[T1]) CacheCanoto() {
 	var size uint64
 	if !canoto.IsZero(c.Uint) {
 		size += uint64(len(canotoTag_LargestFieldNumber__Uint)) + canoto.SizeUint(c.Uint)
@@ -129,14 +125,12 @@ func (c *LargestFieldNumber[T1]) CalculateCanotoCache() {
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *LargestFieldNumber[T1]) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *LargestFieldNumber[T1]) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -146,24 +140,24 @@ func (c *LargestFieldNumber[T1]) CachedCanotoSize() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *LargestFieldNumber[T1]) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to copy this struct concurrently.
-func (c *LargestFieldNumber[T1]) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+func (c *LargestFieldNumber[T1]) AppendCanoto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.Uint) {
 		canoto.Append(&w, canotoTag_LargestFieldNumber__Uint)
 		canoto.AppendUint(&w, c.Uint)
@@ -212,13 +206,9 @@ type canotoData_OneOf struct {
 	BOneOf uint32
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
-//
-// types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*OneOf) CanotoSpec(...reflect.Type) *canoto.Spec {
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
+func (*OneOf) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	var zero OneOf
 	return &canoto.Spec{
 		Name: "OneOf",
@@ -420,11 +410,11 @@ func (c *OneOf) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
 //
 // It is not safe to copy this struct concurrently.
-func (c *OneOf) CalculateCanotoCache() {
+func (c *OneOf) CacheCanoto() {
 	var size uint64
 	var AOneOf uint32
 	var BOneOf uint32
@@ -455,42 +445,36 @@ func (c *OneOf) CalculateCanotoCache() {
 	atomic.StoreUint32(&c.canotoData.BOneOf, BOneOf)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *OneOf) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *OneOf) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
-// CachedWhichOneOfA returns the previously calculated field number used
-// to represent A.
+// WhichCanotoA returns the previously calculated field number used to
+// represent A.
 //
-// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
-// CalculateCanotoCache.
+// This value is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CacheCanoto.
 //
-// If the field has not yet been cached, it will return 0.
-//
-// If the struct has been modified since the field was last cached, the returned
-// field number may be incorrect.
-func (c *OneOf) CachedWhichOneOfA() uint32 {
+// If the value has not yet been cached, or the struct has been modified since
+// it was last cached, the returned field number may be incorrect.
+func (c *OneOf) WhichCanotoA() uint32 {
 	return (atomic.LoadUint32(&c.canotoData.AOneOf))
 }
 
-// CachedWhichOneOfB returns the previously calculated field number used
-// to represent B.
+// WhichCanotoB returns the previously calculated field number used to
+// represent B.
 //
-// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
-// CalculateCanotoCache.
+// This value is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CacheCanoto.
 //
-// If the field has not yet been cached, it will return 0.
-//
-// If the struct has been modified since the field was last cached, the returned
-// field number may be incorrect.
-func (c *OneOf) CachedWhichOneOfB() uint32 {
+// If the value has not yet been cached, or the struct has been modified since
+// it was last cached, the returned field number may be incorrect.
+func (c *OneOf) WhichCanotoB() uint32 {
 	return (atomic.LoadUint32(&c.canotoData.BOneOf))
 }
 
@@ -500,31 +484,31 @@ func (c *OneOf) CachedWhichOneOfB() uint32 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *OneOf) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to copy this struct concurrently.
-func (c *OneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	cachedWhichOneOfA := atomic.LoadUint32(&c.canotoData.AOneOf)
-	if cachedWhichOneOfA == canotoNumber_OneOf__A1 {
+func (c *OneOf) AppendCanoto(w canoto.Writer) canoto.Writer {
+	whichCanotoA := atomic.LoadUint32(&c.canotoData.AOneOf)
+	if whichCanotoA == canotoNumber_OneOf__A1 {
 		canoto.Append(&w, canotoTag_OneOf__A1)
 		canoto.AppendInt(&w, c.A1)
 	}
-	cachedWhichOneOfB := atomic.LoadUint32(&c.canotoData.BOneOf)
-	switch cachedWhichOneOfB {
+	whichCanotoB := atomic.LoadUint32(&c.canotoData.BOneOf)
+	switch whichCanotoB {
 	case canotoNumber_OneOf__B1:
 		canoto.Append(&w, canotoTag_OneOf__B1)
 		canoto.AppendInt(&w, c.B1)
@@ -540,7 +524,7 @@ func (c *OneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		canoto.Append(&w, canotoTag_OneOf__D)
 		canoto.AppendInt(&w, c.D)
 	}
-	if cachedWhichOneOfA == canotoNumber_OneOf__A2 {
+	if whichCanotoA == canotoNumber_OneOf__A2 {
 		canoto.Append(&w, canotoTag_OneOf__A2)
 		canoto.AppendInt(&w, c.A2)
 	}
@@ -588,13 +572,9 @@ type canotoData_OneOfNoCopy struct {
 	BOneOf atomic.Uint32
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
-//
-// types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*OneOfNoCopy) CanotoSpec(...reflect.Type) *canoto.Spec {
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
+func (*OneOfNoCopy) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	var zero OneOfNoCopy
 	return &canoto.Spec{
 		Name: "OneOfNoCopy",
@@ -796,9 +776,9 @@ func (c *OneOfNoCopy) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
-func (c *OneOfNoCopy) CalculateCanotoCache() {
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
+func (c *OneOfNoCopy) CacheCanoto() {
 	var size uint64
 	var AOneOf uint32
 	var BOneOf uint32
@@ -829,42 +809,36 @@ func (c *OneOfNoCopy) CalculateCanotoCache() {
 	c.canotoData.BOneOf.Store(BOneOf)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *OneOfNoCopy) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *OneOfNoCopy) SizeCanoto() uint64 {
 	return c.canotoData.size.Load()
 }
 
-// CachedWhichOneOfA returns the previously calculated field number used
-// to represent A.
+// WhichCanotoA returns the previously calculated field number used to
+// represent A.
 //
-// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
-// CalculateCanotoCache.
+// This value is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CacheCanoto.
 //
-// If the field has not yet been cached, it will return 0.
-//
-// If the struct has been modified since the field was last cached, the returned
-// field number may be incorrect.
-func (c *OneOfNoCopy) CachedWhichOneOfA() uint32 {
+// If the value has not yet been cached, or the struct has been modified since
+// it was last cached, the returned field number may be incorrect.
+func (c *OneOfNoCopy) WhichCanotoA() uint32 {
 	return (c.canotoData.AOneOf.Load())
 }
 
-// CachedWhichOneOfB returns the previously calculated field number used
-// to represent B.
+// WhichCanotoB returns the previously calculated field number used to
+// represent B.
 //
-// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
-// CalculateCanotoCache.
+// This value is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CacheCanoto.
 //
-// If the field has not yet been cached, it will return 0.
-//
-// If the struct has been modified since the field was last cached, the returned
-// field number may be incorrect.
-func (c *OneOfNoCopy) CachedWhichOneOfB() uint32 {
+// If the value has not yet been cached, or the struct has been modified since
+// it was last cached, the returned field number may be incorrect.
+func (c *OneOfNoCopy) WhichCanotoB() uint32 {
 	return (c.canotoData.BOneOf.Load())
 }
 
@@ -872,29 +846,29 @@ func (c *OneOfNoCopy) CachedWhichOneOfB() uint32 {
 //
 // It is assumed that this struct is ValidCanoto.
 func (c *OneOfNoCopy) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-func (c *OneOfNoCopy) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	cachedWhichOneOfA := c.canotoData.AOneOf.Load()
-	if cachedWhichOneOfA == canotoNumber_OneOfNoCopy__A1 {
+func (c *OneOfNoCopy) AppendCanoto(w canoto.Writer) canoto.Writer {
+	whichCanotoA := c.canotoData.AOneOf.Load()
+	if whichCanotoA == canotoNumber_OneOfNoCopy__A1 {
 		canoto.Append(&w, canotoTag_OneOfNoCopy__A1)
 		canoto.AppendInt(&w, c.A1)
 	}
-	cachedWhichOneOfB := c.canotoData.BOneOf.Load()
-	switch cachedWhichOneOfB {
+	whichCanotoB := c.canotoData.BOneOf.Load()
+	switch whichCanotoB {
 	case canotoNumber_OneOfNoCopy__B1:
 		canoto.Append(&w, canotoTag_OneOfNoCopy__B1)
 		canoto.AppendInt(&w, c.B1)
@@ -910,7 +884,7 @@ func (c *OneOfNoCopy) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		canoto.Append(&w, canotoTag_OneOfNoCopy__D)
 		canoto.AppendInt(&w, c.D)
 	}
-	if cachedWhichOneOfA == canotoNumber_OneOfNoCopy__A2 {
+	if whichCanotoA == canotoNumber_OneOfNoCopy__A2 {
 		canoto.Append(&w, canotoTag_OneOfNoCopy__A2)
 		canoto.AppendInt(&w, c.A2)
 	}
@@ -940,13 +914,9 @@ type canotoData_unexportedOneOf struct {
 	AOneOf uint32
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
-//
-// types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*unexportedOneOf) CanotoSpec(...reflect.Type) *canoto.Spec {
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
+func (*unexportedOneOf) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	var zero unexportedOneOf
 	return &canoto.Spec{
 		Name: "unexportedOneOf",
@@ -1061,11 +1031,11 @@ func (c *unexportedOneOf) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
 //
 // It is not safe to copy this struct concurrently.
-func (c *unexportedOneOf) CalculateCanotoCache() {
+func (c *unexportedOneOf) CacheCanoto() {
 	var size uint64
 	var AOneOf uint32
 	if !canoto.IsZero(c.A1) {
@@ -1080,28 +1050,24 @@ func (c *unexportedOneOf) CalculateCanotoCache() {
 	atomic.StoreUint32(&c.canotoData.AOneOf, AOneOf)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *unexportedOneOf) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *unexportedOneOf) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
-// CachedWhichOneOfA returns the previously calculated field number used
-// to represent A.
+// WhichCanotoA returns the previously calculated field number used to
+// represent A.
 //
-// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
-// CalculateCanotoCache.
+// This value is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CacheCanoto.
 //
-// If the field has not yet been cached, it will return 0.
-//
-// If the struct has been modified since the field was last cached, the returned
-// field number may be incorrect.
-func (c *unexportedOneOf) CachedWhichOneOfA() canotoOneOfType_unexportedOneOf__A {
+// If the value has not yet been cached, or the struct has been modified since
+// it was last cached, the returned field number may be incorrect.
+func (c *unexportedOneOf) WhichCanotoA() canotoOneOfType_unexportedOneOf__A {
 	return canotoOneOfType_unexportedOneOf__A(atomic.LoadUint32(&c.canotoData.AOneOf))
 }
 
@@ -1111,26 +1077,26 @@ func (c *unexportedOneOf) CachedWhichOneOfA() canotoOneOfType_unexportedOneOf__A
 //
 // It is not safe to copy this struct concurrently.
 func (c *unexportedOneOf) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to copy this struct concurrently.
-func (c *unexportedOneOf) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	cachedWhichOneOfA := atomic.LoadUint32(&c.canotoData.AOneOf)
-	switch cachedWhichOneOfA {
+func (c *unexportedOneOf) AppendCanoto(w canoto.Writer) canoto.Writer {
+	whichCanotoA := atomic.LoadUint32(&c.canotoData.AOneOf)
+	switch whichCanotoA {
 	case canotoNumber_unexportedOneOf__A1:
 		canoto.Append(&w, canotoTag_unexportedOneOf__A1)
 		canoto.AppendInt(&w, c.A1)
@@ -1163,13 +1129,11 @@ type canotoData_Node struct {
 	OneOfOneOf uint32
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
 //
 // types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*Node) CanotoSpec(types ...reflect.Type) *canoto.Spec {
+func (*Node) DescribeCanoto(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[Node]())
 	var zero Node
 	return &canoto.Spec{
@@ -1294,19 +1258,19 @@ func (c *Node) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
 //
 // It is not safe to copy this struct concurrently.
-func (c *Node) CalculateCanotoCache() {
+func (c *Node) CacheCanoto() {
 	var size uint64
 	var OneOfOneOf uint32
 	if !canoto.IsZero(c.Value) {
 		size += uint64(len(canotoTag_Node__Value)) + canoto.SizeInt(c.Value)
 	}
 	if c.Next != nil {
-		(c.Next).CalculateCanotoCache()
-		fieldSize := (c.Next).CachedCanotoSize()
+		(c.Next).CacheCanoto()
+		fieldSize := (c.Next).SizeCanoto()
 		size += uint64(len(canotoTag_Node__Next)) + canoto.SizeUint(fieldSize) + fieldSize
 		OneOfOneOf = canotoNumber_Node__Next
 	}
@@ -1314,28 +1278,24 @@ func (c *Node) CalculateCanotoCache() {
 	atomic.StoreUint32(&c.canotoData.OneOfOneOf, OneOfOneOf)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *Node) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *Node) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
-// CachedWhichOneOfOneOf returns the previously calculated field number used
-// to represent OneOf.
+// WhichCanotoOneOf returns the previously calculated field number used to
+// represent OneOf.
 //
-// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
-// CalculateCanotoCache.
+// This value is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CacheCanoto.
 //
-// If the field has not yet been cached, it will return 0.
-//
-// If the struct has been modified since the field was last cached, the returned
-// field number may be incorrect.
-func (c *Node) CachedWhichOneOfOneOf() uint32 {
+// If the value has not yet been cached, or the struct has been modified since
+// it was last cached, the returned field number may be incorrect.
+func (c *Node) WhichCanotoOneOf() uint32 {
 	return (atomic.LoadUint32(&c.canotoData.OneOfOneOf))
 }
 
@@ -1345,34 +1305,34 @@ func (c *Node) CachedWhichOneOfOneOf() uint32 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *Node) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to copy this struct concurrently.
-func (c *Node) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+func (c *Node) AppendCanoto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.Value) {
 		canoto.Append(&w, canotoTag_Node__Value)
 		canoto.AppendInt(&w, c.Value)
 	}
-	cachedWhichOneOfOneOf := atomic.LoadUint32(&c.canotoData.OneOfOneOf)
-	if cachedWhichOneOfOneOf == canotoNumber_Node__Next {
-		fieldSize := (c.Next).CachedCanotoSize()
+	whichCanotoOneOf := atomic.LoadUint32(&c.canotoData.OneOfOneOf)
+	if whichCanotoOneOf == canotoNumber_Node__Next {
+		fieldSize := (c.Next).SizeCanoto()
 		canoto.Append(&w, canotoTag_Node__Next)
 		canoto.AppendUint(&w, fieldSize)
-		w = (c.Next).MarshalCanotoInto(w)
+		w = (c.Next).AppendCanoto(w)
 	}
 	return w
 }
@@ -1387,13 +1347,11 @@ type canotoData_RecursiveA struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
 //
 // types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*RecursiveA) CanotoSpec(types ...reflect.Type) *canoto.Spec {
+func (*RecursiveA) DescribeCanoto(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[RecursiveA]())
 	var zero RecursiveA
 	return &canoto.Spec{
@@ -1491,28 +1449,26 @@ func (c *RecursiveA) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
 //
 // It is not safe to copy this struct concurrently.
-func (c *RecursiveA) CalculateCanotoCache() {
+func (c *RecursiveA) CacheCanoto() {
 	var size uint64
 	if c.Next != nil {
-		(c.Next).CalculateCanotoCache()
-		fieldSize := (c.Next).CachedCanotoSize()
+		(c.Next).CacheCanoto()
+		fieldSize := (c.Next).SizeCanoto()
 		size += uint64(len(canotoTag_RecursiveA__Next)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *RecursiveA) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *RecursiveA) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -1522,29 +1478,29 @@ func (c *RecursiveA) CachedCanotoSize() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *RecursiveA) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to copy this struct concurrently.
-func (c *RecursiveA) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+func (c *RecursiveA) AppendCanoto(w canoto.Writer) canoto.Writer {
 	if c.Next != nil {
-		fieldSize := (c.Next).CachedCanotoSize()
+		fieldSize := (c.Next).SizeCanoto()
 		canoto.Append(&w, canotoTag_RecursiveA__Next)
 		canoto.AppendUint(&w, fieldSize)
-		w = (c.Next).MarshalCanotoInto(w)
+		w = (c.Next).AppendCanoto(w)
 	}
 	return w
 }
@@ -1559,13 +1515,11 @@ type canotoData_RecursiveB struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
 //
 // types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*RecursiveB) CanotoSpec(types ...reflect.Type) *canoto.Spec {
+func (*RecursiveB) DescribeCanoto(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[RecursiveB]())
 	var zero RecursiveB
 	return &canoto.Spec{
@@ -1663,28 +1617,26 @@ func (c *RecursiveB) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
 //
 // It is not safe to copy this struct concurrently.
-func (c *RecursiveB) CalculateCanotoCache() {
+func (c *RecursiveB) CacheCanoto() {
 	var size uint64
 	if c.Next != nil {
-		(c.Next).CalculateCanotoCache()
-		fieldSize := (c.Next).CachedCanotoSize()
+		(c.Next).CacheCanoto()
+		fieldSize := (c.Next).SizeCanoto()
 		size += uint64(len(canotoTag_RecursiveB__Next)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *RecursiveB) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *RecursiveB) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -1694,29 +1646,29 @@ func (c *RecursiveB) CachedCanotoSize() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *RecursiveB) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to copy this struct concurrently.
-func (c *RecursiveB) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+func (c *RecursiveB) AppendCanoto(w canoto.Writer) canoto.Writer {
 	if c.Next != nil {
-		fieldSize := (c.Next).CachedCanotoSize()
+		fieldSize := (c.Next).SizeCanoto()
 		canoto.Append(&w, canotoTag_RecursiveB__Next)
 		canoto.AppendUint(&w, fieldSize)
-		w = (c.Next).MarshalCanotoInto(w)
+		w = (c.Next).AppendCanoto(w)
 	}
 	return w
 }
@@ -1741,13 +1693,11 @@ type canotoData_GenericField struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
 //
 // types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*GenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
+func (*GenericField[T1, T2]) DescribeCanoto(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[GenericField[T1, T2]]())
 	var zero GenericField[T1, T2]
 	return &canoto.Spec{
@@ -2182,21 +2132,21 @@ func (c *GenericField[T1, T2]) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
 //
 // It is not safe to copy this struct concurrently.
-func (c *GenericField[T1, T2]) CalculateCanotoCache() {
+func (c *GenericField[T1, T2]) CacheCanoto() {
 	var size uint64
-	T2(&c.Value).CalculateCanotoCache()
-	if fieldSize := T2(&c.Value).CachedCanotoSize(); fieldSize != 0 {
+	T2(&c.Value).CacheCanoto()
+	if fieldSize := T2(&c.Value).SizeCanoto(); fieldSize != 0 {
 		size += uint64(len(canotoTag_GenericField__Value)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	{
 		field := c.RepeatedValue
 		for i := range field {
-			T2(&field[i]).CalculateCanotoCache()
-			fieldSize := T2(&field[i]).CachedCanotoSize()
+			T2(&field[i]).CacheCanoto()
+			fieldSize := T2(&field[i]).SizeCanoto()
 			size += uint64(len(canotoTag_GenericField__RepeatedValue)) + canoto.SizeUint(fieldSize) + fieldSize
 		}
 	}
@@ -2207,8 +2157,8 @@ func (c *GenericField[T1, T2]) CalculateCanotoCache() {
 			field        = &c.FixedRepeatedValue
 		)
 		for i := range field {
-			T2(&field[i]).CalculateCanotoCache()
-			fieldSize := T2(&field[i]).CachedCanotoSize()
+			T2(&field[i]).CacheCanoto()
+			fieldSize := T2(&field[i]).SizeCanoto()
 			fieldSizeSum += fieldSize
 			totalSize += uint64(len(canotoTag_GenericField__FixedRepeatedValue)) + canoto.SizeUint(fieldSize) + fieldSize
 		}
@@ -2217,8 +2167,8 @@ func (c *GenericField[T1, T2]) CalculateCanotoCache() {
 		}
 	}
 	if c.Pointer != nil {
-		T2(c.Pointer).CalculateCanotoCache()
-		fieldSize := T2(c.Pointer).CachedCanotoSize()
+		T2(c.Pointer).CacheCanoto()
+		fieldSize := T2(c.Pointer).SizeCanoto()
 		size += uint64(len(canotoTag_GenericField__Pointer)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	{
@@ -2226,8 +2176,8 @@ func (c *GenericField[T1, T2]) CalculateCanotoCache() {
 		for i := range field {
 			var fieldSize uint64
 			if field[i] != nil {
-				T2(field[i]).CalculateCanotoCache()
-				innerSize := T2(field[i]).CachedCanotoSize()
+				T2(field[i]).CacheCanoto()
+				innerSize := T2(field[i]).SizeCanoto()
 				fieldSize = canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
 			}
 			size += uint64(len(canotoTag_GenericField__RepeatedPointer)) + canoto.SizeUint(fieldSize) + fieldSize
@@ -2241,8 +2191,8 @@ func (c *GenericField[T1, T2]) CalculateCanotoCache() {
 		for i := range field {
 			var fieldSize uint64
 			if field[i] != nil {
-				T2(field[i]).CalculateCanotoCache()
-				innerSize := T2(field[i]).CachedCanotoSize()
+				T2(field[i]).CacheCanoto()
+				innerSize := T2(field[i]).SizeCanoto()
 				fieldSize = canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
 			}
 			totalSize += uint64(len(canotoTag_GenericField__FixedRepeatedPointer)) + canoto.SizeUint(fieldSize) + fieldSize
@@ -2252,14 +2202,12 @@ func (c *GenericField[T1, T2]) CalculateCanotoCache() {
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *GenericField[T1, T2]) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *GenericField[T1, T2]) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -2269,42 +2217,42 @@ func (c *GenericField[T1, T2]) CachedCanotoSize() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *GenericField[T1, T2]) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to copy this struct concurrently.
-func (c *GenericField[T1, T2]) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if fieldSize := T2(&c.Value).CachedCanotoSize(); fieldSize != 0 {
+func (c *GenericField[T1, T2]) AppendCanoto(w canoto.Writer) canoto.Writer {
+	if fieldSize := T2(&c.Value).SizeCanoto(); fieldSize != 0 {
 		canoto.Append(&w, canotoTag_GenericField__Value)
 		canoto.AppendUint(&w, fieldSize)
-		w = T2(&c.Value).MarshalCanotoInto(w)
+		w = T2(&c.Value).AppendCanoto(w)
 	}
 	{
 		field := c.RepeatedValue
 		for i := range field {
 			canoto.Append(&w, canotoTag_GenericField__RepeatedValue)
-			canoto.AppendUint(&w, T2(&field[i]).CachedCanotoSize())
-			w = T2(&field[i]).MarshalCanotoInto(w)
+			canoto.AppendUint(&w, T2(&field[i]).SizeCanoto())
+			w = T2(&field[i]).AppendCanoto(w)
 		}
 	}
 	{
 		isZero := true
 		field := &c.FixedRepeatedValue
 		for i := range field {
-			if T2(&field[i]).CachedCanotoSize() != 0 {
+			if T2(&field[i]).SizeCanoto() != 0 {
 				isZero = false
 				break
 			}
@@ -2312,16 +2260,16 @@ func (c *GenericField[T1, T2]) MarshalCanotoInto(w canoto.Writer) canoto.Writer 
 		if !isZero {
 			for i := range field {
 				canoto.Append(&w, canotoTag_GenericField__FixedRepeatedValue)
-				canoto.AppendUint(&w, T2(&field[i]).CachedCanotoSize())
-				w = T2(&field[i]).MarshalCanotoInto(w)
+				canoto.AppendUint(&w, T2(&field[i]).SizeCanoto())
+				w = T2(&field[i]).AppendCanoto(w)
 			}
 		}
 	}
 	if c.Pointer != nil {
-		fieldSize := T2(c.Pointer).CachedCanotoSize()
+		fieldSize := T2(c.Pointer).SizeCanoto()
 		canoto.Append(&w, canotoTag_GenericField__Pointer)
 		canoto.AppendUint(&w, fieldSize)
-		w = T2(c.Pointer).MarshalCanotoInto(w)
+		w = T2(c.Pointer).AppendCanoto(w)
 	}
 	{
 		field := c.RepeatedPointer
@@ -2330,12 +2278,12 @@ func (c *GenericField[T1, T2]) MarshalCanotoInto(w canoto.Writer) canoto.Writer 
 			if field[i] == nil {
 				canoto.Append(&w, canoto.EmptyBytes)
 			} else {
-				innerSize := T2(field[i]).CachedCanotoSize()
+				innerSize := T2(field[i]).SizeCanoto()
 				fieldSize := canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
 				canoto.AppendUint(&w, fieldSize)
 				canoto.Append(&w, canoto.PointerPresenceTag)
 				canoto.AppendUint(&w, innerSize)
-				w = T2(field[i]).MarshalCanotoInto(w)
+				w = T2(field[i]).AppendCanoto(w)
 			}
 		}
 	}
@@ -2345,12 +2293,12 @@ func (c *GenericField[T1, T2]) MarshalCanotoInto(w canoto.Writer) canoto.Writer 
 			if (&c.FixedRepeatedPointer)[i] == nil {
 				canoto.Append(&w, canoto.EmptyBytes)
 			} else {
-				innerSize := T2((&c.FixedRepeatedPointer)[i]).CachedCanotoSize()
+				innerSize := T2((&c.FixedRepeatedPointer)[i]).SizeCanoto()
 				fieldSize := canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
 				canoto.AppendUint(&w, fieldSize)
 				canoto.Append(&w, canoto.PointerPresenceTag)
 				canoto.AppendUint(&w, innerSize)
-				w = T2((&c.FixedRepeatedPointer)[i]).MarshalCanotoInto(w)
+				w = T2((&c.FixedRepeatedPointer)[i]).AppendCanoto(w)
 			}
 		}
 	}
@@ -2377,13 +2325,11 @@ type canotoData_NestedGenericField struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
 //
 // types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*NestedGenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
+func (*NestedGenericField[T1, T2]) DescribeCanoto(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[NestedGenericField[T1, T2]]())
 	var zero NestedGenericField[T1, T2]
 	return &canoto.Spec{
@@ -2818,21 +2764,21 @@ func (c *NestedGenericField[T1, T2]) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
 //
 // It is not safe to copy this struct concurrently.
-func (c *NestedGenericField[T1, T2]) CalculateCanotoCache() {
+func (c *NestedGenericField[T1, T2]) CacheCanoto() {
 	var size uint64
-	(&c.Value).CalculateCanotoCache()
-	if fieldSize := (&c.Value).CachedCanotoSize(); fieldSize != 0 {
+	(&c.Value).CacheCanoto()
+	if fieldSize := (&c.Value).SizeCanoto(); fieldSize != 0 {
 		size += uint64(len(canotoTag_NestedGenericField__Value)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	{
 		field := c.RepeatedValue
 		for i := range field {
-			(&field[i]).CalculateCanotoCache()
-			fieldSize := (&field[i]).CachedCanotoSize()
+			(&field[i]).CacheCanoto()
+			fieldSize := (&field[i]).SizeCanoto()
 			size += uint64(len(canotoTag_NestedGenericField__RepeatedValue)) + canoto.SizeUint(fieldSize) + fieldSize
 		}
 	}
@@ -2843,8 +2789,8 @@ func (c *NestedGenericField[T1, T2]) CalculateCanotoCache() {
 			field        = &c.FixedRepeatedValue
 		)
 		for i := range field {
-			(&field[i]).CalculateCanotoCache()
-			fieldSize := (&field[i]).CachedCanotoSize()
+			(&field[i]).CacheCanoto()
+			fieldSize := (&field[i]).SizeCanoto()
 			fieldSizeSum += fieldSize
 			totalSize += uint64(len(canotoTag_NestedGenericField__FixedRepeatedValue)) + canoto.SizeUint(fieldSize) + fieldSize
 		}
@@ -2853,8 +2799,8 @@ func (c *NestedGenericField[T1, T2]) CalculateCanotoCache() {
 		}
 	}
 	if c.Pointer != nil {
-		(c.Pointer).CalculateCanotoCache()
-		fieldSize := (c.Pointer).CachedCanotoSize()
+		(c.Pointer).CacheCanoto()
+		fieldSize := (c.Pointer).SizeCanoto()
 		size += uint64(len(canotoTag_NestedGenericField__Pointer)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	{
@@ -2862,8 +2808,8 @@ func (c *NestedGenericField[T1, T2]) CalculateCanotoCache() {
 		for i := range field {
 			var fieldSize uint64
 			if field[i] != nil {
-				(field[i]).CalculateCanotoCache()
-				innerSize := (field[i]).CachedCanotoSize()
+				(field[i]).CacheCanoto()
+				innerSize := (field[i]).SizeCanoto()
 				fieldSize = canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
 			}
 			size += uint64(len(canotoTag_NestedGenericField__RepeatedPointer)) + canoto.SizeUint(fieldSize) + fieldSize
@@ -2877,8 +2823,8 @@ func (c *NestedGenericField[T1, T2]) CalculateCanotoCache() {
 		for i := range field {
 			var fieldSize uint64
 			if field[i] != nil {
-				(field[i]).CalculateCanotoCache()
-				innerSize := (field[i]).CachedCanotoSize()
+				(field[i]).CacheCanoto()
+				innerSize := (field[i]).SizeCanoto()
 				fieldSize = canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
 			}
 			totalSize += uint64(len(canotoTag_NestedGenericField__FixedRepeatedPointer)) + canoto.SizeUint(fieldSize) + fieldSize
@@ -2888,14 +2834,12 @@ func (c *NestedGenericField[T1, T2]) CalculateCanotoCache() {
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *NestedGenericField[T1, T2]) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *NestedGenericField[T1, T2]) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -2905,42 +2849,42 @@ func (c *NestedGenericField[T1, T2]) CachedCanotoSize() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *NestedGenericField[T1, T2]) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to copy this struct concurrently.
-func (c *NestedGenericField[T1, T2]) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if fieldSize := (&c.Value).CachedCanotoSize(); fieldSize != 0 {
+func (c *NestedGenericField[T1, T2]) AppendCanoto(w canoto.Writer) canoto.Writer {
+	if fieldSize := (&c.Value).SizeCanoto(); fieldSize != 0 {
 		canoto.Append(&w, canotoTag_NestedGenericField__Value)
 		canoto.AppendUint(&w, fieldSize)
-		w = (&c.Value).MarshalCanotoInto(w)
+		w = (&c.Value).AppendCanoto(w)
 	}
 	{
 		field := c.RepeatedValue
 		for i := range field {
 			canoto.Append(&w, canotoTag_NestedGenericField__RepeatedValue)
-			canoto.AppendUint(&w, (&field[i]).CachedCanotoSize())
-			w = (&field[i]).MarshalCanotoInto(w)
+			canoto.AppendUint(&w, (&field[i]).SizeCanoto())
+			w = (&field[i]).AppendCanoto(w)
 		}
 	}
 	{
 		isZero := true
 		field := &c.FixedRepeatedValue
 		for i := range field {
-			if (&field[i]).CachedCanotoSize() != 0 {
+			if (&field[i]).SizeCanoto() != 0 {
 				isZero = false
 				break
 			}
@@ -2948,16 +2892,16 @@ func (c *NestedGenericField[T1, T2]) MarshalCanotoInto(w canoto.Writer) canoto.W
 		if !isZero {
 			for i := range field {
 				canoto.Append(&w, canotoTag_NestedGenericField__FixedRepeatedValue)
-				canoto.AppendUint(&w, (&field[i]).CachedCanotoSize())
-				w = (&field[i]).MarshalCanotoInto(w)
+				canoto.AppendUint(&w, (&field[i]).SizeCanoto())
+				w = (&field[i]).AppendCanoto(w)
 			}
 		}
 	}
 	if c.Pointer != nil {
-		fieldSize := (c.Pointer).CachedCanotoSize()
+		fieldSize := (c.Pointer).SizeCanoto()
 		canoto.Append(&w, canotoTag_NestedGenericField__Pointer)
 		canoto.AppendUint(&w, fieldSize)
-		w = (c.Pointer).MarshalCanotoInto(w)
+		w = (c.Pointer).AppendCanoto(w)
 	}
 	{
 		field := c.RepeatedPointer
@@ -2966,12 +2910,12 @@ func (c *NestedGenericField[T1, T2]) MarshalCanotoInto(w canoto.Writer) canoto.W
 			if field[i] == nil {
 				canoto.Append(&w, canoto.EmptyBytes)
 			} else {
-				innerSize := (field[i]).CachedCanotoSize()
+				innerSize := (field[i]).SizeCanoto()
 				fieldSize := canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
 				canoto.AppendUint(&w, fieldSize)
 				canoto.Append(&w, canoto.PointerPresenceTag)
 				canoto.AppendUint(&w, innerSize)
-				w = (field[i]).MarshalCanotoInto(w)
+				w = (field[i]).AppendCanoto(w)
 			}
 		}
 	}
@@ -2981,12 +2925,12 @@ func (c *NestedGenericField[T1, T2]) MarshalCanotoInto(w canoto.Writer) canoto.W
 			if (&c.FixedRepeatedPointer)[i] == nil {
 				canoto.Append(&w, canoto.EmptyBytes)
 			} else {
-				innerSize := ((&c.FixedRepeatedPointer)[i]).CachedCanotoSize()
+				innerSize := ((&c.FixedRepeatedPointer)[i]).SizeCanoto()
 				fieldSize := canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
 				canoto.AppendUint(&w, fieldSize)
 				canoto.Append(&w, canoto.PointerPresenceTag)
 				canoto.AppendUint(&w, innerSize)
-				w = ((&c.FixedRepeatedPointer)[i]).MarshalCanotoInto(w)
+				w = ((&c.FixedRepeatedPointer)[i]).AppendCanoto(w)
 			}
 		}
 	}
@@ -3009,13 +2953,11 @@ type canotoData_Embedded struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
 //
 // types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*Embedded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
+func (*Embedded) DescribeCanoto(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[Embedded]())
 	var zero Embedded
 	return &canoto.Spec{
@@ -3220,42 +3162,40 @@ func (c *Embedded) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
 //
 // It is not safe to copy this struct concurrently.
-func (c *Embedded) CalculateCanotoCache() {
+func (c *Embedded) CacheCanoto() {
 	var size uint64
-	(&c.OneOf).CalculateCanotoCache()
-	if fieldSize := (&c.OneOf).CachedCanotoSize(); fieldSize != 0 {
+	(&c.OneOf).CacheCanoto()
+	if fieldSize := (&c.OneOf).SizeCanoto(); fieldSize != 0 {
 		size += uint64(len(canotoTag_Embedded__OneOf)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	if c.LargestFieldNumber != nil {
-		(c.LargestFieldNumber).CalculateCanotoCache()
-		fieldSize := (c.LargestFieldNumber).CachedCanotoSize()
+		(c.LargestFieldNumber).CacheCanoto()
+		fieldSize := (c.LargestFieldNumber).SizeCanoto()
 		size += uint64(len(canotoTag_Embedded__LargestFieldNumber)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	if c.GenericField != nil {
-		(c.GenericField).CalculateCanotoCache()
-		fieldSize := (c.GenericField).CachedCanotoSize()
+		(c.GenericField).CacheCanoto()
+		fieldSize := (c.GenericField).SizeCanoto()
 		size += uint64(len(canotoTag_Embedded__GenericField)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	if c.Int != nil {
-		(c.Int).CalculateCanotoCache()
-		fieldSize := (c.Int).CachedCanotoSize()
+		(c.Int).CacheCanoto()
+		fieldSize := (c.Int).SizeCanoto()
 		size += uint64(len(canotoTag_Embedded__Int)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *Embedded) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *Embedded) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -3265,46 +3205,46 @@ func (c *Embedded) CachedCanotoSize() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *Embedded) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to copy this struct concurrently.
-func (c *Embedded) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	if fieldSize := (&c.OneOf).CachedCanotoSize(); fieldSize != 0 {
+func (c *Embedded) AppendCanoto(w canoto.Writer) canoto.Writer {
+	if fieldSize := (&c.OneOf).SizeCanoto(); fieldSize != 0 {
 		canoto.Append(&w, canotoTag_Embedded__OneOf)
 		canoto.AppendUint(&w, fieldSize)
-		w = (&c.OneOf).MarshalCanotoInto(w)
+		w = (&c.OneOf).AppendCanoto(w)
 	}
 	if c.LargestFieldNumber != nil {
-		fieldSize := (c.LargestFieldNumber).CachedCanotoSize()
+		fieldSize := (c.LargestFieldNumber).SizeCanoto()
 		canoto.Append(&w, canotoTag_Embedded__LargestFieldNumber)
 		canoto.AppendUint(&w, fieldSize)
-		w = (c.LargestFieldNumber).MarshalCanotoInto(w)
+		w = (c.LargestFieldNumber).AppendCanoto(w)
 	}
 	if c.GenericField != nil {
-		fieldSize := (c.GenericField).CachedCanotoSize()
+		fieldSize := (c.GenericField).SizeCanoto()
 		canoto.Append(&w, canotoTag_Embedded__GenericField)
 		canoto.AppendUint(&w, fieldSize)
-		w = (c.GenericField).MarshalCanotoInto(w)
+		w = (c.GenericField).AppendCanoto(w)
 	}
 	if c.Int != nil {
-		fieldSize := (c.Int).CachedCanotoSize()
+		fieldSize := (c.Int).SizeCanoto()
 		canoto.Append(&w, canotoTag_Embedded__Int)
 		canoto.AppendUint(&w, fieldSize)
-		w = (c.Int).MarshalCanotoInto(w)
+		w = (c.Int).AppendCanoto(w)
 	}
 	return w
 }
@@ -3319,13 +3259,9 @@ type canotoData_A struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
-//
-// types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*A) CanotoSpec(...reflect.Type) *canoto.Spec {
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
+func (*A) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	var zero A
 	return &canoto.Spec{
 		Name: "A",
@@ -3404,11 +3340,11 @@ func (c *A) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
 //
 // It is not safe to copy this struct concurrently.
-func (c *A) CalculateCanotoCache() {
+func (c *A) CacheCanoto() {
 	var size uint64
 	if !canoto.IsZero(c.B__C) {
 		size += uint64(len(canotoTag_A__B_1_1C)) + canoto.SizeInt(c.B__C)
@@ -3416,14 +3352,12 @@ func (c *A) CalculateCanotoCache() {
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *A) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *A) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -3433,24 +3367,24 @@ func (c *A) CachedCanotoSize() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *A) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to copy this struct concurrently.
-func (c *A) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+func (c *A) AppendCanoto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.B__C) {
 		canoto.Append(&w, canotoTag_A__B_1_1C)
 		canoto.AppendInt(&w, c.B__C)
@@ -3468,13 +3402,9 @@ type canotoData_A__B struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
-//
-// types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*A__B) CanotoSpec(...reflect.Type) *canoto.Spec {
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
+func (*A__B) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	var zero A__B
 	return &canoto.Spec{
 		Name: "A__B",
@@ -3553,11 +3483,11 @@ func (c *A__B) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
 //
 // It is not safe to copy this struct concurrently.
-func (c *A__B) CalculateCanotoCache() {
+func (c *A__B) CacheCanoto() {
 	var size uint64
 	if !canoto.IsZero(c.C) {
 		size += uint64(len(canotoTag_A_1_1B__C)) + canoto.SizeInt(c.C)
@@ -3565,14 +3495,12 @@ func (c *A__B) CalculateCanotoCache() {
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *A__B) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *A__B) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -3582,24 +3510,24 @@ func (c *A__B) CachedCanotoSize() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *A__B) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to copy this struct concurrently.
-func (c *A__B) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+func (c *A__B) AppendCanoto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.C) {
 		canoto.Append(&w, canotoTag_A_1_1B__C)
 		canoto.AppendInt(&w, c.C)
@@ -3617,13 +3545,9 @@ type canotoData_A__Pointer struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
-//
-// types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*A__Pointer) CanotoSpec(...reflect.Type) *canoto.Spec {
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
+func (*A__Pointer) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	var zero A__Pointer
 	return &canoto.Spec{
 		Name: "A__Pointer",
@@ -3702,11 +3626,11 @@ func (c *A__Pointer) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
 //
 // It is not safe to copy this struct concurrently.
-func (c *A__Pointer) CalculateCanotoCache() {
+func (c *A__Pointer) CacheCanoto() {
 	var size uint64
 	if !canoto.IsZero(c.C) {
 		size += uint64(len(canotoTag_A_1_1Pointer__C)) + canoto.SizeInt(c.C)
@@ -3714,14 +3638,12 @@ func (c *A__Pointer) CalculateCanotoCache() {
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *A__Pointer) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *A__Pointer) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -3731,24 +3653,24 @@ func (c *A__Pointer) CachedCanotoSize() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *A__Pointer) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to copy this struct concurrently.
-func (c *A__Pointer) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+func (c *A__Pointer) AppendCanoto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.C) {
 		canoto.Append(&w, canotoTag_A_1_1Pointer__C)
 		canoto.AppendInt(&w, c.C)
@@ -3911,13 +3833,11 @@ type canotoData_Scalars struct {
 	ConstRepeatedUint64Size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
 //
 // types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
+func (*Scalars) DescribeCanoto(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[Scalars]())
 	var zero Scalars
 	return &canoto.Spec{
@@ -4821,7 +4741,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			c.RepeatedString = canoto.MakeSlice(c.RepeatedString, countMinus1+1)
 			field := c.RepeatedString
 
-			// Read the first entry manually because the tag is still already
+			// Read the first entry manually because the tag is already
 			// stripped.
 			r.B = remainingBytes
 			if err := canoto.ReadString(&r, &field[0]); err != nil {
@@ -4858,7 +4778,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			c.RepeatedBytes = canoto.MakeSlice(c.RepeatedBytes, countMinus1+1)
 			field := c.RepeatedBytes
 
-			// Read the first entry manually because the tag is still already
+			// Read the first entry manually because the tag is already
 			// stripped.
 			r.B = remainingBytes
 			if err := canoto.ReadBytes(&r, &field[0]); err != nil {
@@ -5602,7 +5522,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			c.CustomRepeatedBytes = canoto.MakeSlice(c.CustomRepeatedBytes, countMinus1+1)
 			field := c.CustomRepeatedBytes
 
-			// Read the first entry manually because the tag is still already
+			// Read the first entry manually because the tag is already
 			// stripped.
 			r.B = remainingBytes
 			if err := canoto.ReadBytes(&r, &field[0]); err != nil {
@@ -6003,11 +5923,11 @@ func (c *Scalars) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
 //
 // It is not safe to copy this struct concurrently.
-func (c *Scalars) CalculateCanotoCache() {
+func (c *Scalars) CacheCanoto() {
 	var size uint64
 	if !canoto.IsZero(c.Int8) {
 		size += uint64(len(canotoTag_Scalars__Int8)) + canoto.SizeInt(c.Int8)
@@ -6054,8 +5974,8 @@ func (c *Scalars) CalculateCanotoCache() {
 	if len(c.Bytes) != 0 {
 		size += uint64(len(canotoTag_Scalars__Bytes)) + canoto.SizeBytes(c.Bytes)
 	}
-	(&c.LargestFieldNumber).CalculateCanotoCache()
-	if fieldSize := (&c.LargestFieldNumber).CachedCanotoSize(); fieldSize != 0 {
+	(&c.LargestFieldNumber).CacheCanoto()
+	if fieldSize := (&c.LargestFieldNumber).SizeCanoto(); fieldSize != 0 {
 		size += uint64(len(canotoTag_Scalars__LargestFieldNumber)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	if len(c.RepeatedInt8) != 0 {
@@ -6151,8 +6071,8 @@ func (c *Scalars) CalculateCanotoCache() {
 	{
 		field := c.RepeatedLargestFieldNumber
 		for i := range field {
-			(&field[i]).CalculateCanotoCache()
-			fieldSize := (&field[i]).CachedCanotoSize()
+			(&field[i]).CacheCanoto()
+			fieldSize := (&field[i]).SizeCanoto()
 			size += uint64(len(canotoTag_Scalars__RepeatedLargestFieldNumber)) + canoto.SizeUint(fieldSize) + fieldSize
 		}
 	}
@@ -6278,8 +6198,8 @@ func (c *Scalars) CalculateCanotoCache() {
 			field        = &c.FixedRepeatedLargestFieldNumber
 		)
 		for i := range field {
-			(&field[i]).CalculateCanotoCache()
-			fieldSize := (&field[i]).CachedCanotoSize()
+			(&field[i]).CacheCanoto()
+			fieldSize := (&field[i]).SizeCanoto()
 			fieldSizeSum += fieldSize
 			totalSize += uint64(len(canotoTag_Scalars__FixedRepeatedLargestFieldNumber)) + canoto.SizeUint(fieldSize) + fieldSize
 		}
@@ -6295,8 +6215,8 @@ func (c *Scalars) CalculateCanotoCache() {
 		size += uint64(len(canotoTag_Scalars__ConstRepeatedUint64)) + canoto.SizeUint(fieldSize) + fieldSize
 		atomic.StoreUint64(&c.canotoData.ConstRepeatedUint64Size, fieldSize)
 	}
-	(&c.CustomType).CalculateCanotoCache()
-	if fieldSize := (&c.CustomType).CachedCanotoSize(); fieldSize != 0 {
+	(&c.CustomType).CacheCanoto()
+	if fieldSize := (&c.CustomType).SizeCanoto(); fieldSize != 0 {
 		size += uint64(len(canotoTag_Scalars__CustomType)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	if !canoto.IsZero(c.CustomUint32) {
@@ -6337,13 +6257,13 @@ func (c *Scalars) CalculateCanotoCache() {
 			size += uint64(len(canotoTag_Scalars__CustomFixedRepeatedFixedBytes)) + canoto.SizeBytes((&(&c.CustomFixedRepeatedFixedBytes)[i])[:])
 		}
 	}
-	(&c.OneOf).CalculateCanotoCache()
-	if fieldSize := (&c.OneOf).CachedCanotoSize(); fieldSize != 0 {
+	(&c.OneOf).CacheCanoto()
+	if fieldSize := (&c.OneOf).SizeCanoto(); fieldSize != 0 {
 		size += uint64(len(canotoTag_Scalars__OneOf)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	if c.Pointer != nil {
-		(c.Pointer).CalculateCanotoCache()
-		fieldSize := (c.Pointer).CachedCanotoSize()
+		(c.Pointer).CacheCanoto()
+		fieldSize := (c.Pointer).SizeCanoto()
 		size += uint64(len(canotoTag_Scalars__Pointer)) + canoto.SizeUint(fieldSize) + fieldSize
 	}
 	{
@@ -6351,8 +6271,8 @@ func (c *Scalars) CalculateCanotoCache() {
 		for i := range field {
 			var fieldSize uint64
 			if field[i] != nil {
-				(field[i]).CalculateCanotoCache()
-				innerSize := (field[i]).CachedCanotoSize()
+				(field[i]).CacheCanoto()
+				innerSize := (field[i]).SizeCanoto()
 				fieldSize = canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
 			}
 			size += uint64(len(canotoTag_Scalars__RepeatedPointer)) + canoto.SizeUint(fieldSize) + fieldSize
@@ -6366,8 +6286,8 @@ func (c *Scalars) CalculateCanotoCache() {
 		for i := range field {
 			var fieldSize uint64
 			if field[i] != nil {
-				(field[i]).CalculateCanotoCache()
-				innerSize := (field[i]).CachedCanotoSize()
+				(field[i]).CacheCanoto()
+				innerSize := (field[i]).SizeCanoto()
 				fieldSize = canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
 			}
 			totalSize += uint64(len(canotoTag_Scalars__FixedRepeatedPointer)) + canoto.SizeUint(fieldSize) + fieldSize
@@ -6377,14 +6297,12 @@ func (c *Scalars) CalculateCanotoCache() {
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *Scalars) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *Scalars) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -6394,24 +6312,24 @@ func (c *Scalars) CachedCanotoSize() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *Scalars) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to copy this struct concurrently.
-func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+func (c *Scalars) AppendCanoto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.Int8) {
 		canoto.Append(&w, canotoTag_Scalars__Int8)
 		canoto.AppendInt(&w, c.Int8)
@@ -6472,10 +6390,10 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		canoto.Append(&w, canotoTag_Scalars__Bytes)
 		canoto.AppendBytes(&w, c.Bytes)
 	}
-	if fieldSize := (&c.LargestFieldNumber).CachedCanotoSize(); fieldSize != 0 {
+	if fieldSize := (&c.LargestFieldNumber).SizeCanoto(); fieldSize != 0 {
 		canoto.Append(&w, canotoTag_Scalars__LargestFieldNumber)
 		canoto.AppendUint(&w, fieldSize)
-		w = (&c.LargestFieldNumber).MarshalCanotoInto(w)
+		w = (&c.LargestFieldNumber).AppendCanoto(w)
 	}
 	if len(c.RepeatedInt8) != 0 {
 		canoto.Append(&w, canotoTag_Scalars__RepeatedInt8)
@@ -6549,8 +6467,8 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		field := c.RepeatedLargestFieldNumber
 		for i := range field {
 			canoto.Append(&w, canotoTag_Scalars__RepeatedLargestFieldNumber)
-			canoto.AppendUint(&w, (&field[i]).CachedCanotoSize())
-			w = (&field[i]).MarshalCanotoInto(w)
+			canoto.AppendUint(&w, (&field[i]).SizeCanoto())
+			w = (&field[i]).AppendCanoto(w)
 		}
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt8) {
@@ -6655,7 +6573,7 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		isZero := true
 		field := &c.FixedRepeatedLargestFieldNumber
 		for i := range field {
-			if (&field[i]).CachedCanotoSize() != 0 {
+			if (&field[i]).SizeCanoto() != 0 {
 				isZero = false
 				break
 			}
@@ -6663,8 +6581,8 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		if !isZero {
 			for i := range field {
 				canoto.Append(&w, canotoTag_Scalars__FixedRepeatedLargestFieldNumber)
-				canoto.AppendUint(&w, (&field[i]).CachedCanotoSize())
-				w = (&field[i]).MarshalCanotoInto(w)
+				canoto.AppendUint(&w, (&field[i]).SizeCanoto())
+				w = (&field[i]).AppendCanoto(w)
 			}
 		}
 	}
@@ -6673,10 +6591,10 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.ConstRepeatedUint64Size))
 		canoto.AppendUints(&w, (&c.ConstRepeatedUint64)[:])
 	}
-	if fieldSize := (&c.CustomType).CachedCanotoSize(); fieldSize != 0 {
+	if fieldSize := (&c.CustomType).SizeCanoto(); fieldSize != 0 {
 		canoto.Append(&w, canotoTag_Scalars__CustomType)
 		canoto.AppendUint(&w, fieldSize)
-		w = (&c.CustomType).MarshalCanotoInto(w)
+		w = (&c.CustomType).AppendCanoto(w)
 	}
 	if !canoto.IsZero(c.CustomUint32) {
 		canoto.Append(&w, canotoTag_Scalars__CustomUint32)
@@ -6726,16 +6644,16 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 			canoto.AppendBytes(&w, (&(&c.CustomFixedRepeatedFixedBytes)[i])[:])
 		}
 	}
-	if fieldSize := (&c.OneOf).CachedCanotoSize(); fieldSize != 0 {
+	if fieldSize := (&c.OneOf).SizeCanoto(); fieldSize != 0 {
 		canoto.Append(&w, canotoTag_Scalars__OneOf)
 		canoto.AppendUint(&w, fieldSize)
-		w = (&c.OneOf).MarshalCanotoInto(w)
+		w = (&c.OneOf).AppendCanoto(w)
 	}
 	if c.Pointer != nil {
-		fieldSize := (c.Pointer).CachedCanotoSize()
+		fieldSize := (c.Pointer).SizeCanoto()
 		canoto.Append(&w, canotoTag_Scalars__Pointer)
 		canoto.AppendUint(&w, fieldSize)
-		w = (c.Pointer).MarshalCanotoInto(w)
+		w = (c.Pointer).AppendCanoto(w)
 	}
 	{
 		field := c.RepeatedPointer
@@ -6744,12 +6662,12 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 			if field[i] == nil {
 				canoto.Append(&w, canoto.EmptyBytes)
 			} else {
-				innerSize := (field[i]).CachedCanotoSize()
+				innerSize := (field[i]).SizeCanoto()
 				fieldSize := canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
 				canoto.AppendUint(&w, fieldSize)
 				canoto.Append(&w, canoto.PointerPresenceTag)
 				canoto.AppendUint(&w, innerSize)
-				w = (field[i]).MarshalCanotoInto(w)
+				w = (field[i]).AppendCanoto(w)
 			}
 		}
 	}
@@ -6759,12 +6677,12 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 			if (&c.FixedRepeatedPointer)[i] == nil {
 				canoto.Append(&w, canoto.EmptyBytes)
 			} else {
-				innerSize := ((&c.FixedRepeatedPointer)[i]).CachedCanotoSize()
+				innerSize := ((&c.FixedRepeatedPointer)[i]).SizeCanoto()
 				fieldSize := canoto.SizePointerPresenceTag + canoto.SizeUint(innerSize) + innerSize
 				canoto.AppendUint(&w, fieldSize)
 				canoto.Append(&w, canoto.PointerPresenceTag)
 				canoto.AppendUint(&w, innerSize)
-				w = ((&c.FixedRepeatedPointer)[i]).MarshalCanotoInto(w)
+				w = ((&c.FixedRepeatedPointer)[i]).AppendCanoto(w)
 			}
 		}
 	}
@@ -6791,13 +6709,9 @@ type canotoData_SpecUnusedZero struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
-//
-// types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*SpecUnusedZero) CanotoSpec(...reflect.Type) *canoto.Spec {
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
+func (*SpecUnusedZero) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	return &canoto.Spec{
 		Name: "SpecUnusedZero",
 		Fields: []canoto.FieldType{
@@ -6931,7 +6845,7 @@ func (c *SpecUnusedZero) UnmarshalCanotoFrom(r canoto.Reader) error {
 			c.RepeatedString = canoto.MakeSlice(c.RepeatedString, countMinus1+1)
 			field := c.RepeatedString
 
-			// Read the first entry manually because the tag is still already
+			// Read the first entry manually because the tag is already
 			// stripped.
 			r.B = remainingBytes
 			if err := canoto.ReadString(&r, &field[0]); err != nil {
@@ -6979,7 +6893,7 @@ func (c *SpecUnusedZero) UnmarshalCanotoFrom(r canoto.Reader) error {
 			c.RepeatedBytes = canoto.MakeSlice(c.RepeatedBytes, countMinus1+1)
 			field := c.RepeatedBytes
 
-			// Read the first entry manually because the tag is still already
+			// Read the first entry manually because the tag is already
 			// stripped.
 			r.B = remainingBytes
 			if err := canoto.ReadBytes(&r, &field[0]); err != nil {
@@ -7023,11 +6937,11 @@ func (c *SpecUnusedZero) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
 //
 // It is not safe to copy this struct concurrently.
-func (c *SpecUnusedZero) CalculateCanotoCache() {
+func (c *SpecUnusedZero) CacheCanoto() {
 	var size uint64
 	if !canoto.IsZero(c.Bool) {
 		size += uint64(len(canotoTag_SpecUnusedZero__Bool)) + canoto.SizeBool
@@ -7051,14 +6965,12 @@ func (c *SpecUnusedZero) CalculateCanotoCache() {
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *SpecUnusedZero) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *SpecUnusedZero) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -7068,24 +6980,24 @@ func (c *SpecUnusedZero) CachedCanotoSize() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *SpecUnusedZero) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to copy this struct concurrently.
-func (c *SpecUnusedZero) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+func (c *SpecUnusedZero) AppendCanoto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.Bool) {
 		canoto.Append(&w, canotoTag_SpecUnusedZero__Bool)
 		canoto.AppendBool(&w, true)
@@ -7117,13 +7029,9 @@ type canotoData_EmptyMessage struct {
 	size uint64
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
-//
-// types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*EmptyMessage) CanotoSpec(...reflect.Type) *canoto.Spec {
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
+func (*EmptyMessage) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	return &canoto.Spec{
 		Name:   "EmptyMessage",
 		Fields: []canoto.FieldType{},
@@ -7169,23 +7077,21 @@ func (c *EmptyMessage) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
 //
 // It is not safe to copy this struct concurrently.
-func (c *EmptyMessage) CalculateCanotoCache() {
+func (c *EmptyMessage) CacheCanoto() {
 	var size uint64
 	atomic.StoreUint64(&c.canotoData.size, size)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
-//
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *EmptyMessage) CachedCanotoSize() uint64 {
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *EmptyMessage) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
@@ -7195,23 +7101,23 @@ func (c *EmptyMessage) CachedCanotoSize() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *EmptyMessage) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to copy this struct concurrently.
-func (c *EmptyMessage) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
+func (c *EmptyMessage) AppendCanoto(w canoto.Writer) canoto.Writer {
 	return w
 }
