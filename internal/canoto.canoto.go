@@ -40,7 +40,7 @@ type canotoData_LargestFieldNumber struct {
 // If there is not a valid specification of this type, it returns nil.
 func (*LargestFieldNumber[T1]) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero LargestFieldNumber[T1]
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "LargestFieldNumber",
 		Fields: []canoto.FieldType{
 			{
@@ -51,8 +51,6 @@ func (*LargestFieldNumber[T1]) CanotoSpec(...reflect.Type) *canoto.Spec {
 			},
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -222,7 +220,7 @@ type canotoData_OneOf struct {
 // If there is not a valid specification of this type, it returns nil.
 func (*OneOf) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero OneOf
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "OneOf",
 		Fields: []canoto.FieldType{
 			{
@@ -263,8 +261,6 @@ func (*OneOf) CanotoSpec(...reflect.Type) *canoto.Spec {
 			},
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -600,7 +596,7 @@ type canotoData_OneOfNoCopy struct {
 // If there is not a valid specification of this type, it returns nil.
 func (*OneOfNoCopy) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero OneOfNoCopy
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "OneOfNoCopy",
 		Fields: []canoto.FieldType{
 			{
@@ -641,8 +637,6 @@ func (*OneOfNoCopy) CanotoSpec(...reflect.Type) *canoto.Spec {
 			},
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -954,7 +948,7 @@ type canotoData_unexportedOneOf struct {
 // If there is not a valid specification of this type, it returns nil.
 func (*unexportedOneOf) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero unexportedOneOf
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "unexportedOneOf",
 		Fields: []canoto.FieldType{
 			{
@@ -971,8 +965,6 @@ func (*unexportedOneOf) CanotoSpec(...reflect.Type) *canoto.Spec {
 			},
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -1180,7 +1172,7 @@ type canotoData_Node struct {
 func (*Node) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[Node]())
 	var zero Node
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "Node",
 		Fields: []canoto.FieldType{
 			{
@@ -1201,8 +1193,6 @@ func (*Node) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -1407,7 +1397,7 @@ type canotoData_RecursiveA struct {
 func (*RecursiveA) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[RecursiveA]())
 	var zero RecursiveA
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "RecursiveA",
 		Fields: []canoto.FieldType{
 			canoto.FieldTypeFromField(
@@ -1422,8 +1412,6 @@ func (*RecursiveA) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -1581,7 +1569,7 @@ type canotoData_RecursiveB struct {
 func (*RecursiveB) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[RecursiveB]())
 	var zero RecursiveB
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "RecursiveB",
 		Fields: []canoto.FieldType{
 			canoto.FieldTypeFromField(
@@ -1596,8 +1584,6 @@ func (*RecursiveB) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -1765,7 +1751,7 @@ type canotoData_GenericField struct {
 func (*GenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[GenericField[T1, T2]]())
 	var zero GenericField[T1, T2]
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "GenericField",
 		Fields: []canoto.FieldType{
 			canoto.FieldTypeFromField(
@@ -1830,8 +1816,6 @@ func (*GenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -2403,7 +2387,7 @@ type canotoData_NestedGenericField struct {
 func (*NestedGenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[NestedGenericField[T1, T2]]())
 	var zero NestedGenericField[T1, T2]
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "NestedGenericField",
 		Fields: []canoto.FieldType{
 			canoto.FieldTypeFromField(
@@ -2468,8 +2452,6 @@ func (*NestedGenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spe
 			),
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -3037,7 +3019,7 @@ type canotoData_Embedded struct {
 func (*Embedded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[Embedded]())
 	var zero Embedded
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "Embedded",
 		Fields: []canoto.FieldType{
 			canoto.FieldTypeFromField(
@@ -3082,8 +3064,6 @@ func (*Embedded) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -3348,7 +3328,7 @@ type canotoData_A struct {
 // If there is not a valid specification of this type, it returns nil.
 func (*A) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero A
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "A",
 		Fields: []canoto.FieldType{
 			{
@@ -3359,8 +3339,6 @@ func (*A) CanotoSpec(...reflect.Type) *canoto.Spec {
 			},
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -3499,7 +3477,7 @@ type canotoData_A__B struct {
 // If there is not a valid specification of this type, it returns nil.
 func (*A__B) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero A__B
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "A__B",
 		Fields: []canoto.FieldType{
 			{
@@ -3510,8 +3488,6 @@ func (*A__B) CanotoSpec(...reflect.Type) *canoto.Spec {
 			},
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -3650,7 +3626,7 @@ type canotoData_A__Pointer struct {
 // If there is not a valid specification of this type, it returns nil.
 func (*A__Pointer) CanotoSpec(...reflect.Type) *canoto.Spec {
 	var zero A__Pointer
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "A__Pointer",
 		Fields: []canoto.FieldType{
 			{
@@ -3661,8 +3637,6 @@ func (*A__Pointer) CanotoSpec(...reflect.Type) *canoto.Spec {
 			},
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -3947,7 +3921,7 @@ type canotoData_Scalars struct {
 func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 	types = append(types, reflect.TypeFor[Scalars]())
 	var zero Scalars
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "Scalars",
 		Fields: []canoto.FieldType{
 			{
@@ -4444,8 +4418,6 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -6827,7 +6799,7 @@ type canotoData_SpecUnusedZero struct {
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*SpecUnusedZero) CanotoSpec(...reflect.Type) *canoto.Spec {
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name: "SpecUnusedZero",
 		Fields: []canoto.FieldType{
 			{
@@ -6871,8 +6843,6 @@ func (*SpecUnusedZero) CanotoSpec(...reflect.Type) *canoto.Spec {
 			},
 		},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -7155,12 +7125,10 @@ type canotoData_EmptyMessage struct {
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*EmptyMessage) CanotoSpec(...reflect.Type) *canoto.Spec {
-	s := &canoto.Spec{
+	return &canoto.Spec{
 		Name:   "EmptyMessage",
 		Fields: []canoto.FieldType{},
 	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.

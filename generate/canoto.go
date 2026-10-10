@@ -154,10 +154,8 @@ ${sizeCache}${oneOfCache}}
 //
 // If there is not a valid specification of this type, it returns nil.
 func (*${structName}${generics}) CanotoSpec(${typesDecl}...reflect.Type) *${selector}Spec {
-${appendTypes}${zero}	s := &${selector}Spec{
+${appendTypes}${zero}	return &${selector}Spec{
 ${spec}	}
-	s.CalculateCanotoCache()
-	return s
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.

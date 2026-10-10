@@ -1120,6 +1120,7 @@ func unsafeString(b []byte) string {
 // type directly. This function should only be used when the concrete type can
 // not be known ahead of time.
 func Unmarshal(s *Spec, b []byte) (Any, error) {
+	s.CalculateCanotoCache()
 	r := Reader{
 		B: b,
 	}
@@ -1132,6 +1133,7 @@ func Unmarshal(s *Spec, b []byte) (Any, error) {
 // directly. This function should only be used when the concrete type can not be
 // known ahead of time.
 func Marshal(s *Spec, a Any) ([]byte, error) {
+	s.CalculateCanotoCache()
 	if err := s.calculateSize(&a, nil); err != nil {
 		return nil, err
 	}
