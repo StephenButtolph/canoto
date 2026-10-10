@@ -538,9 +538,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeInt) != 0 {
-				return ErrDuplicateOneOf
-			}
+			atomic.StoreUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeInt)
 
 			if err := ReadUint(&r, &c.TypeInt); err != nil {
 				return err
@@ -803,9 +801,6 @@ func (c *FieldType) ValidCanoto() bool {
 func (c *FieldType) CheckCanoto() bool {
 	var TypeOneOf uint32
 	if !IsZero(c.TypeInt) {
-		if TypeOneOf != 0 {
-			return false
-		}
 		TypeOneOf = canotoNumber_FieldType__TypeInt
 	}
 	if !IsZero(c.TypeUint) {

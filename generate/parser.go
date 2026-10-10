@@ -213,6 +213,31 @@ func parse(
 			return false
 		}
 
+		seenOneOfs := make(map[string]bool)
+		for i := range message.fields {
+			f := &message.fields[i]
+			if f.oneOfName == "" {
+				continue
+			}
+			if !seenOneOfs[f.oneOfName] {
+				seenOneOfs[f.oneOfName] = true
+
+				var firstUnmarshalOneOfTemplate string
+				if message.noCopy {
+					firstUnmarshalOneOfTemplate = `
+			c.canotoData.%sOneOf.Store(%s)`
+				} else {
+					firstUnmarshalOneOfTemplate = `
+			atomic.StoreUint32(&c.canotoData.%sOneOf, %s)`
+				}
+				fieldNumberConst := makeTemplate(opts.Templates.Number, fieldEnv(message, *f))
+				f.templateArgs["unmarshalOneOf"] = fmt.Sprintf(firstUnmarshalOneOfTemplate,
+					f.oneOfName,
+					fieldNumberConst,
+				)
+			}
+		}
+
 		messages = append(messages, message)
 		return false
 	})

@@ -1514,3 +1514,202 @@ func TestPointerNilVsZeroValue(t *testing.T) {
 		})
 	}
 }
+
+func TestOneOf_ValidCanoto(t *testing.T) {
+	tests := []struct {
+		name    string
+		oneOf   OneOf
+		isValid bool
+	}{
+		{
+			name:    "empty",
+			oneOf:   OneOf{},
+			isValid: true,
+		},
+		{
+			name:    "only A1",
+			oneOf:   OneOf{A1: 1},
+			isValid: true,
+		},
+		{
+			name:    "only A2",
+			oneOf:   OneOf{A2: 2},
+			isValid: true,
+		},
+		{
+			name:    "only B1",
+			oneOf:   OneOf{B1: 3},
+			isValid: true,
+		},
+		{
+			name:    "only B2",
+			oneOf:   OneOf{B2: 4},
+			isValid: true,
+		},
+		{
+			name:    "A1 and B1",
+			oneOf:   OneOf{A1: 1, B1: 3},
+			isValid: true,
+		},
+		{
+			name:    "A2 and B2 with C and D",
+			oneOf:   OneOf{A2: 2, B2: 4, C: 5, D: 6},
+			isValid: true,
+		},
+		{
+			name:    "duplicate oneof A: A1 and A2",
+			oneOf:   OneOf{A1: 1, A2: 2},
+			isValid: false,
+		},
+		{
+			name:    "duplicate oneof B: B1 and B2",
+			oneOf:   OneOf{B1: 3, B2: 4},
+			isValid: false,
+		},
+		{
+			name:    "duplicate both A and B",
+			oneOf:   OneOf{A1: 1, A2: 2, B1: 3, B2: 4},
+			isValid: false,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			require.Equal(t, test.isValid, test.oneOf.ValidCanoto())
+		})
+	}
+}
+
+func TestOneOf_DuplicateUnmarshal(t *testing.T) {
+	t.Run("duplicate oneof A rejected", func(t *testing.T) {
+		var w canoto.Writer
+		canoto.Append(&w, canotoTag_OneOf__A1)
+		canoto.AppendInt(&w, int32(1))
+		canoto.Append(&w, canotoTag_OneOf__A2)
+		canoto.AppendInt(&w, int64(2))
+
+		var o OneOf
+		err := o.UnmarshalCanoto(w.B)
+		require.ErrorIs(t, err, canoto.ErrDuplicateOneOf)
+	})
+
+	t.Run("duplicate oneof B rejected", func(t *testing.T) {
+		var w canoto.Writer
+		canoto.Append(&w, canotoTag_OneOf__B1)
+		canoto.AppendInt(&w, int32(1))
+		canoto.Append(&w, canotoTag_OneOf__B2)
+		canoto.AppendInt(&w, int64(2))
+
+		var o OneOf
+		err := o.UnmarshalCanoto(w.B)
+		require.ErrorIs(t, err, canoto.ErrDuplicateOneOf)
+	})
+
+	t.Run("different oneof groups accepted", func(t *testing.T) {
+		var w canoto.Writer
+		canoto.Append(&w, canotoTag_OneOf__A1)
+		canoto.AppendInt(&w, int32(1))
+		canoto.Append(&w, canotoTag_OneOf__B1)
+		canoto.AppendInt(&w, int32(2))
+
+		var o OneOf
+		err := o.UnmarshalCanoto(w.B)
+		require.NoError(t, err)
+		require.Equal(t, int32(1), o.A1)
+		require.Equal(t, int32(2), o.B1)
+	})
+}
+
+func TestOneOfNoCopy_ValidCanoto(t *testing.T) {
+	tests := []struct {
+		name    string
+		oneOf   *OneOfNoCopy
+		isValid bool
+	}{
+		{
+			name:    "empty",
+			oneOf:   &OneOfNoCopy{},
+			isValid: true,
+		},
+		{
+			name:    "only A1",
+			oneOf:   &OneOfNoCopy{A1: 1},
+			isValid: true,
+		},
+		{
+			name:    "only A2",
+			oneOf:   &OneOfNoCopy{A2: 2},
+			isValid: true,
+		},
+		{
+			name:    "only B1",
+			oneOf:   &OneOfNoCopy{B1: 3},
+			isValid: true,
+		},
+		{
+			name:    "only B2",
+			oneOf:   &OneOfNoCopy{B2: 4},
+			isValid: true,
+		},
+		{
+			name:    "A1 and B1",
+			oneOf:   &OneOfNoCopy{A1: 1, B1: 3},
+			isValid: true,
+		},
+		{
+			name:    "duplicate oneof A: A1 and A2",
+			oneOf:   &OneOfNoCopy{A1: 1, A2: 2},
+			isValid: false,
+		},
+		{
+			name:    "duplicate oneof B: B1 and B2",
+			oneOf:   &OneOfNoCopy{B1: 3, B2: 4},
+			isValid: false,
+		},
+	}
+	for i := range tests {
+		test := &tests[i]
+		t.Run(test.name, func(t *testing.T) {
+			require.Equal(t, test.isValid, test.oneOf.ValidCanoto())
+		})
+	}
+}
+
+func TestOneOfNoCopy_DuplicateUnmarshal(t *testing.T) {
+	t.Run("duplicate oneof A rejected", func(t *testing.T) {
+		var w canoto.Writer
+		canoto.Append(&w, canotoTag_OneOfNoCopy__A1)
+		canoto.AppendInt(&w, int32(1))
+		canoto.Append(&w, canotoTag_OneOfNoCopy__A2)
+		canoto.AppendInt(&w, int64(2))
+
+		var o OneOfNoCopy
+		err := o.UnmarshalCanoto(w.B)
+		require.ErrorIs(t, err, canoto.ErrDuplicateOneOf)
+	})
+
+	t.Run("duplicate oneof B rejected", func(t *testing.T) {
+		var w canoto.Writer
+		canoto.Append(&w, canotoTag_OneOfNoCopy__B1)
+		canoto.AppendInt(&w, int32(1))
+		canoto.Append(&w, canotoTag_OneOfNoCopy__B2)
+		canoto.AppendInt(&w, int64(2))
+
+		var o OneOfNoCopy
+		err := o.UnmarshalCanoto(w.B)
+		require.ErrorIs(t, err, canoto.ErrDuplicateOneOf)
+	})
+
+	t.Run("different oneof groups accepted", func(t *testing.T) {
+		var w canoto.Writer
+		canoto.Append(&w, canotoTag_OneOfNoCopy__A1)
+		canoto.AppendInt(&w, int32(1))
+		canoto.Append(&w, canotoTag_OneOfNoCopy__B1)
+		canoto.AppendInt(&w, int32(2))
+
+		var o OneOfNoCopy
+		err := o.UnmarshalCanoto(w.B)
+		require.NoError(t, err)
+		require.Equal(t, int32(1), o.A1)
+		require.Equal(t, int32(2), o.B1)
+	})
+}
