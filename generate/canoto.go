@@ -194,21 +194,11 @@ func (c *${structName}${generics}) SizeCanoto() uint64 {
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.${concurrencyWarning}
 func (c *${structName}${generics}) ValidCanoto() bool {
-	c.CacheCanoto()
-	return c.CheckCanoto()
+${cacheBeforeCheck}	return c.CheckCanoto()
 }
 
 // CheckCanoto validates that the struct can be correctly marshaled into the
-// Canoto format. Most users should just use ValidCanoto.
-//
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
-//
-// It is assumed that CacheCanoto has been called since the last modification
-// to this struct.
+// Canoto format. Most users should just use ValidCanoto.${checkCacheDoc}
 func (c *${structName}${generics}) CheckCanoto() bool {
 ${checkOneOf}${check}	return true
 }
@@ -259,9 +249,11 @@ ${append}	return w
 	generics := makeGenerics(m)
 
 	var (
-		typesDoc    string
-		typesDecl   string
-		appendTypes string
+		typesDoc         string
+		typesDecl        string
+		appendTypes      string
+		cacheBeforeCheck string
+		checkCacheDoc    string
 	)
 	hasSubMessages := false
 	for _, f := range m.fields {
@@ -270,9 +262,23 @@ ${append}	return w
 		}
 	}
 	if hasSubMessages {
-		typesDoc = "\n//\n// types is used as a stack of ancestor messages to detect recursive specs."
+		typesDoc = `
+//
+// types is used as a stack of ancestor messages to detect recursive specs.`
 		typesDecl = "types "
-		appendTypes = fmt.Sprintf("\ttypes = append(types, reflect.TypeFor[%s%s]())\n", m.name, generics)
+		appendTypes = fmt.Sprintf(
+			`	types = append(types, reflect.TypeFor[%s%s]())
+`,
+			m.name,
+			generics,
+		)
+		// CheckCanoto only depends on the cache through message fields.
+		cacheBeforeCheck = `	c.CacheCanoto()
+`
+		checkCacheDoc = `
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.`
 	}
 
 	return writeTemplate(w, structTemplate, map[string]string{
@@ -280,6 +286,8 @@ ${append}	return w
 		"typesDoc":           typesDoc,
 		"typesDecl":          typesDecl,
 		"appendTypes":        appendTypes,
+		"cacheBeforeCheck":   cacheBeforeCheck,
+		"checkCacheDoc":      checkCacheDoc,
 		"constants":          makeConstants(m),
 		"structName":         m.name,
 		"generics":           generics,

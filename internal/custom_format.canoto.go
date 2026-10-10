@@ -182,21 +182,11 @@ func (c *CustomFormat) WhichCanotoFields() CustomFormatFields {
 //
 // It is not safe to copy this struct concurrently.
 func (c *CustomFormat) ValidCanoto() bool {
-	c.CacheCanoto()
 	return c.CheckCanoto()
 }
 
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
-//
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
-//
-// It is assumed that CacheCanoto has been called since the last modification
-// to this struct.
 func (c *CustomFormat) CheckCanoto() bool {
 	var FieldsOneOf uint32
 	if !canoto.IsZero(c.A) {

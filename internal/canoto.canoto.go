@@ -127,21 +127,11 @@ func (c *LargestFieldNumber[T1]) SizeCanoto() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *LargestFieldNumber[T1]) ValidCanoto() bool {
-	c.CacheCanoto()
 	return c.CheckCanoto()
 }
 
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
-//
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
-//
-// It is assumed that CacheCanoto has been called since the last modification
-// to this struct.
 func (c *LargestFieldNumber[T1]) CheckCanoto() bool {
 	return true
 }
@@ -457,21 +447,11 @@ func (c *OneOf) WhichCanotoB() uint32 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *OneOf) ValidCanoto() bool {
-	c.CacheCanoto()
 	return c.CheckCanoto()
 }
 
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
-//
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
-//
-// It is assumed that CacheCanoto has been called since the last modification
-// to this struct.
 func (c *OneOf) CheckCanoto() bool {
 	var AOneOf uint32
 	var BOneOf uint32
@@ -831,21 +811,11 @@ func (c *OneOfNoCopy) WhichCanotoB() uint32 {
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.
 func (c *OneOfNoCopy) ValidCanoto() bool {
-	c.CacheCanoto()
 	return c.CheckCanoto()
 }
 
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
-//
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
-//
-// It is assumed that CacheCanoto has been called since the last modification
-// to this struct.
 func (c *OneOfNoCopy) CheckCanoto() bool {
 	var AOneOf uint32
 	var BOneOf uint32
@@ -1085,21 +1055,11 @@ func (c *unexportedOneOf) WhichCanotoA() canotoOneOfType_unexportedOneOf__A {
 //
 // It is not safe to copy this struct concurrently.
 func (c *unexportedOneOf) ValidCanoto() bool {
-	c.CacheCanoto()
 	return c.CheckCanoto()
 }
 
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
-//
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
-//
-// It is assumed that CacheCanoto has been called since the last modification
-// to this struct.
 func (c *unexportedOneOf) CheckCanoto() bool {
 	var AOneOf uint32
 	if !canoto.IsZero(c.A1) {
@@ -1340,12 +1300,6 @@ func (c *ValueOneOf) ValidCanoto() bool {
 
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
-//
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
 //
 // It is assumed that CacheCanoto has been called since the last modification
 // to this struct.
@@ -1589,12 +1543,6 @@ func (c *Node) ValidCanoto() bool {
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
 //
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
-//
 // It is assumed that CacheCanoto has been called since the last modification
 // to this struct.
 func (c *Node) CheckCanoto() bool {
@@ -1781,12 +1729,6 @@ func (c *RecursiveA) ValidCanoto() bool {
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
 //
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
-//
 // It is assumed that CacheCanoto has been called since the last modification
 // to this struct.
 func (c *RecursiveA) CheckCanoto() bool {
@@ -1960,12 +1902,6 @@ func (c *RecursiveB) ValidCanoto() bool {
 
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
-//
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
 //
 // It is assumed that CacheCanoto has been called since the last modification
 // to this struct.
@@ -2514,12 +2450,6 @@ func (c *GenericField[T1, T2]) ValidCanoto() bool {
 
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
-//
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
 //
 // It is assumed that CacheCanoto has been called since the last modification
 // to this struct.
@@ -3159,12 +3089,6 @@ func (c *NestedGenericField[T1, T2]) ValidCanoto() bool {
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
 //
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
-//
 // It is assumed that CacheCanoto has been called since the last modification
 // to this struct.
 func (c *NestedGenericField[T1, T2]) CheckCanoto() bool {
@@ -3547,12 +3471,6 @@ func (c *Embedded) ValidCanoto() bool {
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
 //
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
-//
 // It is assumed that CacheCanoto has been called since the last modification
 // to this struct.
 func (c *Embedded) CheckCanoto() bool {
@@ -3726,21 +3644,11 @@ func (c *A) SizeCanoto() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *A) ValidCanoto() bool {
-	c.CacheCanoto()
 	return c.CheckCanoto()
 }
 
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
-//
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
-//
-// It is assumed that CacheCanoto has been called since the last modification
-// to this struct.
 func (c *A) CheckCanoto() bool {
 	return true
 }
@@ -3881,21 +3789,11 @@ func (c *A__B) SizeCanoto() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *A__B) ValidCanoto() bool {
-	c.CacheCanoto()
 	return c.CheckCanoto()
 }
 
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
-//
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
-//
-// It is assumed that CacheCanoto has been called since the last modification
-// to this struct.
 func (c *A__B) CheckCanoto() bool {
 	return true
 }
@@ -4036,21 +3934,11 @@ func (c *A__Pointer) SizeCanoto() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *A__Pointer) ValidCanoto() bool {
-	c.CacheCanoto()
 	return c.CheckCanoto()
 }
 
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
-//
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
-//
-// It is assumed that CacheCanoto has been called since the last modification
-// to this struct.
 func (c *A__Pointer) CheckCanoto() bool {
 	return true
 }
@@ -6660,12 +6548,6 @@ func (c *Scalars) ValidCanoto() bool {
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
 //
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
-//
 // It is assumed that CacheCanoto has been called since the last modification
 // to this struct.
 func (c *Scalars) CheckCanoto() bool {
@@ -7379,21 +7261,11 @@ func (c *SpecUnusedZero) SizeCanoto() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *SpecUnusedZero) ValidCanoto() bool {
-	c.CacheCanoto()
 	return c.CheckCanoto()
 }
 
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
-//
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
-//
-// It is assumed that CacheCanoto has been called since the last modification
-// to this struct.
 func (c *SpecUnusedZero) CheckCanoto() bool {
 	if !canoto.ValidString(c.String) {
 		return false
@@ -7520,21 +7392,11 @@ func (c *EmptyMessage) SizeCanoto() uint64 {
 //
 // It is not safe to copy this struct concurrently.
 func (c *EmptyMessage) ValidCanoto() bool {
-	c.CacheCanoto()
 	return c.CheckCanoto()
 }
 
 // CheckCanoto validates that the struct can be correctly marshaled into the
 // Canoto format. Most users should just use ValidCanoto.
-//
-// Specifically, CheckCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields pass CheckCanoto.
-//
-// It is assumed that CacheCanoto has been called since the last modification
-// to this struct.
 func (c *EmptyMessage) CheckCanoto() bool {
 	return true
 }
