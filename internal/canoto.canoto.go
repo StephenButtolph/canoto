@@ -1789,7 +1789,7 @@ func (*GenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
-				/*type inference:*/ T2(canoto.MakeEntryNilPointer(zero.FixedRepeatedValue[:])),
+				/*type inference:*/ T2(canoto.MakeEntryNilPointer((&zero.FixedRepeatedValue)[:])),
 				/*FieldNumber:   */ canotoNumber_GenericField__FixedRepeatedValue,
 				/*Name:          */ "FixedRepeatedValue",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedValue)),
@@ -1819,7 +1819,7 @@ func (*GenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
-				/*type inference:*/ T2(canoto.MakeEntry(zero.FixedRepeatedPointer[:])),
+				/*type inference:*/ T2(canoto.MakeEntry((&zero.FixedRepeatedPointer)[:])),
 				/*FieldNumber:   */ canotoNumber_GenericField__FixedRepeatedPointer,
 				/*Name:          */ "FixedRepeatedPointer",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedPointer)),
@@ -1964,14 +1964,14 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if !isZero {
 				remainingBytes := r.B
 				r.B = msgBytes
-				if err := T2(&c.FixedRepeatedValue[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := T2(&(&c.FixedRepeatedValue)[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			field := c.FixedRepeatedValue[1:]
+			field := (&c.FixedRepeatedValue)[1:]
 			for i := range field {
 				if !canoto.HasPrefix(r.B, canotoTag_GenericField__FixedRepeatedValue) {
 					return canoto.ErrUnknownField
@@ -2107,15 +2107,15 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				c.FixedRepeatedPointer[0] = canoto.MakePointer(c.FixedRepeatedPointer[0])
-				if err := T2(c.FixedRepeatedPointer[0]).UnmarshalCanotoFrom(r); err != nil {
+				(&c.FixedRepeatedPointer)[0] = canoto.MakePointer((&c.FixedRepeatedPointer)[0])
+				if err := T2((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			field := c.FixedRepeatedPointer[1:]
+			field := (&c.FixedRepeatedPointer)[1:]
 			for i := range field {
 				if !canoto.HasPrefix(r.B, canotoTag_GenericField__FixedRepeatedPointer) {
 					return canoto.ErrUnknownField
@@ -2427,7 +2427,7 @@ func (*NestedGenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spe
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
-				/*type inference:*/ (canoto.MakeEntryNilPointer(zero.FixedRepeatedValue[:])),
+				/*type inference:*/ (canoto.MakeEntryNilPointer((&zero.FixedRepeatedValue)[:])),
 				/*FieldNumber:   */ canotoNumber_NestedGenericField__FixedRepeatedValue,
 				/*Name:          */ "FixedRepeatedValue",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedValue)),
@@ -2457,7 +2457,7 @@ func (*NestedGenericField[T1, T2]) CanotoSpec(types ...reflect.Type) *canoto.Spe
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
-				/*type inference:*/ (canoto.MakeEntry(zero.FixedRepeatedPointer[:])),
+				/*type inference:*/ (canoto.MakeEntry((&zero.FixedRepeatedPointer)[:])),
 				/*FieldNumber:   */ canotoNumber_NestedGenericField__FixedRepeatedPointer,
 				/*Name:          */ "FixedRepeatedPointer",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedPointer)),
@@ -2602,14 +2602,14 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 			if !isZero {
 				remainingBytes := r.B
 				r.B = msgBytes
-				if err := (&c.FixedRepeatedValue[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&(&c.FixedRepeatedValue)[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			field := c.FixedRepeatedValue[1:]
+			field := (&c.FixedRepeatedValue)[1:]
 			for i := range field {
 				if !canoto.HasPrefix(r.B, canotoTag_NestedGenericField__FixedRepeatedValue) {
 					return canoto.ErrUnknownField
@@ -2745,15 +2745,15 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				c.FixedRepeatedPointer[0] = canoto.MakePointer(c.FixedRepeatedPointer[0])
-				if err := (c.FixedRepeatedPointer[0]).UnmarshalCanotoFrom(r); err != nil {
+				(&c.FixedRepeatedPointer)[0] = canoto.MakePointer((&c.FixedRepeatedPointer)[0])
+				if err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			field := c.FixedRepeatedPointer[1:]
+			field := (&c.FixedRepeatedPointer)[1:]
 			for i := range field {
 				if !canoto.HasPrefix(r.B, canotoTag_NestedGenericField__FixedRepeatedPointer) {
 					return canoto.ErrUnknownField
@@ -4183,7 +4183,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				FixedLength: uint64(len(zero.FixedRepeatedInt8)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeInt:     canoto.SizeOf(canoto.MakeEntry(zero.FixedRepeatedInt8[:])),
+				TypeInt:     canoto.SizeOf(canoto.MakeEntry((&zero.FixedRepeatedInt8)[:])),
 			},
 			{
 				FieldNumber: canotoNumber_Scalars__FixedRepeatedInt16,
@@ -4191,7 +4191,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				FixedLength: uint64(len(zero.FixedRepeatedInt16)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeInt:     canoto.SizeOf(canoto.MakeEntry(zero.FixedRepeatedInt16[:])),
+				TypeInt:     canoto.SizeOf(canoto.MakeEntry((&zero.FixedRepeatedInt16)[:])),
 			},
 			{
 				FieldNumber: canotoNumber_Scalars__FixedRepeatedInt32,
@@ -4199,7 +4199,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				FixedLength: uint64(len(zero.FixedRepeatedInt32)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeInt:     canoto.SizeOf(canoto.MakeEntry(zero.FixedRepeatedInt32[:])),
+				TypeInt:     canoto.SizeOf(canoto.MakeEntry((&zero.FixedRepeatedInt32)[:])),
 			},
 			{
 				FieldNumber: canotoNumber_Scalars__FixedRepeatedInt64,
@@ -4207,7 +4207,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				FixedLength: uint64(len(zero.FixedRepeatedInt64)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeInt:     canoto.SizeOf(canoto.MakeEntry(zero.FixedRepeatedInt64[:])),
+				TypeInt:     canoto.SizeOf(canoto.MakeEntry((&zero.FixedRepeatedInt64)[:])),
 			},
 			{
 				FieldNumber: canotoNumber_Scalars__FixedRepeatedUint8,
@@ -4215,7 +4215,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				FixedLength: uint64(len(zero.FixedRepeatedUint8)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeUint:    canoto.SizeOf(canoto.MakeEntry(zero.FixedRepeatedUint8[:])),
+				TypeUint:    canoto.SizeOf(canoto.MakeEntry((&zero.FixedRepeatedUint8)[:])),
 			},
 			{
 				FieldNumber: canotoNumber_Scalars__FixedRepeatedUint16,
@@ -4223,7 +4223,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				FixedLength: uint64(len(zero.FixedRepeatedUint16)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeUint:    canoto.SizeOf(canoto.MakeEntry(zero.FixedRepeatedUint16[:])),
+				TypeUint:    canoto.SizeOf(canoto.MakeEntry((&zero.FixedRepeatedUint16)[:])),
 			},
 			{
 				FieldNumber: canotoNumber_Scalars__FixedRepeatedUint32,
@@ -4231,7 +4231,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				FixedLength: uint64(len(zero.FixedRepeatedUint32)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeUint:    canoto.SizeOf(canoto.MakeEntry(zero.FixedRepeatedUint32[:])),
+				TypeUint:    canoto.SizeOf(canoto.MakeEntry((&zero.FixedRepeatedUint32)[:])),
 			},
 			{
 				FieldNumber: canotoNumber_Scalars__FixedRepeatedUint64,
@@ -4239,10 +4239,10 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				FixedLength: uint64(len(zero.FixedRepeatedUint64)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeUint:    canoto.SizeOf(canoto.MakeEntry(zero.FixedRepeatedUint64[:])),
+				TypeUint:    canoto.SizeOf(canoto.MakeEntry((&zero.FixedRepeatedUint64)[:])),
 			},
 			canoto.FieldTypeFromFint(
-				/*type inference:*/ canoto.MakeEntry(zero.FixedRepeatedSfixed32[:]),
+				/*type inference:*/ canoto.MakeEntry((&zero.FixedRepeatedSfixed32)[:]),
 				/*FieldNumber:   */ canotoNumber_Scalars__FixedRepeatedSfixed32,
 				/*Name:          */ "FixedRepeatedSfixed32",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedSfixed32)),
@@ -4250,7 +4250,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*OneOf:         */ "",
 			),
 			canoto.FieldTypeFromFint(
-				/*type inference:*/ canoto.MakeEntry(zero.FixedRepeatedFixed32[:]),
+				/*type inference:*/ canoto.MakeEntry((&zero.FixedRepeatedFixed32)[:]),
 				/*FieldNumber:   */ canotoNumber_Scalars__FixedRepeatedFixed32,
 				/*Name:          */ "FixedRepeatedFixed32",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedFixed32)),
@@ -4258,7 +4258,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*OneOf:         */ "",
 			),
 			canoto.FieldTypeFromFint(
-				/*type inference:*/ canoto.MakeEntry(zero.FixedRepeatedSfixed64[:]),
+				/*type inference:*/ canoto.MakeEntry((&zero.FixedRepeatedSfixed64)[:]),
 				/*FieldNumber:   */ canotoNumber_Scalars__FixedRepeatedSfixed64,
 				/*Name:          */ "FixedRepeatedSfixed64",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedSfixed64)),
@@ -4266,7 +4266,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*OneOf:         */ "",
 			),
 			canoto.FieldTypeFromFint(
-				/*type inference:*/ canoto.MakeEntry(zero.FixedRepeatedFixed64[:]),
+				/*type inference:*/ canoto.MakeEntry((&zero.FixedRepeatedFixed64)[:]),
 				/*FieldNumber:   */ canotoNumber_Scalars__FixedRepeatedFixed64,
 				/*Name:          */ "FixedRepeatedFixed64",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedFixed64)),
@@ -4316,10 +4316,10 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				FixedLength:    uint64(len(zero.FixedRepeatedFixedBytes)),
 				Repeated:       true,
 				OneOf:          "",
-				TypeFixedBytes: uint64(len(zero.FixedRepeatedFixedBytes[0])),
+				TypeFixedBytes: uint64(len((&zero.FixedRepeatedFixedBytes)[0])),
 			},
 			canoto.FieldTypeFromField(
-				/*type inference:*/ (canoto.MakeEntryNilPointer(zero.FixedRepeatedLargestFieldNumber[:])),
+				/*type inference:*/ (canoto.MakeEntryNilPointer((&zero.FixedRepeatedLargestFieldNumber)[:])),
 				/*FieldNumber:   */ canotoNumber_Scalars__FixedRepeatedLargestFieldNumber,
 				/*Name:          */ "FixedRepeatedLargestFieldNumber",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedLargestFieldNumber)),
@@ -4334,7 +4334,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				FixedLength: uint64(len(zero.ConstRepeatedUint64)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeUint:    canoto.SizeOf(canoto.MakeEntry(zero.ConstRepeatedUint64[:])),
+				TypeUint:    canoto.SizeOf(canoto.MakeEntry((&zero.ConstRepeatedUint64)[:])),
 			},
 			canoto.FieldTypeFromField(
 				/*type inference:*/ (&zero.CustomType),
@@ -4400,7 +4400,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				FixedLength:    uint64(len(zero.CustomFixedRepeatedFixedBytes)),
 				Repeated:       true,
 				OneOf:          "",
-				TypeFixedBytes: uint64(len(zero.CustomFixedRepeatedFixedBytes[0])),
+				TypeFixedBytes: uint64(len((&zero.CustomFixedRepeatedFixedBytes)[0])),
 			},
 			canoto.FieldTypeFromField(
 				/*type inference:*/ (&zero.OneOf),
@@ -4433,7 +4433,7 @@ func (*Scalars) CanotoSpec(types ...reflect.Type) *canoto.Spec {
 				/*types:         */ types,
 			),
 			canoto.FieldTypeFromField(
-				/*type inference:*/ (canoto.MakeEntry(zero.FixedRepeatedPointer[:])),
+				/*type inference:*/ (canoto.MakeEntry((&zero.FixedRepeatedPointer)[:])),
 				/*FieldNumber:   */ canotoNumber_Scalars__FixedRepeatedPointer,
 				/*Name:          */ "FixedRepeatedPointer",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedPointer)),
@@ -5199,7 +5199,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.ReadFint32sInto(&r, c.FixedRepeatedSfixed32[:]); err != nil {
+			if err := canoto.ReadFint32sInto(&r, (&c.FixedRepeatedSfixed32)[:]); err != nil {
 				return err
 			}
 			if canoto.IsZero(c.FixedRepeatedSfixed32) {
@@ -5210,7 +5210,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.ReadFint32sInto(&r, c.FixedRepeatedFixed32[:]); err != nil {
+			if err := canoto.ReadFint32sInto(&r, (&c.FixedRepeatedFixed32)[:]); err != nil {
 				return err
 			}
 			if canoto.IsZero(c.FixedRepeatedFixed32) {
@@ -5221,7 +5221,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.ReadFint64sInto(&r, c.FixedRepeatedSfixed64[:]); err != nil {
+			if err := canoto.ReadFint64sInto(&r, (&c.FixedRepeatedSfixed64)[:]); err != nil {
 				return err
 			}
 			if canoto.IsZero(c.FixedRepeatedSfixed64) {
@@ -5232,7 +5232,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.ReadFint64sInto(&r, c.FixedRepeatedFixed64[:]); err != nil {
+			if err := canoto.ReadFint64sInto(&r, (&c.FixedRepeatedFixed64)[:]); err != nil {
 				return err
 			}
 			if canoto.IsZero(c.FixedRepeatedFixed64) {
@@ -5243,7 +5243,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.ReadBoolsInto(&r, c.FixedRepeatedBool[:]); err != nil {
+			if err := canoto.ReadBoolsInto(&r, (&c.FixedRepeatedBool)[:]); err != nil {
 				return err
 			}
 			if canoto.IsZero(c.FixedRepeatedBool) {
@@ -5396,7 +5396,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			const (
 				// Ensure this field has a constant length of at least one.
 				_                    = uint(len(c.FixedRepeatedFixedBytes) - 1)
-				expectedLength       = len(c.FixedRepeatedFixedBytes[0])
+				expectedLength       = len((&c.FixedRepeatedFixedBytes)[0])
 				expectedLengthUint64 = uint64(expectedLength)
 			)
 
@@ -5464,14 +5464,14 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if !isZero {
 				remainingBytes := r.B
 				r.B = msgBytes
-				if err := (&c.FixedRepeatedLargestFieldNumber[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&(&c.FixedRepeatedLargestFieldNumber)[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			field := c.FixedRepeatedLargestFieldNumber[1:]
+			field := (&c.FixedRepeatedLargestFieldNumber)[1:]
 			for i := range field {
 				if !canoto.HasPrefix(r.B, canotoTag_Scalars__FixedRepeatedLargestFieldNumber) {
 					return canoto.ErrUnknownField
@@ -5738,7 +5738,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			const (
 				// Ensure this field has a constant length of at least one.
 				_                    = uint(len(c.CustomFixedRepeatedFixedBytes) - 1)
-				expectedLength       = len(c.CustomFixedRepeatedFixedBytes[0])
+				expectedLength       = len((&c.CustomFixedRepeatedFixedBytes)[0])
 				expectedLengthUint64 = uint64(expectedLength)
 			)
 
@@ -5918,15 +5918,15 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				c.FixedRepeatedPointer[0] = canoto.MakePointer(c.FixedRepeatedPointer[0])
-				if err := (c.FixedRepeatedPointer[0]).UnmarshalCanotoFrom(r); err != nil {
+				(&c.FixedRepeatedPointer)[0] = canoto.MakePointer((&c.FixedRepeatedPointer)[0])
+				if err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			field := c.FixedRepeatedPointer[1:]
+			field := (&c.FixedRepeatedPointer)[1:]
 			for i := range field {
 				if !canoto.HasPrefix(r.B, canotoTag_Scalars__FixedRepeatedPointer) {
 					return canoto.ErrUnknownField
@@ -6585,62 +6585,62 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.FixedRepeatedInt8) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedInt8)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedInt8Size))
-		canoto.AppendInts(&w, c.FixedRepeatedInt8[:])
+		canoto.AppendInts(&w, (&c.FixedRepeatedInt8)[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt16) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedInt16)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedInt16Size))
-		canoto.AppendInts(&w, c.FixedRepeatedInt16[:])
+		canoto.AppendInts(&w, (&c.FixedRepeatedInt16)[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt32) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedInt32)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedInt32Size))
-		canoto.AppendInts(&w, c.FixedRepeatedInt32[:])
+		canoto.AppendInts(&w, (&c.FixedRepeatedInt32)[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedInt64) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedInt64)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedInt64Size))
-		canoto.AppendInts(&w, c.FixedRepeatedInt64[:])
+		canoto.AppendInts(&w, (&c.FixedRepeatedInt64)[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint8) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedUint8)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedUint8Size))
-		canoto.AppendUints(&w, c.FixedRepeatedUint8[:])
+		canoto.AppendUints(&w, (&c.FixedRepeatedUint8)[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint16) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedUint16)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedUint16Size))
-		canoto.AppendUints(&w, c.FixedRepeatedUint16[:])
+		canoto.AppendUints(&w, (&c.FixedRepeatedUint16)[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint32) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedUint32)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedUint32Size))
-		canoto.AppendUints(&w, c.FixedRepeatedUint32[:])
+		canoto.AppendUints(&w, (&c.FixedRepeatedUint32)[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedUint64) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedUint64)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedUint64Size))
-		canoto.AppendUints(&w, c.FixedRepeatedUint64[:])
+		canoto.AppendUints(&w, (&c.FixedRepeatedUint64)[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedSfixed32) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedSfixed32)
-		canoto.AppendFint32s(&w, c.FixedRepeatedSfixed32[:])
+		canoto.AppendFint32s(&w, (&c.FixedRepeatedSfixed32)[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedFixed32) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedFixed32)
-		canoto.AppendFint32s(&w, c.FixedRepeatedFixed32[:])
+		canoto.AppendFint32s(&w, (&c.FixedRepeatedFixed32)[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedSfixed64) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedSfixed64)
-		canoto.AppendFint64s(&w, c.FixedRepeatedSfixed64[:])
+		canoto.AppendFint64s(&w, (&c.FixedRepeatedSfixed64)[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedFixed64) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedFixed64)
-		canoto.AppendFint64s(&w, c.FixedRepeatedFixed64[:])
+		canoto.AppendFint64s(&w, (&c.FixedRepeatedFixed64)[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedBool) {
 		canoto.Append(&w, canotoTag_Scalars__FixedRepeatedBool)
-		canoto.AppendBools(&w, c.FixedRepeatedBool[:])
+		canoto.AppendBools(&w, (&c.FixedRepeatedBool)[:])
 	}
 	if !canoto.IsZero(c.FixedRepeatedString) {
 		for _, v := range &c.FixedRepeatedString {
@@ -6700,7 +6700,7 @@ func (c *Scalars) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(c.ConstRepeatedUint64) {
 		canoto.Append(&w, canotoTag_Scalars__ConstRepeatedUint64)
 		canoto.AppendUint(&w, atomic.LoadUint64(&c.canotoData.ConstRepeatedUint64Size))
-		canoto.AppendUints(&w, c.ConstRepeatedUint64[:])
+		canoto.AppendUints(&w, (&c.ConstRepeatedUint64)[:])
 	}
 	if fieldSize := (&c.CustomType).CachedCanotoSize(); fieldSize != 0 {
 		canoto.Append(&w, canotoTag_Scalars__CustomType)

@@ -508,7 +508,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				FixedLength: uint64(len(zero.FixedRepeatedInt8)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeInt:     SizeOf(MakeEntry(zero.FixedRepeatedInt8[:])),
+				TypeInt:     SizeOf(MakeEntry((&zero.FixedRepeatedInt8)[:])),
 			},
 			{
 				FieldNumber: canotoNumber_SpecFuzzer__FixedRepeatedInt16,
@@ -516,7 +516,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				FixedLength: uint64(len(zero.FixedRepeatedInt16)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeInt:     SizeOf(MakeEntry(zero.FixedRepeatedInt16[:])),
+				TypeInt:     SizeOf(MakeEntry((&zero.FixedRepeatedInt16)[:])),
 			},
 			{
 				FieldNumber: canotoNumber_SpecFuzzer__FixedRepeatedInt32,
@@ -524,7 +524,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				FixedLength: uint64(len(zero.FixedRepeatedInt32)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeInt:     SizeOf(MakeEntry(zero.FixedRepeatedInt32[:])),
+				TypeInt:     SizeOf(MakeEntry((&zero.FixedRepeatedInt32)[:])),
 			},
 			{
 				FieldNumber: canotoNumber_SpecFuzzer__FixedRepeatedInt64,
@@ -532,7 +532,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				FixedLength: uint64(len(zero.FixedRepeatedInt64)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeInt:     SizeOf(MakeEntry(zero.FixedRepeatedInt64[:])),
+				TypeInt:     SizeOf(MakeEntry((&zero.FixedRepeatedInt64)[:])),
 			},
 			{
 				FieldNumber: canotoNumber_SpecFuzzer__FixedRepeatedUint8,
@@ -540,7 +540,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				FixedLength: uint64(len(zero.FixedRepeatedUint8)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeUint:    SizeOf(MakeEntry(zero.FixedRepeatedUint8[:])),
+				TypeUint:    SizeOf(MakeEntry((&zero.FixedRepeatedUint8)[:])),
 			},
 			{
 				FieldNumber: canotoNumber_SpecFuzzer__FixedRepeatedUint16,
@@ -548,7 +548,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				FixedLength: uint64(len(zero.FixedRepeatedUint16)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeUint:    SizeOf(MakeEntry(zero.FixedRepeatedUint16[:])),
+				TypeUint:    SizeOf(MakeEntry((&zero.FixedRepeatedUint16)[:])),
 			},
 			{
 				FieldNumber: canotoNumber_SpecFuzzer__FixedRepeatedUint32,
@@ -556,7 +556,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				FixedLength: uint64(len(zero.FixedRepeatedUint32)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeUint:    SizeOf(MakeEntry(zero.FixedRepeatedUint32[:])),
+				TypeUint:    SizeOf(MakeEntry((&zero.FixedRepeatedUint32)[:])),
 			},
 			{
 				FieldNumber: canotoNumber_SpecFuzzer__FixedRepeatedUint64,
@@ -564,10 +564,10 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				FixedLength: uint64(len(zero.FixedRepeatedUint64)),
 				Repeated:    true,
 				OneOf:       "",
-				TypeUint:    SizeOf(MakeEntry(zero.FixedRepeatedUint64[:])),
+				TypeUint:    SizeOf(MakeEntry((&zero.FixedRepeatedUint64)[:])),
 			},
 			FieldTypeFromFint(
-				/*type inference:*/ MakeEntry(zero.FixedRepeatedSfixed32[:]),
+				/*type inference:*/ MakeEntry((&zero.FixedRepeatedSfixed32)[:]),
 				/*FieldNumber:   */ canotoNumber_SpecFuzzer__FixedRepeatedSfixed32,
 				/*Name:          */ "FixedRepeatedSfixed32",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedSfixed32)),
@@ -575,7 +575,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*OneOf:         */ "",
 			),
 			FieldTypeFromFint(
-				/*type inference:*/ MakeEntry(zero.FixedRepeatedFixed32[:]),
+				/*type inference:*/ MakeEntry((&zero.FixedRepeatedFixed32)[:]),
 				/*FieldNumber:   */ canotoNumber_SpecFuzzer__FixedRepeatedFixed32,
 				/*Name:          */ "FixedRepeatedFixed32",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedFixed32)),
@@ -583,7 +583,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*OneOf:         */ "",
 			),
 			FieldTypeFromFint(
-				/*type inference:*/ MakeEntry(zero.FixedRepeatedSfixed64[:]),
+				/*type inference:*/ MakeEntry((&zero.FixedRepeatedSfixed64)[:]),
 				/*FieldNumber:   */ canotoNumber_SpecFuzzer__FixedRepeatedSfixed64,
 				/*Name:          */ "FixedRepeatedSfixed64",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedSfixed64)),
@@ -591,7 +591,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*OneOf:         */ "",
 			),
 			FieldTypeFromFint(
-				/*type inference:*/ MakeEntry(zero.FixedRepeatedFixed64[:]),
+				/*type inference:*/ MakeEntry((&zero.FixedRepeatedFixed64)[:]),
 				/*FieldNumber:   */ canotoNumber_SpecFuzzer__FixedRepeatedFixed64,
 				/*Name:          */ "FixedRepeatedFixed64",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedFixed64)),
@@ -628,10 +628,10 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				FixedLength:    uint64(len(zero.FixedRepeatedFixedBytes)),
 				Repeated:       true,
 				OneOf:          "",
-				TypeFixedBytes: uint64(len(zero.FixedRepeatedFixedBytes[0])),
+				TypeFixedBytes: uint64(len((&zero.FixedRepeatedFixedBytes)[0])),
 			},
 			FieldTypeFromField(
-				/*type inference:*/ (MakeEntryNilPointer(zero.FixedRepeatedValue[:])),
+				/*type inference:*/ (MakeEntryNilPointer((&zero.FixedRepeatedValue)[:])),
 				/*FieldNumber:   */ canotoNumber_SpecFuzzer__FixedRepeatedValue,
 				/*Name:          */ "FixedRepeatedValue",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedValue)),
@@ -641,7 +641,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*types:         */ types,
 			),
 			FieldTypeFromField(
-				/*type inference:*/ (MakeEntry(zero.FixedRepeatedPointer[:])),
+				/*type inference:*/ (MakeEntry((&zero.FixedRepeatedPointer)[:])),
 				/*FieldNumber:   */ canotoNumber_SpecFuzzer__FixedRepeatedPointer,
 				/*Name:          */ "FixedRepeatedPointer",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedPointer)),
@@ -651,7 +651,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*types:         */ types,
 			),
 			FieldTypeFromField(
-				/*type inference:*/ (MakeEntry(zero.FixedRepeatedOneOf[:])),
+				/*type inference:*/ (MakeEntry((&zero.FixedRepeatedOneOf)[:])),
 				/*FieldNumber:   */ canotoNumber_SpecFuzzer__FixedRepeatedOneOf,
 				/*Name:          */ "FixedRepeatedOneOf",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedOneOf)),
@@ -661,7 +661,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*types:         */ types,
 			),
 			FieldTypeFromField(
-				/*type inference:*/ (MakeEntry(zero.FixedRepeatedRecursive[:])),
+				/*type inference:*/ (MakeEntry((&zero.FixedRepeatedRecursive)[:])),
 				/*FieldNumber:   */ canotoNumber_SpecFuzzer__FixedRepeatedRecursive,
 				/*Name:          */ "FixedRepeatedRecursive",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedRecursive)),
@@ -671,7 +671,7 @@ func (*SpecFuzzer) CanotoSpec(types ...reflect.Type) *Spec {
 				/*types:         */ types,
 			),
 			FieldTypeFromField(
-				/*type inference:*/ (MakeEntry(zero.FixedRepeatedValueRecursive[:])),
+				/*type inference:*/ (MakeEntry((&zero.FixedRepeatedValueRecursive)[:])),
 				/*FieldNumber:   */ canotoNumber_SpecFuzzer__FixedRepeatedValueRecursive,
 				/*Name:          */ "FixedRepeatedValueRecursive",
 				/*FixedLength:   */ uint64(len(zero.FixedRepeatedValueRecursive)),
@@ -1852,7 +1852,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			if err := ReadFint32sInto(&r, c.FixedRepeatedSfixed32[:]); err != nil {
+			if err := ReadFint32sInto(&r, (&c.FixedRepeatedSfixed32)[:]); err != nil {
 				return err
 			}
 			if IsZero(c.FixedRepeatedSfixed32) {
@@ -1863,7 +1863,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			if err := ReadFint32sInto(&r, c.FixedRepeatedFixed32[:]); err != nil {
+			if err := ReadFint32sInto(&r, (&c.FixedRepeatedFixed32)[:]); err != nil {
 				return err
 			}
 			if IsZero(c.FixedRepeatedFixed32) {
@@ -1874,7 +1874,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			if err := ReadFint64sInto(&r, c.FixedRepeatedSfixed64[:]); err != nil {
+			if err := ReadFint64sInto(&r, (&c.FixedRepeatedSfixed64)[:]); err != nil {
 				return err
 			}
 			if IsZero(c.FixedRepeatedSfixed64) {
@@ -1885,7 +1885,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			if err := ReadFint64sInto(&r, c.FixedRepeatedFixed64[:]); err != nil {
+			if err := ReadFint64sInto(&r, (&c.FixedRepeatedFixed64)[:]); err != nil {
 				return err
 			}
 			if IsZero(c.FixedRepeatedFixed64) {
@@ -1896,7 +1896,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			if err := ReadBoolsInto(&r, c.FixedRepeatedBool[:]); err != nil {
+			if err := ReadBoolsInto(&r, (&c.FixedRepeatedBool)[:]); err != nil {
 				return err
 			}
 			if IsZero(c.FixedRepeatedBool) {
@@ -1970,7 +1970,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			const (
 				// Ensure this field has a constant length of at least one.
 				_                    = uint(len(c.FixedRepeatedFixedBytes) - 1)
-				expectedLength       = len(c.FixedRepeatedFixedBytes[0])
+				expectedLength       = len((&c.FixedRepeatedFixedBytes)[0])
 				expectedLengthUint64 = uint64(expectedLength)
 			)
 
@@ -2038,14 +2038,14 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			if !isZero {
 				remainingBytes := r.B
 				r.B = msgBytes
-				if err := (&c.FixedRepeatedValue[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&(&c.FixedRepeatedValue)[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			field := c.FixedRepeatedValue[1:]
+			field := (&c.FixedRepeatedValue)[1:]
 			for i := range field {
 				if !HasPrefix(r.B, canotoTag_SpecFuzzer__FixedRepeatedValue) {
 					return ErrUnknownField
@@ -2097,15 +2097,15 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				c.FixedRepeatedPointer[0] = MakePointer(c.FixedRepeatedPointer[0])
-				if err := (c.FixedRepeatedPointer[0]).UnmarshalCanotoFrom(r); err != nil {
+				(&c.FixedRepeatedPointer)[0] = MakePointer((&c.FixedRepeatedPointer)[0])
+				if err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			field := c.FixedRepeatedPointer[1:]
+			field := (&c.FixedRepeatedPointer)[1:]
 			for i := range field {
 				if !HasPrefix(r.B, canotoTag_SpecFuzzer__FixedRepeatedPointer) {
 					return ErrUnknownField
@@ -2162,15 +2162,15 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				c.FixedRepeatedOneOf[0] = MakePointer(c.FixedRepeatedOneOf[0])
-				if err := (c.FixedRepeatedOneOf[0]).UnmarshalCanotoFrom(r); err != nil {
+				(&c.FixedRepeatedOneOf)[0] = MakePointer((&c.FixedRepeatedOneOf)[0])
+				if err := ((&c.FixedRepeatedOneOf)[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			field := c.FixedRepeatedOneOf[1:]
+			field := (&c.FixedRepeatedOneOf)[1:]
 			for i := range field {
 				if !HasPrefix(r.B, canotoTag_SpecFuzzer__FixedRepeatedOneOf) {
 					return ErrUnknownField
@@ -2227,15 +2227,15 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				c.FixedRepeatedRecursive[0] = MakePointer(c.FixedRepeatedRecursive[0])
-				if err := (c.FixedRepeatedRecursive[0]).UnmarshalCanotoFrom(r); err != nil {
+				(&c.FixedRepeatedRecursive)[0] = MakePointer((&c.FixedRepeatedRecursive)[0])
+				if err := ((&c.FixedRepeatedRecursive)[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			field := c.FixedRepeatedRecursive[1:]
+			field := (&c.FixedRepeatedRecursive)[1:]
 			for i := range field {
 				if !HasPrefix(r.B, canotoTag_SpecFuzzer__FixedRepeatedRecursive) {
 					return ErrUnknownField
@@ -2292,15 +2292,15 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				}
 				remainingBytes := r.B
 				r.B = innerBytes
-				c.FixedRepeatedValueRecursive[0] = MakePointer(c.FixedRepeatedValueRecursive[0])
-				if err := (c.FixedRepeatedValueRecursive[0]).UnmarshalCanotoFrom(r); err != nil {
+				(&c.FixedRepeatedValueRecursive)[0] = MakePointer((&c.FixedRepeatedValueRecursive)[0])
+				if err := ((&c.FixedRepeatedValueRecursive)[0]).UnmarshalCanotoFrom(r); err != nil {
 					return err
 				}
 				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
-			field := c.FixedRepeatedValueRecursive[1:]
+			field := (&c.FixedRepeatedValueRecursive)[1:]
 			for i := range field {
 				if !HasPrefix(r.B, canotoTag_SpecFuzzer__FixedRepeatedValueRecursive) {
 					return ErrUnknownField
@@ -3142,62 +3142,62 @@ func (c *SpecFuzzer) MarshalCanotoInto(w Writer) Writer {
 	if !IsZero(c.FixedRepeatedInt8) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedInt8)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedInt8Size))
-		AppendInts(&w, c.FixedRepeatedInt8[:])
+		AppendInts(&w, (&c.FixedRepeatedInt8)[:])
 	}
 	if !IsZero(c.FixedRepeatedInt16) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedInt16)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedInt16Size))
-		AppendInts(&w, c.FixedRepeatedInt16[:])
+		AppendInts(&w, (&c.FixedRepeatedInt16)[:])
 	}
 	if !IsZero(c.FixedRepeatedInt32) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedInt32)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedInt32Size))
-		AppendInts(&w, c.FixedRepeatedInt32[:])
+		AppendInts(&w, (&c.FixedRepeatedInt32)[:])
 	}
 	if !IsZero(c.FixedRepeatedInt64) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedInt64)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedInt64Size))
-		AppendInts(&w, c.FixedRepeatedInt64[:])
+		AppendInts(&w, (&c.FixedRepeatedInt64)[:])
 	}
 	if !IsZero(c.FixedRepeatedUint8) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedUint8)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedUint8Size))
-		AppendUints(&w, c.FixedRepeatedUint8[:])
+		AppendUints(&w, (&c.FixedRepeatedUint8)[:])
 	}
 	if !IsZero(c.FixedRepeatedUint16) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedUint16)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedUint16Size))
-		AppendUints(&w, c.FixedRepeatedUint16[:])
+		AppendUints(&w, (&c.FixedRepeatedUint16)[:])
 	}
 	if !IsZero(c.FixedRepeatedUint32) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedUint32)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedUint32Size))
-		AppendUints(&w, c.FixedRepeatedUint32[:])
+		AppendUints(&w, (&c.FixedRepeatedUint32)[:])
 	}
 	if !IsZero(c.FixedRepeatedUint64) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedUint64)
 		AppendUint(&w, atomic.LoadUint64(&c.canotoData.FixedRepeatedUint64Size))
-		AppendUints(&w, c.FixedRepeatedUint64[:])
+		AppendUints(&w, (&c.FixedRepeatedUint64)[:])
 	}
 	if !IsZero(c.FixedRepeatedSfixed32) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedSfixed32)
-		AppendFint32s(&w, c.FixedRepeatedSfixed32[:])
+		AppendFint32s(&w, (&c.FixedRepeatedSfixed32)[:])
 	}
 	if !IsZero(c.FixedRepeatedFixed32) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedFixed32)
-		AppendFint32s(&w, c.FixedRepeatedFixed32[:])
+		AppendFint32s(&w, (&c.FixedRepeatedFixed32)[:])
 	}
 	if !IsZero(c.FixedRepeatedSfixed64) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedSfixed64)
-		AppendFint64s(&w, c.FixedRepeatedSfixed64[:])
+		AppendFint64s(&w, (&c.FixedRepeatedSfixed64)[:])
 	}
 	if !IsZero(c.FixedRepeatedFixed64) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedFixed64)
-		AppendFint64s(&w, c.FixedRepeatedFixed64[:])
+		AppendFint64s(&w, (&c.FixedRepeatedFixed64)[:])
 	}
 	if !IsZero(c.FixedRepeatedBool) {
 		Append(&w, canotoTag_SpecFuzzer__FixedRepeatedBool)
-		AppendBools(&w, c.FixedRepeatedBool[:])
+		AppendBools(&w, (&c.FixedRepeatedBool)[:])
 	}
 	if !IsZero(c.FixedRepeatedString) {
 		for _, v := range &c.FixedRepeatedString {
