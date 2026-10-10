@@ -31,7 +31,7 @@ skip="${BENCH_SKIP:-_Proto}"
 run_benchmarks() {
   (
     cd "$1"
-    go test -run='^$' -bench=. -skip="$skip" -benchmem -benchtime="$benchtime" -count=1 ./...
+    go test -run='^$' -bench=. -skip="$skip" -benchmem -benchtime="$benchtime" ./...
   ) >> "$2"
 }
 
