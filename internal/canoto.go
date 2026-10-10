@@ -66,6 +66,15 @@ type unexportedOneOf struct {
 	canotoData canotoData_unexportedOneOf
 }
 
+// ValueOneOf verifies that value message fields in a OneOf are only considered
+// set when they are non-zero.
+type ValueOneOf struct {
+	Value OneOf `canoto:"value,1,Type"`
+	Int   int32 `canoto:"int,2,Type"`
+
+	canotoData canotoData_ValueOneOf
+}
+
 type Node struct {
 	Value int32 `canoto:"int,1"`
 	Next  *Node `canoto:"pointer,2,OneOf"`

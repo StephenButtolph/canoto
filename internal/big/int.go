@@ -30,7 +30,7 @@ func (i *Int) UnmarshalCanotoFrom(r canoto.Reader) error {
 	return nil
 }
 
-func (*Int) ValidCanoto() bool { return true }
+func (*Int) CheckCanoto() bool { return true }
 func (*Int) CacheCanoto()      {}
 
 func (i *Int) SizeCanoto() uint64 {

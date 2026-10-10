@@ -177,18 +177,6 @@ func (c *${structName}${generics}) UnmarshalCanotoFrom(r ${selector}Reader) erro
 
 ${unmarshalBody}}
 
-// ValidCanoto validates that the struct can be correctly marshaled into the
-// Canoto format.
-//
-// Specifically, ValidCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields are ValidCanoto.
-func (c *${structName}${generics}) ValidCanoto() bool {
-${validOneOf}${valid}	return true
-}
-
 // CacheCanoto populates size and OneOf caches based on the current values in
 // the struct.${concurrencyWarning}
 func (c *${structName}${generics}) CacheCanoto() {
@@ -202,6 +190,18 @@ ${sizeVars}${size}${assignSizeVars}}
 func (c *${structName}${generics}) SizeCanoto() uint64 {
 	return ${loadPrefix}c.canotoData.size${loadSuffix}
 }${whichCanoto}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.${concurrencyWarning}
+func (c *${structName}${generics}) ValidCanoto() bool {
+${cacheBeforeCheck}	return c.CheckCanoto()
+}
+
+// CheckCanoto validates that the struct can be correctly marshaled into the
+// Canoto format. Most users should just use ValidCanoto.${checkCacheDoc}
+func (c *${structName}${generics}) CheckCanoto() bool {
+${checkOneOf}${check}	return true
+}
 
 // MarshalCanoto returns the Canoto representation of this struct.
 //
@@ -249,9 +249,11 @@ ${append}	return w
 	generics := makeGenerics(m)
 
 	var (
-		typesDoc    string
-		typesDecl   string
-		appendTypes string
+		typesDoc         string
+		typesDecl        string
+		appendTypes      string
+		cacheBeforeCheck string
+		checkCacheDoc    string
 	)
 	hasSubMessages := false
 	for _, f := range m.fields {
@@ -260,9 +262,23 @@ ${append}	return w
 		}
 	}
 	if hasSubMessages {
-		typesDoc = "\n//\n// types is used as a stack of ancestor messages to detect recursive specs."
+		typesDoc = `
+//
+// types is used as a stack of ancestor messages to detect recursive specs.`
 		typesDecl = "types "
-		appendTypes = fmt.Sprintf("\ttypes = append(types, reflect.TypeFor[%s%s]())\n", m.name, generics)
+		appendTypes = fmt.Sprintf(
+			`	types = append(types, reflect.TypeFor[%s%s]())
+`,
+			m.name,
+			generics,
+		)
+		// CheckCanoto only depends on the cache through message fields.
+		cacheBeforeCheck = `	c.CacheCanoto()
+`
+		checkCacheDoc = `
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.`
 	}
 
 	return writeTemplate(w, structTemplate, map[string]string{
@@ -270,6 +286,8 @@ ${append}	return w
 		"typesDoc":           typesDoc,
 		"typesDecl":          typesDecl,
 		"appendTypes":        appendTypes,
+		"cacheBeforeCheck":   cacheBeforeCheck,
+		"checkCacheDoc":      checkCacheDoc,
 		"constants":          makeConstants(m),
 		"structName":         m.name,
 		"generics":           generics,
@@ -278,8 +296,8 @@ ${append}	return w
 		"oneOfCache":         makeOneOfCache(m),
 		"spec":               makeSpec(m, canotoSelector),
 		"unmarshalBody":      makeUnmarshalBody(m, canotoSelector),
-		"validOneOf":         makeValidOneOf(m),
-		"valid":              makeValid(m),
+		"checkOneOf":         makeCheckOneOf(m),
+		"check":              makeCheck(m),
 		"concurrencyWarning": concurrencyWarning,
 		"sizeVars":           makeSizeVars(m),
 		"size":               makeSize(m),
@@ -1409,7 +1427,7 @@ func makeUnmarshal(m message) string {
 	})
 }
 
-func makeValidOneOf(m message) string {
+func makeCheckOneOf(m message) string {
 	const oneOfSuffix = "OneOf"
 	var (
 		template = "\tvar %s uint32\n"
@@ -1470,7 +1488,7 @@ func makeValidOneOf(m message) string {
 			fixedRepeatedFixedBytesTemplate: functionTemplate,
 
 			values: typeTemplate{
-				single: `	if ${genericTypeCast}(&c.${fieldName}).CacheCanoto(); ${genericTypeCast}(&c.${fieldName}).SizeCanoto() != 0 {
+				single: `	if ${genericTypeCast}(&c.${fieldName}).SizeCanoto() != 0 {
 		if ${oneOf}OneOf != 0 {
 			return false
 		}
@@ -1482,7 +1500,7 @@ func makeValidOneOf(m message) string {
 		isZero := true
 		field := c.${fieldName}
 		for i := range field {
-			if ${genericTypeCast}(&field[i]).CacheCanoto(); ${genericTypeCast}(&field[i]).SizeCanoto() != 0 {
+			if ${genericTypeCast}(&field[i]).SizeCanoto() != 0 {
 				isZero = false
 				break
 			}
@@ -1526,7 +1544,7 @@ func makeValidOneOf(m message) string {
 	return sb.String()
 }
 
-func makeValid(m message) string {
+func makeCheck(m message) string {
 	return writeMessage(m, messageTemplate{
 		strings: typeTemplate{
 			single: `	if !${selector}ValidString(c.${fieldName}) {
@@ -1547,42 +1565,42 @@ func makeValid(m message) string {
 `,
 		},
 		values: typeTemplate{
-			single: `	if !${genericTypeCast}(&c.${fieldName}).ValidCanoto() {
+			single: `	if !${genericTypeCast}(&c.${fieldName}).CheckCanoto() {
 		return false
 	}
 `,
 			repeated: `	{
 		field := c.${fieldName}
 		for i := range field {
-			if !${genericTypeCast}(&field[i]).ValidCanoto() {
+			if !${genericTypeCast}(&field[i]).CheckCanoto() {
 				return false
 			}
 		}
 	}
 `,
 			fixedRepeated: `	for i := range &c.${fieldName} {
-		if !${genericTypeCast}(&(&c.${fieldName})[i]).ValidCanoto() {
+		if !${genericTypeCast}(&(&c.${fieldName})[i]).CheckCanoto() {
 			return false
 		}
 	}
 `,
 		},
 		pointers: typeTemplate{
-			single: `	if c.${fieldName} != nil && !${genericTypeCast}(c.${fieldName}).ValidCanoto() {
+			single: `	if c.${fieldName} != nil && !${genericTypeCast}(c.${fieldName}).CheckCanoto() {
 		return false
 	}
 `,
 			repeated: `	{
 		field := c.${fieldName}
 		for i := range field {
-			if field[i] != nil && !${genericTypeCast}(field[i]).ValidCanoto() {
+			if field[i] != nil && !${genericTypeCast}(field[i]).CheckCanoto() {
 				return false
 			}
 		}
 	}
 `,
 			fixedRepeated: `	for i := range &c.${fieldName} {
-		if (&c.${fieldName})[i] != nil && !${genericTypeCast}((&c.${fieldName})[i]).ValidCanoto() {
+		if (&c.${fieldName})[i] != nil && !${genericTypeCast}((&c.${fieldName})[i]).CheckCanoto() {
 			return false
 		}
 	}

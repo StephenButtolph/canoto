@@ -172,6 +172,9 @@ type (
 	// Message defines a type that can be a stand-alone Canoto message.
 	Message interface {
 		Field
+		// ValidCanoto validates that the message can be correctly marshaled
+		// into the Canoto format.
+		ValidCanoto() bool
 		// MarshalCanoto returns the Canoto representation of this message.
 		//
 		// It is assumed that this message is ValidCanoto.
@@ -202,16 +205,19 @@ type (
 		// modified since the last call to CacheCanoto, the returned size may be
 		// incorrect.
 		SizeCanoto() uint64
-		// ValidCanoto validates that the field can be correctly marshaled into
+		// CheckCanoto validates that the field can be correctly marshaled into
 		// the Canoto format.
-		ValidCanoto() bool
+		//
+		// It is assumed that CacheCanoto has been called since the last
+		// modification to this field.
+		CheckCanoto() bool
 		// AppendCanoto appends the field to a [Writer] and returns the
 		// resulting [Writer].
 		//
 		// It is assumed that CacheCanoto has been called since the last
 		// modification to this field.
 		//
-		// It is assumed that this field is ValidCanoto.
+		// It is assumed that this field passes CheckCanoto.
 		AppendCanoto(w Writer) Writer
 		// UnmarshalCanotoFrom populates the field from a [Reader].
 		UnmarshalCanotoFrom(r Reader) error

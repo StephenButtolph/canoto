@@ -60,6 +60,17 @@ message unexportedOneOf__Pointer {
   unexportedOneOf value = 1;
 }
 
+message ValueOneOf {
+  oneof Type {
+    OneOf Value = 1;
+    sint32 Int = 2;
+  }
+}
+
+message ValueOneOf__Pointer {
+  ValueOneOf value = 1;
+}
+
 message Node {
   oneof OneOf {
     Node Next = 2;

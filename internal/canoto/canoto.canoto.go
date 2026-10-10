@@ -166,29 +166,6 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 	return nil
 }
 
-// ValidCanoto validates that the struct can be correctly marshaled into the
-// Canoto format.
-//
-// Specifically, ValidCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields are ValidCanoto.
-func (c *Spec) ValidCanoto() bool {
-	if !ValidString(c.Name) {
-		return false
-	}
-	{
-		field := c.Fields
-		for i := range field {
-			if !(&field[i]).ValidCanoto() {
-				return false
-			}
-		}
-	}
-	return true
-}
-
 // CacheCanoto populates size and OneOf caches based on the current values in
 // the struct.
 //
@@ -216,6 +193,35 @@ func (c *Spec) CacheCanoto() {
 // since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *Spec) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// It is not safe to copy this struct concurrently.
+func (c *Spec) ValidCanoto() bool {
+	c.CacheCanoto()
+	return c.CheckCanoto()
+}
+
+// CheckCanoto validates that the struct can be correctly marshaled into the
+// Canoto format. Most users should just use ValidCanoto.
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
+func (c *Spec) CheckCanoto() bool {
+	if !ValidString(c.Name) {
+		return false
+	}
+	{
+		field := c.Fields
+		for i := range field {
+			if !(&field[i]).CheckCanoto() {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
@@ -688,88 +694,6 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 	return nil
 }
 
-// ValidCanoto validates that the struct can be correctly marshaled into the
-// Canoto format.
-//
-// Specifically, ValidCanoto ensures:
-//
-//  1. All OneOfs are specified at most once.
-//  2. All strings are valid utf-8.
-//  3. All custom fields are ValidCanoto.
-func (c *FieldType) ValidCanoto() bool {
-	var TypeOneOf uint32
-	if !IsZero(c.TypeInt) {
-		if TypeOneOf != 0 {
-			return false
-		}
-		TypeOneOf = canotoNumber_FieldType__TypeInt
-	}
-	if !IsZero(c.TypeUint) {
-		if TypeOneOf != 0 {
-			return false
-		}
-		TypeOneOf = canotoNumber_FieldType__TypeUint
-	}
-	if !IsZero(c.TypeFixedInt) {
-		if TypeOneOf != 0 {
-			return false
-		}
-		TypeOneOf = canotoNumber_FieldType__TypeFixedInt
-	}
-	if !IsZero(c.TypeFixedUint) {
-		if TypeOneOf != 0 {
-			return false
-		}
-		TypeOneOf = canotoNumber_FieldType__TypeFixedUint
-	}
-	if !IsZero(c.TypeBool) {
-		if TypeOneOf != 0 {
-			return false
-		}
-		TypeOneOf = canotoNumber_FieldType__TypeBool
-	}
-	if !IsZero(c.TypeString) {
-		if TypeOneOf != 0 {
-			return false
-		}
-		TypeOneOf = canotoNumber_FieldType__TypeString
-	}
-	if !IsZero(c.TypeBytes) {
-		if TypeOneOf != 0 {
-			return false
-		}
-		TypeOneOf = canotoNumber_FieldType__TypeBytes
-	}
-	if !IsZero(c.TypeFixedBytes) {
-		if TypeOneOf != 0 {
-			return false
-		}
-		TypeOneOf = canotoNumber_FieldType__TypeFixedBytes
-	}
-	if c.TypeMessage != nil {
-		if TypeOneOf != 0 {
-			return false
-		}
-		TypeOneOf = canotoNumber_FieldType__TypeMessage
-	}
-	if !IsZero(c.TypeRecursive) {
-		if TypeOneOf != 0 {
-			return false
-		}
-		TypeOneOf = canotoNumber_FieldType__TypeRecursive
-	}
-	if !ValidString(c.Name) {
-		return false
-	}
-	if !ValidString(c.OneOf) {
-		return false
-	}
-	if c.TypeMessage != nil && !(c.TypeMessage).ValidCanoto() {
-		return false
-	}
-	return true
-}
-
 // CacheCanoto populates size and OneOf caches based on the current values in
 // the struct.
 //
@@ -860,6 +784,94 @@ func (c *FieldType) SizeCanoto() uint64 {
 // it was last cached, the returned field number may be incorrect.
 func (c *FieldType) WhichCanotoType() FieldTypeOneOf {
 	return FieldTypeOneOf(atomic.LoadUint32(&c.canotoData.TypeOneOf))
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+//
+// It is not safe to copy this struct concurrently.
+func (c *FieldType) ValidCanoto() bool {
+	c.CacheCanoto()
+	return c.CheckCanoto()
+}
+
+// CheckCanoto validates that the struct can be correctly marshaled into the
+// Canoto format. Most users should just use ValidCanoto.
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
+func (c *FieldType) CheckCanoto() bool {
+	var TypeOneOf uint32
+	if !IsZero(c.TypeInt) {
+		if TypeOneOf != 0 {
+			return false
+		}
+		TypeOneOf = canotoNumber_FieldType__TypeInt
+	}
+	if !IsZero(c.TypeUint) {
+		if TypeOneOf != 0 {
+			return false
+		}
+		TypeOneOf = canotoNumber_FieldType__TypeUint
+	}
+	if !IsZero(c.TypeFixedInt) {
+		if TypeOneOf != 0 {
+			return false
+		}
+		TypeOneOf = canotoNumber_FieldType__TypeFixedInt
+	}
+	if !IsZero(c.TypeFixedUint) {
+		if TypeOneOf != 0 {
+			return false
+		}
+		TypeOneOf = canotoNumber_FieldType__TypeFixedUint
+	}
+	if !IsZero(c.TypeBool) {
+		if TypeOneOf != 0 {
+			return false
+		}
+		TypeOneOf = canotoNumber_FieldType__TypeBool
+	}
+	if !IsZero(c.TypeString) {
+		if TypeOneOf != 0 {
+			return false
+		}
+		TypeOneOf = canotoNumber_FieldType__TypeString
+	}
+	if !IsZero(c.TypeBytes) {
+		if TypeOneOf != 0 {
+			return false
+		}
+		TypeOneOf = canotoNumber_FieldType__TypeBytes
+	}
+	if !IsZero(c.TypeFixedBytes) {
+		if TypeOneOf != 0 {
+			return false
+		}
+		TypeOneOf = canotoNumber_FieldType__TypeFixedBytes
+	}
+	if c.TypeMessage != nil {
+		if TypeOneOf != 0 {
+			return false
+		}
+		TypeOneOf = canotoNumber_FieldType__TypeMessage
+	}
+	if !IsZero(c.TypeRecursive) {
+		if TypeOneOf != 0 {
+			return false
+		}
+		TypeOneOf = canotoNumber_FieldType__TypeRecursive
+	}
+	if !ValidString(c.Name) {
+		return false
+	}
+	if !ValidString(c.OneOf) {
+		return false
+	}
+	if c.TypeMessage != nil && !(c.TypeMessage).CheckCanoto() {
+		return false
+	}
+	return true
 }
 
 // MarshalCanoto returns the Canoto representation of this struct.
