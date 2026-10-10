@@ -147,9 +147,6 @@ func testCountInts[T Uint](t *testing.T, data []byte) {
 
 func BenchmarkCountInts(b *testing.B) {
 	const maxSize = 1024
-	// Random varint lengths would make any branch on the continuation bit
-	// unpredictable. The current implementation is branchless, so its cost
-	// only depends on the length of the input.
 	rng := rand.New(rand.NewPCG(0, 0)) //#nosec G404 // Deterministic values keep runs comparable
 	w := &Writer{}
 	for len(w.B) < maxSize {
@@ -158,9 +155,6 @@ func BenchmarkCountInts(b *testing.B) {
 		AppendUint(w, rng.Uint64()>>rng.Uint64N(64))
 	}
 
-	// 1 maximizes the relative cost of the word-loop length check, 7 never
-	// enters the word loop, and 15 runs it exactly once with the longest
-	// possible tail.
 	for _, size := range []int{1, 7, 15, maxSize} {
 		bytes := w.B[:size]
 		b.Run(strconv.Itoa(size), func(b *testing.B) {
