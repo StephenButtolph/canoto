@@ -747,6 +747,31 @@ func ReadFint32s[S ~[]E, E Int32](r *Reader, v *S) error {
 	return nil
 }
 
+// ReadFint32sInto reads a length-prefixed packed repeated 32-bit fixed size
+// integer field from the reader into vs. The field must contain exactly len(vs)
+// values.
+func ReadFint32sInto[S ~[]E, E Int32](r *Reader, vs S) error {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return err
+	}
+	if length > uint64(len(r.B)) {
+		return io.ErrUnexpectedEOF
+	}
+	if length != uint64(len(vs))*SizeFint32 {
+		return ErrInvalidLength
+	}
+
+	// See [ReadFint32s] for why this advances a local slice.
+	b := r.B[:length]
+	r.B = r.B[length:]
+	for i := range vs {
+		vs[i] = E(binary.LittleEndian.Uint32(b))
+		b = b[SizeFint32:]
+	}
+	return nil
+}
+
 // AppendFint32 writes a 32-bit fixed size integer to the writer.
 func AppendFint32[T Int32](w *Writer, v T) {
 	w.B = binary.LittleEndian.AppendUint32(w.B, uint32(v))
@@ -806,6 +831,31 @@ func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
 	return nil
 }
 
+// ReadFint64sInto reads a length-prefixed packed repeated 64-bit fixed size
+// integer field from the reader into vs. The field must contain exactly len(vs)
+// values.
+func ReadFint64sInto[S ~[]E, E Int64](r *Reader, vs S) error {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return err
+	}
+	if length > uint64(len(r.B)) {
+		return io.ErrUnexpectedEOF
+	}
+	if length != uint64(len(vs))*SizeFint64 {
+		return ErrInvalidLength
+	}
+
+	// See [ReadFint64s] for why this advances a local slice.
+	b := r.B[:length]
+	r.B = r.B[length:]
+	for i := range vs {
+		vs[i] = E(binary.LittleEndian.Uint64(b))
+		b = b[SizeFint64:]
+	}
+	return nil
+}
+
 // AppendFint64 writes a 64-bit fixed size integer to the writer.
 func AppendFint64[T Int64](w *Writer, v T) {
 	w.B = binary.LittleEndian.AppendUint64(w.B, uint64(v))
@@ -862,6 +912,35 @@ func ReadBools[S ~[]E, E ~bool](r *Reader, v *S) error {
 		vs[i] = b[i] == trueByte
 	}
 	*v = vs
+	return nil
+}
+
+// ReadBoolsInto reads a length-prefixed packed repeated boolean field from the
+// reader into vs. The field must contain exactly len(vs) values.
+func ReadBoolsInto[S ~[]E, E ~bool](r *Reader, vs S) error {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return err
+	}
+	if length > uint64(len(r.B)) {
+		return io.ErrUnexpectedEOF
+	}
+	if length != uint64(len(vs)) {
+		return ErrInvalidLength
+	}
+
+	// Slicing b by len(vs) proves to the compiler that b[i] can not exceed
+	// either slice, removing all bounds checks from the loop.
+	b := r.B[:len(vs)]
+	r.B = r.B[length:]
+	for i := range vs {
+		// This branch is typically predicted correctly for valid input, which
+		// is faster than accumulating the bytes.
+		if b[i] > trueByte {
+			return ErrInvalidBool
+		}
+		vs[i] = b[i] == trueByte
+	}
 	return nil
 }
 
@@ -2261,21 +2340,14 @@ func unmarshalPackedFixed[T comparable](
 		return nil, err
 	}
 
-	count := f.FixedLength
-	if count == 0 {
-		numMsgBytes := uint64(len(msgBytes))
-		if numMsgBytes == 0 {
-			return nil, ErrZeroValue
-		}
-
-		shift, mask, ok := sizeEnum.shift()
-		if !ok {
-			return nil, ErrUnexpectedFieldSize
-		}
-		if numMsgBytes&mask != 0 {
-			return nil, ErrInvalidLength
-		}
-		count = numMsgBytes >> shift
+	shift, mask, ok := sizeEnum.shift()
+	if !ok {
+		return nil, ErrUnexpectedFieldSize
+	}
+	numMsgBytes := uint64(len(msgBytes))
+	count := numMsgBytes >> shift
+	if numMsgBytes&mask != 0 || (f.FixedLength != 0 && count != f.FixedLength) {
+		return nil, ErrInvalidLength
 	}
 
 	values := make([]T, count)
@@ -2290,10 +2362,7 @@ func unmarshalPackedFixed[T comparable](
 		values[i] = value
 		isZero = isZero && IsZero(value)
 	}
-	if HasNext(r) {
-		return nil, ErrInvalidLength
-	}
-	if f.FixedLength > 0 && isZero {
+	if count == 0 || (f.FixedLength > 0 && isZero) {
 		return nil, ErrZeroValue
 	}
 	r.B = remainingBytes
