@@ -10,7 +10,7 @@ package examples
 // Without it, users may encounter data-races.
 func Example_copyRace() {
 	var s OneOf
-	go s.CalculateCanotoCache()
+	go s.CacheCanoto()
 	_ = s
 
 	// Output:

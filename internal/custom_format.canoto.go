@@ -45,13 +45,9 @@ type CustomFormatCache struct {
 	FieldsOneOf uint32
 }
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
-//
-// types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*CustomFormat) CanotoSpec(...reflect.Type) *canoto.Spec {
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
+func (*CustomFormat) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	var zero CustomFormat
 	return &canoto.Spec{
 		Name: "CustomFormat",
@@ -166,11 +162,11 @@ func (c *CustomFormat) ValidCanoto() bool {
 	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
 //
 // It is not safe to copy this struct concurrently.
-func (c *CustomFormat) CalculateCanotoCache() {
+func (c *CustomFormat) CacheCanoto() {
 	var size uint64
 	var FieldsOneOf uint32
 	if !canoto.IsZero(c.A) {
@@ -185,28 +181,28 @@ func (c *CustomFormat) CalculateCanotoCache() {
 	atomic.StoreUint32(&c.canotoData.FieldsOneOf, FieldsOneOf)
 }
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
+// If CacheCanoto has not yet been called, it will return 0.
 //
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *CustomFormat) CachedCanotoSize() uint64 {
+// If the struct has been modified since the last call to CacheCanoto, the
+// returned size may be incorrect.
+func (c *CustomFormat) SizeCanoto() uint64 {
 	return atomic.LoadUint64(&c.canotoData.size)
 }
 
-// CachedWhichOneOfFields returns the previously calculated field number used
-// to represent Fields.
+// WhichCanotoFields returns the previously calculated field number used to
+// represent Fields.
 //
-// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
-// CalculateCanotoCache.
+// This value is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CacheCanoto.
 //
-// If the field has not yet been cached, it will return 0.
+// If the value has not yet been cached, it will return 0.
 //
-// If the struct has been modified since the field was last cached, the returned
+// If the struct has been modified since the value was last cached, the returned
 // field number may be incorrect.
-func (c *CustomFormat) CachedWhichOneOfFields() CustomFormatFields {
+func (c *CustomFormat) WhichCanotoFields() CustomFormatFields {
 	return CustomFormatFields(atomic.LoadUint32(&c.canotoData.FieldsOneOf))
 }
 
@@ -216,26 +212,26 @@ func (c *CustomFormat) CachedWhichOneOfFields() CustomFormatFields {
 //
 // It is not safe to copy this struct concurrently.
 func (c *CustomFormat) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := canoto.Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [canoto.Writer] and returns the
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
 // resulting [canoto.Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
 //
 // It is not safe to copy this struct concurrently.
-func (c *CustomFormat) MarshalCanotoInto(w canoto.Writer) canoto.Writer {
-	cachedWhichOneOfFields := atomic.LoadUint32(&c.canotoData.FieldsOneOf)
-	switch cachedWhichOneOfFields {
+func (c *CustomFormat) AppendCanoto(w canoto.Writer) canoto.Writer {
+	whichCanotoFields := atomic.LoadUint32(&c.canotoData.FieldsOneOf)
+	switch whichCanotoFields {
 	case CustomFormatANumber:
 		canoto.Append(&w, CustomFormatATag)
 		canoto.AppendUint(&w, c.A)

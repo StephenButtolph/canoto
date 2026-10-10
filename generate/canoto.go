@@ -147,13 +147,9 @@ func writeStruct(w io.Writer, m message, canotoSelector string) error {
 ${constants}type ${canotoData} struct {
 ${sizeCache}${oneOfCache}}
 
-// CanotoSpec returns the specification of this canoto message, describing its
-// fields and their wire types.
-//
-// types is used as a stack of ancestor messages to detect recursive specs.
-//
-// If there is not a valid specification of this type, it returns nil.
-func (*${structName}${generics}) CanotoSpec(${typesDecl}...reflect.Type) *${selector}Spec {
+// DescribeCanoto returns a [${selector}Spec] describing the fields of this
+// message and their wire types.${typesDoc}
+func (*${structName}${generics}) DescribeCanoto(${typesDecl}...reflect.Type) *${selector}Spec {
 ${appendTypes}${zero}	return &${selector}Spec{
 ${spec}	}
 }
@@ -193,43 +189,43 @@ func (c *${structName}${generics}) ValidCanoto() bool {
 ${validOneOf}${valid}	return true
 }
 
-// CalculateCanotoCache populates size and OneOf caches based on the current
-// values in the struct.${concurrencyWarning}
-func (c *${structName}${generics}) CalculateCanotoCache() {
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.${concurrencyWarning}
+func (c *${structName}${generics}) CacheCanoto() {
 ${sizeVars}${size}${assignSizeVars}}
 
-// CachedCanotoSize returns the previously calculated size of the Canoto
-// representation from CalculateCanotoCache.
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
 //
-// If CalculateCanotoCache has not yet been called, it will return 0.
+// If CacheCanoto has not yet been called, it will return 0.
 //
-// If the struct has been modified since the last call to CalculateCanotoCache,
-// the returned size may be incorrect.
-func (c *${structName}${generics}) CachedCanotoSize() uint64 {
+// If the struct has been modified since the last call to CacheCanoto, the
+// returned size may be incorrect.
+func (c *${structName}${generics}) SizeCanoto() uint64 {
 	return ${loadPrefix}c.canotoData.size${loadSuffix}
-}${oneOfCacheAccessors}
+}${whichCanoto}
 
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.${concurrencyWarning}
 func (c *${structName}${generics}) MarshalCanoto() []byte {
-	c.CalculateCanotoCache()
+	c.CacheCanoto()
 	w := ${selector}Writer{
-		B: make([]byte, 0, c.CachedCanotoSize()),
+		B: make([]byte, 0, c.SizeCanoto()),
 	}
-	w = c.MarshalCanotoInto(w)
+	w = c.AppendCanoto(w)
 	return w.B
 }
 
-// MarshalCanotoInto writes the struct into a [${selector}Writer] and returns the
+// AppendCanoto appends the struct to a [${selector}Writer] and returns the
 // resulting [${selector}Writer]. Most users should just use MarshalCanoto.
 //
-// It is assumed that CalculateCanotoCache has been called since the last
-// modification to this struct.
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
 //
 // It is assumed that this struct is ValidCanoto.${concurrencyWarning}
-func (c *${structName}${generics}) MarshalCanotoInto(w ${selector}Writer) ${selector}Writer {
-${marshal}	return w
+func (c *${structName}${generics}) AppendCanoto(w ${selector}Writer) ${selector}Writer {
+${append}	return w
 }
 `
 
@@ -255,6 +251,7 @@ ${marshal}	return w
 	generics := makeGenerics(m)
 
 	var (
+		typesDoc    string
 		typesDecl   string
 		appendTypes string
 	)
@@ -265,36 +262,38 @@ ${marshal}	return w
 		}
 	}
 	if hasSubMessages {
+		typesDoc = "\n//\n// types is used as a stack of ancestor messages to detect recursive specs."
 		typesDecl = "types "
 		appendTypes = fmt.Sprintf("\ttypes = append(types, reflect.TypeFor[%s%s]())\n", m.name, generics)
 	}
 
 	return writeTemplate(w, structTemplate, map[string]string{
-		"canotoData":          makeTemplate(m.template.Cache, messageEnv(m)),
-		"typesDecl":           typesDecl,
-		"appendTypes":         appendTypes,
-		"constants":           makeConstants(m),
-		"structName":          m.name,
-		"generics":            generics,
-		"selector":            canotoSelector,
-		"sizeCache":           makeSizeCache(m),
-		"oneOfCache":          makeOneOfCache(m),
-		"spec":                makeSpec(m, canotoSelector),
-		"unmarshalBody":       makeUnmarshalBody(m, canotoSelector),
-		"validOneOf":          makeValidOneOf(m),
-		"valid":               makeValid(m),
-		"concurrencyWarning":  concurrencyWarning,
-		"sizeVars":            makeSizeVars(m),
-		"size":                makeSize(m),
-		"assignSizeVars":      makeAssignSizeVars(m),
-		"loadPrefix":          loadPrefix,
-		"loadSuffix":          loadSuffix,
-		"storePrefix":         storePrefix,
-		"storeJoin":           storeJoin,
-		"storeSuffix":         storeSuffix,
-		"oneOfCacheAccessors": makeOneOfCacheAccessors(m),
-		"marshal":             makeMarshal(m),
-		"zero":                makeZeroVarName(m, generics),
+		"canotoData":         makeTemplate(m.template.Cache, messageEnv(m)),
+		"typesDoc":           typesDoc,
+		"typesDecl":          typesDecl,
+		"appendTypes":        appendTypes,
+		"constants":          makeConstants(m),
+		"structName":         m.name,
+		"generics":           generics,
+		"selector":           canotoSelector,
+		"sizeCache":          makeSizeCache(m),
+		"oneOfCache":         makeOneOfCache(m),
+		"spec":               makeSpec(m, canotoSelector),
+		"unmarshalBody":      makeUnmarshalBody(m, canotoSelector),
+		"validOneOf":         makeValidOneOf(m),
+		"valid":              makeValid(m),
+		"concurrencyWarning": concurrencyWarning,
+		"sizeVars":           makeSizeVars(m),
+		"size":               makeSize(m),
+		"assignSizeVars":     makeAssignSizeVars(m),
+		"loadPrefix":         loadPrefix,
+		"loadSuffix":         loadSuffix,
+		"storePrefix":        storePrefix,
+		"storeJoin":          storeJoin,
+		"storeSuffix":        storeSuffix,
+		"whichCanoto":        makeWhichCanoto(m),
+		"append":             makeAppend(m),
+		"zero":               makeZeroVarName(m, generics),
 	})
 }
 
@@ -868,7 +867,7 @@ func makeUnmarshal(m message) string {
 			c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
 			field := c.${fieldName}
 
-			// Read the first entry manually because the tag is still already
+			// Read the first entry manually because the tag is already
 			// stripped.
 			r.B = remainingBytes
 			if err := ${selector}Read${suffix}(&r, &field[0]); err != nil {
@@ -1473,7 +1472,7 @@ func makeValidOneOf(m message) string {
 			fixedRepeatedFixedBytesTemplate: functionTemplate,
 
 			values: typeTemplate{
-				single: `	if ${genericTypeCast}(&c.${fieldName}).CalculateCanotoCache(); ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize() != 0 {
+				single: `	if ${genericTypeCast}(&c.${fieldName}).CacheCanoto(); ${genericTypeCast}(&c.${fieldName}).SizeCanoto() != 0 {
 		if ${oneOf}OneOf != 0 {
 			return false
 		}
@@ -1485,7 +1484,7 @@ func makeValidOneOf(m message) string {
 		isZero := true
 		field := c.${fieldName}
 		for i := range field {
-			if ${genericTypeCast}(&field[i]).CalculateCanotoCache(); ${genericTypeCast}(&field[i]).CachedCanotoSize() != 0 {
+			if ${genericTypeCast}(&field[i]).CacheCanoto(); ${genericTypeCast}(&field[i]).SizeCanoto() != 0 {
 				isZero = false
 				break
 			}
@@ -1711,16 +1710,16 @@ func makeSize(m message) string {
 	}
 `,
 		values: typeTemplate{
-			single: `	${genericTypeCast}(&c.${fieldName}).CalculateCanotoCache()
-	if fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
+			single: `	${genericTypeCast}(&c.${fieldName}).CacheCanoto()
+	if fieldSize := ${genericTypeCast}(&c.${fieldName}).SizeCanoto(); fieldSize != 0 {
 		size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
 	}
 `,
 			repeated: `	{
 		field := c.${fieldName}
 		for i := range field {
-			${genericTypeCast}(&field[i]).CalculateCanotoCache()
-			fieldSize := ${genericTypeCast}(&field[i]).CachedCanotoSize()
+			${genericTypeCast}(&field[i]).CacheCanoto()
+			fieldSize := ${genericTypeCast}(&field[i]).SizeCanoto()
 			size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
 		}
 	}
@@ -1732,8 +1731,8 @@ func makeSize(m message) string {
 			field        = &c.${fieldName}
 		)
 		for i := range field {
-			${genericTypeCast}(&field[i]).CalculateCanotoCache()
-			fieldSize := ${genericTypeCast}(&field[i]).CachedCanotoSize()
+			${genericTypeCast}(&field[i]).CacheCanoto()
+			fieldSize := ${genericTypeCast}(&field[i]).SizeCanoto()
 			fieldSizeSum += fieldSize
 			totalSize += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize
 		}
@@ -1745,8 +1744,8 @@ func makeSize(m message) string {
 		},
 		pointers: typeTemplate{
 			single: `	if c.${fieldName} != nil {
-		${genericTypeCast}(c.${fieldName}).CalculateCanotoCache()
-		fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize()
+		${genericTypeCast}(c.${fieldName}).CacheCanoto()
+		fieldSize := ${genericTypeCast}(c.${fieldName}).SizeCanoto()
 		size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
 	}
 `,
@@ -1755,8 +1754,8 @@ func makeSize(m message) string {
 		for i := range field {
 			var fieldSize uint64
 			if field[i] != nil {
-				${genericTypeCast}(field[i]).CalculateCanotoCache()
-				innerSize := ${genericTypeCast}(field[i]).CachedCanotoSize()
+				${genericTypeCast}(field[i]).CacheCanoto()
+				innerSize := ${genericTypeCast}(field[i]).SizeCanoto()
 				fieldSize = ${selector}SizePointerPresenceTag + ${selector}SizeUint(innerSize) + innerSize
 			}
 			size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
@@ -1771,8 +1770,8 @@ func makeSize(m message) string {
 		for i := range field {
 			var fieldSize uint64
 			if field[i] != nil {
-				${genericTypeCast}(field[i]).CalculateCanotoCache()
-				innerSize := ${genericTypeCast}(field[i]).CachedCanotoSize()
+				${genericTypeCast}(field[i]).CacheCanoto()
+				innerSize := ${genericTypeCast}(field[i]).SizeCanoto()
 				fieldSize = ${selector}SizePointerPresenceTag + ${selector}SizeUint(innerSize) + innerSize
 			}
 			totalSize += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize
@@ -1801,20 +1800,20 @@ func makeAssignSizeVars(m message) string {
 	return sb.String()
 }
 
-func makeOneOfCacheAccessors(m message) string {
+func makeWhichCanoto(m message) string {
 	const template = `
 
-// CachedWhichOneOf${oneOf} returns the previously calculated field number used
-// to represent ${oneOf}.
+// WhichCanoto${oneOf} returns the previously calculated field number used to
+// represent ${oneOf}.
 //
-// This field is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
-// CalculateCanotoCache.
+// This value is cached by UnmarshalCanoto, UnmarshalCanotoFrom, and
+// CacheCanoto.
 //
-// If the field has not yet been cached, it will return 0.
+// If the value has not yet been cached, it will return 0.
 //
-// If the struct has been modified since the field was last cached, the returned
+// If the struct has been modified since the value was last cached, the returned
 // field number may be incorrect.
-func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${oneOfType} {
+func (c *${structName}${generics}) WhichCanoto${oneOf}() ${oneOfType} {
 	return ${oneOfCast}(${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix})
 }`
 	var (
@@ -1847,7 +1846,7 @@ func (c *${structName}${generics}) CachedWhichOneOf${oneOf}() ${oneOfType} {
 	return sb.String()
 }
 
-func getMarshalTemplate(isOneOf bool) messageTemplate {
+func getAppendTemplate(isOneOf bool) messageTemplate {
 	const (
 		intTemplateBody = `		${selector}Append(&w, ${fieldTagConst})
 		${selector}Append${suffix}(&w, c.${fieldName})
@@ -1861,28 +1860,28 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 		fixedBytesTemplateBody = `		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendBytes(&w, (&c.${fieldName})[:])
 `
-		valueTemplateBodyOneOf = `		fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize()
+		valueTemplateBodyOneOf = `		fieldSize := ${genericTypeCast}(&c.${fieldName}).SizeCanoto()
 		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendUint(&w, fieldSize)
-		w = ${genericTypeCast}(&c.${fieldName}).MarshalCanotoInto(w)
+		w = ${genericTypeCast}(&c.${fieldName}).AppendCanoto(w)
 `
-		pointerTemplateBodyOneOf = `		fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize()
+		pointerTemplateBodyOneOf = `		fieldSize := ${genericTypeCast}(c.${fieldName}).SizeCanoto()
 		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendUint(&w, fieldSize)
-		w = ${genericTypeCast}(c.${fieldName}).MarshalCanotoInto(w)
+		w = ${genericTypeCast}(c.${fieldName}).AppendCanoto(w)
 `
 
-		valueTemplateRegular = `	if fieldSize := ${genericTypeCast}(&c.${fieldName}).CachedCanotoSize(); fieldSize != 0 {
+		valueTemplateRegular = `	if fieldSize := ${genericTypeCast}(&c.${fieldName}).SizeCanoto(); fieldSize != 0 {
 		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendUint(&w, fieldSize)
-		w = ${genericTypeCast}(&c.${fieldName}).MarshalCanotoInto(w)
+		w = ${genericTypeCast}(&c.${fieldName}).AppendCanoto(w)
 	}
 `
 		pointerTemplateRegular = `	if c.${fieldName} != nil {
-		fieldSize := ${genericTypeCast}(c.${fieldName}).CachedCanotoSize()
+		fieldSize := ${genericTypeCast}(c.${fieldName}).SizeCanoto()
 		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendUint(&w, fieldSize)
-		w = ${genericTypeCast}(c.${fieldName}).MarshalCanotoInto(w)
+		w = ${genericTypeCast}(c.${fieldName}).AppendCanoto(w)
 	}
 `
 	)
@@ -1999,8 +1998,8 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 		field := c.${fieldName}
 		for i := range field {
 			${selector}Append(&w, ${fieldTagConst})
-			${selector}AppendUint(&w, ${genericTypeCast}(&field[i]).CachedCanotoSize())
-			w = ${genericTypeCast}(&field[i]).MarshalCanotoInto(w)
+			${selector}AppendUint(&w, ${genericTypeCast}(&field[i]).SizeCanoto())
+			w = ${genericTypeCast}(&field[i]).AppendCanoto(w)
 		}
 	}
 `,
@@ -2008,7 +2007,7 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 		isZero := true
 		field := &c.${fieldName}
 		for i := range field {
-			if ${genericTypeCast}(&field[i]).CachedCanotoSize() != 0 {
+			if ${genericTypeCast}(&field[i]).SizeCanoto() != 0 {
 				isZero = false
 				break
 			}
@@ -2016,8 +2015,8 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 		if !isZero {
 			for i := range field {
 				${selector}Append(&w, ${fieldTagConst})
-				${selector}AppendUint(&w, ${genericTypeCast}(&field[i]).CachedCanotoSize())
-				w = ${genericTypeCast}(&field[i]).MarshalCanotoInto(w)
+				${selector}AppendUint(&w, ${genericTypeCast}(&field[i]).SizeCanoto())
+				w = ${genericTypeCast}(&field[i]).AppendCanoto(w)
 			}
 		}
 	}
@@ -2032,12 +2031,12 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 			if field[i] == nil {
 				${selector}Append(&w, ${selector}EmptyBytes)
 			} else {
-				innerSize := ${genericTypeCast}(field[i]).CachedCanotoSize()
+				innerSize := ${genericTypeCast}(field[i]).SizeCanoto()
 				fieldSize := ${selector}SizePointerPresenceTag + ${selector}SizeUint(innerSize) + innerSize
 				${selector}AppendUint(&w, fieldSize)
 				${selector}Append(&w, ${selector}PointerPresenceTag)
 				${selector}AppendUint(&w, innerSize)
-				w = ${genericTypeCast}(field[i]).MarshalCanotoInto(w)
+				w = ${genericTypeCast}(field[i]).AppendCanoto(w)
 			}
 		}
 	}
@@ -2048,12 +2047,12 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 			if (&c.${fieldName})[i] == nil {
 				${selector}Append(&w, ${selector}EmptyBytes)
 			} else {
-				innerSize := ${genericTypeCast}((&c.${fieldName})[i]).CachedCanotoSize()
+				innerSize := ${genericTypeCast}((&c.${fieldName})[i]).SizeCanoto()
 				fieldSize := ${selector}SizePointerPresenceTag + ${selector}SizeUint(innerSize) + innerSize
 				${selector}AppendUint(&w, fieldSize)
 				${selector}Append(&w, ${selector}PointerPresenceTag)
 				${selector}AppendUint(&w, innerSize)
-				w = ${genericTypeCast}((&c.${fieldName})[i]).MarshalCanotoInto(w)
+				w = ${genericTypeCast}((&c.${fieldName})[i]).AppendCanoto(w)
 			}
 		}
 	}
@@ -2062,10 +2061,10 @@ func getMarshalTemplate(isOneOf bool) messageTemplate {
 	}
 }
 
-func makeMarshal(m message) string {
+func makeAppend(m message) string {
 	var (
-		regularTmpl = getMarshalTemplate(false)
-		oneOfTmpl   = getMarshalTemplate(true)
+		regularTmpl = getAppendTemplate(false)
+		oneOfTmpl   = getAppendTemplate(true)
 
 		sb strings.Builder
 
@@ -2087,7 +2086,7 @@ func makeMarshal(m message) string {
 			return
 		}
 
-		varName := "cachedWhichOneOf" + currentOneOfName
+		varName := "whichCanoto" + currentOneOfName
 		if !declaredOneOfNames[currentOneOfName] {
 			fmt.Fprintf(&sb, "\t%s := %sc.canotoData.%sOneOf%s\n", varName, loadPrefix, currentOneOfName, loadSuffix)
 			declaredOneOfNames[currentOneOfName] = true
