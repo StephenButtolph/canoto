@@ -1283,7 +1283,6 @@ func (c *Node) UnmarshalCanotoFrom(r canoto.Reader) error {
 func (c *Node) ValidCanoto() bool {
 	var OneOfOneOf uint32
 	if c.Next != nil {
-		(c.Next).CalculateCanotoCache()
 		if OneOfOneOf != 0 {
 			return false
 		}

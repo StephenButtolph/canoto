@@ -1501,7 +1501,6 @@ func makeValidOneOf(m message) string {
 			},
 			pointers: typeTemplate{
 				single: `	if c.${fieldName} != nil {
-		${genericTypeCast}(c.${fieldName}).CalculateCanotoCache()
 		if ${oneOf}OneOf != 0 {
 			return false
 		}
