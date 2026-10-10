@@ -2251,6 +2251,12 @@ func unmarshalPackedVarint[T comparable](
 		if len(msgBytes) == 0 {
 			return nil, ErrZeroValue
 		}
+		// To return the same errors as ReadUints and ReadInts, a truncated
+		// final varint must be reported before any errors in the earlier
+		// varints.
+		if msgBytes[len(msgBytes)-1] >= continuationMask {
+			return nil, ErrInvalidLength
+		}
 		count = CountInts(msgBytes)
 	}
 	values := make([]T, count)
