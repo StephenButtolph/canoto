@@ -1427,49 +1427,48 @@ func makeUnmarshal(m message) string {
 	})
 }
 
-func makeCheckOneOf(m message) string {
-	const oneOfSuffix = "OneOf"
+func getCheckOneOfTemplate(isFirst bool) messageTemplate {
 	var (
-		template = "\tvar %s uint32\n"
-		sb       strings.Builder
+		check       string
+		indentCheck string
 	)
-	for _, oneOf := range m.OneOfs() {
-		fmt.Fprintf(&sb, template, oneOf+oneOfSuffix)
-	}
-
-	const (
-		functionTemplate = `	if !${selector}IsZero(c.${fieldName}) {
-		if ${oneOf}OneOf != 0 {
+	if !isFirst {
+		check = `		if ${oneOf}OneOf != 0 {
 			return false
 		}
-		${oneOf}OneOf = ${fieldNumberConst}
-	}
 `
-		repeatedTemplate = `	if len(c.${fieldName}) != 0 {
-		if ${oneOf}OneOf != 0 {
-			return false
-		}
-		${oneOf}OneOf = ${fieldNumberConst}
-	}
+		indentCheck = `			if ${oneOf}OneOf != 0 {
+				return false
+			}
 `
-	)
-	var (
-		primitiveTemplate = typeTemplate{
-			single:        functionTemplate,
-			repeated:      repeatedTemplate,
-			fixedRepeated: functionTemplate,
-		}
-		t = messageTemplate{
-			ints:    primitiveTemplate,
-			fints:   primitiveTemplate,
-			bools:   primitiveTemplate,
-			strings: primitiveTemplate,
+	}
 
-			bytesTemplate:              repeatedTemplate,
-			repeatedBytesTemplate:      repeatedTemplate,
-			fixedBytesTemplate:         functionTemplate,
-			repeatedFixedBytesTemplate: repeatedTemplate,
-			fixedRepeatedBytesTemplate: `	{
+	functionTemplate := fmt.Sprintf(`	if !${selector}IsZero(c.${fieldName}) {
+%s		${oneOf}OneOf = ${fieldNumberConst}
+	}
+`, check)
+	repeatedTemplate := fmt.Sprintf(`	if len(c.${fieldName}) != 0 {
+%s		${oneOf}OneOf = ${fieldNumberConst}
+	}
+`, check)
+
+	primitiveTemplate := typeTemplate{
+		single:        functionTemplate,
+		repeated:      repeatedTemplate,
+		fixedRepeated: functionTemplate,
+	}
+
+	return messageTemplate{
+		ints:    primitiveTemplate,
+		fints:   primitiveTemplate,
+		bools:   primitiveTemplate,
+		strings: primitiveTemplate,
+
+		bytesTemplate:              repeatedTemplate,
+		repeatedBytesTemplate:      repeatedTemplate,
+		fixedBytesTemplate:         functionTemplate,
+		repeatedFixedBytesTemplate: repeatedTemplate,
+		fixedRepeatedBytesTemplate: fmt.Sprintf(`	{
 		isZero := true
 		for _, v := range c.${fieldName} {
 			if len(v) != 0 {
@@ -1478,25 +1477,19 @@ func makeCheckOneOf(m message) string {
 			}
 		}
 		if !isZero {
-			if ${oneOf}OneOf != 0 {
-				return false
-			}
-			${oneOf}OneOf = ${fieldNumberConst}
+%s			${oneOf}OneOf = ${fieldNumberConst}
 		}
 	}
-`,
-			fixedRepeatedFixedBytesTemplate: functionTemplate,
+`, indentCheck),
+		fixedRepeatedFixedBytesTemplate: functionTemplate,
 
-			values: typeTemplate{
-				single: `	if ${genericTypeCast}(&c.${fieldName}).SizeCanoto() != 0 {
-		if ${oneOf}OneOf != 0 {
-			return false
-		}
-		${oneOf}OneOf = ${fieldNumberConst}
+		values: typeTemplate{
+			single: fmt.Sprintf(`	if ${genericTypeCast}(&c.${fieldName}).SizeCanoto() != 0 {
+%s		${oneOf}OneOf = ${fieldNumberConst}
 	}
-`,
-				repeated: repeatedTemplate,
-				fixedRepeated: `	{
+`, check),
+			repeated: repeatedTemplate,
+			fixedRepeated: fmt.Sprintf(`	{
 		isZero := true
 		field := c.${fieldName}
 		for i := range field {
@@ -1506,37 +1499,58 @@ func makeCheckOneOf(m message) string {
 			}
 		}
 		if !isZero {
-			if ${oneOf}OneOf != 0 {
-				return false
-			}
-			${oneOf}OneOf = ${fieldNumberConst}
+%s			${oneOf}OneOf = ${fieldNumberConst}
 		}
 	}
-`,
-			},
-			pointers: typeTemplate{
-				single: `	if c.${fieldName} != nil {
-		if ${oneOf}OneOf != 0 {
-			return false
-		}
-		${oneOf}OneOf = ${fieldNumberConst}
+`, indentCheck),
+		},
+		pointers: typeTemplate{
+			single: fmt.Sprintf(`	if c.${fieldName} != nil {
+%s		${oneOf}OneOf = ${fieldNumberConst}
 	}
-`,
-				repeated: repeatedTemplate,
-				fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
-		if ${oneOf}OneOf != 0 {
-			return false
-		}
-		${oneOf}OneOf = ${fieldNumberConst}
+`, check),
+			repeated: repeatedTemplate,
+			fixedRepeated: fmt.Sprintf(`	if !${selector}IsZero(c.${fieldName}) {
+%s		${oneOf}OneOf = ${fieldNumberConst}
 	}
-`,
-			},
-		}
-	)
+`, check),
+		},
+	}
+}
 
+func makeCheckOneOf(m message) string {
+	oneOfCounts := make(map[string]int)
 	for _, f := range m.fields {
-		if f.oneOfName == "" {
+		if f.oneOfName != "" {
+			oneOfCounts[f.oneOfName]++
+		}
+	}
+
+	const oneOfSuffix = "OneOf"
+	var (
+		template = "\tvar %s uint32\n"
+		sb       strings.Builder
+	)
+	for _, oneOf := range m.OneOfs() {
+		if oneOfCounts[oneOf] <= 1 {
 			continue
+		}
+		fmt.Fprintf(&sb, template, oneOf+oneOfSuffix)
+	}
+
+	firstTemplate := getCheckOneOfTemplate(true)
+	subsequentTemplate := getCheckOneOfTemplate(false)
+
+	seenOneOfs := make(map[string]bool)
+	for _, f := range m.fields {
+		if f.oneOfName == "" || oneOfCounts[f.oneOfName] <= 1 {
+			continue
+		}
+
+		t := subsequentTemplate
+		if !seenOneOfs[f.oneOfName] {
+			seenOneOfs[f.oneOfName] = true
+			t = firstTemplate
 		}
 
 		_ = writeField(&sb, m, f, t)

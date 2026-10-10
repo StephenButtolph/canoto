@@ -291,9 +291,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.AOneOf, canotoNumber_OneOf__A1) != 0 {
-				return canoto.ErrDuplicateOneOf
-			}
+			atomic.StoreUint32(&c.canotoData.AOneOf, canotoNumber_OneOf__A1)
 
 			if err := canoto.ReadInt(&r, &c.A1); err != nil {
 				return err
@@ -305,9 +303,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.BOneOf, canotoNumber_OneOf__B1) != 0 {
-				return canoto.ErrDuplicateOneOf
-			}
+			atomic.StoreUint32(&c.canotoData.BOneOf, canotoNumber_OneOf__B1)
 
 			if err := canoto.ReadInt(&r, &c.B1); err != nil {
 				return err
@@ -456,15 +452,9 @@ func (c *OneOf) CheckCanoto() bool {
 	var AOneOf uint32
 	var BOneOf uint32
 	if !canoto.IsZero(c.A1) {
-		if AOneOf != 0 {
-			return false
-		}
 		AOneOf = canotoNumber_OneOf__A1
 	}
 	if !canoto.IsZero(c.B1) {
-		if BOneOf != 0 {
-			return false
-		}
 		BOneOf = canotoNumber_OneOf__B1
 	}
 	if !canoto.IsZero(c.B2) {
@@ -659,9 +649,7 @@ func (c *OneOfNoCopy) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.AOneOf.Swap(canotoNumber_OneOfNoCopy__A1) != 0 {
-				return canoto.ErrDuplicateOneOf
-			}
+			c.canotoData.AOneOf.Store(canotoNumber_OneOfNoCopy__A1)
 
 			if err := canoto.ReadInt(&r, &c.A1); err != nil {
 				return err
@@ -673,9 +661,7 @@ func (c *OneOfNoCopy) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if c.canotoData.BOneOf.Swap(canotoNumber_OneOfNoCopy__B1) != 0 {
-				return canoto.ErrDuplicateOneOf
-			}
+			c.canotoData.BOneOf.Store(canotoNumber_OneOfNoCopy__B1)
 
 			if err := canoto.ReadInt(&r, &c.B1); err != nil {
 				return err
@@ -820,15 +806,9 @@ func (c *OneOfNoCopy) CheckCanoto() bool {
 	var AOneOf uint32
 	var BOneOf uint32
 	if !canoto.IsZero(c.A1) {
-		if AOneOf != 0 {
-			return false
-		}
 		AOneOf = canotoNumber_OneOfNoCopy__A1
 	}
 	if !canoto.IsZero(c.B1) {
-		if BOneOf != 0 {
-			return false
-		}
 		BOneOf = canotoNumber_OneOfNoCopy__B1
 	}
 	if !canoto.IsZero(c.B2) {
@@ -977,9 +957,7 @@ func (c *unexportedOneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.AOneOf, canotoNumber_unexportedOneOf__A1) != 0 {
-				return canoto.ErrDuplicateOneOf
-			}
+			atomic.StoreUint32(&c.canotoData.AOneOf, canotoNumber_unexportedOneOf__A1)
 
 			if err := canoto.ReadInt(&r, &c.A1); err != nil {
 				return err
@@ -1063,9 +1041,6 @@ func (c *unexportedOneOf) ValidCanoto() bool {
 func (c *unexportedOneOf) CheckCanoto() bool {
 	var AOneOf uint32
 	if !canoto.IsZero(c.A1) {
-		if AOneOf != 0 {
-			return false
-		}
 		AOneOf = canotoNumber_unexportedOneOf__A1
 	}
 	if !canoto.IsZero(c.A2) {
@@ -1202,9 +1177,7 @@ func (c *ValueOneOf) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_ValueOneOf__Value) != 0 {
-				return canoto.ErrDuplicateOneOf
-			}
+			atomic.StoreUint32(&c.canotoData.TypeOneOf, canotoNumber_ValueOneOf__Value)
 
 			// Read the bytes for the field.
 			originalUnsafe := r.Unsafe
@@ -1306,9 +1279,6 @@ func (c *ValueOneOf) ValidCanoto() bool {
 func (c *ValueOneOf) CheckCanoto() bool {
 	var TypeOneOf uint32
 	if (&c.Value).SizeCanoto() != 0 {
-		if TypeOneOf != 0 {
-			return false
-		}
 		TypeOneOf = canotoNumber_ValueOneOf__Value
 	}
 	if !canoto.IsZero(c.Int) {
@@ -1460,9 +1430,7 @@ func (c *Node) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.OneOfOneOf, canotoNumber_Node__Next) != 0 {
-				return canoto.ErrDuplicateOneOf
-			}
+			atomic.StoreUint32(&c.canotoData.OneOfOneOf, canotoNumber_Node__Next)
 
 			// Read the bytes for the field.
 			originalUnsafe := r.Unsafe
@@ -1546,13 +1514,6 @@ func (c *Node) ValidCanoto() bool {
 // It is assumed that CacheCanoto has been called since the last modification
 // to this struct.
 func (c *Node) CheckCanoto() bool {
-	var OneOfOneOf uint32
-	if c.Next != nil {
-		if OneOfOneOf != 0 {
-			return false
-		}
-		OneOfOneOf = canotoNumber_Node__Next
-	}
 	if c.Next != nil && !(c.Next).CheckCanoto() {
 		return false
 	}
