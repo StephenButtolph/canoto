@@ -1013,6 +1013,81 @@ func testReadFint32s[S ~[]E, E Int32](t *testing.T, data []byte) {
 	require.ErrorIs(ReadFint32s(r, &got), io.ErrUnexpectedEOF)
 }
 
+func TestReadFint32sInto(t *testing.T) {
+	validTests := []validTest[[]uint32]{
+		{"00", []uint32{}},
+		{"0401000000", []uint32{1}},
+		{"0887a5c3e1ffffffff", []uint32{0xe1c3a587, math.MaxUint32}},
+	}
+	for _, test := range validTests {
+		t.Run(test.hex, func(t *testing.T) {
+			require := require.New(t)
+
+			r := &Reader{B: test.Bytes(t)}
+			got := make([]uint32, len(test.want))
+			require.NoError(ReadFint32sInto(r, got))
+			require.Equal(test.want, got)
+			require.Empty(r.B)
+		})
+	}
+
+	invalidTests := []struct {
+		hex    string
+		length int
+		want   error
+	}{
+		{"", 1, io.ErrUnexpectedEOF},
+		{"04", 1, io.ErrUnexpectedEOF},
+		{"04000000", 1, io.ErrUnexpectedEOF},
+		{"00", 1, ErrInvalidLength},
+		{"0401000000", 0, ErrInvalidLength},
+		{"0401000000", 2, ErrInvalidLength},
+		{"0100", 1, ErrInvalidLength},
+	}
+	for _, test := range invalidTests {
+		t.Run(test.hex+"/"+strconv.Itoa(test.length), func(t *testing.T) {
+			bytes, err := hex.DecodeString(test.hex)
+			require.NoError(t, err)
+
+			r := &Reader{B: bytes}
+			err = ReadFint32sInto(r, make([]uint32, test.length))
+			require.ErrorIs(t, err, test.want)
+		})
+	}
+}
+
+func FuzzReadFint32sInto_int32(f *testing.F)  { f.Fuzz(testReadFint32sInto[[]int32]) }
+func FuzzReadFint32sInto_uint32(f *testing.F) { f.Fuzz(testReadFint32sInto[[]uint32]) }
+
+func testReadFint32sInto[S ~[]E, E Int32](t *testing.T, data []byte) {
+	require := require.New(t)
+
+	var nums S
+	fz := fuzzer.NewFuzzer(data)
+	fz.Fill(&nums)
+
+	w := &Writer{}
+	AppendFint32s(w, nums)
+
+	r := &Reader{B: w.B}
+	got := make(S, len(nums))
+	require.NoError(ReadFint32sInto(r, got))
+	require.True(slices.Equal(nums, got))
+	require.Empty(r.B)
+
+	// Reading into a slice of any other length must fail.
+	r = &Reader{B: w.B}
+	require.ErrorIs(ReadFint32sInto(r, make(S, len(nums)+1)), ErrInvalidLength)
+	if len(nums) > 0 {
+		r = &Reader{B: w.B}
+		require.ErrorIs(ReadFint32sInto(r, make(S, len(nums)-1)), ErrInvalidLength)
+	}
+
+	// Dropping the last byte must invalidate the length.
+	r = &Reader{B: w.B[:len(w.B)-1]}
+	require.ErrorIs(ReadFint32sInto(r, got), io.ErrUnexpectedEOF)
+}
+
 func TestAppendFint32s(t *testing.T) {
 	writers := map[string]*Writer{
 		"empty":            {},
@@ -1236,6 +1311,81 @@ func testReadFint64s[S ~[]E, E Int64](t *testing.T, data []byte) {
 	require.ErrorIs(ReadFint64s(r, &got), io.ErrUnexpectedEOF)
 }
 
+func TestReadFint64sInto(t *testing.T) {
+	validTests := []validTest[[]uint64]{
+		{"00", []uint64{}},
+		{"080100000000000000", []uint64{1}},
+		{"108796a5b4c3d2e1f0ffffffffffffffff", []uint64{0xf0e1d2c3b4a59687, math.MaxUint64}},
+	}
+	for _, test := range validTests {
+		t.Run(test.hex, func(t *testing.T) {
+			require := require.New(t)
+
+			r := &Reader{B: test.Bytes(t)}
+			got := make([]uint64, len(test.want))
+			require.NoError(ReadFint64sInto(r, got))
+			require.Equal(test.want, got)
+			require.Empty(r.B)
+		})
+	}
+
+	invalidTests := []struct {
+		hex    string
+		length int
+		want   error
+	}{
+		{"", 1, io.ErrUnexpectedEOF},
+		{"08", 1, io.ErrUnexpectedEOF},
+		{"0800000000000000", 1, io.ErrUnexpectedEOF},
+		{"00", 1, ErrInvalidLength},
+		{"080100000000000000", 0, ErrInvalidLength},
+		{"080100000000000000", 2, ErrInvalidLength},
+		{"0400000000", 1, ErrInvalidLength},
+	}
+	for _, test := range invalidTests {
+		t.Run(test.hex+"/"+strconv.Itoa(test.length), func(t *testing.T) {
+			bytes, err := hex.DecodeString(test.hex)
+			require.NoError(t, err)
+
+			r := &Reader{B: bytes}
+			err = ReadFint64sInto(r, make([]uint64, test.length))
+			require.ErrorIs(t, err, test.want)
+		})
+	}
+}
+
+func FuzzReadFint64sInto_int64(f *testing.F)  { f.Fuzz(testReadFint64sInto[[]int64]) }
+func FuzzReadFint64sInto_uint64(f *testing.F) { f.Fuzz(testReadFint64sInto[[]uint64]) }
+
+func testReadFint64sInto[S ~[]E, E Int64](t *testing.T, data []byte) {
+	require := require.New(t)
+
+	var nums S
+	fz := fuzzer.NewFuzzer(data)
+	fz.Fill(&nums)
+
+	w := &Writer{}
+	AppendFint64s(w, nums)
+
+	r := &Reader{B: w.B}
+	got := make(S, len(nums))
+	require.NoError(ReadFint64sInto(r, got))
+	require.True(slices.Equal(nums, got))
+	require.Empty(r.B)
+
+	// Reading into a slice of any other length must fail.
+	r = &Reader{B: w.B}
+	require.ErrorIs(ReadFint64sInto(r, make(S, len(nums)+1)), ErrInvalidLength)
+	if len(nums) > 0 {
+		r = &Reader{B: w.B}
+		require.ErrorIs(ReadFint64sInto(r, make(S, len(nums)-1)), ErrInvalidLength)
+	}
+
+	// Dropping the last byte must invalidate the length.
+	r = &Reader{B: w.B[:len(w.B)-1]}
+	require.ErrorIs(ReadFint64sInto(r, got), io.ErrUnexpectedEOF)
+}
+
 func TestAppendFint64s(t *testing.T) {
 	writers := map[string]*Writer{
 		"empty":            {},
@@ -1391,6 +1541,84 @@ func FuzzReadBools(f *testing.F) {
 		// Dropping the last byte must invalidate the length.
 		r = &Reader{B: w.B[:len(w.B)-1]}
 		require.ErrorIs(ReadBools(r, &got), io.ErrUnexpectedEOF)
+	})
+}
+
+func TestReadBoolsInto(t *testing.T) {
+	validTests := []validTest[[]bool]{
+		{"00", []bool{}},
+		{"0100", []bool{false}},
+		{"0101", []bool{true}},
+		{"03010001", []bool{true, false, true}},
+	}
+	for _, test := range validTests {
+		t.Run(test.hex, func(t *testing.T) {
+			require := require.New(t)
+
+			r := &Reader{B: test.Bytes(t)}
+			got := make([]bool, len(test.want))
+			require.NoError(ReadBoolsInto(r, got))
+			require.Equal(test.want, got)
+			require.Empty(r.B)
+		})
+	}
+
+	invalidTests := []struct {
+		hex    string
+		length int
+		want   error
+	}{
+		{"", 1, io.ErrUnexpectedEOF},
+		{"01", 1, io.ErrUnexpectedEOF},
+		{"0102", 1, ErrInvalidBool},
+		{"01ff", 1, ErrInvalidBool},
+		{"03010002", 3, ErrInvalidBool},
+		{"00", 1, ErrInvalidLength},
+		{"0101", 0, ErrInvalidLength},
+		{"0101", 2, ErrInvalidLength},
+		// The length is checked before the values.
+		{"0102", 2, ErrInvalidLength},
+	}
+	for _, test := range invalidTests {
+		t.Run(test.hex+"/"+strconv.Itoa(test.length), func(t *testing.T) {
+			bytes, err := hex.DecodeString(test.hex)
+			require.NoError(t, err)
+
+			r := &Reader{B: bytes}
+			err = ReadBoolsInto(r, make([]bool, test.length))
+			require.ErrorIs(t, err, test.want)
+		})
+	}
+}
+
+func FuzzReadBoolsInto(f *testing.F) {
+	f.Fuzz(func(t *testing.T, data []byte) {
+		require := require.New(t)
+
+		var nums []bool
+		fz := fuzzer.NewFuzzer(data)
+		fz.Fill(&nums)
+
+		w := &Writer{}
+		AppendBools(w, nums)
+
+		r := &Reader{B: w.B}
+		got := make([]bool, len(nums))
+		require.NoError(ReadBoolsInto(r, got))
+		require.True(slices.Equal(nums, got))
+		require.Empty(r.B)
+
+		// Reading into a slice of any other length must fail.
+		r = &Reader{B: w.B}
+		require.ErrorIs(ReadBoolsInto(r, make([]bool, len(nums)+1)), ErrInvalidLength)
+		if len(nums) > 0 {
+			r = &Reader{B: w.B}
+			require.ErrorIs(ReadBoolsInto(r, make([]bool, len(nums)-1)), ErrInvalidLength)
+		}
+
+		// Dropping the last byte must invalidate the length.
+		r = &Reader{B: w.B[:len(w.B)-1]}
+		require.ErrorIs(ReadBoolsInto(r, got), io.ErrUnexpectedEOF)
 	})
 }
 
@@ -1842,6 +2070,43 @@ func FuzzSpec(f *testing.F) {
 		require.NoError(err)
 		require.True(bytes.Equal(b, actualBytes))
 	})
+}
+
+// TestFixedRepeatedFixedSize_InvalidLength verifies that a packed fixed size
+// field whose length doesn't match the array is rejected with
+// [ErrInvalidLength], both by the generated code and by [Unmarshal].
+func TestFixedRepeatedFixedSize_InvalidLength(t *testing.T) {
+	tests := []struct {
+		name    string
+		tag     string
+		payload string
+	}{
+		{"fixed32/short", canotoTag_SpecFuzzer__FixedRepeatedFixed32, "0100000002000000"},
+		{"fixed32/long", canotoTag_SpecFuzzer__FixedRepeatedFixed32, "01000000020000000300000004000000"},
+		{"fixed64/short", canotoTag_SpecFuzzer__FixedRepeatedFixed64, "01000000000000000200000000000000"},
+		{"fixed64/long", canotoTag_SpecFuzzer__FixedRepeatedFixed64, "0100000000000000020000000000000003000000000000000400000000000000"},
+		{"bool/short", canotoTag_SpecFuzzer__FixedRepeatedBool, "0100"},
+		{"bool/long", canotoTag_SpecFuzzer__FixedRepeatedBool, "01000101"},
+		{"bool/short invalid", canotoTag_SpecFuzzer__FixedRepeatedBool, "0102"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			require := require.New(t)
+
+			payload, err := hex.DecodeString(test.payload)
+			require.NoError(err)
+
+			w := &Writer{}
+			Append(w, test.tag)
+			AppendBytes(w, payload)
+
+			var msg SpecFuzzer
+			require.ErrorIs(msg.UnmarshalCanoto(w.B), ErrInvalidLength)
+
+			_, err = Unmarshal(msg.CanotoSpec(), w.B)
+			require.ErrorIs(err, ErrInvalidLength)
+		})
+	}
 }
 
 func TestMarshalConcurrent(t *testing.T) {
