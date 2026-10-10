@@ -753,7 +753,6 @@ func (c *FieldType) ValidCanoto() bool {
 		TypeOneOf = canotoNumber_FieldType__TypeFixedBytes
 	}
 	if c.TypeMessage != nil {
-		(c.TypeMessage).CalculateCanotoCache()
 		if TypeOneOf != 0 {
 			return false
 		}
