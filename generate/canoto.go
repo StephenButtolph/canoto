@@ -1427,97 +1427,6 @@ func makeUnmarshal(m message) string {
 	})
 }
 
-func getCheckOneOfTemplate(isFirst bool) messageTemplate {
-	var (
-		check       string
-		indentCheck string
-	)
-	if !isFirst {
-		check = `		if ${oneOf}OneOf != 0 {
-			return false
-		}
-`
-		indentCheck = `			if ${oneOf}OneOf != 0 {
-				return false
-			}
-`
-	}
-
-	functionTemplate := fmt.Sprintf(`	if !${selector}IsZero(c.${fieldName}) {
-%s		${oneOf}OneOf = ${fieldNumberConst}
-	}
-`, check)
-	repeatedTemplate := fmt.Sprintf(`	if len(c.${fieldName}) != 0 {
-%s		${oneOf}OneOf = ${fieldNumberConst}
-	}
-`, check)
-
-	primitiveTemplate := typeTemplate{
-		single:        functionTemplate,
-		repeated:      repeatedTemplate,
-		fixedRepeated: functionTemplate,
-	}
-
-	return messageTemplate{
-		ints:    primitiveTemplate,
-		fints:   primitiveTemplate,
-		bools:   primitiveTemplate,
-		strings: primitiveTemplate,
-
-		bytesTemplate:              repeatedTemplate,
-		repeatedBytesTemplate:      repeatedTemplate,
-		fixedBytesTemplate:         functionTemplate,
-		repeatedFixedBytesTemplate: repeatedTemplate,
-		fixedRepeatedBytesTemplate: fmt.Sprintf(`	{
-		isZero := true
-		for _, v := range c.${fieldName} {
-			if len(v) != 0 {
-				isZero = false
-				break
-			}
-		}
-		if !isZero {
-%s			${oneOf}OneOf = ${fieldNumberConst}
-		}
-	}
-`, indentCheck),
-		fixedRepeatedFixedBytesTemplate: functionTemplate,
-
-		values: typeTemplate{
-			single: fmt.Sprintf(`	if ${genericTypeCast}(&c.${fieldName}).SizeCanoto() != 0 {
-%s		${oneOf}OneOf = ${fieldNumberConst}
-	}
-`, check),
-			repeated: repeatedTemplate,
-			fixedRepeated: fmt.Sprintf(`	{
-		isZero := true
-		field := c.${fieldName}
-		for i := range field {
-			if ${genericTypeCast}(&field[i]).SizeCanoto() != 0 {
-				isZero = false
-				break
-			}
-		}
-		if !isZero {
-%s			${oneOf}OneOf = ${fieldNumberConst}
-		}
-	}
-`, indentCheck),
-		},
-		pointers: typeTemplate{
-			single: fmt.Sprintf(`	if c.${fieldName} != nil {
-%s		${oneOf}OneOf = ${fieldNumberConst}
-	}
-`, check),
-			repeated: repeatedTemplate,
-			fixedRepeated: fmt.Sprintf(`	if !${selector}IsZero(c.${fieldName}) {
-%s		${oneOf}OneOf = ${fieldNumberConst}
-	}
-`, check),
-		},
-	}
-}
-
 func makeCheckOneOf(m message) string {
 	oneOfCounts := make(map[string]int)
 	for _, f := range m.fields {
@@ -1538,19 +1447,85 @@ func makeCheckOneOf(m message) string {
 		fmt.Fprintf(&sb, template, oneOf+oneOfSuffix)
 	}
 
-	firstTemplate := getCheckOneOfTemplate(true)
-	subsequentTemplate := getCheckOneOfTemplate(false)
+	const (
+		functionTemplate = `	if !${selector}IsZero(c.${fieldName}) {${checkDuplicateOneOf}
+		${oneOf}OneOf = ${fieldNumberConst}
+	}
+`
+		repeatedTemplate = `	if len(c.${fieldName}) != 0 {${checkDuplicateOneOf}
+		${oneOf}OneOf = ${fieldNumberConst}
+	}
+`
+	)
+	var (
+		primitiveTemplate = typeTemplate{
+			single:        functionTemplate,
+			repeated:      repeatedTemplate,
+			fixedRepeated: functionTemplate,
+		}
+		t = messageTemplate{
+			ints:    primitiveTemplate,
+			fints:   primitiveTemplate,
+			bools:   primitiveTemplate,
+			strings: primitiveTemplate,
 
-	seenOneOfs := make(map[string]bool)
+			bytesTemplate:              repeatedTemplate,
+			repeatedBytesTemplate:      repeatedTemplate,
+			fixedBytesTemplate:         functionTemplate,
+			repeatedFixedBytesTemplate: repeatedTemplate,
+			fixedRepeatedBytesTemplate: `	{
+		isZero := true
+		for _, v := range c.${fieldName} {
+			if len(v) != 0 {
+				isZero = false
+				break
+			}
+		}
+		if !isZero {${checkDuplicateOneOfIndent}
+			${oneOf}OneOf = ${fieldNumberConst}
+		}
+	}
+`,
+			fixedRepeatedFixedBytesTemplate: functionTemplate,
+
+			values: typeTemplate{
+				single: `	if ${genericTypeCast}(&c.${fieldName}).SizeCanoto() != 0 {${checkDuplicateOneOf}
+		${oneOf}OneOf = ${fieldNumberConst}
+	}
+`,
+				repeated: repeatedTemplate,
+				fixedRepeated: `	{
+		isZero := true
+		field := c.${fieldName}
+		for i := range field {
+			if ${genericTypeCast}(&field[i]).SizeCanoto() != 0 {
+				isZero = false
+				break
+			}
+		}
+		if !isZero {${checkDuplicateOneOfIndent}
+			${oneOf}OneOf = ${fieldNumberConst}
+		}
+	}
+`,
+			},
+			pointers: typeTemplate{
+				single: `	if c.${fieldName} != nil {${checkDuplicateOneOf}
+		${oneOf}OneOf = ${fieldNumberConst}
+	}
+`,
+				repeated: repeatedTemplate,
+				fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {${checkDuplicateOneOf}
+		${oneOf}OneOf = ${fieldNumberConst}
+	}
+`,
+			},
+		}
+	)
+
 	for _, f := range m.fields {
 		if f.oneOfName == "" || oneOfCounts[f.oneOfName] <= 1 {
 			continue
-		}
-
-		t := subsequentTemplate
-		if !seenOneOfs[f.oneOfName] {
-			seenOneOfs[f.oneOfName] = true
-			t = firstTemplate
 		}
 
 		_ = writeField(&sb, m, f, t)
