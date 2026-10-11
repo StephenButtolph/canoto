@@ -11,7 +11,6 @@ type message struct {
 	canonicalizedName string
 	numTypes          int
 	fields            []field
-	noCopy            bool
 	template          Templates
 }
 

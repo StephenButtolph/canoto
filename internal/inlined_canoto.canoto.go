@@ -29,7 +29,7 @@ const (
 )
 
 type canotoData_justAnInt struct {
-	size atomic.Uint64
+	size uint64
 }
 
 // DescribeCanoto returns a [canoto.Spec] describing the fields of this
@@ -68,7 +68,7 @@ func (c *justAnInt) UnmarshalCanoto(bytes []byte) error {
 func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = justAnInt{}
-	c.canotoData.size.Store(uint64(len(r.B)))
+	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
 
 	var minField uint32
 	for canoto.HasNext(&r) {
@@ -108,7 +108,7 @@ func (c *justAnInt) CacheCanoto() {
 	if !canoto.IsZero(c.Int8) {
 		size += uint64(len(canotoTag_justAnInt__Int8)) + canoto.SizeInt(c.Int8)
 	}
-	c.canotoData.size.Store(size)
+	canoto.StoreUint64(&c.canotoData.size, size)
 }
 
 // SizeCanoto returns the previously calculated size of the Canoto
@@ -117,7 +117,7 @@ func (c *justAnInt) CacheCanoto() {
 // If CacheCanoto has not yet been called, or the struct has been modified
 // since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *justAnInt) SizeCanoto() uint64 {
-	return c.canotoData.size.Load()
+	return atomic.LoadUint64(&c.canotoData.size)
 }
 
 // ValidCanoto validates that the struct can be correctly marshaled into the

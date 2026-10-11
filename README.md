@@ -154,22 +154,6 @@ type GenericField[T any, _ canoto.FieldPointer[T]] struct {
 
 If `canoto.FieldPointer` is aliased to a different type or is otherwise re-implemented, Canoto will not be able to correctly tie the type constraints together.
 
-### Pass-By-Value Messages
-
-The auto-generated `canotoData` struct utilizes atomic reads and writes to ensure that `MarshalCanoto` can be called at the same time on multiple threads. Concurrent calls to `MarshalCanoto` are expected for what appears to be a read-only method.
-
-However, concurrently marshalling and passing messages by value may cause race detection failures. To explicitly disallow passing messages by value, the `canoto:"nocopy"` tag can be added to the `canotoData` field. This results in the [NoCopy](https://github.com/golang/go/issues/8005) pattern being used to warn against incorrect usage.
-
-For example:
-
-```golang
-type NotPassableByValue struct {
-	Int int64 `canoto:"int,1"`
-
-	canotoData canotoData_NotPassableByValue `canoto:"nocopy"`
-}
-```
-
 ### Standalone Implementations
 
 In some instances, it may be desirable for the generated code to avoid introducing the dependency on this repo into the `go.mod` file. As an example, if the user must support having multiple versions of canoto utilized in the same application.

@@ -3,6 +3,7 @@ package examples
 import (
 	"slices"
 	"strconv"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -554,8 +555,9 @@ func FuzzScalars_UnmarshalEquals(f *testing.F) {
 	})
 }
 
-func TestScalars_Concurrent_MarshalCanoto(t *testing.T) {
-	s := Scalars{
+// newPopulatedScalars returns a Scalars with every field populated.
+func newPopulatedScalars() Scalars {
+	return Scalars{
 		Int8:     -31,
 		Int16:    -2164,
 		Int32:    -12786345,
@@ -628,6 +630,10 @@ func TestScalars_Concurrent_MarshalCanoto(t *testing.T) {
 			D:  4,
 		},
 	}
+}
+
+func TestScalars_Concurrent_MarshalCanoto(t *testing.T) {
+	s := newPopulatedScalars()
 
 	const numRoutines = 100
 	var (
@@ -650,6 +656,73 @@ func TestScalars_Concurrent_MarshalCanoto(t *testing.T) {
 		require.Equal(t, expectedOneOfA, <-actualOneOfA)
 		require.Equal(t, expectedOneOfB, <-actualOneOfB)
 	}
+}
+
+// Copying a message while it is being marshaled must not be reported as a
+// data race.
+func TestScalars_CopyDuringMarshalCanoto(t *testing.T) {
+	s := newPopulatedScalars()
+
+	var wg sync.WaitGroup
+	wg.Go(func() {
+		_ = s.MarshalCanoto()
+	})
+	c := s
+	wg.Wait()
+
+	require.Equal(t, s.MarshalCanoto(), c.MarshalCanoto())
+}
+
+// Copying an [canoto.Any] while it is being marshaled must not be reported as
+// a data race.
+func TestAny_CopyDuringMarshal(t *testing.T) {
+	s := newPopulatedScalars()
+	spec := s.DescribeCanoto()
+	expected := s.MarshalCanoto()
+	a, err := canoto.Unmarshal(spec, expected)
+	require.NoError(t, err)
+
+	var (
+		wg         sync.WaitGroup
+		marshalErr error
+	)
+	wg.Go(func() {
+		_, marshalErr = canoto.Marshal(spec, a)
+	})
+	c := copyAny(a)
+	wg.Wait()
+	require.NoError(t, marshalErr)
+
+	actual, err := canoto.Marshal(spec, c)
+	require.NoError(t, err)
+	require.Equal(t, expected, actual)
+}
+
+// copyAny copies every [canoto.Any] and [canoto.AnyField] reachable from a.
+func copyAny(a canoto.Any) canoto.Any {
+	a.Fields = slices.Clone(a.Fields)
+	for i := range a.Fields {
+		switch v := a.Fields[i].Value.(type) {
+		case canoto.Any:
+			a.Fields[i].Value = copyAny(v)
+		case []canoto.Any:
+			c := make([]canoto.Any, len(v))
+			for j, e := range v {
+				c[j] = copyAny(e)
+			}
+			a.Fields[i].Value = c
+		case []*canoto.Any:
+			c := make([]*canoto.Any, len(v))
+			for j, e := range v {
+				if e != nil {
+					ce := copyAny(*e)
+					c[j] = &ce
+				}
+			}
+			a.Fields[i].Value = c
+		}
+	}
+	return a
 }
 
 func BenchmarkScalars_Canoto(b *testing.B) {
