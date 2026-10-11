@@ -2062,13 +2062,10 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader canoto.Reader
+			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canotoTag_GenericField__RepeatedValue)
@@ -2079,33 +2076,25 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 			c.RepeatedValue = canoto.MakeSlice(c.RepeatedValue, countMinus1+1)
 			field := c.RepeatedValue
 			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := T2(&field[0]).UnmarshalCanotoFrom(r); err != nil {
+			if canoto.HasNext(&msgReader) {
+				if err := T2(&field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_GenericField__RepeatedValue):]
-				r.Unsafe = true
-				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !canoto.HasNext(&msgReader) {
 					continue
 				}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := T2(&additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := T2(&additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 		case canotoNumber_GenericField__FixedRepeatedValue:
 			if wireType != canoto.Len {
@@ -2117,22 +2106,16 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader canoto.Reader
+			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			isZero := len(msgBytes) == 0
+			isZero := !canoto.HasNext(&msgReader)
 			if !isZero {
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := T2(&(&c.FixedRepeatedValue)[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := T2(&(&c.FixedRepeatedValue)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -2142,21 +2125,16 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 					return canoto.ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_GenericField__FixedRepeatedValue):]
-				r.Unsafe = true
-				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !canoto.HasNext(&msgReader) {
 					continue
 				}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := T2(&field[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := T2(&field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 				isZero = false
 			}
 			if isZero {
@@ -2183,13 +2161,10 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader canoto.Reader
+			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canotoTag_GenericField__RepeatedPointer)
@@ -2200,43 +2175,37 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 			c.RepeatedPointer = canoto.MakeSlice(c.RepeatedPointer, countMinus1+1)
 			field := c.RepeatedPointer
 			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				innerBytes, err := canoto.ReadPointerPresence(msgBytes)
+			if canoto.HasNext(&msgReader) {
+				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
 				if err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
+				msgReader.B = innerBytes
 				field[0] = canoto.MakePointer(field[0])
-				if err := T2(field[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := T2(field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_GenericField__RepeatedPointer):]
-				r.Unsafe = true
-				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !canoto.HasNext(&msgReader) {
 					continue
 				}
 
-				innerBytes, err := canoto.ReadPointerPresence(msgBytes)
+				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
 				if err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
+				msgReader.B = innerBytes
 				additionalField[i] = canoto.MakePointer(additionalField[i])
-				if err := T2(additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := T2(additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 		case canotoNumber_GenericField__FixedRepeatedPointer:
 			if wireType != canoto.Len {
@@ -2248,27 +2217,22 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader canoto.Reader
+			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			isZero := len(msgBytes) == 0
+			isZero := !canoto.HasNext(&msgReader)
 			if !isZero {
-				innerBytes, err := canoto.ReadPointerPresence(msgBytes)
+				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
 				if err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
+				msgReader.B = innerBytes
 				(&c.FixedRepeatedPointer)[0] = canoto.MakePointer((&c.FixedRepeatedPointer)[0])
-				if err := T2((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := T2((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -2278,26 +2242,22 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 					return canoto.ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_GenericField__FixedRepeatedPointer):]
-				r.Unsafe = true
-				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !canoto.HasNext(&msgReader) {
 					continue
 				}
 
-				innerBytes, err := canoto.ReadPointerPresence(msgBytes)
+				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
 				if err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
+				msgReader.B = innerBytes
 				field[i] = canoto.MakePointer(field[i])
-				if err := T2(field[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := T2(field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 				isZero = false
 			}
 			if isZero {
@@ -2684,13 +2644,10 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader canoto.Reader
+			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canotoTag_NestedGenericField__RepeatedValue)
@@ -2701,33 +2658,25 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 			c.RepeatedValue = canoto.MakeSlice(c.RepeatedValue, countMinus1+1)
 			field := c.RepeatedValue
 			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := (&field[0]).UnmarshalCanotoFrom(r); err != nil {
+			if canoto.HasNext(&msgReader) {
+				if err := (&field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_NestedGenericField__RepeatedValue):]
-				r.Unsafe = true
-				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !canoto.HasNext(&msgReader) {
 					continue
 				}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := (&additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 		case canotoNumber_NestedGenericField__FixedRepeatedValue:
 			if wireType != canoto.Len {
@@ -2739,22 +2688,16 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader canoto.Reader
+			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			isZero := len(msgBytes) == 0
+			isZero := !canoto.HasNext(&msgReader)
 			if !isZero {
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := (&(&c.FixedRepeatedValue)[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&(&c.FixedRepeatedValue)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -2764,21 +2707,16 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 					return canoto.ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_NestedGenericField__FixedRepeatedValue):]
-				r.Unsafe = true
-				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !canoto.HasNext(&msgReader) {
 					continue
 				}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := (&field[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 				isZero = false
 			}
 			if isZero {
@@ -2805,13 +2743,10 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader canoto.Reader
+			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canotoTag_NestedGenericField__RepeatedPointer)
@@ -2822,43 +2757,37 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 			c.RepeatedPointer = canoto.MakeSlice(c.RepeatedPointer, countMinus1+1)
 			field := c.RepeatedPointer
 			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				innerBytes, err := canoto.ReadPointerPresence(msgBytes)
+			if canoto.HasNext(&msgReader) {
+				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
 				if err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
+				msgReader.B = innerBytes
 				field[0] = canoto.MakePointer(field[0])
-				if err := (field[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_NestedGenericField__RepeatedPointer):]
-				r.Unsafe = true
-				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !canoto.HasNext(&msgReader) {
 					continue
 				}
 
-				innerBytes, err := canoto.ReadPointerPresence(msgBytes)
+				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
 				if err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
+				msgReader.B = innerBytes
 				additionalField[i] = canoto.MakePointer(additionalField[i])
-				if err := (additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 		case canotoNumber_NestedGenericField__FixedRepeatedPointer:
 			if wireType != canoto.Len {
@@ -2870,27 +2799,22 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader canoto.Reader
+			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			isZero := len(msgBytes) == 0
+			isZero := !canoto.HasNext(&msgReader)
 			if !isZero {
-				innerBytes, err := canoto.ReadPointerPresence(msgBytes)
+				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
 				if err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
+				msgReader.B = innerBytes
 				(&c.FixedRepeatedPointer)[0] = canoto.MakePointer((&c.FixedRepeatedPointer)[0])
-				if err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -2900,26 +2824,22 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 					return canoto.ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_NestedGenericField__FixedRepeatedPointer):]
-				r.Unsafe = true
-				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !canoto.HasNext(&msgReader) {
 					continue
 				}
 
-				innerBytes, err := canoto.ReadPointerPresence(msgBytes)
+				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
 				if err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
+				msgReader.B = innerBytes
 				field[i] = canoto.MakePointer(field[i])
-				if err := (field[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 				isZero = false
 			}
 			if isZero {
@@ -4992,13 +4912,10 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader canoto.Reader
+			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canotoTag_Scalars__RepeatedLargestFieldNumber)
@@ -5009,33 +4926,25 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			c.RepeatedLargestFieldNumber = canoto.MakeSlice(c.RepeatedLargestFieldNumber, countMinus1+1)
 			field := c.RepeatedLargestFieldNumber
 			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := (&field[0]).UnmarshalCanotoFrom(r); err != nil {
+			if canoto.HasNext(&msgReader) {
+				if err := (&field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_Scalars__RepeatedLargestFieldNumber):]
-				r.Unsafe = true
-				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !canoto.HasNext(&msgReader) {
 					continue
 				}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := (&additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 		case canotoNumber_Scalars__FixedRepeatedInt8:
 			if wireType != canoto.Len {
@@ -5399,22 +5308,16 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader canoto.Reader
+			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			isZero := len(msgBytes) == 0
+			isZero := !canoto.HasNext(&msgReader)
 			if !isZero {
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := (&(&c.FixedRepeatedLargestFieldNumber)[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&(&c.FixedRepeatedLargestFieldNumber)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -5424,21 +5327,16 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 					return canoto.ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_Scalars__FixedRepeatedLargestFieldNumber):]
-				r.Unsafe = true
-				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !canoto.HasNext(&msgReader) {
 					continue
 				}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := (&field[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 				isZero = false
 			}
 			if isZero {
@@ -5743,13 +5641,10 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader canoto.Reader
+			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canotoTag_Scalars__RepeatedPointer)
@@ -5760,43 +5655,37 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			c.RepeatedPointer = canoto.MakeSlice(c.RepeatedPointer, countMinus1+1)
 			field := c.RepeatedPointer
 			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				innerBytes, err := canoto.ReadPointerPresence(msgBytes)
+			if canoto.HasNext(&msgReader) {
+				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
 				if err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
+				msgReader.B = innerBytes
 				field[0] = canoto.MakePointer(field[0])
-				if err := (field[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_Scalars__RepeatedPointer):]
-				r.Unsafe = true
-				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !canoto.HasNext(&msgReader) {
 					continue
 				}
 
-				innerBytes, err := canoto.ReadPointerPresence(msgBytes)
+				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
 				if err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
+				msgReader.B = innerBytes
 				additionalField[i] = canoto.MakePointer(additionalField[i])
-				if err := (additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 		case canotoNumber_Scalars__FixedRepeatedPointer:
 			if wireType != canoto.Len {
@@ -5808,27 +5697,22 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader canoto.Reader
+			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			isZero := len(msgBytes) == 0
+			isZero := !canoto.HasNext(&msgReader)
 			if !isZero {
-				innerBytes, err := canoto.ReadPointerPresence(msgBytes)
+				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
 				if err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
+				msgReader.B = innerBytes
 				(&c.FixedRepeatedPointer)[0] = canoto.MakePointer((&c.FixedRepeatedPointer)[0])
-				if err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -5838,26 +5722,22 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 					return canoto.ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_Scalars__FixedRepeatedPointer):]
-				r.Unsafe = true
-				if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+				if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !canoto.HasNext(&msgReader) {
 					continue
 				}
 
-				innerBytes, err := canoto.ReadPointerPresence(msgBytes)
+				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
 				if err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
+				msgReader.B = innerBytes
 				field[i] = canoto.MakePointer(field[i])
-				if err := (field[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 				isZero = false
 			}
 			if isZero {

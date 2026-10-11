@@ -1377,6 +1377,65 @@ func BenchmarkMessage_Canoto(b *testing.B) {
 			}
 		})
 	}
+
+	type (
+		value       = LargestFieldNumber[uint32]
+		field       = GenericField[value, *value]
+		genericTest struct {
+			name string
+			msg  *field
+		}
+	)
+	sizes := []int{1, 5, 64}
+	genericTests := make([]genericTest, 0, 2*len(sizes)+2)
+	for _, n := range sizes {
+		values := make([]value, n)
+		pointers := make([]*value, n)
+		for i := range n {
+			values[i] = value{Uint: 216457}
+			pointers[i] = &value{Uint: 216457}
+		}
+		genericTests = append(genericTests,
+			genericTest{
+				name: "repeatedValue/" + strconv.Itoa(n),
+				msg:  &field{RepeatedValue: values},
+			},
+			genericTest{
+				name: "repeatedPointer/" + strconv.Itoa(n),
+				msg:  &field{RepeatedPointer: pointers},
+			},
+		)
+	}
+	genericTests = append(genericTests,
+		genericTest{
+			name: "fixedRepeatedValue/3",
+			msg: &field{
+				FixedRepeatedValue: [3]value{{Uint: 216457}, {Uint: 216457}, {Uint: 216457}},
+			},
+		},
+		genericTest{
+			name: "fixedRepeatedPointer/3",
+			msg: &field{
+				FixedRepeatedPointer: [3]*value{{Uint: 216457}, {Uint: 216457}, {Uint: 216457}},
+			},
+		},
+	)
+	for _, test := range genericTests {
+		bytes := test.msg.MarshalCanoto()
+		var sanity field
+		require.NoError(b, sanity.UnmarshalCanoto(bytes))
+		require.Equal(b, bytes, sanity.MarshalCanoto())
+
+		b.Run("genericField/"+test.name+"/unmarshal", func(b *testing.B) {
+			for range b.N {
+				var (
+					s      field
+					reader = canoto.Reader{B: bytes}
+				)
+				_ = s.UnmarshalCanotoFrom(reader)
+			}
+		})
+	}
 }
 
 func TestAppend_ProtoCompatibility(t *testing.T) {
