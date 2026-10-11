@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"io"
 	"math"
 	"math/rand/v2"
@@ -455,6 +456,54 @@ func testReadUints[S ~[]E, E Uint](t *testing.T, data []byte) {
 	require.ErrorIs(err, io.ErrUnexpectedEOF)
 }
 
+func FuzzReadUintsInto_uint8(f *testing.F)  { f.Fuzz(testReadUintsInto[[]uint8]) }
+func FuzzReadUintsInto_uint16(f *testing.F) { f.Fuzz(testReadUintsInto[[]uint16]) }
+func FuzzReadUintsInto_uint32(f *testing.F) { f.Fuzz(testReadUintsInto[[]uint32]) }
+func FuzzReadUintsInto_uint64(f *testing.F) { f.Fuzz(testReadUintsInto[[]uint64]) }
+
+// testReadUintsInto verifies [ReadUintsInto] against [ReadUints].
+func testReadUintsInto[S ~[]E, E Uint](t *testing.T, b []byte, n uint8) {
+	var (
+		wantR = &Reader{B: b}
+		want  S
+	)
+	wantLength, wantErr := ReadUints(wantR, &want)
+
+	var (
+		r   = &Reader{B: b}
+		got = make(S, n)
+	)
+	length, err := ReadUintsInto(r, got)
+	verifyReadInto(t, wantR, want, wantLength, wantErr, r, got, length, err)
+}
+
+func BenchmarkReadUintsInto(b *testing.B) {
+	rng := rand.New(rand.NewPCG(0, 0)) //#nosec G404 // Deterministic values keep runs comparable
+	for _, size := range []int{1, 3, 15, 1024} {
+		values := &Writer{}
+		for range size {
+			// Randomize the lengths, not just the values. Otherwise almost all
+			// of the values would be large.
+			AppendUint(values, rng.Uint64()>>rng.Uint64N(64))
+		}
+		w := &Writer{}
+		AppendBytes(w, values.B)
+
+		// Verify that the bytes decode cleanly so that the benchmark can
+		// ignore the errors.
+		vs := make([]uint64, size)
+		_, err := ReadUintsInto(&Reader{B: w.B}, vs)
+		require.NoError(b, err)
+
+		b.Run(strconv.Itoa(size), func(b *testing.B) {
+			for range b.N {
+				r := Reader{B: w.B}
+				_, _ = ReadUintsInto(&r, vs)
+			}
+		})
+	}
+}
+
 func FuzzAppendUints_uint8(f *testing.F)  { f.Fuzz(testAppendUints[[]uint8]) }
 func FuzzAppendUints_uint16(f *testing.F) { f.Fuzz(testAppendUints[[]uint16]) }
 func FuzzAppendUints_uint32(f *testing.F) { f.Fuzz(testAppendUints[[]uint32]) }
@@ -790,6 +839,88 @@ func testReadInts[S ~[]E, E Int](t *testing.T, data []byte) {
 	r = &Reader{B: w.B[:len(w.B)-1]}
 	_, err = ReadInts(r, &got)
 	require.ErrorIs(err, io.ErrUnexpectedEOF)
+}
+
+func FuzzReadIntsInto_int8(f *testing.F)  { f.Fuzz(testReadIntsInto[[]int8]) }
+func FuzzReadIntsInto_int16(f *testing.F) { f.Fuzz(testReadIntsInto[[]int16]) }
+func FuzzReadIntsInto_int32(f *testing.F) { f.Fuzz(testReadIntsInto[[]int32]) }
+func FuzzReadIntsInto_int64(f *testing.F) { f.Fuzz(testReadIntsInto[[]int64]) }
+
+// testReadIntsInto verifies [ReadIntsInto] against [ReadInts].
+func testReadIntsInto[S ~[]E, E Int](t *testing.T, b []byte, n uint8) {
+	var (
+		wantR = &Reader{B: b}
+		want  S
+	)
+	wantLength, wantErr := ReadInts(wantR, &want)
+
+	var (
+		r   = &Reader{B: b}
+		got = make(S, n)
+	)
+	length, err := ReadIntsInto(r, got)
+	verifyReadInto(t, wantR, want, wantLength, wantErr, r, got, length, err)
+}
+
+func BenchmarkReadIntsInto(b *testing.B) {
+	rng := rand.New(rand.NewPCG(0, 0)) //#nosec G404 // Deterministic values keep runs comparable
+	for _, size := range []int{1, 3, 15, 1024} {
+		values := &Writer{}
+		for range size {
+			// Randomize the lengths, not just the values. Otherwise almost all
+			// of the values would be large.
+			AppendInt(values, rng.Int64()>>rng.Uint64N(64))
+		}
+		w := &Writer{}
+		AppendBytes(w, values.B)
+
+		// Verify that the bytes decode cleanly so that the benchmark can
+		// ignore the errors.
+		vs := make([]int64, size)
+		_, err := ReadIntsInto(&Reader{B: w.B}, vs)
+		require.NoError(b, err)
+
+		b.Run(strconv.Itoa(size), func(b *testing.B) {
+			for range b.N {
+				r := Reader{B: w.B}
+				_, _ = ReadIntsInto(&r, vs)
+			}
+		})
+	}
+}
+
+// verifyReadInto verifies that reading a packed field into a slice of length
+// len(got) behaves the same as reading it into a new slice, except that a
+// field with the wrong number of values must be rejected with
+// [ErrInvalidLength].
+func verifyReadInto[S ~[]E, E comparable](
+	t *testing.T,
+	wantR *Reader,
+	want S,
+	wantLength uint64,
+	wantErr error,
+	r *Reader,
+	got S,
+	length uint64,
+	err error,
+) {
+	require := require.New(t)
+
+	switch {
+	case wantErr != nil:
+		// A field with the wrong number of values may be rejected before its
+		// values are decoded.
+		if !errors.Is(err, ErrInvalidLength) {
+			require.ErrorIs(err, wantErr)
+		}
+	case len(want) != len(got):
+		require.ErrorIs(err, ErrInvalidLength)
+	default:
+		require.NoError(err)
+		require.Equal(wantLength, length)
+		require.True(slices.Equal(want, got))
+		require.Equal(wantR.B, r.B)
+	}
 }
 
 func TestReadFint32_int32(t *testing.T) {
@@ -1635,7 +1766,7 @@ func FuzzCountBytes(f *testing.F) {
 			bytes [][]byte
 		)
 		fz := fuzzer.NewFuzzer(data)
-		fz.Fill(&bytes)
+		fz.Fill(&tag, &bytes)
 		if len(tag) == 0 {
 			return
 		}
@@ -1648,6 +1779,13 @@ func FuzzCountBytes(f *testing.F) {
 
 		count, err := CountBytes(w.B, tag)
 		require.NoError(err)
+		require.Len(bytes, int(count)) //#nosec G115 // False positive
+
+		// A truncated entry must report the number of entries before it.
+		Append(w, tag)
+		AppendUint(w, uint64(1))
+		count, err = CountBytes(w.B, tag)
+		require.ErrorIs(err, io.ErrUnexpectedEOF)
 		require.Len(bytes, int(count)) //#nosec G115 // False positive
 	})
 }
@@ -2034,6 +2172,34 @@ func FuzzSpec(f *testing.F) {
 		require.NoError(err)
 		require.True(bytes.Equal(b, actualBytes))
 	})
+}
+
+// TestUnmarshal_LargeFixedLength verifies that [Unmarshal] does not allocate
+// memory based on the fixed length declared by the spec, as the spec may be
+// malicious.
+func TestUnmarshal_LargeFixedLength(t *testing.T) {
+	msg := fullSpecFuzzer(t)
+	b := msg.MarshalCanoto()
+	for i, field := range msg.DescribeCanoto().Fields {
+		if field.FixedLength == 0 {
+			continue
+		}
+		t.Run(field.Name, func(t *testing.T) {
+			spec := msg.DescribeCanoto()
+			// A slice of this length can never be allocated, so allocating
+			// based on it panics rather than exhausting the available memory.
+			spec.Fields[i].FixedLength = math.MaxUint64
+
+			// Packed fields contain too few values, while unpacked fields run
+			// out of entries.
+			wantErr := ErrInvalidLength
+			if field.TypeString || field.TypeBytes || field.TypeFixedBytes > 0 || field.TypeMessage != nil || field.TypeRecursive > 0 {
+				wantErr = ErrUnknownField
+			}
+			_, err := Unmarshal(spec, b)
+			require.ErrorIs(t, err, wantErr)
+		})
+	}
 }
 
 // TestFixedRepeatedFixedSize_InvalidLength verifies that a packed fixed size
