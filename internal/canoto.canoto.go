@@ -2176,11 +2176,9 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 			field := c.RepeatedPointer
 			additionalField := field[1:]
 			if canoto.HasNext(&msgReader) {
-				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := canoto.ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				field[0] = canoto.MakePointer(field[0])
 				if err := T2(field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -2197,11 +2195,9 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 					continue
 				}
 
-				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := canoto.ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				additionalField[i] = canoto.MakePointer(additionalField[i])
 				if err := T2(additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -2224,11 +2220,9 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			isZero := !canoto.HasNext(&msgReader)
 			if !isZero {
-				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := canoto.ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				(&c.FixedRepeatedPointer)[0] = canoto.MakePointer((&c.FixedRepeatedPointer)[0])
 				if err := T2((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -2249,11 +2243,9 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error {
 					continue
 				}
 
-				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := canoto.ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				field[i] = canoto.MakePointer(field[i])
 				if err := T2(field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -2758,11 +2750,9 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 			field := c.RepeatedPointer
 			additionalField := field[1:]
 			if canoto.HasNext(&msgReader) {
-				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := canoto.ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				field[0] = canoto.MakePointer(field[0])
 				if err := (field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -2779,11 +2769,9 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 					continue
 				}
 
-				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := canoto.ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				additionalField[i] = canoto.MakePointer(additionalField[i])
 				if err := (additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -2806,11 +2794,9 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 
 			isZero := !canoto.HasNext(&msgReader)
 			if !isZero {
-				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := canoto.ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				(&c.FixedRepeatedPointer)[0] = canoto.MakePointer((&c.FixedRepeatedPointer)[0])
 				if err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -2831,11 +2817,9 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) error 
 					continue
 				}
 
-				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := canoto.ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				field[i] = canoto.MakePointer(field[i])
 				if err := (field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -5656,11 +5640,9 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 			field := c.RepeatedPointer
 			additionalField := field[1:]
 			if canoto.HasNext(&msgReader) {
-				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := canoto.ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				field[0] = canoto.MakePointer(field[0])
 				if err := (field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -5677,11 +5659,9 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 					continue
 				}
 
-				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := canoto.ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				additionalField[i] = canoto.MakePointer(additionalField[i])
 				if err := (additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -5704,11 +5684,9 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			isZero := !canoto.HasNext(&msgReader)
 			if !isZero {
-				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := canoto.ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				(&c.FixedRepeatedPointer)[0] = canoto.MakePointer((&c.FixedRepeatedPointer)[0])
 				if err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -5729,11 +5707,9 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 					continue
 				}
 
-				innerBytes, err := canoto.ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := canoto.ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				field[i] = canoto.MakePointer(field[i])
 				if err := (field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err

@@ -384,23 +384,27 @@ func (s SizeEnum) shift() (shift uint64, mask uint64, ok bool) {
 }
 
 // ReadPointerPresence unwraps a repeated pointer element by stripping the
-// tag and length prefix that encodes the presence of a non-nil pointer.
-func ReadPointerPresence(b []byte) ([]byte, error) {
-	if !HasPrefix(b, PointerPresenceTag) {
-		return nil, ErrUnknownField
+// tag and length prefix that encodes the presence of a non-nil pointer. The
+// length prefix must cover the rest of r.B, which is left containing only the
+// encoded pointer value.
+func ReadPointerPresence(r *Reader) error {
+	if !HasPrefix(r.B, PointerPresenceTag) {
+		return ErrUnknownField
 	}
-	r := Reader{
-		B:      b[len(PointerPresenceTag):],
-		Unsafe: true,
+	r.B = r.B[len(PointerPresenceTag):]
+
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return err
 	}
-	var v []byte
-	if err := ReadBytes(&r, &v); err != nil {
-		return nil, err
+	switch remaining := uint64(len(r.B)); {
+	case length > remaining:
+		return io.ErrUnexpectedEOF
+	case length < remaining:
+		return ErrInvalidLength
+	default:
+		return nil
 	}
-	if HasNext(&r) {
-		return nil, ErrInvalidLength
-	}
-	return v, nil
 }
 
 // HasNext returns true if there are more bytes to read.
@@ -2276,12 +2280,11 @@ func (f *FieldType) unmarshalMessage(r *Reader, spec *Spec, specs []*Spec) (any,
 			if len(msgBytes) == 0 {
 				return nil, true, nil
 			}
-			innerBytes, err := ReadPointerPresence(msgBytes)
-			if err != nil {
+			remainingBytes := r.B
+			r.B = msgBytes
+			if err := ReadPointerPresence(r); err != nil {
 				return nil, false, err
 			}
-			remainingBytes := r.B
-			r.B = innerBytes
 			a, err := spec.unmarshal(r, specs)
 			r.B = remainingBytes
 			return &a, false, err

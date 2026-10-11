@@ -1261,11 +1261,9 @@ func makeUnmarshal(m message) string {
 			field := c.${fieldName}
 			additionalField := field[1:]
 			if ${selector}HasNext(&msgReader) {
-				innerBytes, err := ${selector}ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ${selector}ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				field[0] = ${selector}MakePointer(field[0])
 				if err := ${genericTypeCast}(field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -1282,11 +1280,9 @@ func makeUnmarshal(m message) string {
 					continue
 				}
 
-				innerBytes, err := ${selector}ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ${selector}ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				additionalField[i] = ${selector}MakePointer(additionalField[i])
 				if err := ${genericTypeCast}(additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -1310,11 +1306,9 @@ func makeUnmarshal(m message) string {
 
 			isZero := !${selector}HasNext(&msgReader)
 			if !isZero {
-				innerBytes, err := ${selector}ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ${selector}ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				(&c.${fieldName})[0] = ${selector}MakePointer((&c.${fieldName})[0])
 				if err := ${genericTypeCast}((&c.${fieldName})[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -1335,11 +1329,9 @@ func makeUnmarshal(m message) string {
 					continue
 				}
 
-				innerBytes, err := ${selector}ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ${selector}ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				field[i] = ${selector}MakePointer(field[i])
 				if err := ${genericTypeCast}(field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err

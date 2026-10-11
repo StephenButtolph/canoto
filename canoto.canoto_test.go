@@ -1326,11 +1326,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			field := c.RepeatedPointer
 			additionalField := field[1:]
 			if HasNext(&msgReader) {
-				innerBytes, err := ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				field[0] = MakePointer(field[0])
 				if err := (field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -1347,11 +1345,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					continue
 				}
 
-				innerBytes, err := ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				additionalField[i] = MakePointer(additionalField[i])
 				if err := (additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -1379,11 +1375,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			field := c.RepeatedOneOf
 			additionalField := field[1:]
 			if HasNext(&msgReader) {
-				innerBytes, err := ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				field[0] = MakePointer(field[0])
 				if err := (field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -1400,11 +1394,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					continue
 				}
 
-				innerBytes, err := ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				additionalField[i] = MakePointer(additionalField[i])
 				if err := (additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -1432,11 +1424,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			field := c.RepeatedRecursive
 			additionalField := field[1:]
 			if HasNext(&msgReader) {
-				innerBytes, err := ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				field[0] = MakePointer(field[0])
 				if err := (field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -1453,11 +1443,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					continue
 				}
 
-				innerBytes, err := ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				additionalField[i] = MakePointer(additionalField[i])
 				if err := (additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -1485,11 +1473,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			field := c.RepeatedValueRecursive
 			additionalField := field[1:]
 			if HasNext(&msgReader) {
-				innerBytes, err := ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				field[0] = MakePointer(field[0])
 				if err := (field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -1506,11 +1492,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					continue
 				}
 
-				innerBytes, err := ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				additionalField[i] = MakePointer(additionalField[i])
 				if err := (additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -1850,11 +1834,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			isZero := !HasNext(&msgReader)
 			if !isZero {
-				innerBytes, err := ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				(&c.FixedRepeatedPointer)[0] = MakePointer((&c.FixedRepeatedPointer)[0])
 				if err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -1875,11 +1857,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					continue
 				}
 
-				innerBytes, err := ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				field[i] = MakePointer(field[i])
 				if err := (field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -1906,11 +1886,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			isZero := !HasNext(&msgReader)
 			if !isZero {
-				innerBytes, err := ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				(&c.FixedRepeatedOneOf)[0] = MakePointer((&c.FixedRepeatedOneOf)[0])
 				if err := ((&c.FixedRepeatedOneOf)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -1931,11 +1909,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					continue
 				}
 
-				innerBytes, err := ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				field[i] = MakePointer(field[i])
 				if err := (field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -1962,11 +1938,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			isZero := !HasNext(&msgReader)
 			if !isZero {
-				innerBytes, err := ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				(&c.FixedRepeatedRecursive)[0] = MakePointer((&c.FixedRepeatedRecursive)[0])
 				if err := ((&c.FixedRepeatedRecursive)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -1987,11 +1961,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					continue
 				}
 
-				innerBytes, err := ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				field[i] = MakePointer(field[i])
 				if err := (field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -2018,11 +1990,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			isZero := !HasNext(&msgReader)
 			if !isZero {
-				innerBytes, err := ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				(&c.FixedRepeatedValueRecursive)[0] = MakePointer((&c.FixedRepeatedValueRecursive)[0])
 				if err := ((&c.FixedRepeatedValueRecursive)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
@@ -2043,11 +2013,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					continue
 				}
 
-				innerBytes, err := ReadPointerPresence(msgReader.B)
-				if err != nil {
+				if err := ReadPointerPresence(&msgReader); err != nil {
 					return err
 				}
-				msgReader.B = innerBytes
 				field[i] = MakePointer(field[i])
 				if err := (field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
