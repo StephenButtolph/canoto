@@ -784,22 +784,15 @@ func makeUnmarshalBody(m message, canotoSelector string) string {
 	return nil
 `
 	} else {
-		template = `	var minField uint32
-	for ${canotoSelector}HasNext(&r) {
-		field, wireType, err := ${canotoSelector}ReadTag(&r)
-		if err != nil {
-			return err
-		}
-		if field < minField {
-			return ${canotoSelector}ErrInvalidFieldOrder
-		}
-
-		switch field {
-${unmarshal}		default:
-			return ${canotoSelector}ErrUnknownField
-		}
-
-		minField = field + 1
+		// Fields must be in increasing order, so each known field is checked
+		// once, in order. Any field remaining after the last known field is
+		// unknown.
+		template = `	fieldNumber, wireType, err := ${canotoSelector}ReadNextTag(&r, 0)
+	if err != nil {
+		return err
+	}
+${unmarshal}	if fieldNumber != ${canotoSelector}EndOfMessage {
+		return ${canotoSelector}ErrUnknownField
 	}
 	return nil
 `
@@ -811,156 +804,219 @@ ${unmarshal}		default:
 	})
 }
 
+const (
+	readNextTag             = "fieldNumber, wireType, err = "
+	readNextTagIgnoringWire = "fieldNumber, _, err = "
+)
+
 func makeUnmarshal(m message) string {
+	unmarshal := makeUnmarshalFields(m)
+	// No field follows the last field, so the wire type read after it is
+	// never used.
+	if i := strings.LastIndex(unmarshal, readNextTag); i >= 0 {
+		unmarshal = unmarshal[:i] + readNextTagIgnoringWire + unmarshal[i+len(readNextTag):]
+	}
+	return unmarshal
+}
+
+func makeUnmarshalFields(m message) string {
 	const (
-		intTemplate = `		case ${fieldNumberConst}:
-			if wireType != ${selector}${wireType} {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
+		intTemplate = `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}${wireType} {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
 
-			if err := ${selector}Read${suffix}(&r, &c.${fieldName}); err != nil {
-				return err
-			}
-			if ${selector}IsZero(c.${fieldName}) {
-				return ${selector}ErrZeroValue
-			}
+		if err := ${selector}Read${suffix}(&r, &c.${fieldName}); err != nil {
+			return err
+		}
+		if ${selector}IsZero(c.${fieldName}) {
+			return ${selector}ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
 `
-		repeatedFixedSizeTemplate = `		case ${fieldNumberConst}:
-			if wireType != ${selector}Len {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
+		repeatedFixedSizeTemplate = `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}Len {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
 
-			if err := ${selector}Read${suffix}s(&r, &c.${fieldName}); err != nil {
-				return err
-			}
-			if len(c.${fieldName}) == 0 {
-				return ${selector}ErrZeroValue
-			}
+		if err := ${selector}Read${suffix}s(&r, &c.${fieldName}); err != nil {
+			return err
+		}
+		if len(c.${fieldName}) == 0 {
+			return ${selector}ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
 `
-		fixedRepeatedFixedSizeTemplate = `		case ${fieldNumberConst}:
-			if wireType != ${selector}Len {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
+		fixedRepeatedFixedSizeTemplate = `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}Len {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
 
-			if err := ${selector}Read${suffix}sInto(&r, (&c.${fieldName})[:]); err != nil {
-				return err
-			}
-			if ${selector}IsZero(c.${fieldName}) {
-				return ${selector}ErrZeroValue
-			}
+		if err := ${selector}Read${suffix}sInto(&r, (&c.${fieldName})[:]); err != nil {
+			return err
+		}
+		if ${selector}IsZero(c.${fieldName}) {
+			return ${selector}ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
 `
-		bytesTemplate = `		case ${fieldNumberConst}:
-			if wireType != ${selector}${wireType} {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
+		bytesTemplate = `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}${wireType} {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
 
-			if err := ${selector}Read${suffix}(&r, &c.${fieldName}); err != nil {
-				return err
-			}
-			if len(c.${fieldName}) == 0 {
-				return ${selector}ErrZeroValue
-			}
+		if err := ${selector}Read${suffix}(&r, &c.${fieldName}); err != nil {
+			return err
+		}
+		if len(c.${fieldName}) == 0 {
+			return ${selector}ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
 `
-		repeatedBytesTemplate = `		case ${fieldNumberConst}:
-			if wireType != ${selector}Len {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
+		repeatedBytesTemplate = `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}Len {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
 
-			// Skip the first entry because we have already stripped the tag.
-			remainingBytes := r.B
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			if err := ${selector}ReadBytes(&r, new([]byte)); err != nil {
+		// Skip the first entry because we have already stripped the tag.
+		remainingBytes := r.B
+		originalUnsafe := r.Unsafe
+		r.Unsafe = true
+		if err := ${selector}ReadBytes(&r, new([]byte)); err != nil {
+			return err
+		}
+		r.Unsafe = originalUnsafe
+
+		// Count the number of additional entries after the first entry.
+		countMinus1, err := ${selector}CountBytes(r.B, ${fieldTagConst})
+		if err != nil {
+			return err
+		}
+		c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
+		field := c.${fieldName}
+
+		// Read the first entry manually because the tag is already
+		// stripped.
+		r.B = remainingBytes
+		if err := ${selector}Read${suffix}(&r, &field[0]); err != nil {
+			return err
+		}
+
+		// Read the rest of the entries, stripping the tag each time.
+		field = field[1:]
+		for i := range field {
+			r.B = r.B[len(${fieldTagConst}):]
+			if err := ${selector}Read${suffix}(&r, &field[i]); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
+		}
 
-			// Count the number of additional entries after the first entry.
-			countMinus1, err := ${selector}CountBytes(r.B, ${fieldTagConst})
-			if err != nil {
-				return err
-			}
-			c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
-			field := c.${fieldName}
-
-			// Read the first entry manually because the tag is already
-			// stripped.
-			r.B = remainingBytes
-			if err := ${selector}Read${suffix}(&r, &field[0]); err != nil {
-				return err
-			}
-
-			// Read the rest of the entries, stripping the tag each time.
-			field = field[1:]
-			for i := range field {
-				r.B = r.B[len(${fieldTagConst}):]
-				if err := ${selector}Read${suffix}(&r, &field[i]); err != nil {
-					return err
-				}
-			}
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
 `
-		fixedRepeatedBytes = `		case ${fieldNumberConst}:
-			if wireType != ${selector}Len {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
+		fixedRepeatedBytes = `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}Len {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
 
-			// Ensure this field has a constant length of at least one.
-			const _ = uint(len(c.${fieldName}) - 1)
+		// Ensure this field has a constant length of at least one.
+		const _ = uint(len(c.${fieldName}) - 1)
 
-			// Read the first entry manually because the tag is already
-			// stripped.
-			if err := ${selector}Read${suffix}(&r, &(&c.${fieldName})[0]); err != nil {
+		// Read the first entry manually because the tag is already
+		// stripped.
+		if err := ${selector}Read${suffix}(&r, &(&c.${fieldName})[0]); err != nil {
+			return err
+		}
+
+		// Read the rest of the entries, stripping the tag each time.
+		isZero := len((&c.${fieldName})[0]) == 0
+		field := (&c.${fieldName})[1:]
+		for i := range field {
+			if !${selector}HasPrefix(r.B, ${fieldTagConst}) {
+				return ${selector}ErrUnknownField
+			}
+			r.B = r.B[len(${fieldTagConst}):]
+			if err := ${selector}Read${suffix}(&r, &field[i]); err != nil {
 				return err
 			}
+			isZero = isZero && len(field[i]) == 0
+		}
+		if isZero {
+			return ${selector}ErrZeroValue
+		}
 
-			// Read the rest of the entries, stripping the tag each time.
-			isZero := len((&c.${fieldName})[0]) == 0
-			field := (&c.${fieldName})[1:]
-			for i := range field {
-				if !${selector}HasPrefix(r.B, ${fieldTagConst}) {
-					return ${selector}ErrUnknownField
-				}
-				r.B = r.B[len(${fieldTagConst}):]
-				if err := ${selector}Read${suffix}(&r, &field[i]); err != nil {
-					return err
-				}
-				isZero = isZero && len(field[i]) == 0
-			}
-			if isZero {
-				return ${selector}ErrZeroValue
-			}
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
 `
 	)
 	return writeMessage(m, messageTemplate{
 		ints: typeTemplate{
 			single: intTemplate,
-			repeated: `		case ${fieldNumberConst}:
-			if wireType != ${selector}Len {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
+			repeated: `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}Len {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
 
-			length, err := ${selector}Read${suffix}s(&r, &c.${fieldName})
-			if err != nil {
-				return err
-			}
-			if len(c.${fieldName}) == 0 {
-				return ${selector}ErrZeroValue
-			}
-			${storePrefix}c.canotoData.${fieldName}Size${storeJoin}length${storeSuffix}
+		length, err := ${selector}Read${suffix}s(&r, &c.${fieldName})
+		if err != nil {
+			return err
+		}
+		if len(c.${fieldName}) == 0 {
+			return ${selector}ErrZeroValue
+		}
+		${storePrefix}c.canotoData.${fieldName}Size${storeJoin}length${storeSuffix}
+
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
 `,
-			fixedRepeated: `		case ${fieldNumberConst}:
-			if wireType != ${selector}Len {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
+			fixedRepeated: `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}Len {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
 
-			length, err := ${selector}Read${suffix}sInto(&r, (&c.${fieldName})[:])
-			if err != nil {
-				return err
-			}
-			if ${selector}IsZero(c.${fieldName}) {
-				return ${selector}ErrZeroValue
-			}
-			${storePrefix}c.canotoData.${fieldName}Size${storeJoin}length${storeSuffix}
+		length, err := ${selector}Read${suffix}sInto(&r, (&c.${fieldName})[:])
+		if err != nil {
+			return err
+		}
+		if ${selector}IsZero(c.${fieldName}) {
+			return ${selector}ErrZeroValue
+		}
+		${storePrefix}c.canotoData.${fieldName}Size${storeJoin}length${storeSuffix}
+
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
 `,
 		},
 		fints: typeTemplate{
@@ -980,103 +1036,78 @@ func makeUnmarshal(m message) string {
 		},
 		bytesTemplate:         bytesTemplate,
 		repeatedBytesTemplate: repeatedBytesTemplate,
-		fixedBytesTemplate: `		case ${fieldNumberConst}:
-			if wireType != ${selector}Len {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
+		fixedBytesTemplate: `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}Len {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
 
-			const (
-				expectedLength       = len(c.${fieldName})
-				expectedLengthUint64 = uint64(expectedLength)
-			)
-			var length uint64
-			if err := ${selector}ReadUint(&r, &length); err != nil {
-				return err
-			}
-			if length != expectedLengthUint64 {
-				return ${selector}ErrInvalidLength
-			}
-			if expectedLength > len(r.B) {
-				return io.ErrUnexpectedEOF
-			}
+		const (
+			expectedLength       = len(c.${fieldName})
+			expectedLengthUint64 = uint64(expectedLength)
+		)
+		var length uint64
+		if err := ${selector}ReadUint(&r, &length); err != nil {
+			return err
+		}
+		if length != expectedLengthUint64 {
+			return ${selector}ErrInvalidLength
+		}
+		if expectedLength > len(r.B) {
+			return io.ErrUnexpectedEOF
+		}
 
-			copy((&c.${fieldName})[:], r.B)
-			if ${selector}IsZero(c.${fieldName}) {
-				return ${selector}ErrZeroValue
-			}
-			r.B = r.B[expectedLength:]
+		copy((&c.${fieldName})[:], r.B)
+		if ${selector}IsZero(c.${fieldName}) {
+			return ${selector}ErrZeroValue
+		}
+		r.B = r.B[expectedLength:]
+
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
 `,
-		repeatedFixedBytesTemplate: `		case ${fieldNumberConst}:
-			if wireType != ${selector}Len {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
+		repeatedFixedBytesTemplate: `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}Len {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
 
-			const (
-				expectedLength       = len(c.${fieldName}[0])
-				expectedLengthUint64 = uint64(expectedLength)
-			)
+		const (
+			expectedLength       = len(c.${fieldName}[0])
+			expectedLengthUint64 = uint64(expectedLength)
+		)
 
-			// Read the first entry manually because the tag is already
-			// stripped.
-			var length uint64
-			if err := ${selector}ReadUint(&r, &length); err != nil {
-				return err
-			}
-			if length != expectedLengthUint64 {
-				return ${selector}ErrInvalidLength
-			}
-			if expectedLength > len(r.B) {
-				return io.ErrUnexpectedEOF
-			}
+		// Read the first entry manually because the tag is already
+		// stripped.
+		var length uint64
+		if err := ${selector}ReadUint(&r, &length); err != nil {
+			return err
+		}
+		if length != expectedLengthUint64 {
+			return ${selector}ErrInvalidLength
+		}
+		if expectedLength > len(r.B) {
+			return io.ErrUnexpectedEOF
+		}
 
-			firstEntry := r.B[:expectedLength]
-			r.B = r.B[expectedLength:]
+		firstEntry := r.B[:expectedLength]
+		r.B = r.B[expectedLength:]
 
-			// Count the number of additional entries after the first entry.
-			countMinus1, err := ${selector}CountBytes(r.B, ${fieldTagConst})
-			if err != nil {
-				return err
-			}
+		// Count the number of additional entries after the first entry.
+		countMinus1, err := ${selector}CountBytes(r.B, ${fieldTagConst})
+		if err != nil {
+			return err
+		}
 
-			c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
-			field := c.${fieldName}
-			copy((&field[0])[:], firstEntry)
+		c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
+		field := c.${fieldName}
+		copy((&field[0])[:], firstEntry)
 
-			// Read the rest of the entries, stripping the tag each time.
-			field = field[1:]
-			for i := range field {
-				r.B = r.B[len(${fieldTagConst}):]
-				if err := ${selector}ReadUint(&r, &length); err != nil {
-					return err
-				}
-				if length != expectedLengthUint64 {
-					return ${selector}ErrInvalidLength
-				}
-				if expectedLength > len(r.B) {
-					return io.ErrUnexpectedEOF
-				}
-
-				newB := r.B[expectedLength:]
-				copy(field[i][:], r.B)
-				r.B = newB
-			}
-`,
-		fixedRepeatedBytesTemplate: fixedRepeatedBytes,
-		fixedRepeatedFixedBytesTemplate: `		case ${fieldNumberConst}:
-			if wireType != ${selector}Len {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
-
-			const (
-				// Ensure this field has a constant length of at least one.
-				_                    = uint(len(c.${fieldName}) - 1)
-				expectedLength       = len((&c.${fieldName})[0])
-				expectedLengthUint64 = uint64(expectedLength)
-			)
-
-			// Read the first entry manually because the tag is already
-			// stripped.
-			var length uint64
+		// Read the rest of the entries, stripping the tag each time.
+		field = field[1:]
+		for i := range field {
+			r.B = r.B[len(${fieldTagConst}):]
 			if err := ${selector}ReadUint(&r, &length); err != nil {
 				return err
 			}
@@ -1088,323 +1119,402 @@ func makeUnmarshal(m message) string {
 			}
 
 			newB := r.B[expectedLength:]
-			copy((&(&c.${fieldName})[0])[:], r.B)
+			copy(field[i][:], r.B)
 			r.B = newB
+		}
 
-			// Read the rest of the entries, stripping the tag each time.
-			field := (&c.${fieldName})[1:]
-			for i := range field {
-				if !${selector}HasPrefix(r.B, ${fieldTagConst}) {
-					return ${selector}ErrUnknownField
-				}
-				r.B = r.B[len(${fieldTagConst}):]
-
-				if err := ${selector}ReadUint(&r, &length); err != nil {
-					return err
-				}
-				if length != expectedLengthUint64 {
-					return ${selector}ErrInvalidLength
-				}
-				if expectedLength > len(r.B) {
-					return io.ErrUnexpectedEOF
-				}
-
-				newB := r.B[expectedLength:]
-				copy((&field[i])[:], r.B)
-				r.B = newB
-			}
-			if ${selector}IsZero(c.${fieldName}) {
-				return ${selector}ErrZeroValue
-			}
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
 `,
-		values: typeTemplate{
-			single: `		case ${fieldNumberConst}:
-			if wireType != ${selector}Len {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
+		fixedRepeatedBytesTemplate: fixedRepeatedBytes,
+		fixedRepeatedFixedBytesTemplate: `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}Len {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+		const (
+			// Ensure this field has a constant length of at least one.
+			_                    = uint(len(c.${fieldName}) - 1)
+			expectedLength       = len((&c.${fieldName})[0])
+			expectedLengthUint64 = uint64(expectedLength)
+		)
+
+		// Read the first entry manually because the tag is already
+		// stripped.
+		var length uint64
+		if err := ${selector}ReadUint(&r, &length); err != nil {
+			return err
+		}
+		if length != expectedLengthUint64 {
+			return ${selector}ErrInvalidLength
+		}
+		if expectedLength > len(r.B) {
+			return io.ErrUnexpectedEOF
+		}
+
+		newB := r.B[expectedLength:]
+		copy((&(&c.${fieldName})[0])[:], r.B)
+		r.B = newB
+
+		// Read the rest of the entries, stripping the tag each time.
+		field := (&c.${fieldName})[1:]
+		for i := range field {
+			if !${selector}HasPrefix(r.B, ${fieldTagConst}) {
+				return ${selector}ErrUnknownField
+			}
+			r.B = r.B[len(${fieldTagConst}):]
+
+			if err := ${selector}ReadUint(&r, &length); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
-				return ${selector}ErrZeroValue
+			if length != expectedLengthUint64 {
+				return ${selector}ErrInvalidLength
 			}
-			r.Unsafe = originalUnsafe
+			if expectedLength > len(r.B) {
+				return io.ErrUnexpectedEOF
+			}
 
-			// Unmarshal the field from the bytes.
+			newB := r.B[expectedLength:]
+			copy((&field[i])[:], r.B)
+			r.B = newB
+		}
+		if ${selector}IsZero(c.${fieldName}) {
+			return ${selector}ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
+`,
+		values: typeTemplate{
+			single: `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}Len {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
+
+		// Read the bytes for the field.
+		originalUnsafe := r.Unsafe
+		r.Unsafe = true
+		var msgBytes []byte
+		if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			return err
+		}
+		if len(msgBytes) == 0 {
+			return ${selector}ErrZeroValue
+		}
+		r.Unsafe = originalUnsafe
+
+		// Unmarshal the field from the bytes.
+		remainingBytes := r.B
+		r.B = msgBytes
+		if err := ${genericTypeCast}(&c.${fieldName}).UnmarshalCanotoFrom(r); err != nil {
+			return err
+		}
+		r.B = remainingBytes
+
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
+`,
+			repeated: `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}Len {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
+
+		// Read the first entry manually because the tag is already
+		// stripped.
+		originalUnsafe := r.Unsafe
+		r.Unsafe = true
+		var msgBytes []byte
+		if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			return err
+		}
+		r.Unsafe = originalUnsafe
+
+		// Count the number of additional entries after the first entry.
+		countMinus1, err := ${selector}CountBytes(r.B, ${fieldTagConst})
+		if err != nil {
+			return err
+		}
+
+		c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
+		field := c.${fieldName}
+		additionalField := field[1:]
+		if len(msgBytes) != 0 {
 			remainingBytes := r.B
 			r.B = msgBytes
-			if err := ${genericTypeCast}(&c.${fieldName}).UnmarshalCanotoFrom(r); err != nil {
+			if err := ${genericTypeCast}(&field[0]).UnmarshalCanotoFrom(r); err != nil {
 				return err
 			}
 			r.B = remainingBytes
-`,
-			repeated: `		case ${fieldNumberConst}:
-			if wireType != ${selector}Len {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
+		}
 
-			// Read the first entry manually because the tag is already
-			// stripped.
-			originalUnsafe := r.Unsafe
+		// Read the rest of the entries, stripping the tag each time.
+		for i := range additionalField {
+			r.B = r.B[len(${fieldTagConst}):]
 			r.Unsafe = true
-			var msgBytes []byte
 			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
 				return err
 			}
 			r.Unsafe = originalUnsafe
+			if len(msgBytes) == 0 {
+				continue
+			}
 
-			// Count the number of additional entries after the first entry.
-			countMinus1, err := ${selector}CountBytes(r.B, ${fieldTagConst})
-			if err != nil {
+			remainingBytes := r.B
+			r.B = msgBytes
+			if err := ${genericTypeCast}(&additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
 				return err
 			}
+			r.B = remainingBytes
+		}
 
-			c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
-			field := c.${fieldName}
-			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := ${genericTypeCast}(&field[0]).UnmarshalCanotoFrom(r); err != nil {
-					return err
-				}
-				r.B = remainingBytes
-			}
-
-			// Read the rest of the entries, stripping the tag each time.
-			for i := range additionalField {
-				r.B = r.B[len(${fieldTagConst}):]
-				r.Unsafe = true
-				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
-					return err
-				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
-					continue
-				}
-
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := ${genericTypeCast}(&additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
-					return err
-				}
-				r.B = remainingBytes
-			}
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
 `,
-			fixedRepeated: `		case ${fieldNumberConst}:
-			if wireType != ${selector}Len {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
+			fixedRepeated: `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}Len {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
 
-			// Ensure this field has a constant length of at least one.
-			const _ = uint(len(c.${fieldName}) - 1)
+		// Ensure this field has a constant length of at least one.
+		const _ = uint(len(c.${fieldName}) - 1)
 
-			// Read the first entry manually because the tag is already
-			// stripped.
-			originalUnsafe := r.Unsafe
+		// Read the first entry manually because the tag is already
+		// stripped.
+		originalUnsafe := r.Unsafe
+		r.Unsafe = true
+		var msgBytes []byte
+		if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			return err
+		}
+		r.Unsafe = originalUnsafe
+
+		isZero := len(msgBytes) == 0
+		if !isZero {
+			remainingBytes := r.B
+			r.B = msgBytes
+			if err := ${genericTypeCast}(&(&c.${fieldName})[0]).UnmarshalCanotoFrom(r); err != nil {
+				return err
+			}
+			r.B = remainingBytes
+		}
+
+		// Read the rest of the entries, stripping the tag each time.
+		field := (&c.${fieldName})[1:]
+		for i := range field {
+			if !${selector}HasPrefix(r.B, ${fieldTagConst}) {
+				return ${selector}ErrUnknownField
+			}
+			r.B = r.B[len(${fieldTagConst}):]
 			r.Unsafe = true
-			var msgBytes []byte
 			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
 				return err
 			}
 			r.Unsafe = originalUnsafe
-
-			isZero := len(msgBytes) == 0
-			if !isZero {
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := ${genericTypeCast}(&(&c.${fieldName})[0]).UnmarshalCanotoFrom(r); err != nil {
-					return err
-				}
-				r.B = remainingBytes
+			if len(msgBytes) == 0 {
+				continue
 			}
 
-			// Read the rest of the entries, stripping the tag each time.
-			field := (&c.${fieldName})[1:]
-			for i := range field {
-				if !${selector}HasPrefix(r.B, ${fieldTagConst}) {
-					return ${selector}ErrUnknownField
-				}
-				r.B = r.B[len(${fieldTagConst}):]
-				r.Unsafe = true
-				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
-					return err
-				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
-					continue
-				}
+			remainingBytes := r.B
+			r.B = msgBytes
+			if err := ${genericTypeCast}(&field[i]).UnmarshalCanotoFrom(r); err != nil {
+				return err
+			}
+			r.B = remainingBytes
+			isZero = false
+		}
+		if isZero {
+			return ${selector}ErrZeroValue
+		}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := ${genericTypeCast}(&field[i]).UnmarshalCanotoFrom(r); err != nil {
-					return err
-				}
-				r.B = remainingBytes
-				isZero = false
-			}
-			if isZero {
-				return ${selector}ErrZeroValue
-			}
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
 `,
 		},
 		pointers: typeTemplate{
-			single: `		case ${fieldNumberConst}:
-			if wireType != ${selector}Len {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
+			single: `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}Len {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
-				return err
-			}
-			r.Unsafe = originalUnsafe
+		// Read the bytes for the field.
+		originalUnsafe := r.Unsafe
+		r.Unsafe = true
+		var msgBytes []byte
+		if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			return err
+		}
+		r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.${fieldName} = ${selector}MakePointer(c.${fieldName})
-			if err := ${genericTypeCast}(c.${fieldName}).UnmarshalCanotoFrom(r); err != nil {
-				return err
-			}
-			r.B = remainingBytes
+		// Unmarshal the field from the bytes.
+		remainingBytes := r.B
+		r.B = msgBytes
+		c.${fieldName} = ${selector}MakePointer(c.${fieldName})
+		if err := ${genericTypeCast}(c.${fieldName}).UnmarshalCanotoFrom(r); err != nil {
+			return err
+		}
+		r.B = remainingBytes
+
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
 `,
-			repeated: `		case ${fieldNumberConst}:
-			if wireType != ${selector}Len {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
+			repeated: `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}Len {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
 
-			// Read the first entry manually because the tag is already
-			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
-				return err
-			}
-			r.Unsafe = originalUnsafe
+		// Read the first entry manually because the tag is already
+		// stripped.
+		originalUnsafe := r.Unsafe
+		r.Unsafe = true
+		var msgBytes []byte
+		if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			return err
+		}
+		r.Unsafe = originalUnsafe
 
-			// Count the number of additional entries after the first entry.
-			countMinus1, err := ${selector}CountBytes(r.B, ${fieldTagConst})
+		// Count the number of additional entries after the first entry.
+		countMinus1, err := ${selector}CountBytes(r.B, ${fieldTagConst})
+		if err != nil {
+			return err
+		}
+
+		c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
+		field := c.${fieldName}
+		additionalField := field[1:]
+		if len(msgBytes) != 0 {
+			innerBytes, err := ${selector}ReadPointerPresence(msgBytes)
 			if err != nil {
 				return err
 			}
-
-			c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
-			field := c.${fieldName}
-			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				innerBytes, err := ${selector}ReadPointerPresence(msgBytes)
-				if err != nil {
-					return err
-				}
-				remainingBytes := r.B
-				r.B = innerBytes
-				field[0] = ${selector}MakePointer(field[0])
-				if err := ${genericTypeCast}(field[0]).UnmarshalCanotoFrom(r); err != nil {
-					return err
-				}
-				r.B = remainingBytes
+			remainingBytes := r.B
+			r.B = innerBytes
+			field[0] = ${selector}MakePointer(field[0])
+			if err := ${genericTypeCast}(field[0]).UnmarshalCanotoFrom(r); err != nil {
+				return err
 			}
+			r.B = remainingBytes
+		}
 
-			// Read the rest of the entries, stripping the tag each time.
-			for i := range additionalField {
-				r.B = r.B[len(${fieldTagConst}):]
-				r.Unsafe = true
-				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
-					return err
-				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
-					continue
-				}
-
-				innerBytes, err := ${selector}ReadPointerPresence(msgBytes)
-				if err != nil {
-					return err
-				}
-				remainingBytes := r.B
-				r.B = innerBytes
-				additionalField[i] = ${selector}MakePointer(additionalField[i])
-				if err := ${genericTypeCast}(additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
-					return err
-				}
-				r.B = remainingBytes
-			}
-`,
-			fixedRepeated: `		case ${fieldNumberConst}:
-			if wireType != ${selector}Len {
-				return ${selector}ErrUnexpectedWireType
-			}${unmarshalOneOf}
-
-			// Ensure this field has a constant length of at least one.
-			const _ = uint(len(c.${fieldName}) - 1)
-
-			// Read the first entry manually because the tag is already
-			// stripped.
-			originalUnsafe := r.Unsafe
+		// Read the rest of the entries, stripping the tag each time.
+		for i := range additionalField {
+			r.B = r.B[len(${fieldTagConst}):]
 			r.Unsafe = true
-			var msgBytes []byte
 			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
 				return err
 			}
 			r.Unsafe = originalUnsafe
-
-			isZero := len(msgBytes) == 0
-			if !isZero {
-				innerBytes, err := ${selector}ReadPointerPresence(msgBytes)
-				if err != nil {
-					return err
-				}
-				remainingBytes := r.B
-				r.B = innerBytes
-				(&c.${fieldName})[0] = ${selector}MakePointer((&c.${fieldName})[0])
-				if err := ${genericTypeCast}((&c.${fieldName})[0]).UnmarshalCanotoFrom(r); err != nil {
-					return err
-				}
-				r.B = remainingBytes
+			if len(msgBytes) == 0 {
+				continue
 			}
 
-			// Read the rest of the entries, stripping the tag each time.
-			field := (&c.${fieldName})[1:]
-			for i := range field {
-				if !${selector}HasPrefix(r.B, ${fieldTagConst}) {
-					return ${selector}ErrUnknownField
-				}
-				r.B = r.B[len(${fieldTagConst}):]
-				r.Unsafe = true
-				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
-					return err
-				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
-					continue
-				}
+			innerBytes, err := ${selector}ReadPointerPresence(msgBytes)
+			if err != nil {
+				return err
+			}
+			remainingBytes := r.B
+			r.B = innerBytes
+			additionalField[i] = ${selector}MakePointer(additionalField[i])
+			if err := ${genericTypeCast}(additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
+				return err
+			}
+			r.B = remainingBytes
+		}
 
-				innerBytes, err := ${selector}ReadPointerPresence(msgBytes)
-				if err != nil {
-					return err
-				}
-				remainingBytes := r.B
-				r.B = innerBytes
-				field[i] = ${selector}MakePointer(field[i])
-				if err := ${genericTypeCast}(field[i]).UnmarshalCanotoFrom(r); err != nil {
-					return err
-				}
-				r.B = remainingBytes
-				isZero = false
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
+`,
+			fixedRepeated: `	if fieldNumber == ${fieldNumberConst} {
+		if wireType != ${selector}Len {
+			return ${selector}ErrUnexpectedWireType
+		}${unmarshalOneOf}
+
+		// Ensure this field has a constant length of at least one.
+		const _ = uint(len(c.${fieldName}) - 1)
+
+		// Read the first entry manually because the tag is already
+		// stripped.
+		originalUnsafe := r.Unsafe
+		r.Unsafe = true
+		var msgBytes []byte
+		if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			return err
+		}
+		r.Unsafe = originalUnsafe
+
+		isZero := len(msgBytes) == 0
+		if !isZero {
+			innerBytes, err := ${selector}ReadPointerPresence(msgBytes)
+			if err != nil {
+				return err
 			}
-			if isZero {
-				return ${selector}ErrZeroValue
+			remainingBytes := r.B
+			r.B = innerBytes
+			(&c.${fieldName})[0] = ${selector}MakePointer((&c.${fieldName})[0])
+			if err := ${genericTypeCast}((&c.${fieldName})[0]).UnmarshalCanotoFrom(r); err != nil {
+				return err
 			}
+			r.B = remainingBytes
+		}
+
+		// Read the rest of the entries, stripping the tag each time.
+		field := (&c.${fieldName})[1:]
+		for i := range field {
+			if !${selector}HasPrefix(r.B, ${fieldTagConst}) {
+				return ${selector}ErrUnknownField
+			}
+			r.B = r.B[len(${fieldTagConst}):]
+			r.Unsafe = true
+			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+				return err
+			}
+			r.Unsafe = originalUnsafe
+			if len(msgBytes) == 0 {
+				continue
+			}
+
+			innerBytes, err := ${selector}ReadPointerPresence(msgBytes)
+			if err != nil {
+				return err
+			}
+			remainingBytes := r.B
+			r.B = innerBytes
+			field[i] = ${selector}MakePointer(field[i])
+			if err := ${genericTypeCast}(field[i]).UnmarshalCanotoFrom(r); err != nil {
+				return err
+			}
+			r.B = remainingBytes
+			isZero = false
+		}
+		if isZero {
+			return ${selector}ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ${selector}ReadNextTag(&r, ${fieldNumberConst}+1)
+		if err != nil {
+			return err
+		}
+	}
 `,
 		},
 	})

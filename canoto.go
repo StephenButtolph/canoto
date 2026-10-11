@@ -53,6 +53,9 @@ const (
 
 	// MaxFieldNumber is the maximum field number allowed to be used in a Tag.
 	MaxFieldNumber = 1<<29 - 1
+	// EndOfMessage is the field number returned by [ReadNextTag] once all
+	// fields have been read. It is larger than every valid field number.
+	EndOfMessage = MaxFieldNumber + 1
 
 	// Version is the current version of the canoto library.
 	Version = "v0.19.0"
@@ -443,6 +446,23 @@ func ReadTag(r *Reader) (uint32, WireType, error) {
 	}
 
 	return val >> wireTypeLength, wireType, nil
+}
+
+// ReadNextTag reads the field number and wire type of the next field in a
+// message, which must be at least minField. If the reader is empty,
+// [EndOfMessage] is returned as the field number.
+func ReadNextTag(r *Reader, minField uint32) (uint32, WireType, error) {
+	if !HasNext(r) {
+		return EndOfMessage, 0, nil
+	}
+	field, wireType, err := ReadTag(r)
+	if err != nil {
+		return 0, 0, err
+	}
+	if field < minField {
+		return 0, 0, ErrInvalidFieldOrder
+	}
+	return field, wireType, nil
 }
 
 // SizeUint calculates the size of an unsigned integer when encoded as a varint.

@@ -83,85 +83,87 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 	*c = Spec{}
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
 
-	var minField uint32
-	for HasNext(&r) {
-		field, wireType, err := ReadTag(&r)
+	fieldNumber, wireType, err := ReadNextTag(&r, 0)
+	if err != nil {
+		return err
+	}
+	if fieldNumber == canotoNumber_Spec__Name {
+		if wireType != Len {
+			return ErrUnexpectedWireType
+		}
+
+		if err := ReadString(&r, &c.Name); err != nil {
+			return err
+		}
+		if len(c.Name) == 0 {
+			return ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ReadNextTag(&r, canotoNumber_Spec__Name+1)
 		if err != nil {
 			return err
 		}
-		if field < minField {
-			return ErrInvalidFieldOrder
+	}
+	if fieldNumber == canotoNumber_Spec__Fields {
+		if wireType != Len {
+			return ErrUnexpectedWireType
 		}
 
-		switch field {
-		case canotoNumber_Spec__Name:
-			if wireType != Len {
-				return ErrUnexpectedWireType
-			}
+		// Read the first entry manually because the tag is already
+		// stripped.
+		originalUnsafe := r.Unsafe
+		r.Unsafe = true
+		var msgBytes []byte
+		if err := ReadBytes(&r, &msgBytes); err != nil {
+			return err
+		}
+		r.Unsafe = originalUnsafe
 
-			if err := ReadString(&r, &c.Name); err != nil {
+		// Count the number of additional entries after the first entry.
+		countMinus1, err := CountBytes(r.B, canotoTag_Spec__Fields)
+		if err != nil {
+			return err
+		}
+
+		c.Fields = MakeSlice(c.Fields, countMinus1+1)
+		field := c.Fields
+		additionalField := field[1:]
+		if len(msgBytes) != 0 {
+			remainingBytes := r.B
+			r.B = msgBytes
+			if err := (&field[0]).UnmarshalCanotoFrom(r); err != nil {
 				return err
 			}
-			if len(c.Name) == 0 {
-				return ErrZeroValue
-			}
-		case canotoNumber_Spec__Fields:
-			if wireType != Len {
-				return ErrUnexpectedWireType
-			}
+			r.B = remainingBytes
+		}
 
-			// Read the first entry manually because the tag is already
-			// stripped.
-			originalUnsafe := r.Unsafe
+		// Read the rest of the entries, stripping the tag each time.
+		for i := range additionalField {
+			r.B = r.B[len(canotoTag_Spec__Fields):]
 			r.Unsafe = true
-			var msgBytes []byte
 			if err := ReadBytes(&r, &msgBytes); err != nil {
 				return err
 			}
 			r.Unsafe = originalUnsafe
+			if len(msgBytes) == 0 {
+				continue
+			}
 
-			// Count the number of additional entries after the first entry.
-			countMinus1, err := CountBytes(r.B, canotoTag_Spec__Fields)
-			if err != nil {
+			remainingBytes := r.B
+			r.B = msgBytes
+			if err := (&additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
 				return err
 			}
-
-			c.Fields = MakeSlice(c.Fields, countMinus1+1)
-			field := c.Fields
-			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := (&field[0]).UnmarshalCanotoFrom(r); err != nil {
-					return err
-				}
-				r.B = remainingBytes
-			}
-
-			// Read the rest of the entries, stripping the tag each time.
-			for i := range additionalField {
-				r.B = r.B[len(canotoTag_Spec__Fields):]
-				r.Unsafe = true
-				if err := ReadBytes(&r, &msgBytes); err != nil {
-					return err
-				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
-					continue
-				}
-
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := (&additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
-					return err
-				}
-				r.B = remainingBytes
-			}
-		default:
-			return ErrUnknownField
+			r.B = remainingBytes
 		}
 
-		minField = field + 1
+		fieldNumber, _, err = ReadNextTag(&r, canotoNumber_Spec__Fields+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber != EndOfMessage {
+		return ErrUnknownField
 	}
 	return nil
 }
@@ -457,239 +459,325 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 	*c = FieldType{}
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
 
-	var minField uint32
-	for HasNext(&r) {
-		field, wireType, err := ReadTag(&r)
+	fieldNumber, wireType, err := ReadNextTag(&r, 0)
+	if err != nil {
+		return err
+	}
+	if fieldNumber == canotoNumber_FieldType__FieldNumber {
+		if wireType != Varint {
+			return ErrUnexpectedWireType
+		}
+
+		if err := ReadUint(&r, &c.FieldNumber); err != nil {
+			return err
+		}
+		if IsZero(c.FieldNumber) {
+			return ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ReadNextTag(&r, canotoNumber_FieldType__FieldNumber+1)
 		if err != nil {
 			return err
 		}
-		if field < minField {
-			return ErrInvalidFieldOrder
+	}
+	if fieldNumber == canotoNumber_FieldType__Name {
+		if wireType != Len {
+			return ErrUnexpectedWireType
 		}
 
-		switch field {
-		case canotoNumber_FieldType__FieldNumber:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-
-			if err := ReadUint(&r, &c.FieldNumber); err != nil {
-				return err
-			}
-			if IsZero(c.FieldNumber) {
-				return ErrZeroValue
-			}
-		case canotoNumber_FieldType__Name:
-			if wireType != Len {
-				return ErrUnexpectedWireType
-			}
-
-			if err := ReadString(&r, &c.Name); err != nil {
-				return err
-			}
-			if len(c.Name) == 0 {
-				return ErrZeroValue
-			}
-		case canotoNumber_FieldType__FixedLength:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-
-			if err := ReadUint(&r, &c.FixedLength); err != nil {
-				return err
-			}
-			if IsZero(c.FixedLength) {
-				return ErrZeroValue
-			}
-		case canotoNumber_FieldType__Repeated:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-
-			if err := ReadBool(&r, &c.Repeated); err != nil {
-				return err
-			}
-			if IsZero(c.Repeated) {
-				return ErrZeroValue
-			}
-		case canotoNumber_FieldType__OneOf:
-			if wireType != Len {
-				return ErrUnexpectedWireType
-			}
-
-			if err := ReadString(&r, &c.OneOf); err != nil {
-				return err
-			}
-			if len(c.OneOf) == 0 {
-				return ErrZeroValue
-			}
-		case canotoNumber_FieldType__Pointer:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-
-			if err := ReadBool(&r, &c.Pointer); err != nil {
-				return err
-			}
-			if IsZero(c.Pointer) {
-				return ErrZeroValue
-			}
-		case canotoNumber_FieldType__TypeInt:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeInt) != 0 {
-				return ErrDuplicateOneOf
-			}
-
-			if err := ReadUint(&r, &c.TypeInt); err != nil {
-				return err
-			}
-			if IsZero(c.TypeInt) {
-				return ErrZeroValue
-			}
-		case canotoNumber_FieldType__TypeUint:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeUint) != 0 {
-				return ErrDuplicateOneOf
-			}
-
-			if err := ReadUint(&r, &c.TypeUint); err != nil {
-				return err
-			}
-			if IsZero(c.TypeUint) {
-				return ErrZeroValue
-			}
-		case canotoNumber_FieldType__TypeFixedInt:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeFixedInt) != 0 {
-				return ErrDuplicateOneOf
-			}
-
-			if err := ReadUint(&r, &c.TypeFixedInt); err != nil {
-				return err
-			}
-			if IsZero(c.TypeFixedInt) {
-				return ErrZeroValue
-			}
-		case canotoNumber_FieldType__TypeFixedUint:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeFixedUint) != 0 {
-				return ErrDuplicateOneOf
-			}
-
-			if err := ReadUint(&r, &c.TypeFixedUint); err != nil {
-				return err
-			}
-			if IsZero(c.TypeFixedUint) {
-				return ErrZeroValue
-			}
-		case canotoNumber_FieldType__TypeBool:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeBool) != 0 {
-				return ErrDuplicateOneOf
-			}
-
-			if err := ReadBool(&r, &c.TypeBool); err != nil {
-				return err
-			}
-			if IsZero(c.TypeBool) {
-				return ErrZeroValue
-			}
-		case canotoNumber_FieldType__TypeString:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeString) != 0 {
-				return ErrDuplicateOneOf
-			}
-
-			if err := ReadBool(&r, &c.TypeString); err != nil {
-				return err
-			}
-			if IsZero(c.TypeString) {
-				return ErrZeroValue
-			}
-		case canotoNumber_FieldType__TypeBytes:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeBytes) != 0 {
-				return ErrDuplicateOneOf
-			}
-
-			if err := ReadBool(&r, &c.TypeBytes); err != nil {
-				return err
-			}
-			if IsZero(c.TypeBytes) {
-				return ErrZeroValue
-			}
-		case canotoNumber_FieldType__TypeFixedBytes:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeFixedBytes) != 0 {
-				return ErrDuplicateOneOf
-			}
-
-			if err := ReadUint(&r, &c.TypeFixedBytes); err != nil {
-				return err
-			}
-			if IsZero(c.TypeFixedBytes) {
-				return ErrZeroValue
-			}
-		case canotoNumber_FieldType__TypeMessage:
-			if wireType != Len {
-				return ErrUnexpectedWireType
-			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeMessage) != 0 {
-				return ErrDuplicateOneOf
-			}
-
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
-				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
-			c.TypeMessage = MakePointer(c.TypeMessage)
-			if err := (c.TypeMessage).UnmarshalCanotoFrom(r); err != nil {
-				return err
-			}
-			r.B = remainingBytes
-		case canotoNumber_FieldType__TypeRecursive:
-			if wireType != Varint {
-				return ErrUnexpectedWireType
-			}
-			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeRecursive) != 0 {
-				return ErrDuplicateOneOf
-			}
-
-			if err := ReadUint(&r, &c.TypeRecursive); err != nil {
-				return err
-			}
-			if IsZero(c.TypeRecursive) {
-				return ErrZeroValue
-			}
-		default:
-			return ErrUnknownField
+		if err := ReadString(&r, &c.Name); err != nil {
+			return err
+		}
+		if len(c.Name) == 0 {
+			return ErrZeroValue
 		}
 
-		minField = field + 1
+		fieldNumber, wireType, err = ReadNextTag(&r, canotoNumber_FieldType__Name+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber == canotoNumber_FieldType__FixedLength {
+		if wireType != Varint {
+			return ErrUnexpectedWireType
+		}
+
+		if err := ReadUint(&r, &c.FixedLength); err != nil {
+			return err
+		}
+		if IsZero(c.FixedLength) {
+			return ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ReadNextTag(&r, canotoNumber_FieldType__FixedLength+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber == canotoNumber_FieldType__Repeated {
+		if wireType != Varint {
+			return ErrUnexpectedWireType
+		}
+
+		if err := ReadBool(&r, &c.Repeated); err != nil {
+			return err
+		}
+		if IsZero(c.Repeated) {
+			return ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ReadNextTag(&r, canotoNumber_FieldType__Repeated+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber == canotoNumber_FieldType__OneOf {
+		if wireType != Len {
+			return ErrUnexpectedWireType
+		}
+
+		if err := ReadString(&r, &c.OneOf); err != nil {
+			return err
+		}
+		if len(c.OneOf) == 0 {
+			return ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ReadNextTag(&r, canotoNumber_FieldType__OneOf+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber == canotoNumber_FieldType__Pointer {
+		if wireType != Varint {
+			return ErrUnexpectedWireType
+		}
+
+		if err := ReadBool(&r, &c.Pointer); err != nil {
+			return err
+		}
+		if IsZero(c.Pointer) {
+			return ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ReadNextTag(&r, canotoNumber_FieldType__Pointer+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber == canotoNumber_FieldType__TypeInt {
+		if wireType != Varint {
+			return ErrUnexpectedWireType
+		}
+		if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeInt) != 0 {
+			return ErrDuplicateOneOf
+		}
+
+		if err := ReadUint(&r, &c.TypeInt); err != nil {
+			return err
+		}
+		if IsZero(c.TypeInt) {
+			return ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ReadNextTag(&r, canotoNumber_FieldType__TypeInt+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber == canotoNumber_FieldType__TypeUint {
+		if wireType != Varint {
+			return ErrUnexpectedWireType
+		}
+		if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeUint) != 0 {
+			return ErrDuplicateOneOf
+		}
+
+		if err := ReadUint(&r, &c.TypeUint); err != nil {
+			return err
+		}
+		if IsZero(c.TypeUint) {
+			return ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ReadNextTag(&r, canotoNumber_FieldType__TypeUint+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber == canotoNumber_FieldType__TypeFixedInt {
+		if wireType != Varint {
+			return ErrUnexpectedWireType
+		}
+		if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeFixedInt) != 0 {
+			return ErrDuplicateOneOf
+		}
+
+		if err := ReadUint(&r, &c.TypeFixedInt); err != nil {
+			return err
+		}
+		if IsZero(c.TypeFixedInt) {
+			return ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ReadNextTag(&r, canotoNumber_FieldType__TypeFixedInt+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber == canotoNumber_FieldType__TypeFixedUint {
+		if wireType != Varint {
+			return ErrUnexpectedWireType
+		}
+		if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeFixedUint) != 0 {
+			return ErrDuplicateOneOf
+		}
+
+		if err := ReadUint(&r, &c.TypeFixedUint); err != nil {
+			return err
+		}
+		if IsZero(c.TypeFixedUint) {
+			return ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ReadNextTag(&r, canotoNumber_FieldType__TypeFixedUint+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber == canotoNumber_FieldType__TypeBool {
+		if wireType != Varint {
+			return ErrUnexpectedWireType
+		}
+		if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeBool) != 0 {
+			return ErrDuplicateOneOf
+		}
+
+		if err := ReadBool(&r, &c.TypeBool); err != nil {
+			return err
+		}
+		if IsZero(c.TypeBool) {
+			return ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ReadNextTag(&r, canotoNumber_FieldType__TypeBool+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber == canotoNumber_FieldType__TypeString {
+		if wireType != Varint {
+			return ErrUnexpectedWireType
+		}
+		if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeString) != 0 {
+			return ErrDuplicateOneOf
+		}
+
+		if err := ReadBool(&r, &c.TypeString); err != nil {
+			return err
+		}
+		if IsZero(c.TypeString) {
+			return ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ReadNextTag(&r, canotoNumber_FieldType__TypeString+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber == canotoNumber_FieldType__TypeBytes {
+		if wireType != Varint {
+			return ErrUnexpectedWireType
+		}
+		if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeBytes) != 0 {
+			return ErrDuplicateOneOf
+		}
+
+		if err := ReadBool(&r, &c.TypeBytes); err != nil {
+			return err
+		}
+		if IsZero(c.TypeBytes) {
+			return ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ReadNextTag(&r, canotoNumber_FieldType__TypeBytes+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber == canotoNumber_FieldType__TypeFixedBytes {
+		if wireType != Varint {
+			return ErrUnexpectedWireType
+		}
+		if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeFixedBytes) != 0 {
+			return ErrDuplicateOneOf
+		}
+
+		if err := ReadUint(&r, &c.TypeFixedBytes); err != nil {
+			return err
+		}
+		if IsZero(c.TypeFixedBytes) {
+			return ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = ReadNextTag(&r, canotoNumber_FieldType__TypeFixedBytes+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber == canotoNumber_FieldType__TypeMessage {
+		if wireType != Len {
+			return ErrUnexpectedWireType
+		}
+		if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeMessage) != 0 {
+			return ErrDuplicateOneOf
+		}
+
+		// Read the bytes for the field.
+		originalUnsafe := r.Unsafe
+		r.Unsafe = true
+		var msgBytes []byte
+		if err := ReadBytes(&r, &msgBytes); err != nil {
+			return err
+		}
+		r.Unsafe = originalUnsafe
+
+		// Unmarshal the field from the bytes.
+		remainingBytes := r.B
+		r.B = msgBytes
+		c.TypeMessage = MakePointer(c.TypeMessage)
+		if err := (c.TypeMessage).UnmarshalCanotoFrom(r); err != nil {
+			return err
+		}
+		r.B = remainingBytes
+
+		fieldNumber, wireType, err = ReadNextTag(&r, canotoNumber_FieldType__TypeMessage+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber == canotoNumber_FieldType__TypeRecursive {
+		if wireType != Varint {
+			return ErrUnexpectedWireType
+		}
+		if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeRecursive) != 0 {
+			return ErrDuplicateOneOf
+		}
+
+		if err := ReadUint(&r, &c.TypeRecursive); err != nil {
+			return err
+		}
+		if IsZero(c.TypeRecursive) {
+			return ErrZeroValue
+		}
+
+		fieldNumber, _, err = ReadNextTag(&r, canotoNumber_FieldType__TypeRecursive+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber != EndOfMessage {
+		return ErrUnknownField
 	}
 	return nil
 }

@@ -70,33 +70,29 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) error {
 	*c = justAnInt{}
 	c.canotoData.size.Store(uint64(len(r.B)))
 
-	var minField uint32
-	for canoto.HasNext(&r) {
-		field, wireType, err := canoto.ReadTag(&r)
+	fieldNumber, wireType, err := canoto.ReadNextTag(&r, 0)
+	if err != nil {
+		return err
+	}
+	if fieldNumber == canotoNumber_justAnInt__Int8 {
+		if wireType != canoto.Varint {
+			return canoto.ErrUnexpectedWireType
+		}
+
+		if err := canoto.ReadInt(&r, &c.Int8); err != nil {
+			return err
+		}
+		if canoto.IsZero(c.Int8) {
+			return canoto.ErrZeroValue
+		}
+
+		fieldNumber, _, err = canoto.ReadNextTag(&r, canotoNumber_justAnInt__Int8+1)
 		if err != nil {
 			return err
 		}
-		if field < minField {
-			return canoto.ErrInvalidFieldOrder
-		}
-
-		switch field {
-		case canotoNumber_justAnInt__Int8:
-			if wireType != canoto.Varint {
-				return canoto.ErrUnexpectedWireType
-			}
-
-			if err := canoto.ReadInt(&r, &c.Int8); err != nil {
-				return err
-			}
-			if canoto.IsZero(c.Int8) {
-				return canoto.ErrZeroValue
-			}
-		default:
-			return canoto.ErrUnknownField
-		}
-
-		minField = field + 1
+	}
+	if fieldNumber != canoto.EndOfMessage {
+		return canoto.ErrUnknownField
 	}
 	return nil
 }

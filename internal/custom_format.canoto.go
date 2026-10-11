@@ -89,50 +89,52 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) error {
 	*c = CustomFormat{}
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
 
-	var minField uint32
-	for canoto.HasNext(&r) {
-		field, wireType, err := canoto.ReadTag(&r)
+	fieldNumber, wireType, err := canoto.ReadNextTag(&r, 0)
+	if err != nil {
+		return err
+	}
+	if fieldNumber == CustomFormatANumber {
+		if wireType != canoto.Varint {
+			return canoto.ErrUnexpectedWireType
+		}
+		if atomic.SwapUint32(&c.canotoData.FieldsOneOf, CustomFormatANumber) != 0 {
+			return canoto.ErrDuplicateOneOf
+		}
+
+		if err := canoto.ReadUint(&r, &c.A); err != nil {
+			return err
+		}
+		if canoto.IsZero(c.A) {
+			return canoto.ErrZeroValue
+		}
+
+		fieldNumber, wireType, err = canoto.ReadNextTag(&r, CustomFormatANumber+1)
 		if err != nil {
 			return err
 		}
-		if field < minField {
-			return canoto.ErrInvalidFieldOrder
+	}
+	if fieldNumber == CustomFormatBNumber {
+		if wireType != canoto.Varint {
+			return canoto.ErrUnexpectedWireType
+		}
+		if atomic.SwapUint32(&c.canotoData.FieldsOneOf, CustomFormatBNumber) != 0 {
+			return canoto.ErrDuplicateOneOf
 		}
 
-		switch field {
-		case CustomFormatANumber:
-			if wireType != canoto.Varint {
-				return canoto.ErrUnexpectedWireType
-			}
-			if atomic.SwapUint32(&c.canotoData.FieldsOneOf, CustomFormatANumber) != 0 {
-				return canoto.ErrDuplicateOneOf
-			}
-
-			if err := canoto.ReadUint(&r, &c.A); err != nil {
-				return err
-			}
-			if canoto.IsZero(c.A) {
-				return canoto.ErrZeroValue
-			}
-		case CustomFormatBNumber:
-			if wireType != canoto.Varint {
-				return canoto.ErrUnexpectedWireType
-			}
-			if atomic.SwapUint32(&c.canotoData.FieldsOneOf, CustomFormatBNumber) != 0 {
-				return canoto.ErrDuplicateOneOf
-			}
-
-			if err := canoto.ReadUint(&r, &c.B); err != nil {
-				return err
-			}
-			if canoto.IsZero(c.B) {
-				return canoto.ErrZeroValue
-			}
-		default:
-			return canoto.ErrUnknownField
+		if err := canoto.ReadUint(&r, &c.B); err != nil {
+			return err
+		}
+		if canoto.IsZero(c.B) {
+			return canoto.ErrZeroValue
 		}
 
-		minField = field + 1
+		fieldNumber, _, err = canoto.ReadNextTag(&r, CustomFormatBNumber+1)
+		if err != nil {
+			return err
+		}
+	}
+	if fieldNumber != canoto.EndOfMessage {
+		return canoto.ErrUnknownField
 	}
 	return nil
 }

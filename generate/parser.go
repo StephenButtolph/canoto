@@ -349,14 +349,14 @@ func parseField(
 		var unmarshalOneOfTemplate string
 		if noCopy {
 			unmarshalOneOfTemplate = `
-			if c.canotoData.%sOneOf.Swap(%s) != 0 {
-				return %sErrDuplicateOneOf
-			}`
+		if c.canotoData.%sOneOf.Swap(%s) != 0 {
+			return %sErrDuplicateOneOf
+		}`
 		} else {
 			unmarshalOneOfTemplate = `
-			if atomic.SwapUint32(&c.canotoData.%sOneOf, %s) != 0 {
-				return %sErrDuplicateOneOf
-			}`
+		if atomic.SwapUint32(&c.canotoData.%sOneOf, %s) != 0 {
+			return %sErrDuplicateOneOf
+		}`
 		}
 		fieldNumberConst := makeTemplate(numberTemplate, map[string]string{
 			"struct":  structName,
