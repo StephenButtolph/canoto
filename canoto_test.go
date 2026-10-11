@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"io"
 	"math"
 	"math/rand/v2"
@@ -456,16 +455,6 @@ func testReadUints[S ~[]E, E Uint](t *testing.T, data []byte) {
 	require.ErrorIs(err, io.ErrUnexpectedEOF)
 }
 
-func FuzzReadUintsInto_uint8(f *testing.F)  { f.Fuzz(testReadUintsInto[[]uint8]) }
-func FuzzReadUintsInto_uint16(f *testing.F) { f.Fuzz(testReadUintsInto[[]uint16]) }
-func FuzzReadUintsInto_uint32(f *testing.F) { f.Fuzz(testReadUintsInto[[]uint32]) }
-func FuzzReadUintsInto_uint64(f *testing.F) { f.Fuzz(testReadUintsInto[[]uint64]) }
-
-// testReadUintsInto verifies [ReadUintsInto] against [ReadUints].
-func testReadUintsInto[S ~[]E, E Uint](t *testing.T, b []byte, n uint8) {
-	verifyReadInto(t, b, n, ReadUints[S], ReadUintsInto[S])
-}
-
 func FuzzAppendUints_uint8(f *testing.F)  { f.Fuzz(testAppendUints[[]uint8]) }
 func FuzzAppendUints_uint16(f *testing.F) { f.Fuzz(testAppendUints[[]uint16]) }
 func FuzzAppendUints_uint32(f *testing.F) { f.Fuzz(testAppendUints[[]uint32]) }
@@ -801,63 +790,6 @@ func testReadInts[S ~[]E, E Int](t *testing.T, data []byte) {
 	r = &Reader{B: w.B[:len(w.B)-1]}
 	_, err = ReadInts(r, &got)
 	require.ErrorIs(err, io.ErrUnexpectedEOF)
-}
-
-func FuzzReadIntsInto_int8(f *testing.F)  { f.Fuzz(testReadIntsInto[[]int8]) }
-func FuzzReadIntsInto_int16(f *testing.F) { f.Fuzz(testReadIntsInto[[]int16]) }
-func FuzzReadIntsInto_int32(f *testing.F) { f.Fuzz(testReadIntsInto[[]int32]) }
-func FuzzReadIntsInto_int64(f *testing.F) { f.Fuzz(testReadIntsInto[[]int64]) }
-
-// testReadIntsInto verifies [ReadIntsInto] against [ReadInts].
-func testReadIntsInto[S ~[]E, E Int](t *testing.T, b []byte, n uint8) {
-	verifyReadInto(t, b, n, ReadInts[S], ReadIntsInto[S])
-}
-
-// verifyReadInto verifies that reading a packed field into a slice of length n
-// behaves the same as reading it into a new slice, except that a field with the
-// wrong number of values must be rejected with [ErrInvalidLength].
-func verifyReadInto[S ~[]E, E comparable](
-	t *testing.T,
-	b []byte,
-	n uint8,
-	read func(*Reader, *S) (uint64, error),
-	readInto func(*Reader, S) (uint64, error),
-) {
-	require := require.New(t)
-
-	var (
-		wantR = &Reader{B: b}
-		want  S
-	)
-	wantLength, wantErr := read(wantR, &want)
-
-	var (
-		r   = &Reader{B: b}
-		got = make(S, n)
-	)
-	length, err := readInto(r, got)
-
-	switch {
-	case wantErr != nil:
-		if errors.Is(err, wantErr) {
-			return
-		}
-
-		// A field with more values than fit into got may be rejected before
-		// reaching the value that made read fail.
-		fieldR := &Reader{B: b}
-		var fieldLength uint64
-		require.NoError(ReadUint(fieldR, &fieldLength))
-		require.Greater(CountInts(fieldR.B[:fieldLength]), uint64(n))
-		require.ErrorIs(err, ErrInvalidLength)
-	case len(want) != len(got):
-		require.ErrorIs(err, ErrInvalidLength)
-	default:
-		require.NoError(err)
-		require.Equal(wantLength, length)
-		require.True(slices.Equal(want, got))
-		require.Equal(wantR.B, r.B)
-	}
 }
 
 func TestReadFint32_int32(t *testing.T) {
