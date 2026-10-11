@@ -8,6 +8,14 @@ set -euo pipefail
 # The checkouts are benchmarked alternately, one pass at a time, so that slow
 # periods on a shared CI machine affect both sides equally rather than skewing
 # whichever side happened to run during them.
+#
+# Each pass links the benchmarks with a different function layout. Where code
+# lands in memory can change benchmark results by tens of percent on some
+# machines, so any change that moves code, even code the benchmark never
+# executes, can look like a regression or an improvement. Randomizing the
+# layout every pass turns that effect into noise shared by both sides rather
+# than a difference between them. The pass number is the seed, so the layouts
+# are reproducible.
 
 if [[ $# -ne 3 ]]; then
   echo "usage: $0 <old-dir> <new-dir> <out-dir>"
@@ -31,7 +39,7 @@ skip="${BENCH_SKIP:-_Proto}"
 run_benchmarks() {
   (
     cd "$1"
-    go test -run='^$' -bench=. -skip="$skip" -benchmem -benchtime="$benchtime" ./...
+    go test -run='^$' -bench=. -skip="$skip" -benchmem -benchtime="$benchtime" -ldflags="-randlayout=$3" ./...
   ) >> "$2"
 }
 
@@ -41,6 +49,6 @@ run_benchmarks() {
 
 for i in $(seq "$count"); do
   echo "pass $i/$count"
-  run_benchmarks "$old_dir" "$out_dir/old"
-  run_benchmarks "$new_dir" "$out_dir/new"
+  run_benchmarks "$old_dir" "$out_dir/old" "$i"
+  run_benchmarks "$new_dir" "$out_dir/new" "$i"
 done
