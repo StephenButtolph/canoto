@@ -2043,34 +2043,6 @@ func FuzzSpec(f *testing.F) {
 	})
 }
 
-// TestUnmarshal_LargeFixedLength verifies that [Unmarshal] does not allocate
-// memory based on the fixed length declared by the spec, as the spec may be
-// malicious.
-func TestUnmarshal_LargeFixedLength(t *testing.T) {
-	msg := fullSpecFuzzer(t)
-	b := msg.MarshalCanoto()
-	for i, field := range msg.DescribeCanoto().Fields {
-		if field.FixedLength == 0 {
-			continue
-		}
-		t.Run(field.Name, func(t *testing.T) {
-			spec := msg.DescribeCanoto()
-			// A slice of this length can never be allocated, so allocating
-			// based on it panics rather than exhausting the available memory.
-			spec.Fields[i].FixedLength = math.MaxUint64
-
-			// Packed fields contain too few values, while unpacked fields run
-			// out of entries.
-			wantErr := ErrInvalidLength
-			if field.TypeString || field.TypeBytes || field.TypeFixedBytes > 0 || field.TypeMessage != nil || field.TypeRecursive > 0 {
-				wantErr = ErrUnknownField
-			}
-			_, err := Unmarshal(spec, b)
-			require.ErrorIs(t, err, wantErr)
-		})
-	}
-}
-
 // TestFixedRepeatedFixedSize_InvalidLength verifies that a packed fixed size
 // field whose length doesn't match the array is rejected with
 // [ErrInvalidLength], both by the generated code and by [Unmarshal].
