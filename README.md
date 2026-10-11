@@ -13,6 +13,8 @@ Canoto is a serialization format designed to be:
 go install github.com/StephenButtolph/canoto/canoto@latest
 ```
 
+32-bit architectures are not supported.
+
 ## Define Messages
 
 Canoto messages are defined as normal golang structs:
