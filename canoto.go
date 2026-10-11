@@ -846,6 +846,8 @@ func AppendInts[S ~[]E, E Int](w *Writer, vs S) {
 }
 
 // ReadFint32 reads a 32-bit fixed size integer from the reader.
+//
+//go:noinline
 func ReadFint32[T Int32](r *Reader, v *T) error {
 	if len(r.B) < SizeFint32 {
 		return io.ErrUnexpectedEOF
@@ -930,6 +932,8 @@ func AppendFint32s[S ~[]E, E Int32](w *Writer, vs S) {
 }
 
 // ReadFint64 reads a 64-bit fixed size integer from the reader.
+//
+//go:noinline
 func ReadFint64[T Int64](r *Reader, v *T) error {
 	if len(r.B) < SizeFint64 {
 		return io.ErrUnexpectedEOF
@@ -1014,6 +1018,8 @@ func AppendFint64s[S ~[]E, E Int64](w *Writer, vs S) {
 }
 
 // ReadBool reads a boolean from the reader.
+//
+//go:noinline
 func ReadBool[T ~bool](r *Reader, v *T) error {
 	switch {
 	case len(r.B) < SizeBool:
