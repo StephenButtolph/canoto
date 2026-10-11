@@ -13,6 +13,8 @@ const (
 	defaultCanotoSelector    = "canoto"
 	libraryFileName          = "canoto.go"
 	generatedLibraryFileName = "canoto.canoto.go"
+	raceLibraryFileName      = "race.go"
+	noRaceLibraryFileName    = "norace.go"
 	readWrite                = 0o640
 	readWriteExecute         = 0o750
 
@@ -31,22 +33,29 @@ const (
 //
 // Specifically, if "./internal" is provided, this will generate the package
 // "./internal/canoto" with the serialization primitives included in
-// "./internal/canoto/canoto.go" and "./internal/canoto/canoto.canoto.go".
+// "./internal/canoto/canoto.go", "./internal/canoto/canoto.canoto.go",
+// "./internal/canoto/race.go", and "./internal/canoto/norace.go".
 func Library(parentDir string) error {
 	library := filepath.Join(parentDir, defaultCanotoSelector)
 	if err := os.MkdirAll(library, readWriteExecute); err != nil {
 		return fmt.Errorf("failed to create directory %q: %w", library, err)
 	}
 
-	libraryPath := filepath.Join(library, libraryFileName)
 	codeWithoutPrefix, _ := strings.CutPrefix(canoto.Code, codeGoGeneratePrefix)
-	if err := os.WriteFile(libraryPath, []byte(doNotGenerate+codeWithoutPrefix), readWrite); err != nil {
-		return fmt.Errorf("failed to write file %q: %w", libraryPath, err)
+	files := []struct {
+		name string
+		code string
+	}{
+		{name: libraryFileName, code: doNotGenerate + codeWithoutPrefix},
+		{name: generatedLibraryFileName, code: canoto.GeneratedCode},
+		{name: raceLibraryFileName, code: doNotGenerate + canoto.RaceCode},
+		{name: noRaceLibraryFileName, code: doNotGenerate + canoto.NoRaceCode},
 	}
-
-	generatedLibraryPath := filepath.Join(library, generatedLibraryFileName)
-	if err := os.WriteFile(generatedLibraryPath, []byte(canoto.GeneratedCode), readWrite); err != nil {
-		return fmt.Errorf("failed to write file %q: %w", libraryPath, err)
+	for _, f := range files {
+		path := filepath.Join(library, f.name)
+		if err := os.WriteFile(path, []byte(f.code), readWrite); err != nil {
+			return fmt.Errorf("failed to write file %q: %w", path, err)
+		}
 	}
 	return nil
 }

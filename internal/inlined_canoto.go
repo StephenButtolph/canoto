@@ -11,5 +11,5 @@ var _ canoto.Message = (*justAnInt)(nil)
 type justAnInt struct {
 	Int8 int8 `canoto:"int,1"`
 
-	canotoData canotoData_justAnInt `canoto:"nocopy"`
+	canotoData canotoData_justAnInt
 }

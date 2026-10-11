@@ -173,12 +173,12 @@ func (c *${structName}${generics}) UnmarshalCanoto(bytes []byte) error {
 func (c *${structName}${generics}) UnmarshalCanotoFrom(r ${selector}Reader) error {
 	// Zero the struct before unmarshaling.
 	*c = ${structName}${generics}{}
-	${storePrefix}c.canotoData.size${storeJoin}uint64(len(r.B))${storeSuffix}
+	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
 
 ${unmarshalBody}}
 
 // CacheCanoto populates size and OneOf caches based on the current values in
-// the struct.${concurrencyWarning}
+// the struct.
 func (c *${structName}${generics}) CacheCanoto() {
 ${sizeVars}${size}${assignSizeVars}}
 
@@ -188,11 +188,11 @@ ${sizeVars}${size}${assignSizeVars}}
 // If CacheCanoto has not yet been called, or the struct has been modified
 // since the last call to CacheCanoto, the returned size may be incorrect.
 func (c *${structName}${generics}) SizeCanoto() uint64 {
-	return ${loadPrefix}c.canotoData.size${loadSuffix}
+	return atomic.LoadUint64(&c.canotoData.size)
 }${whichCanoto}
 
 // ValidCanoto validates that the struct can be correctly marshaled into the
-// Canoto format.${concurrencyWarning}
+// Canoto format.
 func (c *${structName}${generics}) ValidCanoto() bool {
 ${cacheBeforeCheck}	return c.CheckCanoto()
 }
@@ -205,7 +205,7 @@ ${checkOneOf}${check}	return true
 
 // MarshalCanoto returns the Canoto representation of this struct.
 //
-// It is assumed that this struct is ValidCanoto.${concurrencyWarning}
+// It is assumed that this struct is ValidCanoto.
 func (c *${structName}${generics}) MarshalCanoto() []byte {
 	c.CacheCanoto()
 	w := ${selector}Writer{
@@ -221,30 +221,11 @@ func (c *${structName}${generics}) MarshalCanoto() []byte {
 // It is assumed that CacheCanoto has been called since the last modification
 // to this struct.
 //
-// It is assumed that this struct is ValidCanoto.${concurrencyWarning}
+// It is assumed that this struct is ValidCanoto.
 func (c *${structName}${generics}) AppendCanoto(w ${selector}Writer) ${selector}Writer {
 ${append}	return w
 }
 `
-
-	var (
-		loadPrefix         = "atomic.LoadUint64(&"
-		loadSuffix         = ")"
-		storePrefix        = "atomic.StoreUint64(&"
-		storeJoin          = ", "
-		storeSuffix        = ")"
-		concurrencyWarning = `
-//
-// It is not safe to copy this struct concurrently.`
-	)
-	if m.noCopy {
-		loadPrefix = ""
-		loadSuffix = ".Load()"
-		storePrefix = ""
-		storeJoin = ".Store("
-		storeSuffix = ")"
-		concurrencyWarning = ""
-	}
 
 	generics := makeGenerics(m)
 
@@ -282,34 +263,28 @@ ${append}	return w
 	}
 
 	return writeTemplate(w, structTemplate, map[string]string{
-		"canotoData":         makeTemplate(m.template.Cache, messageEnv(m)),
-		"typesDoc":           typesDoc,
-		"typesDecl":          typesDecl,
-		"appendTypes":        appendTypes,
-		"cacheBeforeCheck":   cacheBeforeCheck,
-		"checkCacheDoc":      checkCacheDoc,
-		"constants":          makeConstants(m),
-		"structName":         m.name,
-		"generics":           generics,
-		"selector":           canotoSelector,
-		"sizeCache":          makeSizeCache(m),
-		"oneOfCache":         makeOneOfCache(m),
-		"spec":               makeSpec(m, canotoSelector),
-		"unmarshalBody":      makeUnmarshalBody(m, canotoSelector),
-		"checkOneOf":         makeCheckOneOf(m),
-		"check":              makeCheck(m),
-		"concurrencyWarning": concurrencyWarning,
-		"sizeVars":           makeSizeVars(m),
-		"size":               makeSize(m),
-		"assignSizeVars":     makeAssignSizeVars(m),
-		"loadPrefix":         loadPrefix,
-		"loadSuffix":         loadSuffix,
-		"storePrefix":        storePrefix,
-		"storeJoin":          storeJoin,
-		"storeSuffix":        storeSuffix,
-		"whichCanoto":        makeWhichCanoto(m),
-		"append":             makeAppend(m),
-		"zero":               makeZeroVarName(m, generics),
+		"canotoData":       makeTemplate(m.template.Cache, messageEnv(m)),
+		"typesDoc":         typesDoc,
+		"typesDecl":        typesDecl,
+		"appendTypes":      appendTypes,
+		"cacheBeforeCheck": cacheBeforeCheck,
+		"checkCacheDoc":    checkCacheDoc,
+		"constants":        makeConstants(m),
+		"structName":       m.name,
+		"generics":         generics,
+		"selector":         canotoSelector,
+		"sizeCache":        makeSizeCache(m),
+		"oneOfCache":       makeOneOfCache(m),
+		"spec":             makeSpec(m, canotoSelector),
+		"unmarshalBody":    makeUnmarshalBody(m, canotoSelector),
+		"checkOneOf":       makeCheckOneOf(m),
+		"check":            makeCheck(m),
+		"sizeVars":         makeSizeVars(m),
+		"size":             makeSize(m),
+		"assignSizeVars":   makeAssignSizeVars(m, canotoSelector),
+		"whichCanoto":      makeWhichCanoto(m),
+		"append":           makeAppend(m),
+		"zero":             makeZeroVarName(m, generics),
 	})
 }
 
@@ -484,20 +459,15 @@ func makeSizeCache(m message) string {
 		largestNameSize = max(largestNameSize, len(name))
 	}
 
-	sizeType := "uint64"
-	if m.noCopy {
-		sizeType = "atomic.Uint64"
-	}
-
 	var sb strings.Builder
-	fmt.Fprintf(&sb, "\t%-*s %s\n", largestNameSize, sizeVar, sizeType)
+	fmt.Fprintf(&sb, "\t%-*s uint64\n", largestNameSize, sizeVar)
 	for _, f := range m.fields {
 		if !f.canotoType.IsRepeated() || !f.canotoType.IsVarint() {
 			continue
 		}
 
 		name := f.name + sizeSuffix
-		fmt.Fprintf(&sb, "\t%-*s %s\n", largestNameSize, name, sizeType)
+		fmt.Fprintf(&sb, "\t%-*s uint64\n", largestNameSize, name)
 	}
 	return sb.String()
 }
@@ -515,16 +485,11 @@ func makeOneOfCache(m message) string {
 		largestNameSize = max(largestNameSize, len(name))
 	}
 
-	oneOfType := "uint32"
-	if m.noCopy {
-		oneOfType = "atomic.Uint32"
-	}
-
 	var sb strings.Builder
 	sb.WriteString("\n")
 	for _, oneOf := range oneOfs {
 		name := oneOf + oneOfSuffix
-		fmt.Fprintf(&sb, "\t%-*s %s\n", largestNameSize, name, oneOfType)
+		fmt.Fprintf(&sb, "\t%-*s uint32\n", largestNameSize, name)
 	}
 	return sb.String()
 }
@@ -943,7 +908,7 @@ func makeUnmarshal(m message) string {
 			if len(c.${fieldName}) == 0 {
 				return ${selector}ErrZeroValue
 			}
-			${storePrefix}c.canotoData.${fieldName}Size${storeJoin}length${storeSuffix}
+			atomic.StoreUint64(&c.canotoData.${fieldName}Size, length)
 `,
 			fixedRepeated: `		case ${fieldNumberConst}:
 			if wireType != ${selector}Len {
@@ -957,7 +922,7 @@ func makeUnmarshal(m message) string {
 			if ${selector}IsZero(c.${fieldName}) {
 				return ${selector}ErrZeroValue
 			}
-			${storePrefix}c.canotoData.${fieldName}Size${storeJoin}length${storeSuffix}
+			atomic.StoreUint64(&c.canotoData.${fieldName}Size, length)
 `,
 		},
 		fints: typeTemplate{
@@ -1576,7 +1541,9 @@ func makeSize(m message) string {
 			fieldSize += ${selector}Size${suffix}(v)
 		}
 		size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize
-		${storePrefix}c.canotoData.${fieldName}Size${storeJoin}fieldSize${storeSuffix}${sizeOneOf}
+		${selector}RaceDisable()
+		atomic.StoreUint64(&c.canotoData.${fieldName}Size, fieldSize)
+		${selector}RaceEnable()${sizeOneOf}
 	}
 `,
 			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
@@ -1585,7 +1552,9 @@ func makeSize(m message) string {
 			fieldSize += ${selector}Size${suffix}(v)
 		}
 		size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize
-		${storePrefix}c.canotoData.${fieldName}Size${storeJoin}fieldSize${storeSuffix}${sizeOneOf}
+		${selector}RaceDisable()
+		atomic.StoreUint64(&c.canotoData.${fieldName}Size, fieldSize)
+		${selector}RaceEnable()${sizeOneOf}
 	}
 `,
 		},
@@ -1715,20 +1684,14 @@ func makeSize(m message) string {
 	})
 }
 
-func makeAssignSizeVars(m message) string {
+func makeAssignSizeVars(m message, canotoSelector string) string {
 	var sb strings.Builder
-	if m.noCopy {
-		sb.WriteString("\tc.canotoData.size.Store(size)\n")
-	} else {
-		sb.WriteString("\tatomic.StoreUint64(&c.canotoData.size, size)\n")
-	}
+	fmt.Fprintf(&sb, "\t%sRaceDisable()\n", canotoSelector)
+	sb.WriteString("\tatomic.StoreUint64(&c.canotoData.size, size)\n")
 	for _, oneOf := range m.OneOfs() {
-		if m.noCopy {
-			fmt.Fprintf(&sb, "\tc.canotoData.%sOneOf.Store(%sOneOf)\n", oneOf, oneOf)
-		} else {
-			fmt.Fprintf(&sb, "\tatomic.StoreUint32(&c.canotoData.%sOneOf, %sOneOf)\n", oneOf, oneOf)
-		}
+		fmt.Fprintf(&sb, "\tatomic.StoreUint32(&c.canotoData.%sOneOf, %sOneOf)\n", oneOf, oneOf)
 	}
+	fmt.Fprintf(&sb, "\t%sRaceEnable()\n", canotoSelector)
 	return sb.String()
 }
 
@@ -1744,18 +1707,12 @@ func makeWhichCanoto(m message) string {
 // If the value has not yet been cached, or the struct has been modified since
 // it was last cached, the returned field number may be incorrect.
 func (c *${structName}${generics}) WhichCanoto${oneOf}() ${oneOfType} {
-	return ${oneOfCast}(${loadPrefix}c.canotoData.${oneOf}OneOf${loadSuffix})
+	return ${oneOfCast}(atomic.LoadUint32(&c.canotoData.${oneOf}OneOf))
 }`
 	var (
-		sb         strings.Builder
-		generics   = makeGenerics(m)
-		loadPrefix = "atomic.LoadUint32(&"
-		loadSuffix = ")"
+		sb       strings.Builder
+		generics = makeGenerics(m)
 	)
-	if m.noCopy {
-		loadPrefix = ""
-		loadSuffix = ".Load()"
-	}
 	for _, oneOf := range m.OneOfs() {
 		oneOfType := makeTemplate(m.template.OneOfType, oneOfEnv(m, oneOf))
 		oneOfCast := oneOfType
@@ -1767,8 +1724,6 @@ func (c *${structName}${generics}) WhichCanoto${oneOf}() ${oneOfType} {
 			"oneOf":      oneOf,
 			"structName": m.name,
 			"generics":   generics,
-			"loadPrefix": loadPrefix,
-			"loadSuffix": loadSuffix,
 			"oneOfType":  oneOfType,
 			"oneOfCast":  oneOfCast,
 		})
@@ -1856,13 +1811,13 @@ func getAppendTemplate(isOneOf bool) messageTemplate {
 			single: intTemplate,
 			repeated: `	if len(c.${fieldName}) != 0 {
 		${selector}Append(&w, ${fieldTagConst})
-		${selector}AppendUint(&w, ${loadPrefix}c.canotoData.${fieldName}Size${loadSuffix})
+		${selector}AppendUint(&w, atomic.LoadUint64(&c.canotoData.${fieldName}Size))
 		${selector}Append${suffix}s(&w, c.${fieldName})
 	}
 `,
 			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
 		${selector}Append(&w, ${fieldTagConst})
-		${selector}AppendUint(&w, ${loadPrefix}c.canotoData.${fieldName}Size${loadSuffix})
+		${selector}AppendUint(&w, atomic.LoadUint64(&c.canotoData.${fieldName}Size))
 		${selector}Append${suffix}s(&w, (&c.${fieldName})[:])
 	}
 `,
@@ -2001,15 +1956,7 @@ func makeAppend(m message) string {
 		currentOneOfName   string
 		currentOneOfFields = make([]field, 0, len(m.fields))
 		declaredOneOfNames = make(map[string]bool)
-
-		loadPrefix = "atomic.LoadUint32(&"
-		loadSuffix = ")"
 	)
-
-	if m.noCopy {
-		loadPrefix = ""
-		loadSuffix = ".Load()"
-	}
 
 	flushOneOf := func() {
 		if len(currentOneOfFields) == 0 {
@@ -2018,7 +1965,7 @@ func makeAppend(m message) string {
 
 		varName := "whichCanoto" + currentOneOfName
 		if !declaredOneOfNames[currentOneOfName] {
-			fmt.Fprintf(&sb, "\t%s := %sc.canotoData.%sOneOf%s\n", varName, loadPrefix, currentOneOfName, loadSuffix)
+			fmt.Fprintf(&sb, "\t%s := atomic.LoadUint32(&c.canotoData.%sOneOf)\n", varName, currentOneOfName)
 			declaredOneOfNames[currentOneOfName] = true
 		}
 

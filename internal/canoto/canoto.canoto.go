@@ -157,8 +157,6 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 
 // CacheCanoto populates size and OneOf caches based on the current values in
 // the struct.
-//
-// It is not safe to copy this struct concurrently.
 func (c *Spec) CacheCanoto() {
 	var size uint64
 	if len(c.Name) != 0 {
@@ -172,7 +170,9 @@ func (c *Spec) CacheCanoto() {
 			size += uint64(len(canotoTag_Spec__Fields)) + SizeUint(fieldSize) + fieldSize
 		}
 	}
+	RaceDisable()
 	atomic.StoreUint64(&c.canotoData.size, size)
+	RaceEnable()
 }
 
 // SizeCanoto returns the previously calculated size of the Canoto
@@ -186,8 +186,6 @@ func (c *Spec) SizeCanoto() uint64 {
 
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.
-//
-// It is not safe to copy this struct concurrently.
 func (c *Spec) ValidCanoto() bool {
 	c.CacheCanoto()
 	return c.CheckCanoto()
@@ -216,8 +214,6 @@ func (c *Spec) CheckCanoto() bool {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to copy this struct concurrently.
 func (c *Spec) MarshalCanoto() []byte {
 	c.CacheCanoto()
 	w := Writer{
@@ -234,8 +230,6 @@ func (c *Spec) MarshalCanoto() []byte {
 // to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to copy this struct concurrently.
 func (c *Spec) AppendCanoto(w Writer) Writer {
 	if len(c.Name) != 0 {
 		Append(&w, canotoTag_Spec__Name)
@@ -677,8 +671,6 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 
 // CacheCanoto populates size and OneOf caches based on the current values in
 // the struct.
-//
-// It is not safe to copy this struct concurrently.
 func (c *FieldType) CacheCanoto() {
 	var size uint64
 	var TypeOneOf uint32
@@ -742,8 +734,10 @@ func (c *FieldType) CacheCanoto() {
 		size += uint64(len(canotoTag_FieldType__TypeRecursive)) + SizeUint(c.TypeRecursive)
 		TypeOneOf = canotoNumber_FieldType__TypeRecursive
 	}
+	RaceDisable()
 	atomic.StoreUint64(&c.canotoData.size, size)
 	atomic.StoreUint32(&c.canotoData.TypeOneOf, TypeOneOf)
+	RaceEnable()
 }
 
 // SizeCanoto returns the previously calculated size of the Canoto
@@ -769,8 +763,6 @@ func (c *FieldType) WhichCanotoType() FieldTypeOneOf {
 
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.
-//
-// It is not safe to copy this struct concurrently.
 func (c *FieldType) ValidCanoto() bool {
 	c.CacheCanoto()
 	return c.CheckCanoto()
@@ -858,8 +850,6 @@ func (c *FieldType) CheckCanoto() bool {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to copy this struct concurrently.
 func (c *FieldType) MarshalCanoto() []byte {
 	c.CacheCanoto()
 	w := Writer{
@@ -876,8 +866,6 @@ func (c *FieldType) MarshalCanoto() []byte {
 // to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to copy this struct concurrently.
 func (c *FieldType) AppendCanoto(w Writer) Writer {
 	if !IsZero(c.FieldNumber) {
 		Append(&w, canotoTag_FieldType__FieldNumber)

@@ -15,12 +15,7 @@ import (
 	"github.com/StephenButtolph/canoto"
 )
 
-const (
-	canotoTag = "canoto"
-
-	// By default, copying of structs is allowed
-	defaultNoCopy = false
-)
+const canotoTag = "canoto"
 
 var (
 	// oneOfRegex is used to match a string that consists only of letters (both
@@ -35,7 +30,6 @@ var (
 
 	errUnexpectedNumberOfIdentifiers       = errors.New("unexpected number of identifiers")
 	errInvalidGoType                       = errors.New("invalid Go type")
-	errMalformedCanotoDataTag              = errors.New(`expected "nocopy" got`)
 	errMalformedTag                        = errors.New(`expected "type,fieldNumber[,oneof]" got`)
 	errInvalidFieldNumber                  = errors.New("invalid field number")
 	errRepeatedOneOf                       = errors.New("oneof must not be repeated")
@@ -145,18 +139,10 @@ func parse(
 				genericPointers[ident.Name] = currentTypeNumber
 			}
 		}
-		var (
-			noCopy        bool
-			hasCanotoData bool
-		)
-		noCopy, hasCanotoData, err = parseCanotoData(fs, st.Fields)
-		if err != nil {
-			return false
-		}
-		message.noCopy = noCopy
-
+		var hasCanotoData bool
 		for _, sf := range st.Fields.List {
 			if len(sf.Names) >= 1 && sf.Names[0].Name == "canotoData" {
+				hasCanotoData = true
 				continue
 			}
 
@@ -169,7 +155,6 @@ func parse(
 				message.name,
 				message.canonicalizedName,
 				opts.Templates.Number,
-				noCopy,
 				opts.Internal,
 				genericPointers,
 				sf,
@@ -219,51 +204,11 @@ func parse(
 	return packageName, messages, err
 }
 
-// parseCanotoData returns true if copying the struct should not be allowed.
-func parseCanotoData(
-	fs *token.FileSet,
-	afl *ast.FieldList,
-) (bool, bool, error) {
-	for _, sf := range afl.List {
-		if len(sf.Names) != 1 {
-			continue
-		}
-		if sf.Names[0].Name != "canotoData" {
-			continue
-		}
-
-		if sf.Tag == nil {
-			return defaultNoCopy, true, nil
-		}
-
-		rawTag := strings.Trim(sf.Tag.Value, "`")
-		tags, err := structtag.Parse(rawTag)
-		if err != nil {
-			return false, false, err
-		}
-
-		tag, err := tags.Get(canotoTag)
-		if err != nil {
-			return defaultNoCopy, true, nil //nolint: nilerr // errors imply the tag was not found
-		}
-		if tag.Name != "nocopy" || len(tag.Options) != 0 {
-			return false, false, fmt.Errorf("%w %q at %s",
-				errMalformedCanotoDataTag,
-				tag.Value(),
-				fs.Position(sf.Pos()),
-			)
-		}
-		return true, true, nil
-	}
-	return defaultNoCopy, false, nil
-}
-
 func parseField(
 	fs *token.FileSet,
 	structName string,
 	canonicalizedStructName string,
 	numberTemplate string,
-	noCopy bool,
 	internal bool,
 	genericTypes map[string]int,
 	af *ast.Field,
@@ -271,21 +216,6 @@ func parseField(
 	canotoType, fieldNumber, oneOfName, hasTag, err := parseFieldTag(fs, af)
 	if err != nil || !hasTag {
 		return field{}, false, err
-	}
-
-	var (
-		loadPrefix  = "atomic.LoadUint64(&"
-		loadSuffix  = ")"
-		storePrefix = "atomic.StoreUint64(&"
-		storeJoin   = ", "
-		storeSuffix = ")"
-	)
-	if noCopy {
-		loadPrefix = ""
-		loadSuffix = ".Load()"
-		storePrefix = ""
-		storeJoin = ".Store("
-		storeSuffix = ")"
 	}
 
 	var selector string
@@ -346,18 +276,10 @@ func parseField(
 		sizeOneOfIndent string
 	)
 	if oneOfName != "" {
-		var unmarshalOneOfTemplate string
-		if noCopy {
-			unmarshalOneOfTemplate = `
-			if c.canotoData.%sOneOf.Swap(%s) != 0 {
-				return %sErrDuplicateOneOf
-			}`
-		} else {
-			unmarshalOneOfTemplate = `
+		const unmarshalOneOfTemplate = `
 			if atomic.SwapUint32(&c.canotoData.%sOneOf, %s) != 0 {
 				return %sErrDuplicateOneOf
 			}`
-		}
 		fieldNumberConst := makeTemplate(numberTemplate, map[string]string{
 			"struct":  structName,
 			"cStruct": canonicalizedStructName,
@@ -398,11 +320,6 @@ func parseField(
 		oneOfName:         oneOfName,
 		templateArgs: map[string]string{
 			"selector":        selector,
-			"loadPrefix":      loadPrefix,
-			"loadSuffix":      loadSuffix,
-			"storePrefix":     storePrefix,
-			"storeJoin":       storeJoin,
-			"storeSuffix":     storeSuffix,
 			"fieldNumber":     strconv.FormatUint(uint64(fieldNumber), 10),
 			"wireType":        canotoType.WireType().String(),
 			"goType":          goType,

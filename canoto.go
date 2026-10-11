@@ -103,6 +103,26 @@ var (
 	//go:embed canoto.canoto.go
 	GeneratedCode string
 
+	// RaceCode is the source of the race.go file, embedded as a string. It can
+	// be used during code generation to produce standalone copies of this
+	// library.
+	//
+	// This variable is not referenced internally, so the compiler omits it
+	// from the binary if unused.
+	//
+	//go:embed race.go
+	RaceCode string
+
+	// NoRaceCode is the source of the norace.go file, embedded as a string. It
+	// can be used during code generation to produce standalone copies of this
+	// library.
+	//
+	// This variable is not referenced internally, so the compiler omits it
+	// from the binary if unused.
+	//
+	//go:embed norace.go
+	NoRaceCode string
+
 	// ErrInvalidFieldOrder is returned when fields are not encoded in ascending
 	// field number order.
 	ErrInvalidFieldOrder = errors.New("invalid field order")
@@ -1540,7 +1560,9 @@ func (s *Spec) calculateSize(a *Any, specs []*Spec) error {
 		minField = ft.FieldNumber + 1
 		minFieldIndex = fieldIndex + 1
 	}
+	RaceDisable()
 	atomic.StoreUint64(&a.cachedSize, size)
+	RaceEnable()
 	return nil
 }
 
@@ -1672,7 +1694,9 @@ func (f *FieldType) calculateSizeMessage(
 		if err := spec.calculateSize(&v, specs); err != nil {
 			return 0, err
 		}
+		RaceDisable()
 		atomic.StoreUint64(&af.cachedSize, v.cachedSize)
+		RaceEnable()
 		return SizeUint(v.cachedSize) + v.cachedSize, nil
 	}
 

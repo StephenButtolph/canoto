@@ -46,17 +46,6 @@ type OneOf struct {
 	canotoData canotoData_OneOf
 }
 
-type OneOfNoCopy struct {
-	A1 int32 `canoto:"int,1,A"`
-	A2 int64 `canoto:"int,7,A"`
-	B1 int32 `canoto:"int,3,B"`
-	B2 int64 `canoto:"int,4,B"`
-	C  int32 `canoto:"int,5"`
-	D  int64 `canoto:"int,6"`
-
-	canotoData canotoData_OneOfNoCopy `canoto:"nocopy"`
-}
-
 // unexportedOneOf verifies that the WhichCanoto accessors of an unexported
 // struct return the unexported oneOf type rather than uint32.
 type unexportedOneOf struct {

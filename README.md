@@ -158,17 +158,7 @@ If `canoto.FieldPointer` is aliased to a different type or is otherwise re-imple
 
 The auto-generated `canotoData` struct utilizes atomic reads and writes to ensure that `MarshalCanoto` can be called at the same time on multiple threads. Concurrent calls to `MarshalCanoto` are expected for what appears to be a read-only method.
 
-However, concurrently marshalling and passing messages by value may cause race detection failures. To explicitly disallow passing messages by value, the `canoto:"nocopy"` tag can be added to the `canotoData` field. This results in the [NoCopy](https://github.com/golang/go/issues/8005) pattern being used to warn against incorrect usage.
-
-For example:
-
-```golang
-type NotPassableByValue struct {
-	Int int64 `canoto:"int,1"`
-
-	canotoData canotoData_NotPassableByValue `canoto:"nocopy"`
-}
-```
+Messages may also be passed by value while they are being marshalled. Copying a message reads the `canotoData` cache non-atomically, so when built with `-race`, the generated code hides its cache writes from the race detector so that these copies are not reported as data races. All other memory accesses are still checked by the race detector.
 
 ### Standalone Implementations
 

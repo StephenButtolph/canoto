@@ -1,0 +1,28 @@
+//go:build race
+
+package canoto
+
+import "runtime"
+
+// RaceDisable stops the race detector from tracking atomic operations on the
+// current goroutine until [RaceEnable] is called. Calls may be nested.
+//
+// Caches are written atomically while apparently only reading a message, such
+// as during MarshalCanoto. Messages may be copied by value, which reads the
+// caches non-atomically. The race detector would otherwise report such copies
+// as racing with the cache writes.
+//
+// Plain memory accesses are still tracked while the race detector is disabled.
+//
+// When the race detector is not enabled, this is a no-op.
+func RaceDisable() {
+	runtime.RaceDisable()
+}
+
+// RaceEnable resumes tracking of atomic operations on the current goroutine
+// after a call to [RaceDisable].
+//
+// When the race detector is not enabled, this is a no-op.
+func RaceEnable() {
+	runtime.RaceEnable()
+}

@@ -139,8 +139,6 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 // CacheCanoto populates size and OneOf caches based on the current values in
 // the struct.
-//
-// It is not safe to copy this struct concurrently.
 func (c *CustomFormat) CacheCanoto() {
 	var size uint64
 	var FieldsOneOf uint32
@@ -152,8 +150,10 @@ func (c *CustomFormat) CacheCanoto() {
 		size += uint64(len(CustomFormatBTag)) + canoto.SizeUint(c.B)
 		FieldsOneOf = CustomFormatBNumber
 	}
+	canoto.RaceDisable()
 	atomic.StoreUint64(&c.canotoData.size, size)
 	atomic.StoreUint32(&c.canotoData.FieldsOneOf, FieldsOneOf)
+	canoto.RaceEnable()
 }
 
 // SizeCanoto returns the previously calculated size of the Canoto
@@ -179,8 +179,6 @@ func (c *CustomFormat) WhichCanotoFields() CustomFormatFields {
 
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.
-//
-// It is not safe to copy this struct concurrently.
 func (c *CustomFormat) ValidCanoto() bool {
 	return c.CheckCanoto()
 }
@@ -207,8 +205,6 @@ func (c *CustomFormat) CheckCanoto() bool {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to copy this struct concurrently.
 func (c *CustomFormat) MarshalCanoto() []byte {
 	c.CacheCanoto()
 	w := canoto.Writer{
@@ -225,8 +221,6 @@ func (c *CustomFormat) MarshalCanoto() []byte {
 // to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to copy this struct concurrently.
 func (c *CustomFormat) AppendCanoto(w canoto.Writer) canoto.Writer {
 	whichCanotoFields := atomic.LoadUint32(&c.canotoData.FieldsOneOf)
 	switch whichCanotoFields {
