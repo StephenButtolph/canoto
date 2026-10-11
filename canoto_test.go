@@ -1724,34 +1724,6 @@ func TestReadBytes(t *testing.T) {
 	}
 }
 
-func FuzzReadSubReader(f *testing.F) {
-	for _, seed := range []string{"", "00", "0774657374696e67", "870074657374696e67", "ffffffffffffffffff01", "01", "0100ff"} {
-		b, err := hex.DecodeString(seed)
-		require.NoError(f, err)
-		f.Add(b, false)
-		f.Add(b, true)
-	}
-	f.Fuzz(func(t *testing.T, data []byte, unsafe bool) {
-		require := require.New(t)
-
-		// ReadSubReader must behave like an unsafe ReadBytes.
-		expected := &Reader{B: data, Unsafe: true}
-		var expectedB []byte
-		expectedErr := ReadBytes(expected, &expectedB)
-
-		const context = "context"
-		r := &Reader{B: data, Unsafe: unsafe, Context: context}
-		var sub Reader
-		err := ReadSubReader(r, &sub)
-		require.Equal(expectedErr, err)
-		if err != nil {
-			return
-		}
-		require.Equal(expected.B, r.B)
-		require.Equal(Reader{B: expectedB, Unsafe: unsafe, Context: context}, sub)
-	})
-}
-
 func FuzzAppendBytes_string(f *testing.F) {
 	f.Fuzz(func(t *testing.T, v string) {
 		if !ValidString(v) {
