@@ -2195,12 +2195,12 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 		count = countMinus1 + 1
 		capacity = count
 	} else {
+		count = f.FixedLength
 		// The spec is untrusted, so the fixed length is bounded by the number
 		// of entries present before it is used to size the allocation. The
 		// error is ignored because, if the malformed entry is part of this
 		// field, reading the entries below reports it.
 		countMinus1, _ := CountBytes(r.B, expectedTag)
-		count = f.FixedLength
 		capacity = min(count, countMinus1+1)
 	}
 
@@ -2401,11 +2401,6 @@ func unmarshalUint[T Uint](r *Reader) (uint64, error) {
 
 // packedVarintsLength returns the length of the slice to read a packed varint
 // field into, when the field must contain exactly fixedLength values.
-//
-// The spec may be malicious, so fixedLength is bounded by the number of values
-// in the field. If the field contains fewer than fixedLength values, the
-// returned length still exceeds the number of values so that reading the field
-// fails the same way.
 func packedVarintsLength(r *Reader, fixedLength uint64) (uint64, error) {
 	var (
 		peek = Reader{B: r.B, Unsafe: true}
@@ -2414,6 +2409,10 @@ func packedVarintsLength(r *Reader, fixedLength uint64) (uint64, error) {
 	if err := ReadBytes(&peek, &b); err != nil {
 		return 0, err
 	}
+	// The spec may be malicious, so fixedLength is bounded by the actual number
+	// of values in the field. If the field contains fewer than fixedLength
+	// values, the returned length still exceeds the number of values so that
+	// reading the field fails as if we allocated the full fixedLength.
 	return min(fixedLength, CountInts(b)+1), nil
 }
 
