@@ -953,31 +953,14 @@ func makeUnmarshal(m message) string {
 				return ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			length, err := ${selector}Read${suffix}sInto(&r, (&c.${fieldName})[:])
+			if err != nil {
 				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			for i := range &c.${fieldName} {
-				if err := ${selector}Read${suffix}(&r, &(&c.${fieldName})[i]); err != nil {
-					return err
-				}
-			}
-			if ${selector}HasNext(&r) {
-				return ${selector}ErrInvalidLength
 			}
 			if ${selector}IsZero(c.${fieldName}) {
 				return ${selector}ErrZeroValue
 			}
-			r.B = remainingBytes
-			${storePrefix}c.canotoData.${fieldName}Size${storeJoin}uint64(len(msgBytes))${storeSuffix}
+			${storePrefix}c.canotoData.${fieldName}Size${storeJoin}length${storeSuffix}
 `,
 		},
 		fints: typeTemplate{

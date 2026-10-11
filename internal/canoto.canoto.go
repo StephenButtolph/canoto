@@ -5146,241 +5146,105 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			length, err := canoto.ReadIntsInto(&r, (&c.FixedRepeatedInt8)[:])
+			if err != nil {
 				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			for i := range &c.FixedRepeatedInt8 {
-				if err := canoto.ReadInt(&r, &(&c.FixedRepeatedInt8)[i]); err != nil {
-					return err
-				}
-			}
-			if canoto.HasNext(&r) {
-				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedInt8) {
 				return canoto.ErrZeroValue
 			}
-			r.B = remainingBytes
-			atomic.StoreUint64(&c.canotoData.FixedRepeatedInt8Size, uint64(len(msgBytes)))
+			atomic.StoreUint64(&c.canotoData.FixedRepeatedInt8Size, length)
 		case canotoNumber_Scalars__FixedRepeatedInt16:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			length, err := canoto.ReadIntsInto(&r, (&c.FixedRepeatedInt16)[:])
+			if err != nil {
 				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			for i := range &c.FixedRepeatedInt16 {
-				if err := canoto.ReadInt(&r, &(&c.FixedRepeatedInt16)[i]); err != nil {
-					return err
-				}
-			}
-			if canoto.HasNext(&r) {
-				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedInt16) {
 				return canoto.ErrZeroValue
 			}
-			r.B = remainingBytes
-			atomic.StoreUint64(&c.canotoData.FixedRepeatedInt16Size, uint64(len(msgBytes)))
+			atomic.StoreUint64(&c.canotoData.FixedRepeatedInt16Size, length)
 		case canotoNumber_Scalars__FixedRepeatedInt32:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			length, err := canoto.ReadIntsInto(&r, (&c.FixedRepeatedInt32)[:])
+			if err != nil {
 				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			for i := range &c.FixedRepeatedInt32 {
-				if err := canoto.ReadInt(&r, &(&c.FixedRepeatedInt32)[i]); err != nil {
-					return err
-				}
-			}
-			if canoto.HasNext(&r) {
-				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedInt32) {
 				return canoto.ErrZeroValue
 			}
-			r.B = remainingBytes
-			atomic.StoreUint64(&c.canotoData.FixedRepeatedInt32Size, uint64(len(msgBytes)))
+			atomic.StoreUint64(&c.canotoData.FixedRepeatedInt32Size, length)
 		case canotoNumber_Scalars__FixedRepeatedInt64:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			length, err := canoto.ReadIntsInto(&r, (&c.FixedRepeatedInt64)[:])
+			if err != nil {
 				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			for i := range &c.FixedRepeatedInt64 {
-				if err := canoto.ReadInt(&r, &(&c.FixedRepeatedInt64)[i]); err != nil {
-					return err
-				}
-			}
-			if canoto.HasNext(&r) {
-				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedInt64) {
 				return canoto.ErrZeroValue
 			}
-			r.B = remainingBytes
-			atomic.StoreUint64(&c.canotoData.FixedRepeatedInt64Size, uint64(len(msgBytes)))
+			atomic.StoreUint64(&c.canotoData.FixedRepeatedInt64Size, length)
 		case canotoNumber_Scalars__FixedRepeatedUint8:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			length, err := canoto.ReadUintsInto(&r, (&c.FixedRepeatedUint8)[:])
+			if err != nil {
 				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			for i := range &c.FixedRepeatedUint8 {
-				if err := canoto.ReadUint(&r, &(&c.FixedRepeatedUint8)[i]); err != nil {
-					return err
-				}
-			}
-			if canoto.HasNext(&r) {
-				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedUint8) {
 				return canoto.ErrZeroValue
 			}
-			r.B = remainingBytes
-			atomic.StoreUint64(&c.canotoData.FixedRepeatedUint8Size, uint64(len(msgBytes)))
+			atomic.StoreUint64(&c.canotoData.FixedRepeatedUint8Size, length)
 		case canotoNumber_Scalars__FixedRepeatedUint16:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			length, err := canoto.ReadUintsInto(&r, (&c.FixedRepeatedUint16)[:])
+			if err != nil {
 				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			for i := range &c.FixedRepeatedUint16 {
-				if err := canoto.ReadUint(&r, &(&c.FixedRepeatedUint16)[i]); err != nil {
-					return err
-				}
-			}
-			if canoto.HasNext(&r) {
-				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedUint16) {
 				return canoto.ErrZeroValue
 			}
-			r.B = remainingBytes
-			atomic.StoreUint64(&c.canotoData.FixedRepeatedUint16Size, uint64(len(msgBytes)))
+			atomic.StoreUint64(&c.canotoData.FixedRepeatedUint16Size, length)
 		case canotoNumber_Scalars__FixedRepeatedUint32:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			length, err := canoto.ReadUintsInto(&r, (&c.FixedRepeatedUint32)[:])
+			if err != nil {
 				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			for i := range &c.FixedRepeatedUint32 {
-				if err := canoto.ReadUint(&r, &(&c.FixedRepeatedUint32)[i]); err != nil {
-					return err
-				}
-			}
-			if canoto.HasNext(&r) {
-				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedUint32) {
 				return canoto.ErrZeroValue
 			}
-			r.B = remainingBytes
-			atomic.StoreUint64(&c.canotoData.FixedRepeatedUint32Size, uint64(len(msgBytes)))
+			atomic.StoreUint64(&c.canotoData.FixedRepeatedUint32Size, length)
 		case canotoNumber_Scalars__FixedRepeatedUint64:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			length, err := canoto.ReadUintsInto(&r, (&c.FixedRepeatedUint64)[:])
+			if err != nil {
 				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			for i := range &c.FixedRepeatedUint64 {
-				if err := canoto.ReadUint(&r, &(&c.FixedRepeatedUint64)[i]); err != nil {
-					return err
-				}
-			}
-			if canoto.HasNext(&r) {
-				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.FixedRepeatedUint64) {
 				return canoto.ErrZeroValue
 			}
-			r.B = remainingBytes
-			atomic.StoreUint64(&c.canotoData.FixedRepeatedUint64Size, uint64(len(msgBytes)))
+			atomic.StoreUint64(&c.canotoData.FixedRepeatedUint64Size, length)
 		case canotoNumber_Scalars__FixedRepeatedSfixed32:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
@@ -5689,31 +5553,14 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 				return canoto.ErrUnexpectedWireType
 			}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := canoto.ReadBytes(&r, &msgBytes); err != nil {
+			length, err := canoto.ReadUintsInto(&r, (&c.ConstRepeatedUint64)[:])
+			if err != nil {
 				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			for i := range &c.ConstRepeatedUint64 {
-				if err := canoto.ReadUint(&r, &(&c.ConstRepeatedUint64)[i]); err != nil {
-					return err
-				}
-			}
-			if canoto.HasNext(&r) {
-				return canoto.ErrInvalidLength
 			}
 			if canoto.IsZero(c.ConstRepeatedUint64) {
 				return canoto.ErrZeroValue
 			}
-			r.B = remainingBytes
-			atomic.StoreUint64(&c.canotoData.ConstRepeatedUint64Size, uint64(len(msgBytes)))
+			atomic.StoreUint64(&c.canotoData.ConstRepeatedUint64Size, length)
 		case canotoNumber_Scalars__CustomType:
 			if wireType != canoto.Len {
 				return canoto.ErrUnexpectedWireType
