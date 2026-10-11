@@ -573,6 +573,77 @@ func ReadUints[S ~[]E, E Uint](r *Reader, v *S) (uint64, error) {
 	return length, nil
 }
 
+// ReadUintsInto reads a length-prefixed packed repeated varint field from the
+// reader into vs. The field must contain exactly len(vs) values. It returns the
+// size of the packed field in bytes.
+func ReadUintsInto[S ~[]E, E Uint](r *Reader, vs S) (uint64, error) {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return 0, err
+	}
+	if length > uint64(len(r.B)) {
+		return 0, io.ErrUnexpectedEOF
+	}
+
+	b := r.B[:length]
+	r.B = r.B[length:]
+
+	// See [ReadUints] for why truncation is checked before decoding.
+	if len(b) > 0 && b[len(b)-1] >= continuationMask {
+		return 0, ErrInvalidLength
+	}
+
+	// i is a uint so that checking i against uint(len(vs)) also proves that
+	// vs[i] is in bounds, which removes a separate bounds check.
+	var (
+		i     uint   // number of varints decoded so far
+		val   uint64 // value accumulated for the current varint
+		shift uint   // number of bits accumulated into val so far
+	)
+	for _, c := range b {
+		if c >= continuationMask {
+			// Checking >= rather than == removes a bounds check on the shift.
+			if shift >= 63 {
+				// Any bytes after the final value are reported as an invalid
+				// length, regardless of their contents.
+				if i >= uint(len(vs)) {
+					return 0, ErrInvalidLength
+				}
+				return 0, ErrOverflow
+			}
+			val |= uint64(c&^continuationMask) << shift
+			shift += 7
+			continue
+		}
+
+		// Any bytes after the final value are reported as an invalid length,
+		// regardless of their contents.
+		if i >= uint(len(vs)) {
+			return 0, ErrInvalidLength
+		}
+
+		// c terminates the current varint and contains its most significant
+		// bits.
+		val |= uint64(c) << shift
+		switch {
+		// To ensure decoding is canonical, the varint must not include
+		// padded zeroes.
+		case shift > 0 && c == 0x00:
+			return 0, ErrPaddedZeroes
+		// The decoded value must fit in both 64 bits and E.
+		case shift == 63 && c > 1, uint64(E(val)) != val:
+			return 0, ErrOverflow
+		}
+		vs[i] = E(val)
+		i++
+		val, shift = 0, 0
+	}
+	if i != uint(len(vs)) {
+		return 0, ErrInvalidLength
+	}
+	return length, nil
+}
+
 // AppendUint writes an unsigned integer to the writer as a varint.
 func AppendUint[T Uint](w *Writer, v T) {
 	w.B = binary.AppendUvarint(w.B, uint64(v))
@@ -684,6 +755,83 @@ func ReadInts[S ~[]E, E Int](r *Reader, v *S) (uint64, error) {
 		largeVal, shift = 0, 0
 	}
 	*v = vs
+	return length, nil
+}
+
+// ReadIntsInto reads a length-prefixed packed repeated zigzag encoded varint
+// field from the reader into vs. The field must contain exactly len(vs) values.
+// It returns the size of the packed field in bytes.
+func ReadIntsInto[S ~[]E, E Int](r *Reader, vs S) (uint64, error) {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return 0, err
+	}
+	if length > uint64(len(r.B)) {
+		return 0, io.ErrUnexpectedEOF
+	}
+
+	b := r.B[:length]
+	r.B = r.B[length:]
+
+	// See [ReadInts] for why truncation is checked before decoding.
+	if len(b) > 0 && b[len(b)-1] >= continuationMask {
+		return 0, ErrInvalidLength
+	}
+
+	// i is a uint so that checking i against uint(len(vs)) also proves that
+	// vs[i] is in bounds, which removes a separate bounds check.
+	var (
+		i        uint   // number of varints decoded so far
+		largeVal uint64 // value accumulated for the current varint
+		shift    uint   // number of bits accumulated into largeVal so far
+	)
+	for _, c := range b {
+		if c >= continuationMask {
+			// Checking >= rather than == removes a bounds check on the shift.
+			if shift >= 63 {
+				// Any bytes after the final value are reported as an invalid
+				// length, regardless of their contents.
+				if i >= uint(len(vs)) {
+					return 0, ErrInvalidLength
+				}
+				return 0, ErrOverflow
+			}
+			largeVal |= uint64(c&^continuationMask) << shift
+			shift += 7
+			continue
+		}
+
+		// Any bytes after the final value are reported as an invalid length,
+		// regardless of their contents.
+		if i >= uint(len(vs)) {
+			return 0, ErrInvalidLength
+		}
+
+		// c terminates the current varint and contains its most significant
+		// bits.
+		largeVal |= uint64(c) << shift
+		switch {
+		// To ensure decoding is canonical, the varint must not include
+		// padded zeroes.
+		case shift > 0 && c == 0x00:
+			return 0, ErrPaddedZeroes
+		// The varint must fit in 64 bits.
+		case shift == 63 && c > 1:
+			return 0, ErrOverflow
+		}
+
+		sVal := int64(largeVal>>1) ^ -int64(largeVal&1) //#nosec G115 // Zigzag decoding
+		val := E(sVal)
+		if int64(val) != sVal {
+			return 0, ErrOverflow
+		}
+		vs[i] = val
+		i++
+		largeVal, shift = 0, 0
+	}
+	if i != uint(len(vs)) {
+		return 0, ErrInvalidLength
+	}
 	return length, nil
 }
 
@@ -2267,16 +2415,16 @@ func unmarshalPackedVarint[T comparable](
 	}
 
 	count := f.FixedLength
+	if count == 0 && len(msgBytes) == 0 {
+		return nil, ErrZeroValue
+	}
+	// To return the same errors as ReadUints, ReadInts, ReadUintsInto, and
+	// ReadIntsInto, a truncated final varint must be reported before any errors
+	// in the earlier varints.
+	if len(msgBytes) > 0 && msgBytes[len(msgBytes)-1] >= continuationMask {
+		return nil, ErrInvalidLength
+	}
 	if count == 0 {
-		if len(msgBytes) == 0 {
-			return nil, ErrZeroValue
-		}
-		// To return the same errors as ReadUints and ReadInts, a truncated
-		// final varint must be reported before any errors in the earlier
-		// varints.
-		if msgBytes[len(msgBytes)-1] >= continuationMask {
-			return nil, ErrInvalidLength
-		}
 		count = CountInts(msgBytes)
 	}
 	values := make([]T, count)
@@ -2284,6 +2432,11 @@ func unmarshalPackedVarint[T comparable](
 	r.B = msgBytes
 	isZero := true
 	for i := range values {
+		// To return the same errors as ReadUintsInto and ReadIntsInto, too few
+		// values must be reported as an invalid length.
+		if !HasNext(r) {
+			return nil, ErrInvalidLength
+		}
 		value, err := unmarshal(r)
 		if err != nil {
 			return nil, err
