@@ -17,19 +17,27 @@ concurrency:
 
 jobs:
   benchmark:
-    name: benchmark (${{ matrix.name }})
-    runs-on: ubuntu-latest
+    name: benchmark (${{ matrix.arch }}, ${{ matrix.go }})
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 20
     permissions:
       pull-requests: write
     strategy:
       fail-fast: false
       matrix:
+        # amd64 and arm64 can disagree about whether a change is faster, so
+        # both are measured.
+        arch: [amd64, arm64]
+        go: [min-version, latest-version]
         include:
-          - name: min-version
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+          - go: min-version
             go-version: ''
             go-version-file: new/go.mod
-          - name: latest-version
+          - go: latest-version
             go-version: stable
             go-version-file: ''
     steps:
@@ -74,7 +82,7 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          header: ${{ matrix.name }}
+          header: ${{ matrix.arch }}-${{ matrix.go }}
           hide_and_recreate: true
           hide_classify: "OUTDATED"
           message: |
