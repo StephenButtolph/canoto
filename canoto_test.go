@@ -463,45 +463,7 @@ func FuzzReadUintsInto_uint64(f *testing.F) { f.Fuzz(testReadUintsInto[[]uint64]
 
 // testReadUintsInto verifies [ReadUintsInto] against [ReadUints].
 func testReadUintsInto[S ~[]E, E Uint](t *testing.T, b []byte, n uint8) {
-	var (
-		wantR = &Reader{B: b}
-		want  S
-	)
-	wantLength, wantErr := ReadUints(wantR, &want)
-
-	var (
-		r   = &Reader{B: b}
-		got = make(S, n)
-	)
-	length, err := ReadUintsInto(r, got)
-	verifyReadInto(t, wantR, want, wantLength, wantErr, r, got, length, err)
-}
-
-func BenchmarkReadUintsInto(b *testing.B) {
-	rng := rand.New(rand.NewPCG(0, 0)) //#nosec G404 // Deterministic values keep runs comparable
-	for _, size := range []int{1, 3, 15, 1024} {
-		values := &Writer{}
-		for range size {
-			// Randomize the lengths, not just the values. Otherwise almost all
-			// of the values would be large.
-			AppendUint(values, rng.Uint64()>>rng.Uint64N(64))
-		}
-		w := &Writer{}
-		AppendBytes(w, values.B)
-
-		// Verify that the bytes decode cleanly so that the benchmark can
-		// ignore the errors.
-		vs := make([]uint64, size)
-		_, err := ReadUintsInto(&Reader{B: w.B}, vs)
-		require.NoError(b, err)
-
-		b.Run(strconv.Itoa(size), func(b *testing.B) {
-			for range b.N {
-				r := Reader{B: w.B}
-				_, _ = ReadUintsInto(&r, vs)
-			}
-		})
-	}
+	verifyReadInto(t, b, n, ReadUints[S], ReadUintsInto[S])
 }
 
 func FuzzAppendUints_uint8(f *testing.F)  { f.Fuzz(testAppendUints[[]uint8]) }
@@ -848,71 +810,46 @@ func FuzzReadIntsInto_int64(f *testing.F) { f.Fuzz(testReadIntsInto[[]int64]) }
 
 // testReadIntsInto verifies [ReadIntsInto] against [ReadInts].
 func testReadIntsInto[S ~[]E, E Int](t *testing.T, b []byte, n uint8) {
+	verifyReadInto(t, b, n, ReadInts[S], ReadIntsInto[S])
+}
+
+// verifyReadInto verifies that reading a packed field into a slice of length n
+// behaves the same as reading it into a new slice, except that a field with the
+// wrong number of values must be rejected with [ErrInvalidLength].
+func verifyReadInto[S ~[]E, E comparable](
+	t *testing.T,
+	b []byte,
+	n uint8,
+	read func(*Reader, *S) (uint64, error),
+	readInto func(*Reader, S) (uint64, error),
+) {
+	require := require.New(t)
+
 	var (
 		wantR = &Reader{B: b}
 		want  S
 	)
-	wantLength, wantErr := ReadInts(wantR, &want)
+	wantLength, wantErr := read(wantR, &want)
 
 	var (
 		r   = &Reader{B: b}
 		got = make(S, n)
 	)
-	length, err := ReadIntsInto(r, got)
-	verifyReadInto(t, wantR, want, wantLength, wantErr, r, got, length, err)
-}
-
-func BenchmarkReadIntsInto(b *testing.B) {
-	rng := rand.New(rand.NewPCG(0, 0)) //#nosec G404 // Deterministic values keep runs comparable
-	for _, size := range []int{1, 3, 15, 1024} {
-		values := &Writer{}
-		for range size {
-			// Randomize the lengths, not just the values. Otherwise almost all
-			// of the values would be large.
-			AppendInt(values, rng.Int64()>>rng.Uint64N(64))
-		}
-		w := &Writer{}
-		AppendBytes(w, values.B)
-
-		// Verify that the bytes decode cleanly so that the benchmark can
-		// ignore the errors.
-		vs := make([]int64, size)
-		_, err := ReadIntsInto(&Reader{B: w.B}, vs)
-		require.NoError(b, err)
-
-		b.Run(strconv.Itoa(size), func(b *testing.B) {
-			for range b.N {
-				r := Reader{B: w.B}
-				_, _ = ReadIntsInto(&r, vs)
-			}
-		})
-	}
-}
-
-// verifyReadInto verifies that reading a packed field into a slice of length
-// len(got) behaves the same as reading it into a new slice, except that a
-// field with the wrong number of values must be rejected with
-// [ErrInvalidLength].
-func verifyReadInto[S ~[]E, E comparable](
-	t *testing.T,
-	wantR *Reader,
-	want S,
-	wantLength uint64,
-	wantErr error,
-	r *Reader,
-	got S,
-	length uint64,
-	err error,
-) {
-	require := require.New(t)
+	length, err := readInto(r, got)
 
 	switch {
 	case wantErr != nil:
-		// A field with the wrong number of values may be rejected before its
-		// values are decoded.
-		if !errors.Is(err, ErrInvalidLength) {
-			require.ErrorIs(err, wantErr)
+		if errors.Is(err, wantErr) {
+			return
 		}
+
+		// A field with more values than fit into got may be rejected before
+		// reaching the value that made read fail.
+		fieldR := &Reader{B: b}
+		var fieldLength uint64
+		require.NoError(ReadUint(fieldR, &fieldLength))
+		require.Greater(CountInts(fieldR.B[:fieldLength]), uint64(n))
+		require.ErrorIs(err, ErrInvalidLength)
 	case len(want) != len(got):
 		require.ErrorIs(err, ErrInvalidLength)
 	default:
