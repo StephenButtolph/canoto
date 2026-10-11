@@ -7,7 +7,7 @@ import (
 	"sync/atomic"
 )
 
-// StoreUint64 atomically stores val into *addr without informing the race
+// CacheUint64 atomically stores val into *addr without informing the race
 // detector.
 //
 // # Why the race detector must be suppressed
@@ -69,18 +69,18 @@ import (
 // CacheCanoto's reads of the fields.
 //
 // [Go memory model]: https://go.dev/ref/mem
-func StoreUint64(addr *uint64, val uint64) {
+func CacheUint64(addr *uint64, val uint64) {
 	runtime.RaceDisable()
 	defer runtime.RaceEnable()
 
 	atomic.StoreUint64(addr, val)
 }
 
-// StoreUint32 atomically stores val into *addr without informing the race
+// CacheUint32 atomically stores val into *addr without informing the race
 // detector.
 //
-// See [StoreUint64] for details.
-func StoreUint32(addr *uint32, val uint32) {
+// See [CacheUint64] for details.
+func CacheUint32(addr *uint32, val uint32) {
 	runtime.RaceDisable()
 	defer runtime.RaceEnable()
 

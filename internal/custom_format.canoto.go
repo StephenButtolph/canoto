@@ -150,8 +150,8 @@ func (c *CustomFormat) CacheCanoto() {
 		size += uint64(len(CustomFormatBTag)) + canoto.SizeUint(c.B)
 		FieldsOneOf = CustomFormatBNumber
 	}
-	canoto.StoreUint64(&c.canotoData.size, size)
-	canoto.StoreUint32(&c.canotoData.FieldsOneOf, FieldsOneOf)
+	canoto.CacheUint64(&c.canotoData.size, size)
+	canoto.CacheUint32(&c.canotoData.FieldsOneOf, FieldsOneOf)
 }
 
 // SizeCanoto returns the previously calculated size of the Canoto

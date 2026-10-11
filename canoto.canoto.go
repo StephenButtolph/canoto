@@ -170,7 +170,7 @@ func (c *Spec) CacheCanoto() {
 			size += uint64(len(canotoTag_Spec__Fields)) + SizeUint(fieldSize) + fieldSize
 		}
 	}
-	StoreUint64(&c.canotoData.size, size)
+	CacheUint64(&c.canotoData.size, size)
 }
 
 // SizeCanoto returns the previously calculated size of the Canoto
@@ -732,8 +732,8 @@ func (c *FieldType) CacheCanoto() {
 		size += uint64(len(canotoTag_FieldType__TypeRecursive)) + SizeUint(c.TypeRecursive)
 		TypeOneOf = canotoNumber_FieldType__TypeRecursive
 	}
-	StoreUint64(&c.canotoData.size, size)
-	StoreUint32(&c.canotoData.TypeOneOf, TypeOneOf)
+	CacheUint64(&c.canotoData.size, size)
+	CacheUint32(&c.canotoData.TypeOneOf, TypeOneOf)
 }
 
 // SizeCanoto returns the previously calculated size of the Canoto

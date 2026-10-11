@@ -1538,7 +1538,7 @@ func (s *Spec) calculateSize(a *Any, specs []*Spec) error {
 		minField = ft.FieldNumber + 1
 		minFieldIndex = fieldIndex + 1
 	}
-	StoreUint64(&a.cachedSize, size)
+	CacheUint64(&a.cachedSize, size)
 	return nil
 }
 
@@ -1670,7 +1670,7 @@ func (f *FieldType) calculateSizeMessage(
 		if err := spec.calculateSize(&v, specs); err != nil {
 			return 0, err
 		}
-		StoreUint64(&af.cachedSize, v.cachedSize)
+		CacheUint64(&af.cachedSize, v.cachedSize)
 		return SizeUint(v.cachedSize) + v.cachedSize, nil
 	}
 

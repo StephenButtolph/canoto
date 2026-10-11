@@ -108,7 +108,7 @@ func (c *justAnInt) CacheCanoto() {
 	if !canoto.IsZero(c.Int8) {
 		size += uint64(len(canotoTag_justAnInt__Int8)) + canoto.SizeInt(c.Int8)
 	}
-	canoto.StoreUint64(&c.canotoData.size, size)
+	canoto.CacheUint64(&c.canotoData.size, size)
 }
 
 // SizeCanoto returns the previously calculated size of the Canoto

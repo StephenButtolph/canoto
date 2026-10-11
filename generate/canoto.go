@@ -1541,7 +1541,7 @@ func makeSize(m message) string {
 			fieldSize += ${selector}Size${suffix}(v)
 		}
 		size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize
-		${selector}StoreUint64(&c.canotoData.${fieldName}Size, fieldSize)${sizeOneOf}
+		${selector}CacheUint64(&c.canotoData.${fieldName}Size, fieldSize)${sizeOneOf}
 	}
 `,
 			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
@@ -1550,7 +1550,7 @@ func makeSize(m message) string {
 			fieldSize += ${selector}Size${suffix}(v)
 		}
 		size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize
-		${selector}StoreUint64(&c.canotoData.${fieldName}Size, fieldSize)${sizeOneOf}
+		${selector}CacheUint64(&c.canotoData.${fieldName}Size, fieldSize)${sizeOneOf}
 	}
 `,
 		},
@@ -1682,9 +1682,9 @@ func makeSize(m message) string {
 
 func makeAssignSizeVars(m message, canotoSelector string) string {
 	var sb strings.Builder
-	fmt.Fprintf(&sb, "\t%sStoreUint64(&c.canotoData.size, size)\n", canotoSelector)
+	fmt.Fprintf(&sb, "\t%sCacheUint64(&c.canotoData.size, size)\n", canotoSelector)
 	for _, oneOf := range m.OneOfs() {
-		fmt.Fprintf(&sb, "\t%sStoreUint32(&c.canotoData.%sOneOf, %sOneOf)\n", canotoSelector, oneOf, oneOf)
+		fmt.Fprintf(&sb, "\t%sCacheUint32(&c.canotoData.%sOneOf, %sOneOf)\n", canotoSelector, oneOf, oneOf)
 	}
 	return sb.String()
 }
