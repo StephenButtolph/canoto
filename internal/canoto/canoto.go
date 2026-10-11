@@ -1201,6 +1201,20 @@ func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 	return nil
 }
 
+// SkipBytes advances the reader past a byte slice without reading it.
+func SkipBytes(r *Reader) error {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return err
+	}
+	if length > uint64(len(r.B)) {
+		return io.ErrUnexpectedEOF
+	}
+
+	r.B = r.B[length:]
+	return nil
+}
+
 // ReadSubReader reads a length-prefixed byte slice from r and sets sub to a
 // Reader over those bytes. The bytes are never copied, regardless of r.Unsafe.
 // All configuration of sub is inherited from r.

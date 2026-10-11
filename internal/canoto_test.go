@@ -1309,6 +1309,46 @@ func BenchmarkFixedRepeatedFint_Canoto(b *testing.B) {
 	}
 }
 
+func BenchmarkRepeatedBytes_Canoto(b *testing.B) {
+	for _, size := range []int{1, 5, 64} {
+		strings := make([]string, size)
+		bytes := make([][]byte, size)
+		for i := range size {
+			strings[i] = "hi my name is Bob"
+			bytes[i] = []byte("hi my name is Bob")
+		}
+		tests := []struct {
+			name string
+			msg  *SpecUnusedZero
+		}{
+			{
+				name: "string/" + strconv.Itoa(size),
+				msg:  &SpecUnusedZero{RepeatedString: strings},
+			},
+			{
+				name: "bytes/" + strconv.Itoa(size),
+				msg:  &SpecUnusedZero{RepeatedBytes: bytes},
+			},
+		}
+		for _, test := range tests {
+			encoded := test.msg.MarshalCanoto()
+			var sanity SpecUnusedZero
+			require.NoError(b, sanity.UnmarshalCanoto(encoded))
+			require.Equal(b, encoded, sanity.MarshalCanoto())
+
+			b.Run(test.name+"/unmarshal", func(b *testing.B) {
+				for range b.N {
+					var (
+						s      SpecUnusedZero
+						reader = canoto.Reader{B: encoded}
+					)
+					_ = s.UnmarshalCanotoFrom(reader)
+				}
+			})
+		}
+	}
+}
+
 func TestAppend_ProtoCompatibility(t *testing.T) {
 	tests := []struct {
 		name  string

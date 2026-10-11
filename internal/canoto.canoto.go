@@ -4822,12 +4822,9 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			// Skip the first entry because we have already stripped the tag.
 			remainingBytes := r.B
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			if err := canoto.ReadBytes(&r, new([]byte)); err != nil {
+			if err := canoto.SkipBytes(&r); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canotoTag_Scalars__RepeatedString)
@@ -4859,12 +4856,9 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			// Skip the first entry because we have already stripped the tag.
 			remainingBytes := r.B
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			if err := canoto.ReadBytes(&r, new([]byte)); err != nil {
+			if err := canoto.SkipBytes(&r); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canotoTag_Scalars__RepeatedBytes)
@@ -5420,12 +5414,9 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			// Skip the first entry because we have already stripped the tag.
 			remainingBytes := r.B
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			if err := canoto.ReadBytes(&r, new([]byte)); err != nil {
+			if err := canoto.SkipBytes(&r); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canotoTag_Scalars__CustomRepeatedBytes)
@@ -6707,12 +6698,9 @@ func (c *SpecUnusedZero) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			// Skip the first entry because we have already stripped the tag.
 			remainingBytes := r.B
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			if err := canoto.ReadBytes(&r, new([]byte)); err != nil {
+			if err := canoto.SkipBytes(&r); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canotoTag_SpecUnusedZero__RepeatedString)
@@ -6755,12 +6743,9 @@ func (c *SpecUnusedZero) UnmarshalCanotoFrom(r canoto.Reader) error {
 
 			// Skip the first entry because we have already stripped the tag.
 			remainingBytes := r.B
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			if err := canoto.ReadBytes(&r, new([]byte)); err != nil {
+			if err := canoto.SkipBytes(&r); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := canoto.CountBytes(r.B, canotoTag_SpecUnusedZero__RepeatedBytes)

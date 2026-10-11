@@ -868,12 +868,9 @@ func makeUnmarshal(m message) string {
 
 			// Skip the first entry because we have already stripped the tag.
 			remainingBytes := r.B
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			if err := ${selector}ReadBytes(&r, new([]byte)); err != nil {
+			if err := ${selector}SkipBytes(&r); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := ${selector}CountBytes(r.B, ${fieldTagConst})
