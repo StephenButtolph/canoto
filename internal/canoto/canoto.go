@@ -387,11 +387,9 @@ func (s SizeEnum) shift() (shift uint64, mask uint64, ok bool) {
 	}
 }
 
-// ReadPointerPresence unwraps a repeated pointer element by stripping the
-// tag and length prefix that encodes the presence of a non-nil pointer. The
-// length prefix must cover the rest of r.B, which is left containing only the
-// encoded pointer value.
-func ReadPointerPresence(r *Reader) error {
+// UnwrapPointer strips the presence prefix from a non-nil repeated pointer
+// element, leaving r.B as the encoded value.
+func UnwrapPointer(r *Reader) error {
 	if !HasPrefix(r.B, PointerPresenceTag) {
 		return ErrUnknownField
 	}
@@ -2286,7 +2284,7 @@ func (f *FieldType) unmarshalMessage(r *Reader, spec *Spec, specs []*Spec) (any,
 			}
 			remainingBytes := r.B
 			r.B = msgBytes
-			if err := ReadPointerPresence(r); err != nil {
+			if err := UnwrapPointer(r); err != nil {
 				return nil, false, err
 			}
 			a, err := spec.unmarshal(r, specs)

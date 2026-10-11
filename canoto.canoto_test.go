@@ -1326,7 +1326,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			field := c.RepeatedPointer
 			additionalField := field[1:]
 			if HasNext(&msgReader) {
-				if err := ReadPointerPresence(&msgReader); err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				field[0] = MakePointer(field[0])
@@ -1345,7 +1345,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					continue
 				}
 
-				if err := ReadPointerPresence(&msgReader); err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				additionalField[i] = MakePointer(additionalField[i])
@@ -1375,7 +1375,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			field := c.RepeatedOneOf
 			additionalField := field[1:]
 			if HasNext(&msgReader) {
-				if err := ReadPointerPresence(&msgReader); err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				field[0] = MakePointer(field[0])
@@ -1394,7 +1394,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					continue
 				}
 
-				if err := ReadPointerPresence(&msgReader); err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				additionalField[i] = MakePointer(additionalField[i])
@@ -1424,7 +1424,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			field := c.RepeatedRecursive
 			additionalField := field[1:]
 			if HasNext(&msgReader) {
-				if err := ReadPointerPresence(&msgReader); err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				field[0] = MakePointer(field[0])
@@ -1443,7 +1443,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					continue
 				}
 
-				if err := ReadPointerPresence(&msgReader); err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				additionalField[i] = MakePointer(additionalField[i])
@@ -1473,7 +1473,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			field := c.RepeatedValueRecursive
 			additionalField := field[1:]
 			if HasNext(&msgReader) {
-				if err := ReadPointerPresence(&msgReader); err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				field[0] = MakePointer(field[0])
@@ -1492,7 +1492,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					continue
 				}
 
-				if err := ReadPointerPresence(&msgReader); err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				additionalField[i] = MakePointer(additionalField[i])
@@ -1834,7 +1834,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			isZero := !HasNext(&msgReader)
 			if !isZero {
-				if err := ReadPointerPresence(&msgReader); err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				(&c.FixedRepeatedPointer)[0] = MakePointer((&c.FixedRepeatedPointer)[0])
@@ -1857,7 +1857,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					continue
 				}
 
-				if err := ReadPointerPresence(&msgReader); err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				field[i] = MakePointer(field[i])
@@ -1886,7 +1886,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			isZero := !HasNext(&msgReader)
 			if !isZero {
-				if err := ReadPointerPresence(&msgReader); err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				(&c.FixedRepeatedOneOf)[0] = MakePointer((&c.FixedRepeatedOneOf)[0])
@@ -1909,7 +1909,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					continue
 				}
 
-				if err := ReadPointerPresence(&msgReader); err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				field[i] = MakePointer(field[i])
@@ -1938,7 +1938,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			isZero := !HasNext(&msgReader)
 			if !isZero {
-				if err := ReadPointerPresence(&msgReader); err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				(&c.FixedRepeatedRecursive)[0] = MakePointer((&c.FixedRepeatedRecursive)[0])
@@ -1961,7 +1961,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					continue
 				}
 
-				if err := ReadPointerPresence(&msgReader); err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				field[i] = MakePointer(field[i])
@@ -1990,7 +1990,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			isZero := !HasNext(&msgReader)
 			if !isZero {
-				if err := ReadPointerPresence(&msgReader); err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				(&c.FixedRepeatedValueRecursive)[0] = MakePointer((&c.FixedRepeatedValueRecursive)[0])
@@ -2013,7 +2013,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					continue
 				}
 
-				if err := ReadPointerPresence(&msgReader); err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				field[i] = MakePointer(field[i])

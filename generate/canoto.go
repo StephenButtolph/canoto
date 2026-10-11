@@ -1261,7 +1261,7 @@ func makeUnmarshal(m message) string {
 			field := c.${fieldName}
 			additionalField := field[1:]
 			if ${selector}HasNext(&msgReader) {
-				if err := ${selector}ReadPointerPresence(&msgReader); err != nil {
+				if err := ${selector}UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				field[0] = ${selector}MakePointer(field[0])
@@ -1280,7 +1280,7 @@ func makeUnmarshal(m message) string {
 					continue
 				}
 
-				if err := ${selector}ReadPointerPresence(&msgReader); err != nil {
+				if err := ${selector}UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				additionalField[i] = ${selector}MakePointer(additionalField[i])
@@ -1306,7 +1306,7 @@ func makeUnmarshal(m message) string {
 
 			isZero := !${selector}HasNext(&msgReader)
 			if !isZero {
-				if err := ${selector}ReadPointerPresence(&msgReader); err != nil {
+				if err := ${selector}UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				(&c.${fieldName})[0] = ${selector}MakePointer((&c.${fieldName})[0])
@@ -1329,7 +1329,7 @@ func makeUnmarshal(m message) string {
 					continue
 				}
 
-				if err := ${selector}ReadPointerPresence(&msgReader); err != nil {
+				if err := ${selector}UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
 				field[i] = ${selector}MakePointer(field[i])
