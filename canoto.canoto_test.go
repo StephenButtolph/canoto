@@ -909,113 +909,73 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
+			if !HasNext(&msgReader) {
 				return ErrZeroValue
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
-			if err := (&c.Value).UnmarshalCanotoFrom(r); err != nil {
+			if err := (&c.Value).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 		case canotoNumber_SpecFuzzer__Pointer:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
 			c.Pointer = MakePointer(c.Pointer)
-			if err := (c.Pointer).UnmarshalCanotoFrom(r); err != nil {
+			if err := (c.Pointer).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 		case canotoNumber_SpecFuzzer__OneOf:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
 			c.OneOf = MakePointer(c.OneOf)
-			if err := (c.OneOf).UnmarshalCanotoFrom(r); err != nil {
+			if err := (c.OneOf).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 		case canotoNumber_SpecFuzzer__Recursive:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
 			c.Recursive = MakePointer(c.Recursive)
-			if err := (c.Recursive).UnmarshalCanotoFrom(r); err != nil {
+			if err := (c.Recursive).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 		case canotoNumber_SpecFuzzer__ValueRecursive:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
 			c.ValueRecursive = MakePointer(c.ValueRecursive)
-			if err := (c.ValueRecursive).UnmarshalCanotoFrom(r); err != nil {
+			if err := (c.ValueRecursive).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 		case canotoNumber_SpecFuzzer__RepeatedInt8:
 			if wireType != Len {
 				return ErrUnexpectedWireType
@@ -1310,13 +1270,10 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := CountBytes(r.B, canotoTag_SpecFuzzer__RepeatedValue)
@@ -1327,33 +1284,25 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			c.RepeatedValue = MakeSlice(c.RepeatedValue, countMinus1+1)
 			field := c.RepeatedValue
 			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := (&field[0]).UnmarshalCanotoFrom(r); err != nil {
+			if HasNext(&msgReader) {
+				if err := (&field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_SpecFuzzer__RepeatedValue):]
-				r.Unsafe = true
-				if err := ReadBytes(&r, &msgBytes); err != nil {
+				if err := ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !HasNext(&msgReader) {
 					continue
 				}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := (&additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 		case canotoNumber_SpecFuzzer__RepeatedPointer:
 			if wireType != Len {
@@ -1362,13 +1311,10 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := CountBytes(r.B, canotoTag_SpecFuzzer__RepeatedPointer)
@@ -1379,43 +1325,33 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			c.RepeatedPointer = MakeSlice(c.RepeatedPointer, countMinus1+1)
 			field := c.RepeatedPointer
 			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				innerBytes, err := ReadPointerPresence(msgBytes)
-				if err != nil {
+			if HasNext(&msgReader) {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				field[0] = MakePointer(field[0])
-				if err := (field[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_SpecFuzzer__RepeatedPointer):]
-				r.Unsafe = true
-				if err := ReadBytes(&r, &msgBytes); err != nil {
+				if err := ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !HasNext(&msgReader) {
 					continue
 				}
 
-				innerBytes, err := ReadPointerPresence(msgBytes)
-				if err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				additionalField[i] = MakePointer(additionalField[i])
-				if err := (additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 		case canotoNumber_SpecFuzzer__RepeatedOneOf:
 			if wireType != Len {
@@ -1424,13 +1360,10 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := CountBytes(r.B, canotoTag_SpecFuzzer__RepeatedOneOf)
@@ -1441,43 +1374,33 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			c.RepeatedOneOf = MakeSlice(c.RepeatedOneOf, countMinus1+1)
 			field := c.RepeatedOneOf
 			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				innerBytes, err := ReadPointerPresence(msgBytes)
-				if err != nil {
+			if HasNext(&msgReader) {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				field[0] = MakePointer(field[0])
-				if err := (field[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_SpecFuzzer__RepeatedOneOf):]
-				r.Unsafe = true
-				if err := ReadBytes(&r, &msgBytes); err != nil {
+				if err := ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !HasNext(&msgReader) {
 					continue
 				}
 
-				innerBytes, err := ReadPointerPresence(msgBytes)
-				if err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				additionalField[i] = MakePointer(additionalField[i])
-				if err := (additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 		case canotoNumber_SpecFuzzer__RepeatedRecursive:
 			if wireType != Len {
@@ -1486,13 +1409,10 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := CountBytes(r.B, canotoTag_SpecFuzzer__RepeatedRecursive)
@@ -1503,43 +1423,33 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			c.RepeatedRecursive = MakeSlice(c.RepeatedRecursive, countMinus1+1)
 			field := c.RepeatedRecursive
 			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				innerBytes, err := ReadPointerPresence(msgBytes)
-				if err != nil {
+			if HasNext(&msgReader) {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				field[0] = MakePointer(field[0])
-				if err := (field[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_SpecFuzzer__RepeatedRecursive):]
-				r.Unsafe = true
-				if err := ReadBytes(&r, &msgBytes); err != nil {
+				if err := ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !HasNext(&msgReader) {
 					continue
 				}
 
-				innerBytes, err := ReadPointerPresence(msgBytes)
-				if err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				additionalField[i] = MakePointer(additionalField[i])
-				if err := (additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 		case canotoNumber_SpecFuzzer__RepeatedValueRecursive:
 			if wireType != Len {
@@ -1548,13 +1458,10 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := CountBytes(r.B, canotoTag_SpecFuzzer__RepeatedValueRecursive)
@@ -1565,43 +1472,33 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			c.RepeatedValueRecursive = MakeSlice(c.RepeatedValueRecursive, countMinus1+1)
 			field := c.RepeatedValueRecursive
 			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				innerBytes, err := ReadPointerPresence(msgBytes)
-				if err != nil {
+			if HasNext(&msgReader) {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				field[0] = MakePointer(field[0])
-				if err := (field[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_SpecFuzzer__RepeatedValueRecursive):]
-				r.Unsafe = true
-				if err := ReadBytes(&r, &msgBytes); err != nil {
+				if err := ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !HasNext(&msgReader) {
 					continue
 				}
 
-				innerBytes, err := ReadPointerPresence(msgBytes)
-				if err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				additionalField[i] = MakePointer(additionalField[i])
-				if err := (additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 		case canotoNumber_SpecFuzzer__FixedRepeatedInt8:
 			if wireType != Len {
@@ -1886,22 +1783,16 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			isZero := len(msgBytes) == 0
+			isZero := !HasNext(&msgReader)
 			if !isZero {
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := (&(&c.FixedRepeatedValue)[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&(&c.FixedRepeatedValue)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1911,21 +1802,16 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					return ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_SpecFuzzer__FixedRepeatedValue):]
-				r.Unsafe = true
-				if err := ReadBytes(&r, &msgBytes); err != nil {
+				if err := ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !HasNext(&msgReader) {
 					continue
 				}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := (&field[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 				isZero = false
 			}
 			if isZero {
@@ -1941,27 +1827,20 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			isZero := len(msgBytes) == 0
+			isZero := !HasNext(&msgReader)
 			if !isZero {
-				innerBytes, err := ReadPointerPresence(msgBytes)
-				if err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				(&c.FixedRepeatedPointer)[0] = MakePointer((&c.FixedRepeatedPointer)[0])
-				if err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1971,26 +1850,20 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					return ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_SpecFuzzer__FixedRepeatedPointer):]
-				r.Unsafe = true
-				if err := ReadBytes(&r, &msgBytes); err != nil {
+				if err := ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !HasNext(&msgReader) {
 					continue
 				}
 
-				innerBytes, err := ReadPointerPresence(msgBytes)
-				if err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				field[i] = MakePointer(field[i])
-				if err := (field[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 				isZero = false
 			}
 			if isZero {
@@ -2006,27 +1879,20 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			isZero := len(msgBytes) == 0
+			isZero := !HasNext(&msgReader)
 			if !isZero {
-				innerBytes, err := ReadPointerPresence(msgBytes)
-				if err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				(&c.FixedRepeatedOneOf)[0] = MakePointer((&c.FixedRepeatedOneOf)[0])
-				if err := ((&c.FixedRepeatedOneOf)[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ((&c.FixedRepeatedOneOf)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -2036,26 +1902,20 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					return ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_SpecFuzzer__FixedRepeatedOneOf):]
-				r.Unsafe = true
-				if err := ReadBytes(&r, &msgBytes); err != nil {
+				if err := ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !HasNext(&msgReader) {
 					continue
 				}
 
-				innerBytes, err := ReadPointerPresence(msgBytes)
-				if err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				field[i] = MakePointer(field[i])
-				if err := (field[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 				isZero = false
 			}
 			if isZero {
@@ -2071,27 +1931,20 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			isZero := len(msgBytes) == 0
+			isZero := !HasNext(&msgReader)
 			if !isZero {
-				innerBytes, err := ReadPointerPresence(msgBytes)
-				if err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				(&c.FixedRepeatedRecursive)[0] = MakePointer((&c.FixedRepeatedRecursive)[0])
-				if err := ((&c.FixedRepeatedRecursive)[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ((&c.FixedRepeatedRecursive)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -2101,26 +1954,20 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					return ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_SpecFuzzer__FixedRepeatedRecursive):]
-				r.Unsafe = true
-				if err := ReadBytes(&r, &msgBytes); err != nil {
+				if err := ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !HasNext(&msgReader) {
 					continue
 				}
 
-				innerBytes, err := ReadPointerPresence(msgBytes)
-				if err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				field[i] = MakePointer(field[i])
-				if err := (field[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 				isZero = false
 			}
 			if isZero {
@@ -2136,27 +1983,20 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			isZero := len(msgBytes) == 0
+			isZero := !HasNext(&msgReader)
 			if !isZero {
-				innerBytes, err := ReadPointerPresence(msgBytes)
-				if err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				(&c.FixedRepeatedValueRecursive)[0] = MakePointer((&c.FixedRepeatedValueRecursive)[0])
-				if err := ((&c.FixedRepeatedValueRecursive)[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ((&c.FixedRepeatedValueRecursive)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -2166,26 +2006,20 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 					return ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_SpecFuzzer__FixedRepeatedValueRecursive):]
-				r.Unsafe = true
-				if err := ReadBytes(&r, &msgBytes); err != nil {
+				if err := ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !HasNext(&msgReader) {
 					continue
 				}
 
-				innerBytes, err := ReadPointerPresence(msgBytes)
-				if err != nil {
+				if err := UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				field[i] = MakePointer(field[i])
-				if err := (field[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 				isZero = false
 			}
 			if isZero {
@@ -3386,25 +3220,17 @@ func (c *SpecFuzzerPointer) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
+			if !HasNext(&msgReader) {
 				return ErrZeroValue
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
-			if err := (&c.Value).UnmarshalCanotoFrom(r); err != nil {
+			if err := (&c.Value).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 		default:
 			return ErrUnknownField
 		}
