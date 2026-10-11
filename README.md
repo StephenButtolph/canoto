@@ -154,6 +154,12 @@ type GenericField[T any, _ canoto.FieldPointer[T]] struct {
 
 If `canoto.FieldPointer` is aliased to a different type or is otherwise re-implemented, Canoto will not be able to correctly tie the type constraints together.
 
+### Concurrency
+
+It is safe to marshal the same message from multiple goroutines at the same time, and to pass a message by value while another goroutine is marshaling it. The same applies to `canoto.Marshal` and `canoto.Any`.
+
+Modifying a message, including by calling `UnmarshalCanoto`, while another goroutine is marshaling or copying it is a data race.
+
 ### Standalone Implementations
 
 In some instances, it may be desirable for the generated code to avoid introducing the dependency on this repo into the `go.mod` file. As an example, if the user must support having multiple versions of canoto utilized in the same application.

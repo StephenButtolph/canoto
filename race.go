@@ -59,12 +59,6 @@ import (
 //     a caller can't rely on such a cache. MarshalCanoto and ValidCanoto
 //     recompute the cache before reading it.
 //
-// On 32-bit platforms, a uint64 is larger than a machine word. The memory model
-// allows such reads to "lead to inconsistent values not corresponding to a
-// single write". Torn halves can only differ when the previous value differs
-// from the value being stored, which is the case where the cache was not valid
-// to rely on (point 4).
-//
 // # What is still checked
 //
 // [runtime.RaceDisable] only stops the race detector from handling
