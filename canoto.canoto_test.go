@@ -909,113 +909,73 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
+			if !HasNext(&msgReader) {
 				return ErrZeroValue
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
-			if err := (&c.Value).UnmarshalCanotoFrom(r); err != nil {
+			if err := (&c.Value).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 		case canotoNumber_SpecFuzzer__Pointer:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
 			c.Pointer = MakePointer(c.Pointer)
-			if err := (c.Pointer).UnmarshalCanotoFrom(r); err != nil {
+			if err := (c.Pointer).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 		case canotoNumber_SpecFuzzer__OneOf:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
 			c.OneOf = MakePointer(c.OneOf)
-			if err := (c.OneOf).UnmarshalCanotoFrom(r); err != nil {
+			if err := (c.OneOf).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 		case canotoNumber_SpecFuzzer__Recursive:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
 			c.Recursive = MakePointer(c.Recursive)
-			if err := (c.Recursive).UnmarshalCanotoFrom(r); err != nil {
+			if err := (c.Recursive).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 		case canotoNumber_SpecFuzzer__ValueRecursive:
 			if wireType != Len {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
 			c.ValueRecursive = MakePointer(c.ValueRecursive)
-			if err := (c.ValueRecursive).UnmarshalCanotoFrom(r); err != nil {
+			if err := (c.ValueRecursive).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 		case canotoNumber_SpecFuzzer__RepeatedInt8:
 			if wireType != Len {
 				return ErrUnexpectedWireType
@@ -3386,25 +3346,17 @@ func (c *SpecFuzzerPointer) UnmarshalCanotoFrom(r Reader) error {
 				return ErrUnexpectedWireType
 			}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
+			if !HasNext(&msgReader) {
 				return ErrZeroValue
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
-			if err := (&c.Value).UnmarshalCanotoFrom(r); err != nil {
+			if err := (&c.Value).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 		default:
 			return ErrUnknownField
 		}

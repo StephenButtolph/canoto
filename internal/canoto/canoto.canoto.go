@@ -654,23 +654,15 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 				return ErrDuplicateOneOf
 			}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
 			c.TypeMessage = MakePointer(c.TypeMessage)
-			if err := (c.TypeMessage).UnmarshalCanotoFrom(r); err != nil {
+			if err := (c.TypeMessage).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 		case canotoNumber_FieldType__TypeRecursive:
 			if wireType != Varint {
 				return ErrUnexpectedWireType

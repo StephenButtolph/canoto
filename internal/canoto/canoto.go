@@ -1199,6 +1199,30 @@ func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 	return nil
 }
 
+// ReadSubReader reads a length-prefixed byte slice from r and sets sub to a
+// Reader over those bytes. The bytes are never copied, regardless of r.Unsafe.
+// All configuration of sub is inherited from r.
+func ReadSubReader(r *Reader, sub *Reader) error {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return err
+	}
+	// Copying length and r.B into locals keeps the bounds check below valid for
+	// the slicing. Otherwise both are reloaded after the stores, because length
+	// is address-taken and sub may alias r.
+	n := length
+	b := r.B
+	if n > uint64(len(b)) {
+		return io.ErrUnexpectedEOF
+	}
+
+	sub.B = b[:n]
+	sub.Unsafe = r.Unsafe
+	sub.Context = r.Context
+	r.B = b[n:]
+	return nil
+}
+
 // AppendBytes writes a length-prefixed byte slice to the writer.
 func AppendBytes[T Bytes](w *Writer, v T) {
 	b := w.B

@@ -1123,25 +1123,17 @@ func makeUnmarshal(m message) string {
 				return ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader ${selector}Reader
+			if err := ${selector}ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
+			if !${selector}HasNext(&msgReader) {
 				return ${selector}ErrZeroValue
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
-			if err := ${genericTypeCast}(&c.${fieldName}).UnmarshalCanotoFrom(r); err != nil {
+			if err := ${genericTypeCast}(&c.${fieldName}).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 `,
 			repeated: `		case ${fieldNumberConst}:
 			if wireType != ${selector}Len {
@@ -1259,23 +1251,15 @@ func makeUnmarshal(m message) string {
 				return ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader ${selector}Reader
+			if err := ${selector}ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
 			c.${fieldName} = ${selector}MakePointer(c.${fieldName})
-			if err := ${genericTypeCast}(c.${fieldName}).UnmarshalCanotoFrom(r); err != nil {
+			if err := ${genericTypeCast}(c.${fieldName}).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 `,
 			repeated: `		case ${fieldNumberConst}:
 			if wireType != ${selector}Len {

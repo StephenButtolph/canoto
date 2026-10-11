@@ -1309,6 +1309,76 @@ func BenchmarkFixedRepeatedFint_Canoto(b *testing.B) {
 	}
 }
 
+func BenchmarkMessage_Canoto(b *testing.B) {
+	scalarsTests := []struct {
+		name string
+		msg  *Scalars
+	}{
+		{
+			name: "value",
+			msg: &Scalars{
+				LargestFieldNumber: LargestFieldNumber[uint32]{Uint: 216457},
+			},
+		},
+		{
+			name: "pointer",
+			msg: &Scalars{
+				Pointer: &LargestFieldNumber[uint32]{Uint: 216457},
+			},
+		},
+	}
+	for _, test := range scalarsTests {
+		bytes := test.msg.MarshalCanoto()
+		var sanity Scalars
+		require.NoError(b, sanity.UnmarshalCanoto(bytes))
+		require.Equal(b, bytes, sanity.MarshalCanoto())
+
+		b.Run("scalars/"+test.name+"/unmarshal", func(b *testing.B) {
+			for range b.N {
+				var (
+					s      Scalars
+					reader = canoto.Reader{B: bytes}
+				)
+				_ = s.UnmarshalCanotoFrom(reader)
+			}
+		})
+	}
+
+	embeddedTests := []struct {
+		name string
+		msg  *Embedded
+	}{
+		{
+			name: "value",
+			msg: &Embedded{
+				OneOf: OneOf{A1: 216457},
+			},
+		},
+		{
+			name: "pointer",
+			msg: &Embedded{
+				LargestFieldNumber: &LargestFieldNumber[uint32]{Uint: 216457},
+			},
+		},
+	}
+	for _, test := range embeddedTests {
+		bytes := test.msg.MarshalCanoto()
+		var sanity Embedded
+		require.NoError(b, sanity.UnmarshalCanoto(bytes))
+		require.Equal(b, bytes, sanity.MarshalCanoto())
+
+		b.Run("embedded/"+test.name+"/unmarshal", func(b *testing.B) {
+			for range b.N {
+				var (
+					s      Embedded
+					reader = canoto.Reader{B: bytes}
+				)
+				_ = s.UnmarshalCanotoFrom(reader)
+			}
+		})
+	}
+}
+
 func TestAppend_ProtoCompatibility(t *testing.T) {
 	tests := []struct {
 		name  string
