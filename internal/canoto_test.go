@@ -1514,4 +1514,3 @@ func TestPointerNilVsZeroValue(t *testing.T) {
 		})
 	}
 }
-

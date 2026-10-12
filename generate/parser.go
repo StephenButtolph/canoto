@@ -225,7 +225,6 @@ func parse(
 				f.templateArgs["checkDuplicateOneOf"] = ""
 				f.templateArgs["checkDuplicateOneOfIndent"] = ""
 			}
-			delete(f.templateArgs, "firstUnmarshalOneOf")
 		}
 
 		messages = append(messages, message)
