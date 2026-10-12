@@ -3409,9 +3409,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.AOneOf, canotoNumber_OneOf__A1) != 0 {
-				return ErrDuplicateOneOf
-			}
+			atomic.StoreUint32(&c.canotoData.AOneOf, canotoNumber_OneOf__A1)
 
 			if err := ReadInt(&r, &c.A1); err != nil {
 				return err
@@ -3423,9 +3421,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
 			if wireType != Varint {
 				return ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.BOneOf, canotoNumber_OneOf__B1) != 0 {
-				return ErrDuplicateOneOf
-			}
+			atomic.StoreUint32(&c.canotoData.BOneOf, canotoNumber_OneOf__B1)
 
 			if err := ReadInt(&r, &c.B1); err != nil {
 				return err
@@ -3570,15 +3566,9 @@ func (c *OneOf) CheckCanoto() bool {
 	var AOneOf uint32
 	var BOneOf uint32
 	if !IsZero(c.A1) {
-		if AOneOf != 0 {
-			return false
-		}
 		AOneOf = canotoNumber_OneOf__A1
 	}
 	if !IsZero(c.B1) {
-		if BOneOf != 0 {
-			return false
-		}
 		BOneOf = canotoNumber_OneOf__B1
 	}
 	if !IsZero(c.B2) {
