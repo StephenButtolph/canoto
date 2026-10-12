@@ -1635,7 +1635,7 @@ func FuzzCountBytes(f *testing.F) {
 			bytes [][]byte
 		)
 		fz := fuzzer.NewFuzzer(data)
-		fz.Fill(&bytes)
+		fz.Fill(&tag, &bytes)
 		if len(tag) == 0 {
 			return
 		}
@@ -1648,6 +1648,13 @@ func FuzzCountBytes(f *testing.F) {
 
 		count, err := CountBytes(w.B, tag)
 		require.NoError(err)
+		require.Len(bytes, int(count)) //#nosec G115 // False positive
+
+		// A truncated entry must report the number of entries before it.
+		Append(w, tag)
+		AppendUint(w, uint64(1))
+		count, err = CountBytes(w.B, tag)
+		require.ErrorIs(err, io.ErrUnexpectedEOF)
 		require.Len(bytes, int(count)) //#nosec G115 // False positive
 	})
 }

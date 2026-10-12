@@ -1270,6 +1270,18 @@ func BenchmarkFixedRepeatedFint_Canoto(b *testing.B) {
 				return &Scalars{FixedRepeatedBool: [3]bool{true, false, true}}
 			},
 		},
+		{
+			name: "int64",
+			msg: func() *Scalars {
+				return &Scalars{FixedRepeatedInt64: [3]int64{1, -300, 1 << 40}}
+			},
+		},
+		{
+			name: "uint64",
+			msg: func() *Scalars {
+				return &Scalars{FixedRepeatedUint64: [3]uint64{1, 300, 1 << 40}}
+			},
+		},
 	}
 	for _, test := range tests {
 		bytes := test.msg().MarshalCanoto()

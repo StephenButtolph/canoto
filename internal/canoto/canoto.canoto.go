@@ -112,13 +112,10 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := CountBytes(r.B, canotoTag_Spec__Fields)
@@ -129,33 +126,25 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 			c.Fields = MakeSlice(c.Fields, countMinus1+1)
 			field := c.Fields
 			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := (&field[0]).UnmarshalCanotoFrom(r); err != nil {
+			if HasNext(&msgReader) {
+				if err := (&field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_Spec__Fields):]
-				r.Unsafe = true
-				if err := ReadBytes(&r, &msgBytes); err != nil {
+				if err := ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !HasNext(&msgReader) {
 					continue
 				}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := (&additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := (&additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 		default:
 			return ErrUnknownField
@@ -652,23 +641,15 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 				return ErrDuplicateOneOf
 			}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader Reader
+			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
 			c.TypeMessage = MakePointer(c.TypeMessage)
-			if err := (c.TypeMessage).UnmarshalCanotoFrom(r); err != nil {
+			if err := (c.TypeMessage).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 		case canotoNumber_FieldType__TypeRecursive:
 			if wireType != Varint {
 				return ErrUnexpectedWireType

@@ -868,12 +868,9 @@ func makeUnmarshal(m message) string {
 
 			// Skip the first entry because we have already stripped the tag.
 			remainingBytes := r.B
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			if err := ${selector}ReadBytes(&r, new([]byte)); err != nil {
+			if err := ${selector}SkipBytes(&r); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := ${selector}CountBytes(r.B, ${fieldTagConst})
@@ -953,31 +950,14 @@ func makeUnmarshal(m message) string {
 				return ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			// Read the packed field bytes.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			length, err := ${selector}Read${suffix}sInto(&r, (&c.${fieldName})[:])
+			if err != nil {
 				return err
-			}
-			r.Unsafe = originalUnsafe
-
-			// Read each value from the packed field bytes into the array.
-			remainingBytes := r.B
-			r.B = msgBytes
-			for i := range &c.${fieldName} {
-				if err := ${selector}Read${suffix}(&r, &(&c.${fieldName})[i]); err != nil {
-					return err
-				}
-			}
-			if ${selector}HasNext(&r) {
-				return ${selector}ErrInvalidLength
 			}
 			if ${selector}IsZero(c.${fieldName}) {
 				return ${selector}ErrZeroValue
 			}
-			r.B = remainingBytes
-			${storePrefix}c.canotoData.${fieldName}Size${storeJoin}uint64(len(msgBytes))${storeSuffix}
+			${storePrefix}c.canotoData.${fieldName}Size${storeJoin}length${storeSuffix}
 `,
 		},
 		fints: typeTemplate{
@@ -1140,25 +1120,17 @@ func makeUnmarshal(m message) string {
 				return ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader ${selector}Reader
+			if err := ${selector}ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			if len(msgBytes) == 0 {
+			if !${selector}HasNext(&msgReader) {
 				return ${selector}ErrZeroValue
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
-			if err := ${genericTypeCast}(&c.${fieldName}).UnmarshalCanotoFrom(r); err != nil {
+			if err := ${genericTypeCast}(&c.${fieldName}).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 `,
 			repeated: `		case ${fieldNumberConst}:
 			if wireType != ${selector}Len {
@@ -1167,13 +1139,10 @@ func makeUnmarshal(m message) string {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader ${selector}Reader
+			if err := ${selector}ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := ${selector}CountBytes(r.B, ${fieldTagConst})
@@ -1184,33 +1153,25 @@ func makeUnmarshal(m message) string {
 			c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
 			field := c.${fieldName}
 			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := ${genericTypeCast}(&field[0]).UnmarshalCanotoFrom(r); err != nil {
+			if ${selector}HasNext(&msgReader) {
+				if err := ${genericTypeCast}(&field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(${fieldTagConst}):]
-				r.Unsafe = true
-				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+				if err := ${selector}ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !${selector}HasNext(&msgReader) {
 					continue
 				}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := ${genericTypeCast}(&additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ${genericTypeCast}(&additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 `,
 			fixedRepeated: `		case ${fieldNumberConst}:
@@ -1223,22 +1184,16 @@ func makeUnmarshal(m message) string {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader ${selector}Reader
+			if err := ${selector}ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			isZero := len(msgBytes) == 0
+			isZero := !${selector}HasNext(&msgReader)
 			if !isZero {
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := ${genericTypeCast}(&(&c.${fieldName})[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ${genericTypeCast}(&(&c.${fieldName})[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1248,21 +1203,16 @@ func makeUnmarshal(m message) string {
 					return ${selector}ErrUnknownField
 				}
 				r.B = r.B[len(${fieldTagConst}):]
-				r.Unsafe = true
-				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+				if err := ${selector}ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !${selector}HasNext(&msgReader) {
 					continue
 				}
 
-				remainingBytes := r.B
-				r.B = msgBytes
-				if err := ${genericTypeCast}(&field[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ${genericTypeCast}(&field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 				isZero = false
 			}
 			if isZero {
@@ -1276,23 +1226,15 @@ func makeUnmarshal(m message) string {
 				return ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			// Read the bytes for the field.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader ${selector}Reader
+			if err := ${selector}ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			// Unmarshal the field from the bytes.
-			remainingBytes := r.B
-			r.B = msgBytes
 			c.${fieldName} = ${selector}MakePointer(c.${fieldName})
-			if err := ${genericTypeCast}(c.${fieldName}).UnmarshalCanotoFrom(r); err != nil {
+			if err := ${genericTypeCast}(c.${fieldName}).UnmarshalCanotoFrom(msgReader); err != nil {
 				return err
 			}
-			r.B = remainingBytes
 `,
 			repeated: `		case ${fieldNumberConst}:
 			if wireType != ${selector}Len {
@@ -1301,13 +1243,10 @@ func makeUnmarshal(m message) string {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader ${selector}Reader
+			if err := ${selector}ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := ${selector}CountBytes(r.B, ${fieldTagConst})
@@ -1318,43 +1257,33 @@ func makeUnmarshal(m message) string {
 			c.${fieldName} = ${selector}MakeSlice(c.${fieldName}, countMinus1+1)
 			field := c.${fieldName}
 			additionalField := field[1:]
-			if len(msgBytes) != 0 {
-				innerBytes, err := ${selector}ReadPointerPresence(msgBytes)
-				if err != nil {
+			if ${selector}HasNext(&msgReader) {
+				if err := ${selector}UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				field[0] = ${selector}MakePointer(field[0])
-				if err := ${genericTypeCast}(field[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ${genericTypeCast}(field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(${fieldTagConst}):]
-				r.Unsafe = true
-				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+				if err := ${selector}ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !${selector}HasNext(&msgReader) {
 					continue
 				}
 
-				innerBytes, err := ${selector}ReadPointerPresence(msgBytes)
-				if err != nil {
+				if err := ${selector}UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				additionalField[i] = ${selector}MakePointer(additionalField[i])
-				if err := ${genericTypeCast}(additionalField[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ${genericTypeCast}(additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 `,
 			fixedRepeated: `		case ${fieldNumberConst}:
@@ -1367,27 +1296,20 @@ func makeUnmarshal(m message) string {
 
 			// Read the first entry manually because the tag is already
 			// stripped.
-			originalUnsafe := r.Unsafe
-			r.Unsafe = true
-			var msgBytes []byte
-			if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+			var msgReader ${selector}Reader
+			if err := ${selector}ReadSubReader(&r, &msgReader); err != nil {
 				return err
 			}
-			r.Unsafe = originalUnsafe
 
-			isZero := len(msgBytes) == 0
+			isZero := !${selector}HasNext(&msgReader)
 			if !isZero {
-				innerBytes, err := ${selector}ReadPointerPresence(msgBytes)
-				if err != nil {
+				if err := ${selector}UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				(&c.${fieldName})[0] = ${selector}MakePointer((&c.${fieldName})[0])
-				if err := ${genericTypeCast}((&c.${fieldName})[0]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ${genericTypeCast}((&c.${fieldName})[0]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1397,26 +1319,20 @@ func makeUnmarshal(m message) string {
 					return ${selector}ErrUnknownField
 				}
 				r.B = r.B[len(${fieldTagConst}):]
-				r.Unsafe = true
-				if err := ${selector}ReadBytes(&r, &msgBytes); err != nil {
+				if err := ${selector}ReadSubReader(&r, &msgReader); err != nil {
 					return err
 				}
-				r.Unsafe = originalUnsafe
-				if len(msgBytes) == 0 {
+				if !${selector}HasNext(&msgReader) {
 					continue
 				}
 
-				innerBytes, err := ${selector}ReadPointerPresence(msgBytes)
-				if err != nil {
+				if err := ${selector}UnwrapPointer(&msgReader); err != nil {
 					return err
 				}
-				remainingBytes := r.B
-				r.B = innerBytes
 				field[i] = ${selector}MakePointer(field[i])
-				if err := ${genericTypeCast}(field[i]).UnmarshalCanotoFrom(r); err != nil {
+				if err := ${genericTypeCast}(field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
 					return err
 				}
-				r.B = remainingBytes
 				isZero = false
 			}
 			if isZero {

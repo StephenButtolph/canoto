@@ -387,24 +387,26 @@ func (s SizeEnum) shift() (shift uint64, mask uint64, ok bool) {
 	}
 }
 
-// ReadPointerPresence unwraps a repeated pointer element by stripping the
-// tag and length prefix that encodes the presence of a non-nil pointer.
-func ReadPointerPresence(b []byte) ([]byte, error) {
-	if !HasPrefix(b, PointerPresenceTag) {
-		return nil, ErrUnknownField
+// UnwrapPointer strips the presence prefix from a non-nil repeated pointer
+// element, leaving r.B as the encoded value.
+func UnwrapPointer(r *Reader) error {
+	if !HasPrefix(r.B, PointerPresenceTag) {
+		return ErrUnknownField
 	}
-	r := Reader{
-		B:      b[len(PointerPresenceTag):],
-		Unsafe: true,
+	r.B = r.B[len(PointerPresenceTag):]
+
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return err
 	}
-	var v []byte
-	if err := ReadBytes(&r, &v); err != nil {
-		return nil, err
+	switch remaining := uint64(len(r.B)); {
+	case length > remaining:
+		return io.ErrUnexpectedEOF
+	case length < remaining:
+		return ErrInvalidLength
+	default:
+		return nil
 	}
-	if HasNext(&r) {
-		return nil, ErrInvalidLength
-	}
-	return v, nil
 }
 
 // HasNext returns true if there are more bytes to read.
@@ -577,6 +579,70 @@ func ReadUints[S ~[]E, E Uint](r *Reader, v *S) (uint64, error) {
 	return length, nil
 }
 
+// ReadUintsInto reads a length-prefixed packed repeated varint field from the
+// reader into vs. The field must contain exactly len(vs) values. It returns the
+// size of the packed field in bytes.
+func ReadUintsInto[S ~[]E, E Uint](r *Reader, vs S) (uint64, error) {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return 0, err
+	}
+	if length > uint64(len(r.B)) {
+		return 0, io.ErrUnexpectedEOF
+	}
+
+	b := r.B[:length]
+	r.B = r.B[length:]
+
+	// See [ReadUints] for why truncation is checked before decoding.
+	if len(b) > 0 && b[len(b)-1] >= continuationMask {
+		return 0, ErrInvalidLength
+	}
+
+	// i is a uint so that checking i against uint(len(vs)) also proves that
+	// vs[i] is in bounds, which removes a separate bounds check.
+	var (
+		i     uint   // number of varints decoded so far
+		val   uint64 // value accumulated for the current varint
+		shift uint   // number of bits accumulated into val so far
+	)
+	for _, c := range b {
+		if c >= continuationMask {
+			// Checking >= rather than == removes a bounds check on the shift.
+			if shift >= 63 {
+				return 0, ErrOverflow
+			}
+			val |= uint64(c&^continuationMask) << shift
+			shift += 7
+			continue
+		}
+
+		if i >= uint(len(vs)) {
+			return 0, ErrInvalidLength
+		}
+
+		// c terminates the current varint and contains its most significant
+		// bits.
+		val |= uint64(c) << shift
+		switch {
+		// To ensure decoding is canonical, the varint must not include
+		// padded zeroes.
+		case shift > 0 && c == 0x00:
+			return 0, ErrPaddedZeroes
+		// The decoded value must fit in both 64 bits and E.
+		case shift == 63 && c > 1, uint64(E(val)) != val:
+			return 0, ErrOverflow
+		}
+		vs[i] = E(val)
+		i++
+		val, shift = 0, 0
+	}
+	if i != uint(len(vs)) {
+		return 0, ErrInvalidLength
+	}
+	return length, nil
+}
+
 // AppendUint writes an unsigned integer to the writer as a varint.
 func AppendUint[T Uint](w *Writer, v T) {
 	w.B = binary.AppendUvarint(w.B, uint64(v))
@@ -688,6 +754,76 @@ func ReadInts[S ~[]E, E Int](r *Reader, v *S) (uint64, error) {
 		largeVal, shift = 0, 0
 	}
 	*v = vs
+	return length, nil
+}
+
+// ReadIntsInto reads a length-prefixed packed repeated zigzag encoded varint
+// field from the reader into vs. The field must contain exactly len(vs) values.
+// It returns the size of the packed field in bytes.
+func ReadIntsInto[S ~[]E, E Int](r *Reader, vs S) (uint64, error) {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return 0, err
+	}
+	if length > uint64(len(r.B)) {
+		return 0, io.ErrUnexpectedEOF
+	}
+
+	b := r.B[:length]
+	r.B = r.B[length:]
+
+	// See [ReadInts] for why truncation is checked before decoding.
+	if len(b) > 0 && b[len(b)-1] >= continuationMask {
+		return 0, ErrInvalidLength
+	}
+
+	// i is a uint so that checking i against uint(len(vs)) also proves that
+	// vs[i] is in bounds, which removes a separate bounds check.
+	var (
+		i        uint   // number of varints decoded so far
+		largeVal uint64 // value accumulated for the current varint
+		shift    uint   // number of bits accumulated into largeVal so far
+	)
+	for _, c := range b {
+		if c >= continuationMask {
+			// Checking >= rather than == removes a bounds check on the shift.
+			if shift >= 63 {
+				return 0, ErrOverflow
+			}
+			largeVal |= uint64(c&^continuationMask) << shift
+			shift += 7
+			continue
+		}
+
+		if i >= uint(len(vs)) {
+			return 0, ErrInvalidLength
+		}
+
+		// c terminates the current varint and contains its most significant
+		// bits.
+		largeVal |= uint64(c) << shift
+		switch {
+		// To ensure decoding is canonical, the varint must not include
+		// padded zeroes.
+		case shift > 0 && c == 0x00:
+			return 0, ErrPaddedZeroes
+		// The varint must fit in 64 bits.
+		case shift == 63 && c > 1:
+			return 0, ErrOverflow
+		}
+
+		sVal := int64(largeVal>>1) ^ -int64(largeVal&1) //#nosec G115 // Zigzag decoding
+		val := E(sVal)
+		if int64(val) != sVal {
+			return 0, ErrOverflow
+		}
+		vs[i] = val
+		i++
+		largeVal, shift = 0, 0
+	}
+	if i != uint(len(vs)) {
+		return 0, ErrInvalidLength
+	}
 	return length, nil
 }
 
@@ -987,7 +1123,8 @@ func SizeBytes[T Bytes](v T) uint64 {
 }
 
 // CountBytes counts the consecutive number of length-prefixed fields with the
-// given tag.
+// given tag. If a field is malformed, the number of fields before it is
+// returned along with the error.
 func CountBytes[T Bytes](bytes []byte, tag T) (uint64, error) {
 	var (
 		r     = Reader{B: bytes}
@@ -997,10 +1134,10 @@ func CountBytes[T Bytes](bytes []byte, tag T) (uint64, error) {
 		r.B = r.B[len(tag):]
 		var length uint64
 		if err := ReadUint(&r, &length); err != nil {
-			return 0, err
+			return count, err
 		}
 		if length > uint64(len(r.B)) {
-			return 0, io.ErrUnexpectedEOF
+			return count, io.ErrUnexpectedEOF
 		}
 		r.B = r.B[length:]
 		count++
@@ -1061,6 +1198,44 @@ func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 		bytes = slices.Clone(bytes)
 	}
 	*v = T(bytes)
+	return nil
+}
+
+// SkipBytes advances the reader past a byte slice without reading it.
+func SkipBytes(r *Reader) error {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return err
+	}
+	if length > uint64(len(r.B)) {
+		return io.ErrUnexpectedEOF
+	}
+
+	r.B = r.B[length:]
+	return nil
+}
+
+// ReadSubReader reads a length-prefixed byte slice from r and sets sub to a
+// Reader over those bytes. The bytes are never copied, regardless of r.Unsafe.
+// All configuration of sub is inherited from r.
+func ReadSubReader(r *Reader, sub *Reader) error {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return err
+	}
+	// Copying length and r.B into locals keeps the bounds check below valid for
+	// the slicing. Otherwise both are reloaded after the stores, because length
+	// is address-taken and sub may alias r.
+	n := length
+	b := r.B
+	if n > uint64(len(b)) {
+		return io.ErrUnexpectedEOF
+	}
+
+	sub.B = b[:n]
+	sub.Unsafe = r.Unsafe
+	sub.Context = r.Context
+	r.B = b[n:]
 	return nil
 }
 
@@ -1721,16 +1896,19 @@ func (f *FieldType) marshal(w Writer, af *AnyField, specs []*Spec) (Writer, erro
 }
 
 func (f *FieldType) unmarshalInt(r *Reader, _ []*Spec) (any, error) {
-	var read func(*Reader) (int64, error)
+	var (
+		read         func(*Reader) (int64, error)
+		readRepeated func(*Reader, uint64) ([]int64, error)
+	)
 	switch f.TypeInt {
 	case SizeEnum8:
-		read = unmarshalInt[int8]
+		read, readRepeated = unmarshalInt[int8], unmarshalInts[int8]
 	case SizeEnum16:
-		read = unmarshalInt[int16]
+		read, readRepeated = unmarshalInt[int16], unmarshalInts[int16]
 	case SizeEnum32:
-		read = unmarshalInt[int32]
+		read, readRepeated = unmarshalInt[int32], unmarshalInts[int32]
 	case SizeEnum64:
-		read = unmarshalInt[int64]
+		read, readRepeated = unmarshalInt[int64], unmarshalInts[int64]
 	default:
 		return 0, ErrUnexpectedFieldSize
 	}
@@ -1738,6 +1916,7 @@ func (f *FieldType) unmarshalInt(r *Reader, _ []*Spec) (any, error) {
 		f,
 		r,
 		read,
+		readRepeated,
 	)
 }
 
@@ -1774,16 +1953,19 @@ func (f *FieldType) marshalInt(w Writer, value any, _ []*Spec) (Writer, error) {
 }
 
 func (f *FieldType) unmarshalUint(r *Reader, _ []*Spec) (any, error) {
-	var read func(*Reader) (uint64, error)
+	var (
+		read         func(*Reader) (uint64, error)
+		readRepeated func(*Reader, uint64) ([]uint64, error)
+	)
 	switch f.TypeUint {
 	case SizeEnum8:
-		read = unmarshalUint[uint8]
+		read, readRepeated = unmarshalUint[uint8], unmarshalUints[uint8]
 	case SizeEnum16:
-		read = unmarshalUint[uint16]
+		read, readRepeated = unmarshalUint[uint16], unmarshalUints[uint16]
 	case SizeEnum32:
-		read = unmarshalUint[uint32]
+		read, readRepeated = unmarshalUint[uint32], unmarshalUints[uint32]
 	case SizeEnum64:
-		read = unmarshalUint[uint64]
+		read, readRepeated = unmarshalUint[uint64], unmarshalUints[uint64]
 	default:
 		return 0, ErrUnexpectedFieldSize
 	}
@@ -1791,6 +1973,7 @@ func (f *FieldType) unmarshalUint(r *Reader, _ []*Spec) (any, error) {
 		f,
 		r,
 		read,
+		readRepeated,
 	)
 }
 
@@ -2043,22 +2226,31 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 	expectedTagValue := tagValue(f.FieldNumber, Len)
 	expectedTag = binary.AppendUvarint(expectedTag, uint64(expectedTagValue))
 
-	count := f.FixedLength
-	if count == 0 {
+	var count, capacity uint64
+	if f.FixedLength == 0 {
 		countMinus1, err := CountBytes(r.B, expectedTag)
 		if err != nil {
 			return nil, err
 		}
 		count = countMinus1 + 1
+		capacity = count
+	} else {
+		count = f.FixedLength
+		// The spec is untrusted, so the fixed length is bounded by the number
+		// of entries present before it is used to size the allocation. The
+		// error is ignored because, if the malformed entry is part of this
+		// field, reading the entries below reports it.
+		countMinus1, _ := CountBytes(r.B, expectedTag)
+		capacity = min(count, countMinus1+1)
 	}
 
-	values := make([][]byte, count)
+	values := make([][]byte, 1, capacity)
 	values[0] = slices.Clone(msgBytes)
 
 	isZero := isBytesEmpty(msgBytes)
 
 	// Read the rest of the entries, stripping the tag each time.
-	for i := range count - 1 {
+	for range count - 1 {
 		if !HasPrefix(r.B, expectedTag) {
 			return nil, ErrUnknownField
 		}
@@ -2077,7 +2269,7 @@ func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
 		msgBytes := r.B[:f.TypeFixedBytes]
 		r.B = r.B[f.TypeFixedBytes:]
 
-		values[1+i] = slices.Clone(msgBytes)
+		values = append(values, slices.Clone(msgBytes))
 		isZero = isZero && isBytesEmpty(msgBytes)
 	}
 	if f.FixedLength > 0 && isZero {
@@ -2104,12 +2296,11 @@ func (f *FieldType) unmarshalMessage(r *Reader, spec *Spec, specs []*Spec) (any,
 			if len(msgBytes) == 0 {
 				return nil, true, nil
 			}
-			innerBytes, err := ReadPointerPresence(msgBytes)
-			if err != nil {
+			remainingBytes := r.B
+			r.B = msgBytes
+			if err := UnwrapPointer(r); err != nil {
 				return nil, false, err
 			}
-			remainingBytes := r.B
-			r.B = innerBytes
 			a, err := spec.unmarshal(r, specs)
 			r.B = remainingBytes
 			return &a, false, err
@@ -2247,10 +2438,89 @@ func unmarshalUint[T Uint](r *Reader) (uint64, error) {
 	return uint64(v), err
 }
 
+// packedVarintsLength returns the length of the slice to read a packed varint
+// field into, when the field must contain exactly fixedLength values.
+func packedVarintsLength(r *Reader, fixedLength uint64) (uint64, error) {
+	var (
+		peek = Reader{B: r.B, Unsafe: true}
+		b    []byte
+	)
+	if err := ReadBytes(&peek, &b); err != nil {
+		return 0, err
+	}
+	// The spec may be malicious, so fixedLength is bounded by the actual number
+	// of values in the field. If the field contains fewer than fixedLength
+	// values, the returned length still exceeds the number of values so that
+	// reading the field fails as if we allocated the full fixedLength.
+	return min(fixedLength, CountInts(b)+1), nil
+}
+
+// unmarshalInts reads a packed repeated zigzag encoded varint field. If
+// fixedLength is non-zero, the field must contain exactly fixedLength values.
+func unmarshalInts[T Int](r *Reader, fixedLength uint64) ([]int64, error) {
+	var (
+		vs  []T
+		err error
+	)
+	if fixedLength == 0 {
+		_, err = ReadInts(r, &vs)
+	} else {
+		var length uint64
+		length, err = packedVarintsLength(r, fixedLength)
+		if err != nil {
+			return nil, err
+		}
+		vs = make([]T, length)
+		_, err = ReadIntsInto(r, vs)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	values := make([]int64, len(vs))
+	for i, v := range vs {
+		values[i] = int64(v)
+	}
+	return values, nil
+}
+
+// unmarshalUints reads a packed repeated varint field. If fixedLength is
+// non-zero, the field must contain exactly fixedLength values.
+func unmarshalUints[T Uint](r *Reader, fixedLength uint64) ([]uint64, error) {
+	var (
+		vs  []T
+		err error
+	)
+	if fixedLength == 0 {
+		_, err = ReadUints(r, &vs)
+	} else {
+		var length uint64
+		length, err = packedVarintsLength(r, fixedLength)
+		if err != nil {
+			return nil, err
+		}
+		vs = make([]T, length)
+		_, err = ReadUintsInto(r, vs)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	values := make([]uint64, len(vs))
+	for i, v := range vs {
+		values[i] = uint64(v)
+	}
+	return values, nil
+}
+
+// unmarshalPackedVarint reads a varint field. Repeated fields are read with
+// the same functions as the generated code, so that both return the same
+// errors.
 func unmarshalPackedVarint[T comparable](
 	f *FieldType,
 	r *Reader,
 	unmarshal func(r *Reader) (T, error),
+	unmarshalRepeated func(r *Reader, fixedLength uint64) ([]T, error),
 ) (any, error) {
 	if !f.Repeated {
 		// If there is only one entry, read it.
@@ -2264,44 +2534,17 @@ func unmarshalPackedVarint[T comparable](
 		return value, nil
 	}
 
-	// Read the full packed bytes.
-	var msgBytes []byte
-	if err := ReadBytes(r, &msgBytes); err != nil {
+	values, err := unmarshalRepeated(r, f.FixedLength)
+	if err != nil {
 		return nil, err
 	}
-
-	count := f.FixedLength
-	if count == 0 {
-		if len(msgBytes) == 0 {
-			return nil, ErrZeroValue
-		}
-		// To return the same errors as ReadUints and ReadInts, a truncated
-		// final varint must be reported before any errors in the earlier
-		// varints.
-		if msgBytes[len(msgBytes)-1] >= continuationMask {
-			return nil, ErrInvalidLength
-		}
-		count = CountInts(msgBytes)
-	}
-	values := make([]T, count)
-	remainingBytes := r.B
-	r.B = msgBytes
 	isZero := true
-	for i := range values {
-		value, err := unmarshal(r)
-		if err != nil {
-			return nil, err
-		}
-		values[i] = value
+	for _, value := range values {
 		isZero = isZero && IsZero(value)
 	}
-	if HasNext(r) {
-		return nil, ErrInvalidLength
-	}
-	if f.FixedLength > 0 && isZero {
+	if len(values) == 0 || (f.FixedLength > 0 && isZero) {
 		return nil, ErrZeroValue
 	}
-	r.B = remainingBytes
 	return values, nil
 }
 
@@ -2422,25 +2665,34 @@ func unmarshalUnpacked[T any](
 	expectedTagValue := tagValue(f.FieldNumber, Len)
 	expectedTag = binary.AppendUvarint(expectedTag, uint64(expectedTagValue))
 
-	count := f.FixedLength
-	if count == 0 {
+	var count, capacity uint64
+	if f.FixedLength == 0 {
 		countMinus1, err := CountBytes(r.B, expectedTag)
 		if err != nil {
 			return nil, err
 		}
 		count = countMinus1 + 1
+		capacity = count
+	} else {
+		// The spec is untrusted, so the fixed length is bounded by the number
+		// of entries present before it is used to size the allocation. The
+		// error is ignored because, if the malformed entry is part of this
+		// field, reading the entries below reports it.
+		countMinus1, _ := CountBytes(r.B, expectedTag)
+		count = f.FixedLength
+		capacity = min(count, countMinus1+1)
 	}
-
-	values := make([]T, count)
 
 	value, isZero, err := unmarshal(msgBytes)
 	if err != nil {
 		return nil, err
 	}
+
+	values := make([]T, 1, capacity)
 	values[0] = value
 
 	// Read the rest of the entries, stripping the tag each time.
-	for i := range count - 1 {
+	for range count - 1 {
 		if !HasPrefix(r.B, expectedTag) {
 			return nil, ErrUnknownField
 		}
@@ -2450,11 +2702,11 @@ func unmarshalUnpacked[T any](
 			return nil, err
 		}
 
-		var isFieldZero bool
-		values[1+i], isFieldZero, err = unmarshal(msgBytes)
+		value, isFieldZero, err := unmarshal(msgBytes)
 		if err != nil {
 			return nil, err
 		}
+		values = append(values, value)
 		isZero = isZero && isFieldZero
 	}
 	if f.FixedLength > 0 && isZero {
