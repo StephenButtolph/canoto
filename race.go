@@ -7,8 +7,9 @@ import (
 	"sync/atomic"
 )
 
-// CacheUint64 atomically stores val into *addr without informing the race
-// detector.
+// CacheUint64 atomically stores val into *addr.
+//
+// When built with -race, the store is hidden from the race detector.
 //
 // # Why the race detector must be suppressed
 //
@@ -47,10 +48,12 @@ import (
 //     multiple values" and from introducing writes that don't exist in the
 //     program. So a racing copy reads either the previous cache value or the
 //     value being stored, never anything else.
-//  3. Cache values are a deterministic function of the message's fields.
-//     Unless the fields are being modified, every concurrent writer stores
-//     the same value. Concurrent modification of the fields is a race on the
-//     fields themselves, which is still reported (see below).
+//  3. Cache values are a deterministic function of the message's fields and,
+//     for [Any], the [Spec] it is marshaled with. The Spec used for an Any is
+//     expected to be held constant. Unless the fields are being modified,
+//     every concurrent writer stores the same value. Concurrent modification
+//     of the fields is a race on the fields themselves, which is still
+//     reported (see below).
 //  4. If the cache was valid before the copy, it already holds the value
 //     being stored, so the copy reads that value. If the cache was not valid,
 //     the copy may observe a mix of stale and fresh cache values. But
@@ -76,8 +79,9 @@ func CacheUint64(addr *uint64, val uint64) {
 	atomic.StoreUint64(addr, val)
 }
 
-// CacheUint32 atomically stores val into *addr without informing the race
-// detector.
+// CacheUint32 atomically stores val into *addr.
+//
+// When built with -race, the store is hidden from the race detector.
 //
 // See [CacheUint64] for details.
 func CacheUint32(addr *uint32, val uint32) {
