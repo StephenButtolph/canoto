@@ -104,9 +104,7 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) error {
 			if wireType != canoto.Varint {
 				return canoto.ErrUnexpectedWireType
 			}
-			if atomic.SwapUint32(&c.canotoData.FieldsOneOf, CustomFormatANumber) != 0 {
-				return canoto.ErrDuplicateOneOf
-			}
+			atomic.StoreUint32(&c.canotoData.FieldsOneOf, CustomFormatANumber)
 
 			if err := canoto.ReadUint(&r, &c.A); err != nil {
 				return err
@@ -190,9 +188,6 @@ func (c *CustomFormat) ValidCanoto() bool {
 func (c *CustomFormat) CheckCanoto() bool {
 	var FieldsOneOf uint32
 	if !canoto.IsZero(c.A) {
-		if FieldsOneOf != 0 {
-			return false
-		}
 		FieldsOneOf = CustomFormatANumber
 	}
 	if !canoto.IsZero(c.B) {

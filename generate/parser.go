@@ -213,6 +213,20 @@ func parse(
 			return false
 		}
 
+		seenOneOfs := make(map[string]bool)
+		for i := range message.fields {
+			f := &message.fields[i]
+			if f.oneOfName == "" {
+				continue
+			}
+			if !seenOneOfs[f.oneOfName] {
+				seenOneOfs[f.oneOfName] = true
+				f.templateArgs["unmarshalOneOf"] = f.templateArgs["firstUnmarshalOneOf"]
+				f.templateArgs["checkDuplicateOneOf"] = ""
+				f.templateArgs["checkDuplicateOneOfIndent"] = ""
+			}
+		}
+
 		messages = append(messages, message)
 		return false
 	})
@@ -341,22 +355,32 @@ func parseField(
 	canonicalizedName := canonicalizeName(name)
 
 	var (
-		unmarshalOneOf  string
-		sizeOneOf       string
-		sizeOneOfIndent string
+		unmarshalOneOf            string
+		firstUnmarshalOneOf       string
+		sizeOneOf                 string
+		sizeOneOfIndent           string
+		checkDuplicateOneOf       string
+		checkDuplicateOneOfIndent string
 	)
 	if oneOfName != "" {
-		var unmarshalOneOfTemplate string
+		var (
+			unmarshalOneOfTemplate      string
+			firstUnmarshalOneOfTemplate string
+		)
 		if noCopy {
 			unmarshalOneOfTemplate = `
 			if c.canotoData.%sOneOf.Swap(%s) != 0 {
 				return %sErrDuplicateOneOf
 			}`
+			firstUnmarshalOneOfTemplate = `
+			c.canotoData.%sOneOf.Store(%s)`
 		} else {
 			unmarshalOneOfTemplate = `
 			if atomic.SwapUint32(&c.canotoData.%sOneOf, %s) != 0 {
 				return %sErrDuplicateOneOf
 			}`
+			firstUnmarshalOneOfTemplate = `
+			atomic.StoreUint32(&c.canotoData.%sOneOf, %s)`
 		}
 		fieldNumberConst := makeTemplate(numberTemplate, map[string]string{
 			"struct":  structName,
@@ -371,10 +395,17 @@ func parseField(
 			fieldNumberConst,
 			selector,
 		)
+		firstUnmarshalOneOf = fmt.Sprintf(firstUnmarshalOneOfTemplate,
+			oneOfName,
+			fieldNumberConst,
+		)
 
 		assignOneOf := fmt.Sprintf("%sOneOf = %s", oneOfName, fieldNumberConst)
 		sizeOneOf = "\n\t\t" + assignOneOf
 		sizeOneOfIndent = "\n\t\t\t" + assignOneOf
+
+		checkDuplicateOneOf = fmt.Sprintf("\n\t\tif %sOneOf != 0 {\n\t\t\treturn false\n\t\t}", oneOfName)
+		checkDuplicateOneOfIndent = fmt.Sprintf("\n\t\t\tif %sOneOf != 0 {\n\t\t\t\treturn false\n\t\t\t}", oneOfName)
 	}
 
 	var genericTypeCast string
@@ -397,28 +428,31 @@ func parseField(
 		fieldNumber:       fieldNumber,
 		oneOfName:         oneOfName,
 		templateArgs: map[string]string{
-			"selector":        selector,
-			"loadPrefix":      loadPrefix,
-			"loadSuffix":      loadSuffix,
-			"storePrefix":     storePrefix,
-			"storeJoin":       storeJoin,
-			"storeSuffix":     storeSuffix,
-			"fieldNumber":     strconv.FormatUint(uint64(fieldNumber), 10),
-			"wireType":        canotoType.WireType().String(),
-			"goType":          goType,
-			"genericTypeCast": genericTypeCast,
-			"protoType":       protoType,
-			"protoTypePrefix": canotoType.ProtoTypePrefix(),
-			"protoTypeSuffix": canotoType.ProtoTypeSuffix(),
-			"fieldName":       name,
-			"suffix":          canotoType.Suffix(),
-			"oneOf":           oneOfName,
-			"unmarshalOneOf":  unmarshalOneOf,
-			"sizeOneOf":       sizeOneOf,
-			"sizeOneOfIndent": sizeOneOfIndent,
-			"signedSpace":     signedSpace,
-			"canonicalGoType": canonicalizeName(goType),
-			"wrapperName":     canonicalizeName(goType) + "__Pointer",
+			"selector":                  selector,
+			"loadPrefix":                loadPrefix,
+			"loadSuffix":                loadSuffix,
+			"storePrefix":               storePrefix,
+			"storeJoin":                 storeJoin,
+			"storeSuffix":               storeSuffix,
+			"fieldNumber":               strconv.FormatUint(uint64(fieldNumber), 10),
+			"wireType":                  canotoType.WireType().String(),
+			"goType":                    goType,
+			"genericTypeCast":           genericTypeCast,
+			"protoType":                 protoType,
+			"protoTypePrefix":           canotoType.ProtoTypePrefix(),
+			"protoTypeSuffix":           canotoType.ProtoTypeSuffix(),
+			"fieldName":                 name,
+			"suffix":                    canotoType.Suffix(),
+			"oneOf":                     oneOfName,
+			"unmarshalOneOf":            unmarshalOneOf,
+			"firstUnmarshalOneOf":       firstUnmarshalOneOf,
+			"sizeOneOf":                 sizeOneOf,
+			"sizeOneOfIndent":           sizeOneOfIndent,
+			"checkDuplicateOneOf":       checkDuplicateOneOf,
+			"checkDuplicateOneOfIndent": checkDuplicateOneOfIndent,
+			"signedSpace":               signedSpace,
+			"canonicalGoType":           canonicalizeName(goType),
+			"wrapperName":               canonicalizeName(goType) + "__Pointer",
 		},
 	}, true, nil
 }

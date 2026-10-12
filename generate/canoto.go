@@ -1344,27 +1344,31 @@ func makeUnmarshal(m message) string {
 }
 
 func makeCheckOneOf(m message) string {
+	oneOfCounts := make(map[string]int)
+	for _, f := range m.fields {
+		if f.oneOfName != "" {
+			oneOfCounts[f.oneOfName]++
+		}
+	}
+
 	const oneOfSuffix = "OneOf"
 	var (
 		template = "\tvar %s uint32\n"
 		sb       strings.Builder
 	)
 	for _, oneOf := range m.OneOfs() {
+		if oneOfCounts[oneOf] <= 1 {
+			continue
+		}
 		fmt.Fprintf(&sb, template, oneOf+oneOfSuffix)
 	}
 
 	const (
-		functionTemplate = `	if !${selector}IsZero(c.${fieldName}) {
-		if ${oneOf}OneOf != 0 {
-			return false
-		}
+		functionTemplate = `	if !${selector}IsZero(c.${fieldName}) {${checkDuplicateOneOf}
 		${oneOf}OneOf = ${fieldNumberConst}
 	}
 `
-		repeatedTemplate = `	if len(c.${fieldName}) != 0 {
-		if ${oneOf}OneOf != 0 {
-			return false
-		}
+		repeatedTemplate = `	if len(c.${fieldName}) != 0 {${checkDuplicateOneOf}
 		${oneOf}OneOf = ${fieldNumberConst}
 	}
 `
@@ -1393,10 +1397,7 @@ func makeCheckOneOf(m message) string {
 				break
 			}
 		}
-		if !isZero {
-			if ${oneOf}OneOf != 0 {
-				return false
-			}
+		if !isZero {${checkDuplicateOneOfIndent}
 			${oneOf}OneOf = ${fieldNumberConst}
 		}
 	}
@@ -1404,10 +1405,7 @@ func makeCheckOneOf(m message) string {
 			fixedRepeatedFixedBytesTemplate: functionTemplate,
 
 			values: typeTemplate{
-				single: `	if ${genericTypeCast}(&c.${fieldName}).SizeCanoto() != 0 {
-		if ${oneOf}OneOf != 0 {
-			return false
-		}
+				single: `	if ${genericTypeCast}(&c.${fieldName}).SizeCanoto() != 0 {${checkDuplicateOneOf}
 		${oneOf}OneOf = ${fieldNumberConst}
 	}
 `,
@@ -1421,28 +1419,19 @@ func makeCheckOneOf(m message) string {
 				break
 			}
 		}
-		if !isZero {
-			if ${oneOf}OneOf != 0 {
-				return false
-			}
+		if !isZero {${checkDuplicateOneOfIndent}
 			${oneOf}OneOf = ${fieldNumberConst}
 		}
 	}
 `,
 			},
 			pointers: typeTemplate{
-				single: `	if c.${fieldName} != nil {
-		if ${oneOf}OneOf != 0 {
-			return false
-		}
+				single: `	if c.${fieldName} != nil {${checkDuplicateOneOf}
 		${oneOf}OneOf = ${fieldNumberConst}
 	}
 `,
 				repeated: repeatedTemplate,
-				fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
-		if ${oneOf}OneOf != 0 {
-			return false
-		}
+				fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {${checkDuplicateOneOf}
 		${oneOf}OneOf = ${fieldNumberConst}
 	}
 `,
@@ -1451,7 +1440,7 @@ func makeCheckOneOf(m message) string {
 	)
 
 	for _, f := range m.fields {
-		if f.oneOfName == "" {
+		if f.oneOfName == "" || oneOfCounts[f.oneOfName] <= 1 {
 			continue
 		}
 
