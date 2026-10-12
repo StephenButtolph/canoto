@@ -13,6 +13,8 @@ Canoto is a serialization format designed to be:
 go install github.com/StephenButtolph/canoto/canoto@latest
 ```
 
+32-bit architectures are not supported.
+
 ## Define Messages
 
 Canoto messages are defined as normal golang structs:
@@ -154,21 +156,11 @@ type GenericField[T any, _ canoto.FieldPointer[T]] struct {
 
 If `canoto.FieldPointer` is aliased to a different type or is otherwise re-implemented, Canoto will not be able to correctly tie the type constraints together.
 
-### Pass-By-Value Messages
+### Concurrency
 
-The auto-generated `canotoData` struct utilizes atomic reads and writes to ensure that `MarshalCanoto` can be called at the same time on multiple threads. Concurrent calls to `MarshalCanoto` are expected for what appears to be a read-only method.
+It is safe to marshal the same message from multiple goroutines at the same time, and to pass a message by value while another goroutine is marshaling it. The same applies to `canoto.Marshal` and `canoto.Any`, as long as an `Any` is marshaled with the same `Spec`.
 
-However, concurrently marshalling and passing messages by value may cause race detection failures. To explicitly disallow passing messages by value, the `canoto:"nocopy"` tag can be added to the `canotoData` field. This results in the [NoCopy](https://github.com/golang/go/issues/8005) pattern being used to warn against incorrect usage.
-
-For example:
-
-```golang
-type NotPassableByValue struct {
-	Int int64 `canoto:"int,1"`
-
-	canotoData canotoData_NotPassableByValue `canoto:"nocopy"`
-}
-```
+Modifying a message, including by calling `UnmarshalCanoto`, while another goroutine is marshaling or copying it is a data race.
 
 ### Standalone Implementations
 

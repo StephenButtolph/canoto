@@ -2030,8 +2030,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 
 // CacheCanoto populates size and OneOf caches based on the current values in
 // the struct.
-//
-// It is not safe to copy this struct concurrently.
 func (c *SpecFuzzer) CacheCanoto() {
 	var size uint64
 	if !IsZero(c.Int8) {
@@ -2112,7 +2110,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 			fieldSize += SizeInt(v)
 		}
 		size += uint64(len(canotoTag_SpecFuzzer__RepeatedInt8)) + SizeUint(fieldSize) + fieldSize
-		atomic.StoreUint64(&c.canotoData.RepeatedInt8Size, fieldSize)
+		CacheUint64(&c.canotoData.RepeatedInt8Size, fieldSize)
 	}
 	if len(c.RepeatedInt16) != 0 {
 		var fieldSize uint64
@@ -2120,7 +2118,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 			fieldSize += SizeInt(v)
 		}
 		size += uint64(len(canotoTag_SpecFuzzer__RepeatedInt16)) + SizeUint(fieldSize) + fieldSize
-		atomic.StoreUint64(&c.canotoData.RepeatedInt16Size, fieldSize)
+		CacheUint64(&c.canotoData.RepeatedInt16Size, fieldSize)
 	}
 	if len(c.RepeatedInt32) != 0 {
 		var fieldSize uint64
@@ -2128,7 +2126,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 			fieldSize += SizeInt(v)
 		}
 		size += uint64(len(canotoTag_SpecFuzzer__RepeatedInt32)) + SizeUint(fieldSize) + fieldSize
-		atomic.StoreUint64(&c.canotoData.RepeatedInt32Size, fieldSize)
+		CacheUint64(&c.canotoData.RepeatedInt32Size, fieldSize)
 	}
 	if len(c.RepeatedInt64) != 0 {
 		var fieldSize uint64
@@ -2136,7 +2134,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 			fieldSize += SizeInt(v)
 		}
 		size += uint64(len(canotoTag_SpecFuzzer__RepeatedInt64)) + SizeUint(fieldSize) + fieldSize
-		atomic.StoreUint64(&c.canotoData.RepeatedInt64Size, fieldSize)
+		CacheUint64(&c.canotoData.RepeatedInt64Size, fieldSize)
 	}
 	if len(c.RepeatedUint8) != 0 {
 		var fieldSize uint64
@@ -2144,7 +2142,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 			fieldSize += SizeUint(v)
 		}
 		size += uint64(len(canotoTag_SpecFuzzer__RepeatedUint8)) + SizeUint(fieldSize) + fieldSize
-		atomic.StoreUint64(&c.canotoData.RepeatedUint8Size, fieldSize)
+		CacheUint64(&c.canotoData.RepeatedUint8Size, fieldSize)
 	}
 	if len(c.RepeatedUint16) != 0 {
 		var fieldSize uint64
@@ -2152,7 +2150,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 			fieldSize += SizeUint(v)
 		}
 		size += uint64(len(canotoTag_SpecFuzzer__RepeatedUint16)) + SizeUint(fieldSize) + fieldSize
-		atomic.StoreUint64(&c.canotoData.RepeatedUint16Size, fieldSize)
+		CacheUint64(&c.canotoData.RepeatedUint16Size, fieldSize)
 	}
 	if len(c.RepeatedUint32) != 0 {
 		var fieldSize uint64
@@ -2160,7 +2158,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 			fieldSize += SizeUint(v)
 		}
 		size += uint64(len(canotoTag_SpecFuzzer__RepeatedUint32)) + SizeUint(fieldSize) + fieldSize
-		atomic.StoreUint64(&c.canotoData.RepeatedUint32Size, fieldSize)
+		CacheUint64(&c.canotoData.RepeatedUint32Size, fieldSize)
 	}
 	if len(c.RepeatedUint64) != 0 {
 		var fieldSize uint64
@@ -2168,7 +2166,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 			fieldSize += SizeUint(v)
 		}
 		size += uint64(len(canotoTag_SpecFuzzer__RepeatedUint64)) + SizeUint(fieldSize) + fieldSize
-		atomic.StoreUint64(&c.canotoData.RepeatedUint64Size, fieldSize)
+		CacheUint64(&c.canotoData.RepeatedUint64Size, fieldSize)
 	}
 	if num := uint64(len(c.RepeatedSfixed32)); num != 0 {
 		fieldSize := num * SizeFint32
@@ -2262,7 +2260,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 			fieldSize += SizeInt(v)
 		}
 		size += uint64(len(canotoTag_SpecFuzzer__FixedRepeatedInt8)) + SizeUint(fieldSize) + fieldSize
-		atomic.StoreUint64(&c.canotoData.FixedRepeatedInt8Size, fieldSize)
+		CacheUint64(&c.canotoData.FixedRepeatedInt8Size, fieldSize)
 	}
 	if !IsZero(c.FixedRepeatedInt16) {
 		var fieldSize uint64
@@ -2270,7 +2268,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 			fieldSize += SizeInt(v)
 		}
 		size += uint64(len(canotoTag_SpecFuzzer__FixedRepeatedInt16)) + SizeUint(fieldSize) + fieldSize
-		atomic.StoreUint64(&c.canotoData.FixedRepeatedInt16Size, fieldSize)
+		CacheUint64(&c.canotoData.FixedRepeatedInt16Size, fieldSize)
 	}
 	if !IsZero(c.FixedRepeatedInt32) {
 		var fieldSize uint64
@@ -2278,7 +2276,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 			fieldSize += SizeInt(v)
 		}
 		size += uint64(len(canotoTag_SpecFuzzer__FixedRepeatedInt32)) + SizeUint(fieldSize) + fieldSize
-		atomic.StoreUint64(&c.canotoData.FixedRepeatedInt32Size, fieldSize)
+		CacheUint64(&c.canotoData.FixedRepeatedInt32Size, fieldSize)
 	}
 	if !IsZero(c.FixedRepeatedInt64) {
 		var fieldSize uint64
@@ -2286,7 +2284,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 			fieldSize += SizeInt(v)
 		}
 		size += uint64(len(canotoTag_SpecFuzzer__FixedRepeatedInt64)) + SizeUint(fieldSize) + fieldSize
-		atomic.StoreUint64(&c.canotoData.FixedRepeatedInt64Size, fieldSize)
+		CacheUint64(&c.canotoData.FixedRepeatedInt64Size, fieldSize)
 	}
 	if !IsZero(c.FixedRepeatedUint8) {
 		var fieldSize uint64
@@ -2294,7 +2292,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 			fieldSize += SizeUint(v)
 		}
 		size += uint64(len(canotoTag_SpecFuzzer__FixedRepeatedUint8)) + SizeUint(fieldSize) + fieldSize
-		atomic.StoreUint64(&c.canotoData.FixedRepeatedUint8Size, fieldSize)
+		CacheUint64(&c.canotoData.FixedRepeatedUint8Size, fieldSize)
 	}
 	if !IsZero(c.FixedRepeatedUint16) {
 		var fieldSize uint64
@@ -2302,7 +2300,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 			fieldSize += SizeUint(v)
 		}
 		size += uint64(len(canotoTag_SpecFuzzer__FixedRepeatedUint16)) + SizeUint(fieldSize) + fieldSize
-		atomic.StoreUint64(&c.canotoData.FixedRepeatedUint16Size, fieldSize)
+		CacheUint64(&c.canotoData.FixedRepeatedUint16Size, fieldSize)
 	}
 	if !IsZero(c.FixedRepeatedUint32) {
 		var fieldSize uint64
@@ -2310,7 +2308,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 			fieldSize += SizeUint(v)
 		}
 		size += uint64(len(canotoTag_SpecFuzzer__FixedRepeatedUint32)) + SizeUint(fieldSize) + fieldSize
-		atomic.StoreUint64(&c.canotoData.FixedRepeatedUint32Size, fieldSize)
+		CacheUint64(&c.canotoData.FixedRepeatedUint32Size, fieldSize)
 	}
 	if !IsZero(c.FixedRepeatedUint64) {
 		var fieldSize uint64
@@ -2318,7 +2316,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 			fieldSize += SizeUint(v)
 		}
 		size += uint64(len(canotoTag_SpecFuzzer__FixedRepeatedUint64)) + SizeUint(fieldSize) + fieldSize
-		atomic.StoreUint64(&c.canotoData.FixedRepeatedUint64Size, fieldSize)
+		CacheUint64(&c.canotoData.FixedRepeatedUint64Size, fieldSize)
 	}
 	if !IsZero(c.FixedRepeatedSfixed32) {
 		const fieldSize = uint64(len(c.FixedRepeatedSfixed32)) * SizeFint32
@@ -2444,7 +2442,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 		}
 		size += totalSize
 	}
-	atomic.StoreUint64(&c.canotoData.size, size)
+	CacheUint64(&c.canotoData.size, size)
 }
 
 // SizeCanoto returns the previously calculated size of the Canoto
@@ -2458,8 +2456,6 @@ func (c *SpecFuzzer) SizeCanoto() uint64 {
 
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.
-//
-// It is not safe to copy this struct concurrently.
 func (c *SpecFuzzer) ValidCanoto() bool {
 	c.CacheCanoto()
 	return c.CheckCanoto()
@@ -2570,8 +2566,6 @@ func (c *SpecFuzzer) CheckCanoto() bool {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to copy this struct concurrently.
 func (c *SpecFuzzer) MarshalCanoto() []byte {
 	c.CacheCanoto()
 	w := Writer{
@@ -2588,8 +2582,6 @@ func (c *SpecFuzzer) MarshalCanoto() []byte {
 // to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to copy this struct concurrently.
 func (c *SpecFuzzer) AppendCanoto(w Writer) Writer {
 	if !IsZero(c.Int8) {
 		Append(&w, canotoTag_SpecFuzzer__Int8)
@@ -3079,14 +3071,12 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) error {
 
 // CacheCanoto populates size and OneOf caches based on the current values in
 // the struct.
-//
-// It is not safe to copy this struct concurrently.
 func (c *LargestFieldNumber[T1]) CacheCanoto() {
 	var size uint64
 	if !IsZero(c.Uint) {
 		size += uint64(len(canotoTag_LargestFieldNumber__Uint)) + SizeUint(c.Uint)
 	}
-	atomic.StoreUint64(&c.canotoData.size, size)
+	CacheUint64(&c.canotoData.size, size)
 }
 
 // SizeCanoto returns the previously calculated size of the Canoto
@@ -3100,8 +3090,6 @@ func (c *LargestFieldNumber[T1]) SizeCanoto() uint64 {
 
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.
-//
-// It is not safe to copy this struct concurrently.
 func (c *LargestFieldNumber[T1]) ValidCanoto() bool {
 	return c.CheckCanoto()
 }
@@ -3115,8 +3103,6 @@ func (c *LargestFieldNumber[T1]) CheckCanoto() bool {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to copy this struct concurrently.
 func (c *LargestFieldNumber[T1]) MarshalCanoto() []byte {
 	c.CacheCanoto()
 	w := Writer{
@@ -3133,8 +3119,6 @@ func (c *LargestFieldNumber[T1]) MarshalCanoto() []byte {
 // to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to copy this struct concurrently.
 func (c *LargestFieldNumber[T1]) AppendCanoto(w Writer) Writer {
 	if !IsZero(c.Uint) {
 		Append(&w, canotoTag_LargestFieldNumber__Uint)
@@ -3236,15 +3220,13 @@ func (c *SpecFuzzerPointer) UnmarshalCanotoFrom(r Reader) error {
 
 // CacheCanoto populates size and OneOf caches based on the current values in
 // the struct.
-//
-// It is not safe to copy this struct concurrently.
 func (c *SpecFuzzerPointer) CacheCanoto() {
 	var size uint64
 	(&c.Value).CacheCanoto()
 	if fieldSize := (&c.Value).SizeCanoto(); fieldSize != 0 {
 		size += uint64(len(canotoTag_SpecFuzzerPointer__Value)) + SizeUint(fieldSize) + fieldSize
 	}
-	atomic.StoreUint64(&c.canotoData.size, size)
+	CacheUint64(&c.canotoData.size, size)
 }
 
 // SizeCanoto returns the previously calculated size of the Canoto
@@ -3258,8 +3240,6 @@ func (c *SpecFuzzerPointer) SizeCanoto() uint64 {
 
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.
-//
-// It is not safe to copy this struct concurrently.
 func (c *SpecFuzzerPointer) ValidCanoto() bool {
 	c.CacheCanoto()
 	return c.CheckCanoto()
@@ -3280,8 +3260,6 @@ func (c *SpecFuzzerPointer) CheckCanoto() bool {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to copy this struct concurrently.
 func (c *SpecFuzzerPointer) MarshalCanoto() []byte {
 	c.CacheCanoto()
 	w := Writer{
@@ -3298,8 +3276,6 @@ func (c *SpecFuzzerPointer) MarshalCanoto() []byte {
 // to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to copy this struct concurrently.
 func (c *SpecFuzzerPointer) AppendCanoto(w Writer) Writer {
 	if fieldSize := (&c.Value).SizeCanoto(); fieldSize != 0 {
 		Append(&w, canotoTag_SpecFuzzerPointer__Value)
@@ -3514,8 +3490,6 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
 
 // CacheCanoto populates size and OneOf caches based on the current values in
 // the struct.
-//
-// It is not safe to copy this struct concurrently.
 func (c *OneOf) CacheCanoto() {
 	var size uint64
 	var AOneOf uint32
@@ -3542,9 +3516,9 @@ func (c *OneOf) CacheCanoto() {
 		size += uint64(len(canotoTag_OneOf__A2)) + SizeInt(c.A2)
 		AOneOf = canotoNumber_OneOf__A2
 	}
-	atomic.StoreUint64(&c.canotoData.size, size)
-	atomic.StoreUint32(&c.canotoData.AOneOf, AOneOf)
-	atomic.StoreUint32(&c.canotoData.BOneOf, BOneOf)
+	CacheUint64(&c.canotoData.size, size)
+	CacheUint32(&c.canotoData.AOneOf, AOneOf)
+	CacheUint32(&c.canotoData.BOneOf, BOneOf)
 }
 
 // SizeCanoto returns the previously calculated size of the Canoto
@@ -3582,8 +3556,6 @@ func (c *OneOf) WhichCanotoB() uint32 {
 
 // ValidCanoto validates that the struct can be correctly marshaled into the
 // Canoto format.
-//
-// It is not safe to copy this struct concurrently.
 func (c *OneOf) ValidCanoto() bool {
 	return c.CheckCanoto()
 }
@@ -3617,8 +3589,6 @@ func (c *OneOf) CheckCanoto() bool {
 // MarshalCanoto returns the Canoto representation of this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to copy this struct concurrently.
 func (c *OneOf) MarshalCanoto() []byte {
 	c.CacheCanoto()
 	w := Writer{
@@ -3635,8 +3605,6 @@ func (c *OneOf) MarshalCanoto() []byte {
 // to this struct.
 //
 // It is assumed that this struct is ValidCanoto.
-//
-// It is not safe to copy this struct concurrently.
 func (c *OneOf) AppendCanoto(w Writer) Writer {
 	whichCanotoA := atomic.LoadUint32(&c.canotoData.AOneOf)
 	if whichCanotoA == canotoNumber_OneOf__A1 {

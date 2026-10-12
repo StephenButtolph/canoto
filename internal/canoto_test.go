@@ -1526,3 +1526,36 @@ func TestPointerNilVsZeroValue(t *testing.T) {
 		})
 	}
 }
+
+// Copying a message while it is being cached must not be reported as a data
+// race.
+func TestCopyDuringCacheCanoto(*testing.T) {
+	m := ValueOneOf{Value: OneOf{C: 1}}
+	done := make(chan struct{})
+	go func() {
+		m.CacheCanoto()
+		close(done)
+	}()
+	_ = m
+
+	// Wait for the goroutine to give the race detector enough time to reliably
+	// detect any race.
+	<-done
+}
+
+// Copying a [canoto.Any] while it is being marshaled must not be reported as
+// a data race.
+func TestCopyDuringMarshal(t *testing.T) {
+	m := ValueOneOf{Value: OneOf{C: 1}}
+	spec := m.DescribeCanoto()
+	a, err := canoto.Unmarshal(spec, m.MarshalCanoto())
+	require.NoError(t, err)
+
+	errs := make(chan error, 1)
+	go func() {
+		_, err := canoto.Marshal(spec, a)
+		errs <- err
+	}()
+	_ = slices.Clone(a.Fields)
+	require.NoError(t, <-errs)
+}

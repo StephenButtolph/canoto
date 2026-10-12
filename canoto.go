@@ -83,26 +83,24 @@ const (
 	continuationWordMask = 0x8080808080808080
 )
 
+// The source files of this library, embedded as strings. They can be used
+// during code generation to produce standalone copies of this library.
+//
+// These variables are not referenced internally, so the compiler omits them
+// from the binary if unused.
 var (
-	// Code is the source of this file, embedded as a string. It can be used
-	// during code generation to produce standalone copies of this library.
-	//
-	// This variable is not referenced internally, so the compiler omits it
-	// from the binary if unused.
-	//
 	//go:embed canoto.go
 	Code string
-
-	// GeneratedCode is the source of the auto-generated canoto.canoto.go
-	// file, embedded as a string. It can be used during code generation to
-	// produce standalone copies of this library.
-	//
-	// This variable is not referenced internally, so the compiler omits it
-	// from the binary if unused.
-	//
 	//go:embed canoto.canoto.go
 	GeneratedCode string
+	//go:embed race.go
+	RaceCode string
+	//go:embed norace.go
+	NoRaceCode string
+)
 
+// Errors returned when a message or its encoding is invalid.
+var (
 	// ErrInvalidFieldOrder is returned when fields are not encoded in ascending
 	// field number order.
 	ErrInvalidFieldOrder = errors.New("invalid field order")
@@ -144,8 +142,6 @@ var (
 	ErrInvalidBool = errors.New("decoded bool is neither true nor false")
 	// ErrStringNotUTF8 is returned when a decoded string is not valid UTF-8.
 	ErrStringNotUTF8 = errors.New("decoded string is not UTF-8")
-
-	_ json.Marshaler = Any{}
 )
 
 type (
@@ -1333,6 +1329,8 @@ func Marshal(s *Spec, a Any) ([]byte, error) {
 	return w.B, nil
 }
 
+var _ json.Marshaler = Any{}
+
 // MarshalJSON implements the [json.Marshaler] interface.
 func (a Any) MarshalJSON() ([]byte, error) {
 	var sb strings.Builder
@@ -1540,7 +1538,7 @@ func (s *Spec) calculateSize(a *Any, specs []*Spec) error {
 		minField = ft.FieldNumber + 1
 		minFieldIndex = fieldIndex + 1
 	}
-	atomic.StoreUint64(&a.cachedSize, size)
+	CacheUint64(&a.cachedSize, size)
 	return nil
 }
 
@@ -1672,7 +1670,7 @@ func (f *FieldType) calculateSizeMessage(
 		if err := spec.calculateSize(&v, specs); err != nil {
 			return 0, err
 		}
-		atomic.StoreUint64(&af.cachedSize, v.cachedSize)
+		CacheUint64(&af.cachedSize, v.cachedSize)
 		return SizeUint(v.cachedSize) + v.cachedSize, nil
 	}
 
