@@ -1442,14 +1442,19 @@ func isSigned[T integer]() bool {
 }
 
 // SizeOf returns the size of the integer type.
-func SizeOf[T integer](_ T) SizeEnum {
-	for i := range SizeEnum64 {
-		bitLen := 1 << (i + 3)
-		if T(1)<<bitLen == T(0) {
-			return i + 1
-		}
+func SizeOf[T integer](v T) SizeEnum {
+	// The sizes of these integer types are defined by the Go specification,
+	// so the result does not depend on the platform.
+	switch unsafe.Sizeof(v) {
+	case 1:
+		return SizeEnum8
+	case 2:
+		return SizeEnum16
+	case 4:
+		return SizeEnum32
+	default:
+		return SizeEnum64
 	}
-	panic("unsupported integer size")
 }
 
 func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
