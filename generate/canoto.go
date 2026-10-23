@@ -746,11 +746,6 @@ func makeSpecFields(m message) string {
 	})
 }
 
-// makeMemory returns the body of MemoryCanoto.
-//
-// The zero value is only used for type inference. Nested messages are measured
-// through nil pointers, so the compiler never materializes the zero value and
-// MemoryCanoto never dereferences its receiver.
 func makeMemory(m message, canotoSelector string, generics string) string {
 	const (
 		newline        = " +\n\t\t"
