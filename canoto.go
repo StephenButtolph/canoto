@@ -64,9 +64,9 @@ const (
 	// MemoryRepeated is the canonical memory of a repeated field, excluding
 	// its elements.
 	MemoryRepeated = 24 // length + capacity + pointer
-	// MemoryUint64 is the canonical memory of a uint64 cached by a message.
+	// MemoryUint64 is the canonical memory of a uint64.
 	MemoryUint64 = 8
-	// MemoryUint32 is the canonical memory of a uint32 cached by a message.
+	// MemoryUint32 is the canonical memory of a uint32.
 	MemoryUint32 = 4
 
 	// MaxFieldNumber is the maximum field number allowed to be used in a Tag.
