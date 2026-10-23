@@ -210,29 +210,9 @@ type (
 		// the type is treated as opaque bytes.
 		DescribeCanoto(types ...reflect.Type) *Spec
 		// MemoryCanoto returns the canonical memory of this type, which
-		// approximates its size in bytes.
+		// approximates its size in bytes independently of the platform.
 		//
-		// To be canonical, the memory does not depend on the Go memory
-		// layout, which varies by platform and compiler. Instead, it is
-		// derived from the canoto definition of the type:
-		//   - Integers are their size in bytes.
-		//   - Bools are [MemoryBool].
-		//   - Strings are [MemoryString], excluding their contents.
-		//   - Bytes are [MemoryBytes], excluding their contents.
-		//   - Fixed bytes are their length.
-		//   - Pointers are [MemoryPointer].
-		//   - Repeated fields are [MemoryRepeated], excluding their elements.
-		//   - Fixed repeated fields are their length times the memory of their
-		//     elements.
-		//   - Messages are the memory of their fields and their cache. The
-		//     cache contains a uint64 for the size of the message, a uint64 for
-		//     the size of each repeated or fixed repeated varint field, and a
-		//     uint32 for each OneOf. These are [MemoryUint64] and
-		//     [MemoryUint32].
-		//
-		// The memory must only depend on the type, not on the value of the
-		// field. MemoryCanoto may be called on a nil pointer, so it must not
-		// dereference its receiver.
+		// It may be called on a nil pointer.
 		MemoryCanoto() uint64
 		// CacheCanoto populates internal caches based on the current values in
 		// the struct.
