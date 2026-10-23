@@ -405,8 +405,10 @@ func (s SizeEnum) shift() (shift uint64, mask uint64, ok bool) {
 // MemoryInt returns the canonical memory of an integer type, which is its size
 // in bytes.
 func MemoryInt[T integer](v T) uint64 {
-	// The sizes of these integer types are defined by the Go specification, so
-	// the memory does not depend on the platform.
+	// The sizes of these integer types are defined by the [Go specification],
+	// so the memory does not depend on the platform.
+	//
+	// [Go specification]: https://golang.org/ref/spec#Sizes_and_alignments_of_basic_types
 	return uint64(unsafe.Sizeof(v))
 }
 
