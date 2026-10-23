@@ -75,6 +75,9 @@ type Field interface {
 	// If this type does not have a valid specification, it returns nil and the
 	// type is treated as opaque bytes.
 	DescribeCanoto(types ...reflect.Type) *Spec
+	// MemoryCanoto returns the canonical memory of this type, which
+	// approximates its size in bytes.
+	MemoryCanoto() uint64
 	// CacheCanoto populates internal caches based on the current values in the
 	// struct.
 	CacheCanoto()

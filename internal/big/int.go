@@ -19,6 +19,10 @@ func (*Int) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	return nil
 }
 
+func (*Int) MemoryCanoto() uint64 {
+	return canoto.MemoryPointer
+}
+
 func (i *Int) UnmarshalCanotoFrom(r canoto.Reader) error {
 	if i.Int == nil {
 		i.Int = new(big.Int)

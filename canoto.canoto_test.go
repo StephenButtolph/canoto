@@ -682,6 +682,92 @@ func (*SpecFuzzer) DescribeCanoto(types ...reflect.Type) *Spec {
 	}
 }
 
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*SpecFuzzer) MemoryCanoto() uint64 {
+	var zero SpecFuzzer
+	return MemoryUint64 +
+		MemoryInt(zero.Int8) +
+		MemoryInt(zero.Int16) +
+		MemoryInt(zero.Int32) +
+		MemoryInt(zero.Int64) +
+		MemoryInt(zero.Uint8) +
+		MemoryInt(zero.Uint16) +
+		MemoryInt(zero.Uint32) +
+		MemoryInt(zero.Uint64) +
+		MemoryInt(zero.Sfixed32) +
+		MemoryInt(zero.Fixed32) +
+		MemoryInt(zero.Sfixed64) +
+		MemoryInt(zero.Fixed64) +
+		MemoryBool +
+		MemoryString +
+		MemoryBytes +
+		uint64(len(zero.FixedBytes)) +
+		(MakeNilPointer(&zero.Value)).MemoryCanoto() +
+		MemoryPointer +
+		MemoryPointer +
+		MemoryPointer +
+		MemoryPointer +
+		MemoryRepeated +
+		MemoryUint64 +
+		MemoryRepeated +
+		MemoryUint64 +
+		MemoryRepeated +
+		MemoryUint64 +
+		MemoryRepeated +
+		MemoryUint64 +
+		MemoryRepeated +
+		MemoryUint64 +
+		MemoryRepeated +
+		MemoryUint64 +
+		MemoryRepeated +
+		MemoryUint64 +
+		MemoryRepeated +
+		MemoryUint64 +
+		MemoryRepeated +
+		MemoryRepeated +
+		MemoryRepeated +
+		MemoryRepeated +
+		MemoryRepeated +
+		MemoryRepeated +
+		MemoryRepeated +
+		MemoryRepeated +
+		MemoryRepeated +
+		MemoryRepeated +
+		MemoryRepeated +
+		MemoryRepeated +
+		MemoryRepeated +
+		uint64(len(zero.FixedRepeatedInt8))*MemoryInt(MakeEntry((&zero.FixedRepeatedInt8)[:])) +
+		MemoryUint64 +
+		uint64(len(zero.FixedRepeatedInt16))*MemoryInt(MakeEntry((&zero.FixedRepeatedInt16)[:])) +
+		MemoryUint64 +
+		uint64(len(zero.FixedRepeatedInt32))*MemoryInt(MakeEntry((&zero.FixedRepeatedInt32)[:])) +
+		MemoryUint64 +
+		uint64(len(zero.FixedRepeatedInt64))*MemoryInt(MakeEntry((&zero.FixedRepeatedInt64)[:])) +
+		MemoryUint64 +
+		uint64(len(zero.FixedRepeatedUint8))*MemoryInt(MakeEntry((&zero.FixedRepeatedUint8)[:])) +
+		MemoryUint64 +
+		uint64(len(zero.FixedRepeatedUint16))*MemoryInt(MakeEntry((&zero.FixedRepeatedUint16)[:])) +
+		MemoryUint64 +
+		uint64(len(zero.FixedRepeatedUint32))*MemoryInt(MakeEntry((&zero.FixedRepeatedUint32)[:])) +
+		MemoryUint64 +
+		uint64(len(zero.FixedRepeatedUint64))*MemoryInt(MakeEntry((&zero.FixedRepeatedUint64)[:])) +
+		MemoryUint64 +
+		uint64(len(zero.FixedRepeatedSfixed32))*MemoryInt(MakeEntry((&zero.FixedRepeatedSfixed32)[:])) +
+		uint64(len(zero.FixedRepeatedFixed32))*MemoryInt(MakeEntry((&zero.FixedRepeatedFixed32)[:])) +
+		uint64(len(zero.FixedRepeatedSfixed64))*MemoryInt(MakeEntry((&zero.FixedRepeatedSfixed64)[:])) +
+		uint64(len(zero.FixedRepeatedFixed64))*MemoryInt(MakeEntry((&zero.FixedRepeatedFixed64)[:])) +
+		uint64(len(zero.FixedRepeatedBool))*MemoryBool +
+		uint64(len(zero.FixedRepeatedString))*MemoryString +
+		uint64(len(zero.FixedRepeatedBytes))*MemoryBytes +
+		uint64(len(zero.FixedRepeatedFixedBytes))*uint64(len((&zero.FixedRepeatedFixedBytes)[0])) +
+		uint64(len(zero.FixedRepeatedValue))*(MakeEntryNilPointer((&zero.FixedRepeatedValue)[:])).MemoryCanoto() +
+		uint64(len(zero.FixedRepeatedPointer))*MemoryPointer +
+		uint64(len(zero.FixedRepeatedOneOf))*MemoryPointer +
+		uint64(len(zero.FixedRepeatedRecursive))*MemoryPointer +
+		uint64(len(zero.FixedRepeatedValueRecursive))*MemoryPointer
+}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
@@ -3017,6 +3103,14 @@ func (*LargestFieldNumber[T1]) DescribeCanoto(...reflect.Type) *Spec {
 	}
 }
 
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*LargestFieldNumber[T1]) MemoryCanoto() uint64 {
+	var zero LargestFieldNumber[T1]
+	return MemoryUint64 +
+		MemoryInt(zero.Uint)
+}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
@@ -3159,6 +3253,14 @@ func (*SpecFuzzerPointer) DescribeCanoto(types ...reflect.Type) *Spec {
 			),
 		},
 	}
+}
+
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*SpecFuzzerPointer) MemoryCanoto() uint64 {
+	var zero SpecFuzzerPointer
+	return MemoryUint64 +
+		(MakeNilPointer(&zero.Value)).MemoryCanoto()
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -3371,6 +3473,21 @@ func (*OneOf) DescribeCanoto(...reflect.Type) *Spec {
 			},
 		},
 	}
+}
+
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*OneOf) MemoryCanoto() uint64 {
+	var zero OneOf
+	return MemoryUint64 +
+		MemoryInt(zero.A1) +
+		MemoryInt(zero.B1) +
+		MemoryInt(zero.B2) +
+		MemoryInt(zero.C) +
+		MemoryInt(zero.D) +
+		MemoryInt(zero.A2) +
+		MemoryUint32 +
+		MemoryUint32
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.

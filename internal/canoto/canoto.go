@@ -55,6 +55,24 @@ const (
 	// SizeBool is the size of a boolean in bytes.
 	SizeBool = 1
 
+	// MemoryBool is the canonical memory of a bool.
+	MemoryBool = 1
+	// MemoryString is the canonical memory of a string, excluding its
+	// contents.
+	MemoryString = 16
+	// MemoryBytes is the canonical memory of a byte slice, excluding its
+	// contents.
+	MemoryBytes = 24
+	// MemoryPointer is the canonical memory of a pointer.
+	MemoryPointer = 8
+	// MemoryRepeated is the canonical memory of a repeated field, excluding
+	// its elements.
+	MemoryRepeated = 24
+	// MemoryUint64 is the canonical memory of a uint64 cached by a message.
+	MemoryUint64 = 8
+	// MemoryUint32 is the canonical memory of a uint32 cached by a message.
+	MemoryUint32 = 4
+
 	// MaxFieldNumber is the maximum field number allowed to be used in a Tag.
 	MaxFieldNumber = 1<<29 - 1
 
@@ -191,6 +209,31 @@ type (
 		// If this type does not have a valid specification, it returns nil and
 		// the type is treated as opaque bytes.
 		DescribeCanoto(types ...reflect.Type) *Spec
+		// MemoryCanoto returns the canonical memory of this type, which
+		// approximates its size in bytes.
+		//
+		// To be canonical, the memory does not depend on the Go memory
+		// layout, which varies by platform and compiler. Instead, it is
+		// derived from the canoto definition of the type:
+		//   - Integers are their size in bytes.
+		//   - Bools are [MemoryBool].
+		//   - Strings are [MemoryString], excluding their contents.
+		//   - Bytes are [MemoryBytes], excluding their contents.
+		//   - Fixed bytes are their length.
+		//   - Pointers are [MemoryPointer].
+		//   - Repeated fields are [MemoryRepeated], excluding their elements.
+		//   - Fixed repeated fields are their length times the memory of their
+		//     elements.
+		//   - Messages are the memory of their fields and their cache. The
+		//     cache contains a uint64 for the size of the message, a uint64 for
+		//     the size of each repeated or fixed repeated varint field, and a
+		//     uint32 for each OneOf. These are [MemoryUint64] and
+		//     [MemoryUint32].
+		//
+		// The memory must only depend on the type, not on the value of the
+		// field. MemoryCanoto may be called on a nil pointer, so it must not
+		// dereference its receiver.
+		MemoryCanoto() uint64
 		// CacheCanoto populates internal caches based on the current values in
 		// the struct.
 		CacheCanoto()
@@ -381,6 +424,14 @@ func (s SizeEnum) shift() (shift uint64, mask uint64, ok bool) {
 	default:
 		return 0, 0, false
 	}
+}
+
+// MemoryInt returns the canonical memory of an integer type, which is its size
+// in bytes. The sizes of these integer types are defined by the Go
+// specification, so the memory does not depend on the platform.
+func MemoryInt[T integer](T) uint64 {
+	var zero T
+	return uint64(unsafe.Sizeof(zero))
 }
 
 // UnwrapPointer strips the presence prefix from a non-nil repeated pointer
@@ -1262,6 +1313,15 @@ func MakePointer[T any](_ *T) *T {
 // function to leverage golang's type inference to create the new slice.
 func MakeSlice[T any](_ []T, length uint64) []T {
 	return make([]T, length)
+}
+
+// MakeNilPointer returns a nil pointer of the same type as the provided
+// pointer.
+//
+// This function is useful to use in auto-generated code, when the type of a
+// variable is unknown. The provided pointer is only used for type inference.
+func MakeNilPointer[T any](_ *T) *T {
+	return nil
 }
 
 // MakeEntry returns the zero value of an element in the provided slice.

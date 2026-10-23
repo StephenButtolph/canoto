@@ -62,6 +62,14 @@ func (*Spec) DescribeCanoto(types ...reflect.Type) *Spec {
 	}
 }
 
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*Spec) MemoryCanoto() uint64 {
+	return MemoryUint64 +
+		MemoryString +
+		MemoryRepeated
+}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
@@ -415,6 +423,30 @@ func (*FieldType) DescribeCanoto(types ...reflect.Type) *Spec {
 			},
 		},
 	}
+}
+
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*FieldType) MemoryCanoto() uint64 {
+	var zero FieldType
+	return MemoryUint64 +
+		MemoryInt(zero.FieldNumber) +
+		MemoryString +
+		MemoryInt(zero.FixedLength) +
+		MemoryBool +
+		MemoryString +
+		MemoryBool +
+		MemoryInt(zero.TypeInt) +
+		MemoryInt(zero.TypeUint) +
+		MemoryInt(zero.TypeFixedInt) +
+		MemoryInt(zero.TypeFixedUint) +
+		MemoryBool +
+		MemoryBool +
+		MemoryBool +
+		MemoryInt(zero.TypeFixedBytes) +
+		MemoryPointer +
+		MemoryInt(zero.TypeRecursive) +
+		MemoryUint32
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.

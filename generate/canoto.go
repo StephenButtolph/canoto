@@ -154,6 +154,11 @@ ${appendTypes}${zero}	return &${selector}Spec{
 ${spec}	}
 }
 
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*${structName}${generics}) MemoryCanoto() uint64 {
+${memory}}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
@@ -285,6 +290,7 @@ ${append}	return w
 		"whichCanoto":      makeWhichCanoto(m),
 		"append":           makeAppend(m),
 		"zero":             makeZeroVarName(m, generics),
+		"memory":           makeMemory(m, canotoSelector, generics),
 	})
 }
 
@@ -738,6 +744,93 @@ func makeSpecFields(m message) string {
 `,
 		},
 	})
+}
+
+// makeMemory returns the body of MemoryCanoto.
+//
+// The zero value is only used for type inference. Nested messages are measured
+// through nil pointers, so the compiler never materializes the zero value and
+// MemoryCanoto never dereferences its receiver.
+func makeMemory(m message, canotoSelector string, generics string) string {
+	const (
+		memoryRepeated = `		${selector}MemoryRepeated +
+`
+		memoryFixedRepeatedBytes = `		uint64(len(zero.${fieldName}))*${selector}MemoryBytes +
+`
+	)
+	fieldMemory := writeMessage(m, messageTemplate{
+		ints: typeTemplate{
+			single: `		${selector}MemoryInt(zero.${fieldName}) +
+`,
+			repeated: `		${selector}MemoryRepeated +
+		${selector}MemoryUint64 +
+`,
+			fixedRepeated: `		uint64(len(zero.${fieldName}))*${selector}MemoryInt(${selector}MakeEntry((&zero.${fieldName})[:])) +
+		${selector}MemoryUint64 +
+`,
+		},
+		fints: typeTemplate{
+			single: `		${selector}MemoryInt(zero.${fieldName}) +
+`,
+			repeated: memoryRepeated,
+			fixedRepeated: `		uint64(len(zero.${fieldName}))*${selector}MemoryInt(${selector}MakeEntry((&zero.${fieldName})[:])) +
+`,
+		},
+		bools: typeTemplate{
+			single: `		${selector}MemoryBool +
+`,
+			repeated: memoryRepeated,
+			fixedRepeated: `		uint64(len(zero.${fieldName}))*${selector}MemoryBool +
+`,
+		},
+		strings: typeTemplate{
+			single: `		${selector}MemoryString +
+`,
+			repeated: memoryRepeated,
+			fixedRepeated: `		uint64(len(zero.${fieldName}))*${selector}MemoryString +
+`,
+		},
+		bytesTemplate: `		${selector}MemoryBytes +
+`,
+		repeatedBytesTemplate: memoryRepeated,
+		fixedBytesTemplate: `		uint64(len(zero.${fieldName})) +
+`,
+		repeatedFixedBytesTemplate: memoryRepeated,
+		fixedRepeatedBytesTemplate: memoryFixedRepeatedBytes,
+		fixedRepeatedFixedBytesTemplate: `		uint64(len(zero.${fieldName}))*uint64(len((&zero.${fieldName})[0])) +
+`,
+		values: typeTemplate{
+			single: `		${genericTypeCast}(${selector}MakeNilPointer(&zero.${fieldName})).MemoryCanoto() +
+`,
+			repeated: memoryRepeated,
+			fixedRepeated: `		uint64(len(zero.${fieldName}))*${genericTypeCast}(${selector}MakeEntryNilPointer((&zero.${fieldName})[:])).MemoryCanoto() +
+`,
+		},
+		pointers: typeTemplate{
+			single: `		${selector}MemoryPointer +
+`,
+			repeated: memoryRepeated,
+			fixedRepeated: `		uint64(len(zero.${fieldName}))*${selector}MemoryPointer +
+`,
+		},
+	})
+	for range m.OneOfs() {
+		fieldMemory += fmt.Sprintf("\t\t%sMemoryUint32 +\n", canotoSelector)
+	}
+	if fieldMemory == "" {
+		return fmt.Sprintf("\treturn %sMemoryUint64\n", canotoSelector)
+	}
+
+	var zero string
+	if strings.Contains(fieldMemory, "zero.") {
+		zero = fmt.Sprintf("\tvar zero %s%s\n", m.name, generics)
+	}
+	return fmt.Sprintf(
+		"%s\treturn %sMemoryUint64 +\n%s\n",
+		zero,
+		canotoSelector,
+		strings.TrimSuffix(fieldMemory, " +\n"),
+	)
 }
 
 func makeUnmarshalBody(m message, canotoSelector string) string {

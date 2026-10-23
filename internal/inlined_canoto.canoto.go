@@ -49,6 +49,14 @@ func (*justAnInt) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	}
 }
 
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*justAnInt) MemoryCanoto() uint64 {
+	var zero justAnInt
+	return canoto.MemoryUint64 +
+		canoto.MemoryInt(zero.Int8)
+}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.

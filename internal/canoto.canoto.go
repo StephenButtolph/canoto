@@ -49,6 +49,14 @@ func (*LargestFieldNumber[T1]) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	}
 }
 
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*LargestFieldNumber[T1]) MemoryCanoto() uint64 {
+	var zero LargestFieldNumber[T1]
+	return canoto.MemoryUint64 +
+		canoto.MemoryInt(zero.Uint)
+}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
@@ -245,6 +253,21 @@ func (*OneOf) DescribeCanoto(...reflect.Type) *canoto.Spec {
 			},
 		},
 	}
+}
+
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*OneOf) MemoryCanoto() uint64 {
+	var zero OneOf
+	return canoto.MemoryUint64 +
+		canoto.MemoryInt(zero.A1) +
+		canoto.MemoryInt(zero.B1) +
+		canoto.MemoryInt(zero.B2) +
+		canoto.MemoryInt(zero.C) +
+		canoto.MemoryInt(zero.D) +
+		canoto.MemoryInt(zero.A2) +
+		canoto.MemoryUint32 +
+		canoto.MemoryUint32
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -555,6 +578,16 @@ func (*unexportedOneOf) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	}
 }
 
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*unexportedOneOf) MemoryCanoto() uint64 {
+	var zero unexportedOneOf
+	return canoto.MemoryUint64 +
+		canoto.MemoryInt(zero.A1) +
+		canoto.MemoryInt(zero.A2) +
+		canoto.MemoryUint32
+}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
@@ -765,6 +798,16 @@ func (*ValueOneOf) DescribeCanoto(types ...reflect.Type) *canoto.Spec {
 			},
 		},
 	}
+}
+
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*ValueOneOf) MemoryCanoto() uint64 {
+	var zero ValueOneOf
+	return canoto.MemoryUint64 +
+		(canoto.MakeNilPointer(&zero.Value)).MemoryCanoto() +
+		canoto.MemoryInt(zero.Int) +
+		canoto.MemoryUint32
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -993,6 +1036,16 @@ func (*Node) DescribeCanoto(types ...reflect.Type) *canoto.Spec {
 	}
 }
 
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*Node) MemoryCanoto() uint64 {
+	var zero Node
+	return canoto.MemoryUint64 +
+		canoto.MemoryInt(zero.Value) +
+		canoto.MemoryPointer +
+		canoto.MemoryUint32
+}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
@@ -1186,6 +1239,13 @@ func (*RecursiveA) DescribeCanoto(types ...reflect.Type) *canoto.Spec {
 	}
 }
 
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*RecursiveA) MemoryCanoto() uint64 {
+	return canoto.MemoryUint64 +
+		canoto.MemoryPointer
+}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
@@ -1342,6 +1402,13 @@ func (*RecursiveB) DescribeCanoto(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
+}
+
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*RecursiveB) MemoryCanoto() uint64 {
+	return canoto.MemoryUint64 +
+		canoto.MemoryPointer
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -1560,6 +1627,19 @@ func (*GenericField[T1, T2]) DescribeCanoto(types ...reflect.Type) *canoto.Spec 
 			),
 		},
 	}
+}
+
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*GenericField[T1, T2]) MemoryCanoto() uint64 {
+	var zero GenericField[T1, T2]
+	return canoto.MemoryUint64 +
+		T2(canoto.MakeNilPointer(&zero.Value)).MemoryCanoto() +
+		canoto.MemoryRepeated +
+		uint64(len(zero.FixedRepeatedValue))*T2(canoto.MakeEntryNilPointer((&zero.FixedRepeatedValue)[:])).MemoryCanoto() +
+		canoto.MemoryPointer +
+		canoto.MemoryRepeated +
+		uint64(len(zero.FixedRepeatedPointer))*canoto.MemoryPointer
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -2128,6 +2208,19 @@ func (*NestedGenericField[T1, T2]) DescribeCanoto(types ...reflect.Type) *canoto
 	}
 }
 
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*NestedGenericField[T1, T2]) MemoryCanoto() uint64 {
+	var zero NestedGenericField[T1, T2]
+	return canoto.MemoryUint64 +
+		(canoto.MakeNilPointer(&zero.Value)).MemoryCanoto() +
+		canoto.MemoryRepeated +
+		uint64(len(zero.FixedRepeatedValue))*(canoto.MakeEntryNilPointer((&zero.FixedRepeatedValue)[:])).MemoryCanoto() +
+		canoto.MemoryPointer +
+		canoto.MemoryRepeated +
+		uint64(len(zero.FixedRepeatedPointer))*canoto.MemoryPointer
+}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
@@ -2670,6 +2763,17 @@ func (*Embedded) DescribeCanoto(types ...reflect.Type) *canoto.Spec {
 	}
 }
 
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*Embedded) MemoryCanoto() uint64 {
+	var zero Embedded
+	return canoto.MemoryUint64 +
+		(canoto.MakeNilPointer(&zero.OneOf)).MemoryCanoto() +
+		canoto.MemoryPointer +
+		canoto.MemoryPointer +
+		canoto.MemoryPointer
+}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
@@ -2905,6 +3009,14 @@ func (*A) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	}
 }
 
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*A) MemoryCanoto() uint64 {
+	var zero A
+	return canoto.MemoryUint64 +
+		canoto.MemoryInt(zero.B__C)
+}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
@@ -3042,6 +3154,14 @@ func (*A__B) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	}
 }
 
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*A__B) MemoryCanoto() uint64 {
+	var zero A__B
+	return canoto.MemoryUint64 +
+		canoto.MemoryInt(zero.C)
+}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
@@ -3177,6 +3297,14 @@ func (*A__Pointer) DescribeCanoto(...reflect.Type) *canoto.Spec {
 			},
 		},
 	}
+}
+
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*A__Pointer) MemoryCanoto() uint64 {
+	var zero A__Pointer
+	return canoto.MemoryUint64 +
+		canoto.MemoryInt(zero.C)
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -3948,6 +4076,95 @@ func (*Scalars) DescribeCanoto(types ...reflect.Type) *canoto.Spec {
 			),
 		},
 	}
+}
+
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*Scalars) MemoryCanoto() uint64 {
+	var zero Scalars
+	return canoto.MemoryUint64 +
+		canoto.MemoryInt(zero.Int8) +
+		canoto.MemoryInt(zero.Int16) +
+		canoto.MemoryInt(zero.Int32) +
+		canoto.MemoryInt(zero.Int64) +
+		canoto.MemoryInt(zero.Uint8) +
+		canoto.MemoryInt(zero.Uint16) +
+		canoto.MemoryInt(zero.Uint32) +
+		canoto.MemoryInt(zero.Uint64) +
+		canoto.MemoryInt(zero.Sfixed32) +
+		canoto.MemoryInt(zero.Fixed32) +
+		canoto.MemoryInt(zero.Sfixed64) +
+		canoto.MemoryInt(zero.Fixed64) +
+		canoto.MemoryBool +
+		canoto.MemoryString +
+		canoto.MemoryBytes +
+		(canoto.MakeNilPointer(&zero.LargestFieldNumber)).MemoryCanoto() +
+		canoto.MemoryRepeated +
+		canoto.MemoryUint64 +
+		canoto.MemoryRepeated +
+		canoto.MemoryUint64 +
+		canoto.MemoryRepeated +
+		canoto.MemoryUint64 +
+		canoto.MemoryRepeated +
+		canoto.MemoryUint64 +
+		canoto.MemoryRepeated +
+		canoto.MemoryUint64 +
+		canoto.MemoryRepeated +
+		canoto.MemoryUint64 +
+		canoto.MemoryRepeated +
+		canoto.MemoryUint64 +
+		canoto.MemoryRepeated +
+		canoto.MemoryUint64 +
+		canoto.MemoryRepeated +
+		canoto.MemoryRepeated +
+		canoto.MemoryRepeated +
+		canoto.MemoryRepeated +
+		canoto.MemoryRepeated +
+		canoto.MemoryRepeated +
+		canoto.MemoryRepeated +
+		canoto.MemoryRepeated +
+		uint64(len(zero.FixedRepeatedInt8))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedInt8)[:])) +
+		canoto.MemoryUint64 +
+		uint64(len(zero.FixedRepeatedInt16))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedInt16)[:])) +
+		canoto.MemoryUint64 +
+		uint64(len(zero.FixedRepeatedInt32))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedInt32)[:])) +
+		canoto.MemoryUint64 +
+		uint64(len(zero.FixedRepeatedInt64))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedInt64)[:])) +
+		canoto.MemoryUint64 +
+		uint64(len(zero.FixedRepeatedUint8))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedUint8)[:])) +
+		canoto.MemoryUint64 +
+		uint64(len(zero.FixedRepeatedUint16))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedUint16)[:])) +
+		canoto.MemoryUint64 +
+		uint64(len(zero.FixedRepeatedUint32))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedUint32)[:])) +
+		canoto.MemoryUint64 +
+		uint64(len(zero.FixedRepeatedUint64))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedUint64)[:])) +
+		canoto.MemoryUint64 +
+		uint64(len(zero.FixedRepeatedSfixed32))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedSfixed32)[:])) +
+		uint64(len(zero.FixedRepeatedFixed32))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedFixed32)[:])) +
+		uint64(len(zero.FixedRepeatedSfixed64))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedSfixed64)[:])) +
+		uint64(len(zero.FixedRepeatedFixed64))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedFixed64)[:])) +
+		uint64(len(zero.FixedRepeatedBool))*canoto.MemoryBool +
+		uint64(len(zero.FixedRepeatedString))*canoto.MemoryString +
+		uint64(len(zero.FixedBytes)) +
+		canoto.MemoryRepeated +
+		uint64(len(zero.FixedRepeatedBytes))*canoto.MemoryBytes +
+		uint64(len(zero.FixedRepeatedFixedBytes))*uint64(len((&zero.FixedRepeatedFixedBytes)[0])) +
+		uint64(len(zero.FixedRepeatedLargestFieldNumber))*(canoto.MakeEntryNilPointer((&zero.FixedRepeatedLargestFieldNumber)[:])).MemoryCanoto() +
+		uint64(len(zero.ConstRepeatedUint64))*canoto.MemoryInt(canoto.MakeEntry((&zero.ConstRepeatedUint64)[:])) +
+		canoto.MemoryUint64 +
+		(canoto.MakeNilPointer(&zero.CustomType)).MemoryCanoto() +
+		canoto.MemoryInt(zero.CustomUint32) +
+		canoto.MemoryString +
+		canoto.MemoryBytes +
+		uint64(len(zero.CustomFixedBytes)) +
+		canoto.MemoryRepeated +
+		canoto.MemoryRepeated +
+		uint64(len(zero.CustomFixedRepeatedBytes))*canoto.MemoryBytes +
+		uint64(len(zero.CustomFixedRepeatedFixedBytes))*uint64(len((&zero.CustomFixedRepeatedFixedBytes)[0])) +
+		(canoto.MakeNilPointer(&zero.OneOf)).MemoryCanoto() +
+		canoto.MemoryPointer +
+		canoto.MemoryRepeated +
+		uint64(len(zero.FixedRepeatedPointer))*canoto.MemoryPointer
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
@@ -6125,6 +6342,18 @@ func (*SpecUnusedZero) DescribeCanoto(...reflect.Type) *canoto.Spec {
 	}
 }
 
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*SpecUnusedZero) MemoryCanoto() uint64 {
+	return canoto.MemoryUint64 +
+		canoto.MemoryBool +
+		canoto.MemoryRepeated +
+		canoto.MemoryString +
+		canoto.MemoryRepeated +
+		canoto.MemoryBytes +
+		canoto.MemoryRepeated
+}
+
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
 //
 // During parsing, the canoto cache is saved.
@@ -6391,6 +6620,12 @@ func (*EmptyMessage) DescribeCanoto(...reflect.Type) *canoto.Spec {
 		Name:   "EmptyMessage",
 		Fields: []canoto.FieldType{},
 	}
+}
+
+// MemoryCanoto returns the canonical memory of this message, which
+// approximates its size in bytes.
+func (*EmptyMessage) MemoryCanoto() uint64 {
+	return canoto.MemoryUint64
 }
 
 // UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
