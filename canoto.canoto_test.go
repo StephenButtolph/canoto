@@ -708,22 +708,14 @@ func (*SpecFuzzer) MemoryCanoto() uint64 {
 		MemoryPointer +
 		MemoryPointer +
 		MemoryPointer +
-		MemoryRepeated +
-		MemoryUint64 +
-		MemoryRepeated +
-		MemoryUint64 +
-		MemoryRepeated +
-		MemoryUint64 +
-		MemoryRepeated +
-		MemoryUint64 +
-		MemoryRepeated +
-		MemoryUint64 +
-		MemoryRepeated +
-		MemoryUint64 +
-		MemoryRepeated +
-		MemoryUint64 +
-		MemoryRepeated +
-		MemoryUint64 +
+		MemoryRepeated + MemoryUint64 +
+		MemoryRepeated + MemoryUint64 +
+		MemoryRepeated + MemoryUint64 +
+		MemoryRepeated + MemoryUint64 +
+		MemoryRepeated + MemoryUint64 +
+		MemoryRepeated + MemoryUint64 +
+		MemoryRepeated + MemoryUint64 +
+		MemoryRepeated + MemoryUint64 +
 		MemoryRepeated +
 		MemoryRepeated +
 		MemoryRepeated +
@@ -737,22 +729,14 @@ func (*SpecFuzzer) MemoryCanoto() uint64 {
 		MemoryRepeated +
 		MemoryRepeated +
 		MemoryRepeated +
-		uint64(len(zero.FixedRepeatedInt8))*MemoryInt(MakeEntry((&zero.FixedRepeatedInt8)[:])) +
-		MemoryUint64 +
-		uint64(len(zero.FixedRepeatedInt16))*MemoryInt(MakeEntry((&zero.FixedRepeatedInt16)[:])) +
-		MemoryUint64 +
-		uint64(len(zero.FixedRepeatedInt32))*MemoryInt(MakeEntry((&zero.FixedRepeatedInt32)[:])) +
-		MemoryUint64 +
-		uint64(len(zero.FixedRepeatedInt64))*MemoryInt(MakeEntry((&zero.FixedRepeatedInt64)[:])) +
-		MemoryUint64 +
-		uint64(len(zero.FixedRepeatedUint8))*MemoryInt(MakeEntry((&zero.FixedRepeatedUint8)[:])) +
-		MemoryUint64 +
-		uint64(len(zero.FixedRepeatedUint16))*MemoryInt(MakeEntry((&zero.FixedRepeatedUint16)[:])) +
-		MemoryUint64 +
-		uint64(len(zero.FixedRepeatedUint32))*MemoryInt(MakeEntry((&zero.FixedRepeatedUint32)[:])) +
-		MemoryUint64 +
-		uint64(len(zero.FixedRepeatedUint64))*MemoryInt(MakeEntry((&zero.FixedRepeatedUint64)[:])) +
-		MemoryUint64 +
+		uint64(len(zero.FixedRepeatedInt8))*MemoryInt(MakeEntry((&zero.FixedRepeatedInt8)[:])) + MemoryUint64 +
+		uint64(len(zero.FixedRepeatedInt16))*MemoryInt(MakeEntry((&zero.FixedRepeatedInt16)[:])) + MemoryUint64 +
+		uint64(len(zero.FixedRepeatedInt32))*MemoryInt(MakeEntry((&zero.FixedRepeatedInt32)[:])) + MemoryUint64 +
+		uint64(len(zero.FixedRepeatedInt64))*MemoryInt(MakeEntry((&zero.FixedRepeatedInt64)[:])) + MemoryUint64 +
+		uint64(len(zero.FixedRepeatedUint8))*MemoryInt(MakeEntry((&zero.FixedRepeatedUint8)[:])) + MemoryUint64 +
+		uint64(len(zero.FixedRepeatedUint16))*MemoryInt(MakeEntry((&zero.FixedRepeatedUint16)[:])) + MemoryUint64 +
+		uint64(len(zero.FixedRepeatedUint32))*MemoryInt(MakeEntry((&zero.FixedRepeatedUint32)[:])) + MemoryUint64 +
+		uint64(len(zero.FixedRepeatedUint64))*MemoryInt(MakeEntry((&zero.FixedRepeatedUint64)[:])) + MemoryUint64 +
 		uint64(len(zero.FixedRepeatedSfixed32))*MemoryInt(MakeEntry((&zero.FixedRepeatedSfixed32)[:])) +
 		uint64(len(zero.FixedRepeatedFixed32))*MemoryInt(MakeEntry((&zero.FixedRepeatedFixed32)[:])) +
 		uint64(len(zero.FixedRepeatedSfixed64))*MemoryInt(MakeEntry((&zero.FixedRepeatedSfixed64)[:])) +

@@ -4099,22 +4099,14 @@ func (*Scalars) MemoryCanoto() uint64 {
 		canoto.MemoryString +
 		canoto.MemoryBytes +
 		(canoto.MakeNilPointer(&zero.LargestFieldNumber)).MemoryCanoto() +
-		canoto.MemoryRepeated +
-		canoto.MemoryUint64 +
-		canoto.MemoryRepeated +
-		canoto.MemoryUint64 +
-		canoto.MemoryRepeated +
-		canoto.MemoryUint64 +
-		canoto.MemoryRepeated +
-		canoto.MemoryUint64 +
-		canoto.MemoryRepeated +
-		canoto.MemoryUint64 +
-		canoto.MemoryRepeated +
-		canoto.MemoryUint64 +
-		canoto.MemoryRepeated +
-		canoto.MemoryUint64 +
-		canoto.MemoryRepeated +
-		canoto.MemoryUint64 +
+		canoto.MemoryRepeated + canoto.MemoryUint64 +
+		canoto.MemoryRepeated + canoto.MemoryUint64 +
+		canoto.MemoryRepeated + canoto.MemoryUint64 +
+		canoto.MemoryRepeated + canoto.MemoryUint64 +
+		canoto.MemoryRepeated + canoto.MemoryUint64 +
+		canoto.MemoryRepeated + canoto.MemoryUint64 +
+		canoto.MemoryRepeated + canoto.MemoryUint64 +
+		canoto.MemoryRepeated + canoto.MemoryUint64 +
 		canoto.MemoryRepeated +
 		canoto.MemoryRepeated +
 		canoto.MemoryRepeated +
@@ -4123,22 +4115,14 @@ func (*Scalars) MemoryCanoto() uint64 {
 		canoto.MemoryRepeated +
 		canoto.MemoryRepeated +
 		canoto.MemoryRepeated +
-		uint64(len(zero.FixedRepeatedInt8))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedInt8)[:])) +
-		canoto.MemoryUint64 +
-		uint64(len(zero.FixedRepeatedInt16))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedInt16)[:])) +
-		canoto.MemoryUint64 +
-		uint64(len(zero.FixedRepeatedInt32))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedInt32)[:])) +
-		canoto.MemoryUint64 +
-		uint64(len(zero.FixedRepeatedInt64))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedInt64)[:])) +
-		canoto.MemoryUint64 +
-		uint64(len(zero.FixedRepeatedUint8))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedUint8)[:])) +
-		canoto.MemoryUint64 +
-		uint64(len(zero.FixedRepeatedUint16))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedUint16)[:])) +
-		canoto.MemoryUint64 +
-		uint64(len(zero.FixedRepeatedUint32))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedUint32)[:])) +
-		canoto.MemoryUint64 +
-		uint64(len(zero.FixedRepeatedUint64))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedUint64)[:])) +
-		canoto.MemoryUint64 +
+		uint64(len(zero.FixedRepeatedInt8))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedInt8)[:])) + canoto.MemoryUint64 +
+		uint64(len(zero.FixedRepeatedInt16))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedInt16)[:])) + canoto.MemoryUint64 +
+		uint64(len(zero.FixedRepeatedInt32))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedInt32)[:])) + canoto.MemoryUint64 +
+		uint64(len(zero.FixedRepeatedInt64))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedInt64)[:])) + canoto.MemoryUint64 +
+		uint64(len(zero.FixedRepeatedUint8))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedUint8)[:])) + canoto.MemoryUint64 +
+		uint64(len(zero.FixedRepeatedUint16))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedUint16)[:])) + canoto.MemoryUint64 +
+		uint64(len(zero.FixedRepeatedUint32))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedUint32)[:])) + canoto.MemoryUint64 +
+		uint64(len(zero.FixedRepeatedUint64))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedUint64)[:])) + canoto.MemoryUint64 +
 		uint64(len(zero.FixedRepeatedSfixed32))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedSfixed32)[:])) +
 		uint64(len(zero.FixedRepeatedFixed32))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedFixed32)[:])) +
 		uint64(len(zero.FixedRepeatedSfixed64))*canoto.MemoryInt(canoto.MakeEntry((&zero.FixedRepeatedSfixed64)[:])) +
@@ -4150,8 +4134,7 @@ func (*Scalars) MemoryCanoto() uint64 {
 		uint64(len(zero.FixedRepeatedBytes))*canoto.MemoryBytes +
 		uint64(len(zero.FixedRepeatedFixedBytes))*uint64(len((&zero.FixedRepeatedFixedBytes)[0])) +
 		uint64(len(zero.FixedRepeatedLargestFieldNumber))*(canoto.MakeEntryNilPointer((&zero.FixedRepeatedLargestFieldNumber)[:])).MemoryCanoto() +
-		uint64(len(zero.ConstRepeatedUint64))*canoto.MemoryInt(canoto.MakeEntry((&zero.ConstRepeatedUint64)[:])) +
-		canoto.MemoryUint64 +
+		uint64(len(zero.ConstRepeatedUint64))*canoto.MemoryInt(canoto.MakeEntry((&zero.ConstRepeatedUint64)[:])) + canoto.MemoryUint64 +
 		(canoto.MakeNilPointer(&zero.CustomType)).MemoryCanoto() +
 		canoto.MemoryInt(zero.CustomUint32) +
 		canoto.MemoryString +

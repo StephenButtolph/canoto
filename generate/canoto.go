@@ -763,11 +763,9 @@ func makeMemory(m message, canotoSelector string, generics string) string {
 			single: ` +
 		${selector}MemoryInt(zero.${fieldName})`,
 			repeated: ` +
-		${selector}MemoryRepeated +
-		${selector}MemoryUint64`,
+		${selector}MemoryRepeated + ${selector}MemoryUint64`,
 			fixedRepeated: ` +
-		uint64(len(zero.${fieldName}))*${selector}MemoryInt(${selector}MakeEntry((&zero.${fieldName})[:])) +
-		${selector}MemoryUint64`,
+		uint64(len(zero.${fieldName}))*${selector}MemoryInt(${selector}MakeEntry((&zero.${fieldName})[:])) + ${selector}MemoryUint64`,
 		},
 		fints: typeTemplate{
 			single: ` +
