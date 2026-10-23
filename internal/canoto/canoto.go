@@ -409,8 +409,8 @@ func (s SizeEnum) shift() (shift uint64, mask uint64, ok bool) {
 // MemoryInt returns the canonical memory of an integer type, which is its size
 // in bytes.
 func MemoryInt[T integer](v T) uint64 {
-	// The sizes of these integer types are defined by the [Go specification], so
-	// the memory does not depend on the platform.
+	// The sizes of these integer types are defined by the [Go specification],
+	// so the memory does not depend on the platform.
 	//
 	// [Go specification]: https://golang.org/ref/spec#Sizes_and_alignments_of_basic_types
 	return uint64(unsafe.Sizeof(v))
@@ -1302,8 +1302,8 @@ func MakeSlice[T any](_ []T, length uint64) []T {
 //
 // This function is useful to use in auto-generated code, when the type of a
 // variable is unknown. The provided pointer is only used for type inference.
-func MakeNilPointer[T any](*T) *T {
-	return nil
+func MakeNilPointer[T any](*T) (_ *T) {
+	return
 }
 
 // MakeEntry returns the zero value of an element in the provided slice.
@@ -1323,8 +1323,8 @@ func MakeEntry[S ~[]E, E any](S) (_ E) {
 // variable is unknown. For example, if we have a variable `v` which we know to
 // be a slice, but we do not know the type of the elements, we can use this
 // function to leverage golang's type inference to create the pointer.
-func MakeEntryNilPointer[S ~[]E, E any](S) *E {
-	return nil
+func MakeEntryNilPointer[S ~[]E, E any](S) (_ *E) {
+	return
 }
 
 // IsZero returns true if the value is the zero value for its type.
