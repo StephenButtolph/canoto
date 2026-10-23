@@ -753,63 +753,45 @@ func makeSpecFields(m message) string {
 // MemoryCanoto never dereferences its receiver.
 func makeMemory(m message, canotoSelector string, generics string) string {
 	const (
-		memoryRepeated = ` +
-		${selector}MemoryRepeated`
-		memoryFixedRepeatedBytes = ` +
-		uint64(len(zero.${fieldName}))*${selector}MemoryBytes`
+		newline        = " +\n\t\t"
+		memoryRepeated = newline + "${selector}MemoryRepeated"
 	)
 	fieldMemory := writeMessage(m, messageTemplate{
 		ints: typeTemplate{
-			single: ` +
-		${selector}MemoryInt(zero.${fieldName})`,
-			repeated: ` +
-		${selector}MemoryRepeated + ${selector}MemoryUint64`,
-			fixedRepeated: ` +
-		uint64(len(zero.${fieldName}))*${selector}MemoryInt(${selector}MakeEntry((&zero.${fieldName})[:])) + ${selector}MemoryUint64`,
+			single:        newline + "${selector}MemoryInt(zero.${fieldName})",
+			repeated:      newline + "${selector}MemoryRepeated + ${selector}MemoryUint64",
+			fixedRepeated: newline + "uint64(len(zero.${fieldName}))*${selector}MemoryInt(${selector}MakeEntry((&zero.${fieldName})[:])) + ${selector}MemoryUint64",
 		},
 		fints: typeTemplate{
-			single: ` +
-		${selector}MemoryInt(zero.${fieldName})`,
-			repeated: memoryRepeated,
-			fixedRepeated: ` +
-		uint64(len(zero.${fieldName}))*${selector}MemoryInt(${selector}MakeEntry((&zero.${fieldName})[:]))`,
+			single:        newline + "${selector}MemoryInt(zero.${fieldName})",
+			repeated:      memoryRepeated,
+			fixedRepeated: newline + "uint64(len(zero.${fieldName}))*${selector}MemoryInt(${selector}MakeEntry((&zero.${fieldName})[:]))",
 		},
 		bools: typeTemplate{
-			single: ` +
-		${selector}MemoryBool`,
-			repeated: memoryRepeated,
-			fixedRepeated: ` +
-		uint64(len(zero.${fieldName}))*${selector}MemoryBool`,
+			single:        newline + "${selector}MemoryBool",
+			repeated:      memoryRepeated,
+			fixedRepeated: newline + "uint64(len(zero.${fieldName}))*${selector}MemoryBool",
 		},
 		strings: typeTemplate{
-			single: ` +
-		${selector}MemoryString`,
-			repeated: memoryRepeated,
-			fixedRepeated: ` +
-		uint64(len(zero.${fieldName}))*${selector}MemoryString`,
+			single:        newline + "${selector}MemoryString",
+			repeated:      memoryRepeated,
+			fixedRepeated: newline + "uint64(len(zero.${fieldName}))*${selector}MemoryString",
 		},
-		bytesTemplate: ` +
-		${selector}MemoryBytes`,
-		repeatedBytesTemplate: memoryRepeated,
-		fixedBytesTemplate: ` +
-		uint64(len(zero.${fieldName}))`,
-		repeatedFixedBytesTemplate: memoryRepeated,
-		fixedRepeatedBytesTemplate: memoryFixedRepeatedBytes,
-		fixedRepeatedFixedBytesTemplate: ` +
-		uint64(len(zero.${fieldName}))*uint64(len((&zero.${fieldName})[0]))`,
+		bytesTemplate:                   newline + "${selector}MemoryBytes",
+		repeatedBytesTemplate:           memoryRepeated,
+		fixedBytesTemplate:              newline + "uint64(len(zero.${fieldName}))",
+		repeatedFixedBytesTemplate:      memoryRepeated,
+		fixedRepeatedBytesTemplate:      newline + "uint64(len(zero.${fieldName}))*${selector}MemoryBytes",
+		fixedRepeatedFixedBytesTemplate: newline + "uint64(len(zero.${fieldName}))*uint64(len((&zero.${fieldName})[0]))",
 		values: typeTemplate{
-			single: ` +
-		${genericTypeCast}(${selector}MakeNilPointer(&zero.${fieldName})).MemoryCanoto()`,
-			repeated: memoryRepeated,
-			fixedRepeated: ` +
-		uint64(len(zero.${fieldName}))*${genericTypeCast}(${selector}MakeEntryNilPointer((&zero.${fieldName})[:])).MemoryCanoto()`,
+			single:        newline + "${genericTypeCast}(${selector}MakeNilPointer(&zero.${fieldName})).MemoryCanoto()",
+			repeated:      memoryRepeated,
+			fixedRepeated: newline + "uint64(len(zero.${fieldName}))*${genericTypeCast}(${selector}MakeEntryNilPointer((&zero.${fieldName})[:])).MemoryCanoto()",
 		},
 		pointers: typeTemplate{
-			single: ` +
-		${selector}MemoryPointer`,
-			repeated: memoryRepeated,
-			fixedRepeated: ` +
-		uint64(len(zero.${fieldName}))*${selector}MemoryPointer`,
+			single:        newline + "${selector}MemoryPointer",
+			repeated:      memoryRepeated,
+			fixedRepeated: newline + "uint64(len(zero.${fieldName}))*${selector}MemoryPointer",
 		},
 	})
 
