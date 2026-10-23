@@ -59,15 +59,15 @@ const (
 	MemoryBool = 1
 	// MemoryString is the canonical memory of a string, excluding its
 	// contents.
-	MemoryString = 16
+	MemoryString = 16 // length + pointer
 	// MemoryBytes is the canonical memory of a byte slice, excluding its
 	// contents.
-	MemoryBytes = 24
+	MemoryBytes = 24 // length + capacity + pointer
 	// MemoryPointer is the canonical memory of a pointer.
 	MemoryPointer = 8
 	// MemoryRepeated is the canonical memory of a repeated field, excluding
 	// its elements.
-	MemoryRepeated = 24
+	MemoryRepeated = 24 // length + capacity + pointer
 	// MemoryUint64 is the canonical memory of a uint64 cached by a message.
 	MemoryUint64 = 8
 	// MemoryUint32 is the canonical memory of a uint32 cached by a message.
