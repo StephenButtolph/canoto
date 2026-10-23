@@ -1,6 +1,9 @@
 package examples
 
 import (
+	"math"
+	"reflect"
+	"runtime"
 	"slices"
 	"strconv"
 	"testing"
@@ -807,10 +810,23 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 							Unsafe: unsafe,
 						}
 					)
-					_ = s.UnmarshalCanotoFrom(reader)
+					_, _ = s.UnmarshalCanotoFrom(reader)
 				}
 			})
 		}
+		b.Run("unmarshal/"+bm.name+"/budget", func(b *testing.B) {
+			for range b.N {
+				var (
+					s      Scalars
+					reader = canoto.Reader{
+						B:         bm.bytes,
+						HasBudget: true,
+						Budget:    math.MaxUint64,
+					}
+				)
+				_, _ = s.UnmarshalCanotoFrom(reader)
+			}
+		})
 		b.Run("unmarshal/"+bm.name+"/any", func(b *testing.B) {
 			for range b.N {
 				_, _ = canoto.Unmarshal(spec, bm.bytes)
@@ -1025,7 +1041,7 @@ func BenchmarkRepeatedFixed32_Canoto(b *testing.B) {
 					s      Scalars
 					reader = canoto.Reader{B: bytes}
 				)
-				_ = s.UnmarshalCanotoFrom(reader)
+				_, _ = s.UnmarshalCanotoFrom(reader)
 			}
 		})
 	}
@@ -1072,7 +1088,7 @@ func BenchmarkRepeatedFixed64_Canoto(b *testing.B) {
 					s      Scalars
 					reader = canoto.Reader{B: bytes}
 				)
-				_ = s.UnmarshalCanotoFrom(reader)
+				_, _ = s.UnmarshalCanotoFrom(reader)
 			}
 		})
 	}
@@ -1155,7 +1171,7 @@ func BenchmarkRepeatedUint64_Canoto(b *testing.B) {
 						s      Scalars
 						reader = canoto.Reader{B: bytes}
 					)
-					_ = s.UnmarshalCanotoFrom(reader)
+					_, _ = s.UnmarshalCanotoFrom(reader)
 				}
 			})
 		}
@@ -1219,7 +1235,7 @@ func BenchmarkRepeatedBool_Canoto(b *testing.B) {
 					s      Scalars
 					reader = canoto.Reader{B: bytes}
 				)
-				_ = s.UnmarshalCanotoFrom(reader)
+				_, _ = s.UnmarshalCanotoFrom(reader)
 			}
 		})
 	}
@@ -1303,7 +1319,7 @@ func BenchmarkFixedRepeatedFint_Canoto(b *testing.B) {
 					s      Scalars
 					reader = canoto.Reader{B: bytes}
 				)
-				_ = s.UnmarshalCanotoFrom(reader)
+				_, _ = s.UnmarshalCanotoFrom(reader)
 			}
 		})
 	}
@@ -1558,4 +1574,141 @@ func TestCopyDuringMarshal(t *testing.T) {
 	}()
 	_ = slices.Clone(a.Fields)
 	require.NoError(t, <-errs)
+}
+
+func FuzzScalars_Budget(f *testing.F) {
+	seed := Scalars{
+		String:                     "hi",
+		Bytes:                      []byte{1},
+		RepeatedInt8:               []int8{1, -2},
+		RepeatedUint64:             []uint64{1, 1 << 63},
+		RepeatedFixed32:            []uint32{1, 2},
+		RepeatedFixed64:            []uint64{1, 2},
+		RepeatedBool:               []bool{true, false},
+		RepeatedString:             []string{"a", ""},
+		RepeatedBytes:              [][]byte{{1}, {}},
+		RepeatedLargestFieldNumber: []LargestFieldNumber[uint32]{{Uint: 1}, {}},
+		FixedRepeatedString:        [3]string{"a"},
+		RepeatedFixedBytes:         [][32]byte{{1}, {}},
+		FixedRepeatedBytes:         [3][]byte{{1}},
+		CustomRepeatedBytes:        customRepeatedBytes{{1}},
+		Pointer:                    &LargestFieldNumber[uint32]{Uint: 1},
+		RepeatedPointer:            []*LargestFieldNumber[uint32]{{Uint: 1}, nil, {}},
+		FixedRepeatedPointer:       [3]*LargestFieldNumber[uint32]{{Uint: 1}},
+	}
+	f.Add(seed.MarshalCanoto())
+	f.Fuzz(func(t *testing.T, b []byte) {
+		require := require.New(t)
+
+		for _, isUnsafe := range []bool{false, true} {
+			var expected Scalars
+			_, expectedErr := expected.UnmarshalCanotoFrom(canoto.Reader{
+				B:      b,
+				Unsafe: isUnsafe,
+			})
+
+			unmarshal := func(budget uint64) (*Scalars, uint64, error) {
+				var s Scalars
+				result, err := s.UnmarshalCanotoFrom(canoto.Reader{
+					B:         b,
+					Unsafe:    isUnsafe,
+					HasBudget: true,
+					Budget:    budget,
+				})
+				return &s, result.Budget, err
+			}
+
+			// A sufficient budget must not change the result of unmarshaling.
+			s, remaining, err := unmarshal(math.MaxUint64)
+			require.ErrorIs(err, expectedErr)
+			require.Equal(&expected, s)
+			if err != nil {
+				// The remaining budget is only specified on success.
+				continue
+			}
+
+			// The budget must be charged deterministically, so exactly the
+			// amount used must be sufficient.
+			used := math.MaxUint64 - remaining
+			s, remaining, err = unmarshal(used)
+			require.NoError(err)
+			require.Equal(&expected, s)
+			require.Zero(remaining)
+
+			// The budget must account for the memory that is actually
+			// allocated. The runtime rounds allocations up to size classes,
+			// which at most doubles their size, and allocations smaller than
+			// 16 bytes may share 16 byte blocks.
+			allocated, mallocs := measureHeap(func() {
+				_, _ = s.UnmarshalCanotoFrom(canoto.Reader{
+					B:         b,
+					Unsafe:    isUnsafe,
+					HasBudget: true,
+					Budget:    math.MaxUint64,
+				})
+			})
+			require.LessOrEqual(used, allocated+16)
+			require.LessOrEqual(allocated, 2*used+16*mallocs)
+
+			if used == 0 {
+				continue
+			}
+			_, _, err = unmarshal(used - 1)
+			require.ErrorIs(err, canoto.ErrBudgetExceeded)
+		}
+	})
+}
+
+// measureHeap returns the number of bytes and objects allocated on the heap by
+// f. Allocations by other goroutines can only increase the measurements, so the
+// minimum over multiple runs is returned.
+func measureHeap(f func()) (allocated uint64, mallocs uint64) {
+	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(1))
+
+	allocated, mallocs = math.MaxUint64, math.MaxUint64
+	for range 3 {
+		var before, after runtime.MemStats
+		runtime.ReadMemStats(&before)
+		f()
+		runtime.ReadMemStats(&after)
+		allocated = min(allocated, after.TotalAlloc-before.TotalAlloc)
+		mallocs = min(mallocs, after.Mallocs-before.Mallocs)
+	}
+	return allocated, mallocs
+}
+
+// TestBudget_Amplification verifies that the budget bounds allocations whose
+// size is unrelated to the size of the input.
+func TestBudget_Amplification(t *testing.T) {
+	require := require.New(t)
+
+	// Each empty element is encoded in 2 bytes, but is allocated as an entire
+	// Scalars struct.
+	const numElements = 1024
+	var (
+		element  = append(canoto.Tag(2, canoto.Len), canoto.EmptyBytes...)
+		b        = slices.Repeat(element, numElements)
+		required = numElements * uint64(reflect.TypeFor[Scalars]().Size())
+		s        GenericField[Scalars, *Scalars]
+	)
+
+	result, err := s.UnmarshalCanotoFrom(canoto.Reader{
+		B:         b,
+		HasBudget: true,
+		Budget:    required,
+	})
+	require.NoError(err)
+	require.Len(s.RepeatedValue, numElements)
+	require.Zero(result.Budget)
+
+	// Exceeding the budget must be detected before allocating.
+	allocs := testing.AllocsPerRun(10, func() {
+		_, err = s.UnmarshalCanotoFrom(canoto.Reader{
+			B:         b,
+			HasBudget: true,
+			Budget:    required - 1,
+		})
+	})
+	require.ErrorIs(err, canoto.ErrBudgetExceeded)
+	require.Zero(allocs)
 }

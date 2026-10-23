@@ -99,7 +99,7 @@ type Field interface {
 	// It is assumed that this field passes CheckCanoto.
 	AppendCanoto(w Writer) Writer
 	// UnmarshalCanotoFrom populates the field from a [Reader].
-	UnmarshalCanotoFrom(r Reader) error
+	UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error)
 }
 ```
 
@@ -161,6 +161,25 @@ If `canoto.FieldPointer` is aliased to a different type or is otherwise re-imple
 It is safe to marshal the same message from multiple goroutines at the same time, and to pass a message by value while another goroutine is marshaling it. The same applies to `canoto.Marshal` and `canoto.Any`, as long as an `Any` is marshaled with the same `Spec`.
 
 Modifying a message, including by calling `UnmarshalCanoto`, while another goroutine is marshaling or copying it is a data race.
+
+### Untrusted Input
+
+The memory allocated while unmarshaling a message can greatly exceed the size of the message. For example, an empty entry of a repeated message field is encoded in 2 bytes, but allocates an entire message.
+
+When unmarshaling untrusted input, a budget can be provided to limit the memory allocated. If an allocation would exceed the budget, unmarshaling fails with `canoto.ErrBudgetExceeded` before performing the allocation. The returned `canoto.UnmarshalResult` contains the remaining budget.
+
+```golang
+var msg Message
+result, err := msg.UnmarshalCanotoFrom(canoto.Reader{
+	B:         bytes,
+	HasBudget: true,
+	Budget:    1 << 20,
+})
+```
+
+Allocations are charged their Go size, which depends on the platform and the compiler. A budget should only be used to limit resource usage, not to determine whether a message is valid.
+
+Custom `canoto.Field` implementations should charge any memory they allocate with `canoto.Spend`.
 
 ### Standalone Implementations
 

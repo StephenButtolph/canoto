@@ -142,6 +142,9 @@ var (
 	ErrInvalidBool = errors.New("decoded bool is neither true nor false")
 	// ErrStringNotUTF8 is returned when a decoded string is not valid UTF-8.
 	ErrStringNotUTF8 = errors.New("decoded string is not UTF-8")
+	// ErrBudgetExceeded is returned when unmarshaling would allocate more
+	// memory than permitted by the [Reader.Budget].
+	ErrBudgetExceeded = errors.New("allocation budget exceeded")
 )
 
 type (
@@ -212,7 +215,9 @@ type (
 		// It is assumed that this field passes CheckCanoto.
 		AppendCanoto(w Writer) Writer
 		// UnmarshalCanotoFrom populates the field from a [Reader].
-		UnmarshalCanotoFrom(r Reader) error
+		//
+		// If an error is returned, the [UnmarshalResult] is unspecified.
+		UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error)
 	}
 
 	// FieldPointer is a constraint that requires *T to implement [Field].
@@ -240,9 +245,35 @@ type (
 		// strings and byte slices will alias the original input buffer,
 		// which must not be modified after unmarshaling.
 		Unsafe bool
+		// HasBudget, when true, limits the memory allocated during
+		// unmarshaling to Budget.
+		HasBudget bool
+		// Budget is the number of bytes that may still be allocated during
+		// unmarshaling. It is only enforced if HasBudget is true.
+		//
+		// The memory allocated while unmarshaling a message can greatly exceed
+		// the size of the message. For example, an empty entry of a repeated
+		// message field is encoded in 2 bytes, but allocates an entire message.
+		//
+		// Allocated values are charged their Go size, and copied strings and
+		// bytes are charged their length. Allocations are rejected before they
+		// are performed. The message being unmarshaled into is not charged.
+		//
+		// The Go size of a type depends on the platform and the compiler, so
+		// whether a message fits within a budget is not canonical. A budget
+		// should only be used to limit resource usage, not to determine
+		// whether a message is valid.
+		Budget uint64
 		// Context is a user-defined value that can be used to pass additional
 		// state during the unmarshaling process.
 		Context any
+	}
+
+	// UnmarshalResult is the state returned after successfully unmarshaling a
+	// [Field].
+	UnmarshalResult struct {
+		// Budget is the remaining [Reader.Budget].
+		Budget uint64
 	}
 
 	// Writer contains all the state needed to marshal a Canoto type.
@@ -377,6 +408,24 @@ func (s SizeEnum) shift() (shift uint64, mask uint64, ok bool) {
 	default:
 		return 0, 0, false
 	}
+}
+
+// Spend charges count values of size bytes each against the budget of r. If
+// the budget is insufficient, [ErrBudgetExceeded] is returned and the budget is
+// not charged. If r does not have a budget, Spend is a no-op.
+//
+// Spend allows custom [Field] implementations to charge their allocations
+// against the budget.
+func Spend(r *Reader, count, size uint64) error {
+	if !r.HasBudget {
+		return nil
+	}
+	hi, total := bits.Mul64(count, size)
+	if hi != 0 || total > r.Budget {
+		return ErrBudgetExceeded
+	}
+	r.Budget -= total
+	return nil
 }
 
 // UnwrapPointer strips the presence prefix from a non-nil repeated pointer
@@ -534,7 +583,11 @@ func ReadUints[S ~[]E, E Uint](r *Reader, v *S) (uint64, error) {
 	// After the check above, b contains exactly CountInts(b) complete
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
-	vs := make(S, CountInts(b))
+	count := CountInts(b)
+	if err := Spend(r, count, uint64(unsafe.Sizeof(E(0)))); err != nil {
+		return 0, err
+	}
+	vs := make(S, count)
 	var (
 		i     int    // number of varints decoded so far
 		val   uint64 // value accumulated for the current varint
@@ -706,7 +759,11 @@ func ReadInts[S ~[]E, E Int](r *Reader, v *S) (uint64, error) {
 	// After the check above, b contains exactly CountInts(b) complete
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
-	vs := make(S, CountInts(b))
+	count := CountInts(b)
+	if err := Spend(r, count, uint64(unsafe.Sizeof(E(0)))); err != nil {
+		return 0, err
+	}
+	vs := make(S, count)
 	var (
 		i        int    // number of varints decoded so far
 		largeVal uint64 // value accumulated for the current varint
@@ -868,6 +925,10 @@ func ReadFint32s[S ~[]E, E Int32](r *Reader, v *S) error {
 	if length%SizeFint32 != 0 {
 		return ErrInvalidLength
 	}
+	count := length / SizeFint32
+	if err := Spend(r, count, SizeFint32); err != nil {
+		return err
+	}
 
 	// Advancing a local slice keeps the slice header in registers. Advancing
 	// r.B on every element would reload the header through memory each
@@ -877,7 +938,7 @@ func ReadFint32s[S ~[]E, E Int32](r *Reader, v *S) error {
 	// store.
 	b := r.B[:length]
 	r.B = r.B[length:]
-	vs := make(S, length/SizeFint32)
+	vs := make(S, count)
 	for i := range vs {
 		vs[i] = E(binary.LittleEndian.Uint32(b))
 		b = b[SizeFint32:]
@@ -952,6 +1013,10 @@ func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
 	if length%SizeFint64 != 0 {
 		return ErrInvalidLength
 	}
+	count := length / SizeFint64
+	if err := Spend(r, count, SizeFint64); err != nil {
+		return err
+	}
 
 	// Advancing a local slice keeps the slice header in registers. Advancing
 	// r.B on every element would reload the header through memory each
@@ -961,7 +1026,7 @@ func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
 	// store.
 	b := r.B[:length]
 	r.B = r.B[length:]
-	vs := make(S, length/SizeFint64)
+	vs := make(S, count)
 	for i := range vs {
 		vs[i] = E(binary.LittleEndian.Uint64(b))
 		b = b[SizeFint64:]
@@ -1035,6 +1100,9 @@ func ReadBools[S ~[]E, E ~bool](r *Reader, v *S) error {
 	}
 	if length > uint64(len(r.B)) {
 		return io.ErrUnexpectedEOF
+	}
+	if err := Spend(r, length, SizeBool); err != nil {
+		return err
 	}
 
 	vs := make(S, length)
@@ -1162,9 +1230,12 @@ func ReadString[T ~string](r *Reader, v *T) error {
 
 	if r.Unsafe {
 		*v = T(unsafeString(bytes))
-	} else {
-		*v = T(bytes)
+		return nil
 	}
+	if err := Spend(r, length, 1); err != nil {
+		return err
+	}
+	*v = T(bytes)
 	return nil
 }
 
@@ -1187,6 +1258,9 @@ func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 	bytes := r.B[:length]
 	r.B = r.B[length:]
 	if !r.Unsafe {
+		if err := Spend(r, length, 1); err != nil {
+			return err
+		}
 		bytes = slices.Clone(bytes)
 	}
 	*v = T(bytes)
@@ -1226,6 +1300,8 @@ func ReadSubReader(r *Reader, sub *Reader) error {
 
 	sub.B = b[:n]
 	sub.Unsafe = r.Unsafe
+	sub.HasBudget = r.HasBudget
+	sub.Budget = r.Budget
 	sub.Context = r.Context
 	r.B = b[n:]
 	return nil
@@ -1239,25 +1315,33 @@ func AppendBytes[T Bytes](w *Writer, v T) {
 	w.B = b
 }
 
-// MakePointer creates a new pointer. It is equivalent to `new(T)`.
+// MakePointer sets *p to a new pointer after charging its size against the
+// budget of r. It is equivalent to `*p = new(T)` when r has no budget.
 //
 // This function is useful to use in auto-generated code, when the type of a
-// variable is unknown. For example, if we have a variable `v` which we know to
-// be a pointer, but we do not know the type of the pointer, we can use this
-// function to leverage golang's type inference to create the new pointer.
-func MakePointer[T any](_ *T) *T {
-	return new(T)
+// variable is unknown.
+func MakePointer[T any](r *Reader, p **T) error {
+	var zero T
+	if err := Spend(r, 1, uint64(unsafe.Sizeof(zero))); err != nil {
+		return err
+	}
+	*p = new(T)
+	return nil
 }
 
-// MakeSlice creates a new slice with the given length. It is equivalent to
-// `make([]T, length)`.
+// MakeSlice sets *s to a new slice with the given length after charging its
+// size against the budget of r. It is equivalent to `*s = make(S, length)`
+// when r has no budget.
 //
 // This function is useful to use in auto-generated code, when the type of a
-// variable is unknown. For example, if we have a variable `v` which we know to
-// be a slice, but we do not know the type of the elements, we can use this
-// function to leverage golang's type inference to create the new slice.
-func MakeSlice[T any](_ []T, length uint64) []T {
-	return make([]T, length)
+// variable is unknown.
+func MakeSlice[S ~[]E, E any](r *Reader, s *S, length uint64) error {
+	var zero E
+	if err := Spend(r, length, uint64(unsafe.Sizeof(zero))); err != nil {
+		return err
+	}
+	*s = make(S, length)
+	return nil
 }
 
 // MakeEntry returns the zero value of an element in the provided slice.

@@ -69,7 +69,8 @@ func (c *Spec) UnmarshalCanoto(bytes []byte) error {
 	r := Reader{
 		B: bytes,
 	}
-	return c.UnmarshalCanotoFrom(r)
+	_, err := c.UnmarshalCanotoFrom(r)
+	return err
 }
 
 // UnmarshalCanotoFrom populates the struct from a [Reader]. Most users
@@ -77,8 +78,9 @@ func (c *Spec) UnmarshalCanoto(bytes []byte) error {
 //
 // During parsing, the canoto cache is saved.
 //
-// This function enables configuration of reader options.
-func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
+// This function enables configuration of reader options. If an error is
+// returned, the [UnmarshalResult] is unspecified.
+func (c *Spec) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 	// Zero the struct before unmarshaling.
 	*c = Spec{}
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
@@ -87,72 +89,80 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) error {
 	for HasNext(&r) {
 		field, wireType, err := ReadTag(&r)
 		if err != nil {
-			return err
+			return UnmarshalResult{}, err
 		}
 		if field < minField {
-			return ErrInvalidFieldOrder
+			return UnmarshalResult{}, ErrInvalidFieldOrder
 		}
 
 		switch field {
 		case canotoNumber_Spec__Name:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadString(&r, &c.Name); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.Name) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_Spec__Fields:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := CountBytes(r.B, canotoTag_Spec__Fields)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
-			c.Fields = MakeSlice(c.Fields, countMinus1+1)
+			if err := MakeSlice(&r, &c.Fields, countMinus1+1); err != nil {
+				return UnmarshalResult{}, err
+			}
 			field := c.Fields
 			additionalField := field[1:]
 			if HasNext(&msgReader) {
-				if err := (&field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				msgReader.Budget = r.Budget
+				result, err := (&field[0]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
 				}
+				r.Budget = result.Budget
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_Spec__Fields):]
 				if err := ReadSubReader(&r, &msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 				if !HasNext(&msgReader) {
 					continue
 				}
 
-				if err := (&additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				msgReader.Budget = r.Budget
+				result, err := (&additionalField[i]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
 				}
+				r.Budget = result.Budget
 			}
 		default:
-			return ErrUnknownField
+			return UnmarshalResult{}, ErrUnknownField
 		}
 
 		minField = field + 1
 	}
-	return nil
+	return UnmarshalResult{Budget: r.Budget}, nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in
@@ -424,7 +434,8 @@ func (c *FieldType) UnmarshalCanoto(bytes []byte) error {
 	r := Reader{
 		B: bytes,
 	}
-	return c.UnmarshalCanotoFrom(r)
+	_, err := c.UnmarshalCanotoFrom(r)
+	return err
 }
 
 // UnmarshalCanotoFrom populates the struct from a [Reader]. Most users
@@ -432,8 +443,9 @@ func (c *FieldType) UnmarshalCanoto(bytes []byte) error {
 //
 // During parsing, the canoto cache is saved.
 //
-// This function enables configuration of reader options.
-func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
+// This function enables configuration of reader options. If an error is
+// returned, the [UnmarshalResult] is unspecified.
+func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 	// Zero the struct before unmarshaling.
 	*c = FieldType{}
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
@@ -442,227 +454,232 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) error {
 	for HasNext(&r) {
 		field, wireType, err := ReadTag(&r)
 		if err != nil {
-			return err
+			return UnmarshalResult{}, err
 		}
 		if field < minField {
-			return ErrInvalidFieldOrder
+			return UnmarshalResult{}, ErrInvalidFieldOrder
 		}
 
 		switch field {
 		case canotoNumber_FieldType__FieldNumber:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadUint(&r, &c.FieldNumber); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.FieldNumber) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__Name:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadString(&r, &c.Name); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.Name) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__FixedLength:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadUint(&r, &c.FixedLength); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.FixedLength) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__Repeated:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadBool(&r, &c.Repeated); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.Repeated) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__OneOf:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadString(&r, &c.OneOf); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.OneOf) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__Pointer:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadBool(&r, &c.Pointer); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.Pointer) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeInt:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 			atomic.StoreUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeInt)
 
 			if err := ReadUint(&r, &c.TypeInt); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.TypeInt) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeUint:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeUint) != 0 {
-				return ErrDuplicateOneOf
+				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
 			if err := ReadUint(&r, &c.TypeUint); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.TypeUint) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeFixedInt:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeFixedInt) != 0 {
-				return ErrDuplicateOneOf
+				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
 			if err := ReadUint(&r, &c.TypeFixedInt); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.TypeFixedInt) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeFixedUint:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeFixedUint) != 0 {
-				return ErrDuplicateOneOf
+				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
 			if err := ReadUint(&r, &c.TypeFixedUint); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.TypeFixedUint) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeBool:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeBool) != 0 {
-				return ErrDuplicateOneOf
+				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
 			if err := ReadBool(&r, &c.TypeBool); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.TypeBool) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeString:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeString) != 0 {
-				return ErrDuplicateOneOf
+				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
 			if err := ReadBool(&r, &c.TypeString); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.TypeString) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeBytes:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeBytes) != 0 {
-				return ErrDuplicateOneOf
+				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
 			if err := ReadBool(&r, &c.TypeBytes); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.TypeBytes) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeFixedBytes:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeFixedBytes) != 0 {
-				return ErrDuplicateOneOf
+				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
 			if err := ReadUint(&r, &c.TypeFixedBytes); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.TypeFixedBytes) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeMessage:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeMessage) != 0 {
-				return ErrDuplicateOneOf
+				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
-			c.TypeMessage = MakePointer(c.TypeMessage)
-			if err := (c.TypeMessage).UnmarshalCanotoFrom(msgReader); err != nil {
-				return err
+			if err := MakePointer(&r, &c.TypeMessage); err != nil {
+				return UnmarshalResult{}, err
 			}
+			msgReader.Budget = r.Budget
+			result, err := (c.TypeMessage).UnmarshalCanotoFrom(msgReader)
+			if err != nil {
+				return UnmarshalResult{}, err
+			}
+			r.Budget = result.Budget
 		case canotoNumber_FieldType__TypeRecursive:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 			if atomic.SwapUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeRecursive) != 0 {
-				return ErrDuplicateOneOf
+				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
 			if err := ReadUint(&r, &c.TypeRecursive); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.TypeRecursive) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		default:
-			return ErrUnknownField
+			return UnmarshalResult{}, ErrUnknownField
 		}
 
 		minField = field + 1
 	}
-	return nil
+	return UnmarshalResult{Budget: r.Budget}, nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in

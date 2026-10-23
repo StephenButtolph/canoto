@@ -689,7 +689,8 @@ func (c *SpecFuzzer) UnmarshalCanoto(bytes []byte) error {
 	r := Reader{
 		B: bytes,
 	}
-	return c.UnmarshalCanotoFrom(r)
+	_, err := c.UnmarshalCanotoFrom(r)
+	return err
 }
 
 // UnmarshalCanotoFrom populates the struct from a [Reader]. Most users
@@ -697,8 +698,9 @@ func (c *SpecFuzzer) UnmarshalCanoto(bytes []byte) error {
 //
 // During parsing, the canoto cache is saved.
 //
-// This function enables configuration of reader options.
-func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
+// This function enables configuration of reader options. If an error is
+// returned, the [UnmarshalResult] is unspecified.
+func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 	// Zero the struct before unmarshaling.
 	*c = SpecFuzzer{}
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
@@ -707,181 +709,181 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 	for HasNext(&r) {
 		field, wireType, err := ReadTag(&r)
 		if err != nil {
-			return err
+			return UnmarshalResult{}, err
 		}
 		if field < minField {
-			return ErrInvalidFieldOrder
+			return UnmarshalResult{}, ErrInvalidFieldOrder
 		}
 
 		switch field {
 		case canotoNumber_SpecFuzzer__Int8:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadInt(&r, &c.Int8); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.Int8) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Int16:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadInt(&r, &c.Int16); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.Int16) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Int32:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadInt(&r, &c.Int32); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.Int32) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Int64:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadInt(&r, &c.Int64); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.Int64) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Uint8:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadUint(&r, &c.Uint8); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.Uint8) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Uint16:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadUint(&r, &c.Uint16); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.Uint16) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Uint32:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadUint(&r, &c.Uint32); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.Uint32) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Uint64:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadUint(&r, &c.Uint64); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.Uint64) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Sfixed32:
 			if wireType != I32 {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadFint32(&r, &c.Sfixed32); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.Sfixed32) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Fixed32:
 			if wireType != I32 {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadFint32(&r, &c.Fixed32); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.Fixed32) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Sfixed64:
 			if wireType != I64 {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadFint64(&r, &c.Sfixed64); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.Sfixed64) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Fixed64:
 			if wireType != I64 {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadFint64(&r, &c.Fixed64); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.Fixed64) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Bool:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadBool(&r, &c.Bool); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.Bool) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__String:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadString(&r, &c.String); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.String) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Bytes:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadBytes(&r, &c.Bytes); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.Bytes) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__FixedBytes:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			const (
@@ -890,275 +892,300 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			)
 			var length uint64
 			if err := ReadUint(&r, &length); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if length != expectedLengthUint64 {
-				return ErrInvalidLength
+				return UnmarshalResult{}, ErrInvalidLength
 			}
 			if expectedLength > len(r.B) {
-				return io.ErrUnexpectedEOF
+				return UnmarshalResult{}, io.ErrUnexpectedEOF
 			}
 
 			copy((&c.FixedBytes)[:], r.B)
 			if IsZero(c.FixedBytes) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			r.B = r.B[expectedLength:]
 		case canotoNumber_SpecFuzzer__Value:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if !HasNext(&msgReader) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 
-			if err := (&c.Value).UnmarshalCanotoFrom(msgReader); err != nil {
-				return err
+			msgReader.Budget = r.Budget
+			result, err := (&c.Value).UnmarshalCanotoFrom(msgReader)
+			if err != nil {
+				return UnmarshalResult{}, err
 			}
+			r.Budget = result.Budget
 		case canotoNumber_SpecFuzzer__Pointer:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
-			c.Pointer = MakePointer(c.Pointer)
-			if err := (c.Pointer).UnmarshalCanotoFrom(msgReader); err != nil {
-				return err
+			if err := MakePointer(&r, &c.Pointer); err != nil {
+				return UnmarshalResult{}, err
 			}
+			msgReader.Budget = r.Budget
+			result, err := (c.Pointer).UnmarshalCanotoFrom(msgReader)
+			if err != nil {
+				return UnmarshalResult{}, err
+			}
+			r.Budget = result.Budget
 		case canotoNumber_SpecFuzzer__OneOf:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
-			c.OneOf = MakePointer(c.OneOf)
-			if err := (c.OneOf).UnmarshalCanotoFrom(msgReader); err != nil {
-				return err
+			if err := MakePointer(&r, &c.OneOf); err != nil {
+				return UnmarshalResult{}, err
 			}
+			msgReader.Budget = r.Budget
+			result, err := (c.OneOf).UnmarshalCanotoFrom(msgReader)
+			if err != nil {
+				return UnmarshalResult{}, err
+			}
+			r.Budget = result.Budget
 		case canotoNumber_SpecFuzzer__Recursive:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
-			c.Recursive = MakePointer(c.Recursive)
-			if err := (c.Recursive).UnmarshalCanotoFrom(msgReader); err != nil {
-				return err
+			if err := MakePointer(&r, &c.Recursive); err != nil {
+				return UnmarshalResult{}, err
 			}
+			msgReader.Budget = r.Budget
+			result, err := (c.Recursive).UnmarshalCanotoFrom(msgReader)
+			if err != nil {
+				return UnmarshalResult{}, err
+			}
+			r.Budget = result.Budget
 		case canotoNumber_SpecFuzzer__ValueRecursive:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
-			c.ValueRecursive = MakePointer(c.ValueRecursive)
-			if err := (c.ValueRecursive).UnmarshalCanotoFrom(msgReader); err != nil {
-				return err
+			if err := MakePointer(&r, &c.ValueRecursive); err != nil {
+				return UnmarshalResult{}, err
 			}
+			msgReader.Budget = r.Budget
+			result, err := (c.ValueRecursive).UnmarshalCanotoFrom(msgReader)
+			if err != nil {
+				return UnmarshalResult{}, err
+			}
+			r.Budget = result.Budget
 		case canotoNumber_SpecFuzzer__RepeatedInt8:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			length, err := ReadInts(&r, &c.RepeatedInt8)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedInt8) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.RepeatedInt8Size, length)
 		case canotoNumber_SpecFuzzer__RepeatedInt16:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			length, err := ReadInts(&r, &c.RepeatedInt16)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedInt16) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.RepeatedInt16Size, length)
 		case canotoNumber_SpecFuzzer__RepeatedInt32:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			length, err := ReadInts(&r, &c.RepeatedInt32)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedInt32) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.RepeatedInt32Size, length)
 		case canotoNumber_SpecFuzzer__RepeatedInt64:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			length, err := ReadInts(&r, &c.RepeatedInt64)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedInt64) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.RepeatedInt64Size, length)
 		case canotoNumber_SpecFuzzer__RepeatedUint8:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			length, err := ReadUints(&r, &c.RepeatedUint8)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedUint8) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.RepeatedUint8Size, length)
 		case canotoNumber_SpecFuzzer__RepeatedUint16:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			length, err := ReadUints(&r, &c.RepeatedUint16)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedUint16) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.RepeatedUint16Size, length)
 		case canotoNumber_SpecFuzzer__RepeatedUint32:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			length, err := ReadUints(&r, &c.RepeatedUint32)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedUint32) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.RepeatedUint32Size, length)
 		case canotoNumber_SpecFuzzer__RepeatedUint64:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			length, err := ReadUints(&r, &c.RepeatedUint64)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedUint64) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.RepeatedUint64Size, length)
 		case canotoNumber_SpecFuzzer__RepeatedSfixed32:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadFint32s(&r, &c.RepeatedSfixed32); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedSfixed32) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__RepeatedFixed32:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadFint32s(&r, &c.RepeatedFixed32); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedFixed32) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__RepeatedSfixed64:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadFint64s(&r, &c.RepeatedSfixed64); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedSfixed64) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__RepeatedFixed64:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadFint64s(&r, &c.RepeatedFixed64); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedFixed64) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__RepeatedBool:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadBools(&r, &c.RepeatedBool); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedBool) == 0 {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__RepeatedString:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			// Skip the first entry because we have already stripped the tag.
 			remainingBytes := r.B
 			if err := SkipBytes(&r); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := CountBytes(r.B, canotoTag_SpecFuzzer__RepeatedString)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
-			c.RepeatedString = MakeSlice(c.RepeatedString, countMinus1+1)
+			if err := MakeSlice(&r, &c.RepeatedString, countMinus1+1); err != nil {
+				return UnmarshalResult{}, err
+			}
 			field := c.RepeatedString
 
 			// Read the first entry manually because the tag is already
 			// stripped.
 			r.B = remainingBytes
 			if err := ReadString(&r, &field[0]); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1166,33 +1193,35 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			for i := range field {
 				r.B = r.B[len(canotoTag_SpecFuzzer__RepeatedString):]
 				if err := ReadString(&r, &field[i]); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 			}
 		case canotoNumber_SpecFuzzer__RepeatedBytes:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			// Skip the first entry because we have already stripped the tag.
 			remainingBytes := r.B
 			if err := SkipBytes(&r); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := CountBytes(r.B, canotoTag_SpecFuzzer__RepeatedBytes)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
-			c.RepeatedBytes = MakeSlice(c.RepeatedBytes, countMinus1+1)
+			if err := MakeSlice(&r, &c.RepeatedBytes, countMinus1+1); err != nil {
+				return UnmarshalResult{}, err
+			}
 			field := c.RepeatedBytes
 
 			// Read the first entry manually because the tag is already
 			// stripped.
 			r.B = remainingBytes
 			if err := ReadBytes(&r, &field[0]); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1200,12 +1229,12 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			for i := range field {
 				r.B = r.B[len(canotoTag_SpecFuzzer__RepeatedBytes):]
 				if err := ReadBytes(&r, &field[i]); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 			}
 		case canotoNumber_SpecFuzzer__RepeatedFixedBytes:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			const (
@@ -1217,13 +1246,13 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			// stripped.
 			var length uint64
 			if err := ReadUint(&r, &length); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if length != expectedLengthUint64 {
-				return ErrInvalidLength
+				return UnmarshalResult{}, ErrInvalidLength
 			}
 			if expectedLength > len(r.B) {
-				return io.ErrUnexpectedEOF
+				return UnmarshalResult{}, io.ErrUnexpectedEOF
 			}
 
 			firstEntry := r.B[:expectedLength]
@@ -1232,10 +1261,12 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := CountBytes(r.B, canotoTag_SpecFuzzer__RepeatedFixedBytes)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
-			c.RepeatedFixedBytes = MakeSlice(c.RepeatedFixedBytes, countMinus1+1)
+			if err := MakeSlice(&r, &c.RepeatedFixedBytes, countMinus1+1); err != nil {
+				return UnmarshalResult{}, err
+			}
 			field := c.RepeatedFixedBytes
 			copy((&field[0])[:], firstEntry)
 
@@ -1244,13 +1275,13 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			for i := range field {
 				r.B = r.B[len(canotoTag_SpecFuzzer__RepeatedFixedBytes):]
 				if err := ReadUint(&r, &length); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 				if length != expectedLengthUint64 {
-					return ErrInvalidLength
+					return UnmarshalResult{}, ErrInvalidLength
 				}
 				if expectedLength > len(r.B) {
-					return io.ErrUnexpectedEOF
+					return UnmarshalResult{}, io.ErrUnexpectedEOF
 				}
 
 				newB := r.B[expectedLength:]
@@ -1259,403 +1290,459 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			}
 		case canotoNumber_SpecFuzzer__RepeatedValue:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := CountBytes(r.B, canotoTag_SpecFuzzer__RepeatedValue)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
-			c.RepeatedValue = MakeSlice(c.RepeatedValue, countMinus1+1)
+			if err := MakeSlice(&r, &c.RepeatedValue, countMinus1+1); err != nil {
+				return UnmarshalResult{}, err
+			}
 			field := c.RepeatedValue
 			additionalField := field[1:]
 			if HasNext(&msgReader) {
-				if err := (&field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				msgReader.Budget = r.Budget
+				result, err := (&field[0]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
 				}
+				r.Budget = result.Budget
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_SpecFuzzer__RepeatedValue):]
 				if err := ReadSubReader(&r, &msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 				if !HasNext(&msgReader) {
 					continue
 				}
 
-				if err := (&additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				msgReader.Budget = r.Budget
+				result, err := (&additionalField[i]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
 				}
+				r.Budget = result.Budget
 			}
 		case canotoNumber_SpecFuzzer__RepeatedPointer:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := CountBytes(r.B, canotoTag_SpecFuzzer__RepeatedPointer)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
-			c.RepeatedPointer = MakeSlice(c.RepeatedPointer, countMinus1+1)
+			if err := MakeSlice(&r, &c.RepeatedPointer, countMinus1+1); err != nil {
+				return UnmarshalResult{}, err
+			}
 			field := c.RepeatedPointer
 			additionalField := field[1:]
 			if HasNext(&msgReader) {
 				if err := UnwrapPointer(&msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
-				field[0] = MakePointer(field[0])
-				if err := (field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				if err := MakePointer(&r, &field[0]); err != nil {
+					return UnmarshalResult{}, err
 				}
+				msgReader.Budget = r.Budget
+				result, err := (field[0]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
+				}
+				r.Budget = result.Budget
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_SpecFuzzer__RepeatedPointer):]
 				if err := ReadSubReader(&r, &msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 				if !HasNext(&msgReader) {
 					continue
 				}
 
 				if err := UnwrapPointer(&msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
-				additionalField[i] = MakePointer(additionalField[i])
-				if err := (additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				if err := MakePointer(&r, &additionalField[i]); err != nil {
+					return UnmarshalResult{}, err
 				}
+				msgReader.Budget = r.Budget
+				result, err := (additionalField[i]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
+				}
+				r.Budget = result.Budget
 			}
 		case canotoNumber_SpecFuzzer__RepeatedOneOf:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := CountBytes(r.B, canotoTag_SpecFuzzer__RepeatedOneOf)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
-			c.RepeatedOneOf = MakeSlice(c.RepeatedOneOf, countMinus1+1)
+			if err := MakeSlice(&r, &c.RepeatedOneOf, countMinus1+1); err != nil {
+				return UnmarshalResult{}, err
+			}
 			field := c.RepeatedOneOf
 			additionalField := field[1:]
 			if HasNext(&msgReader) {
 				if err := UnwrapPointer(&msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
-				field[0] = MakePointer(field[0])
-				if err := (field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				if err := MakePointer(&r, &field[0]); err != nil {
+					return UnmarshalResult{}, err
 				}
+				msgReader.Budget = r.Budget
+				result, err := (field[0]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
+				}
+				r.Budget = result.Budget
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_SpecFuzzer__RepeatedOneOf):]
 				if err := ReadSubReader(&r, &msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 				if !HasNext(&msgReader) {
 					continue
 				}
 
 				if err := UnwrapPointer(&msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
-				additionalField[i] = MakePointer(additionalField[i])
-				if err := (additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				if err := MakePointer(&r, &additionalField[i]); err != nil {
+					return UnmarshalResult{}, err
 				}
+				msgReader.Budget = r.Budget
+				result, err := (additionalField[i]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
+				}
+				r.Budget = result.Budget
 			}
 		case canotoNumber_SpecFuzzer__RepeatedRecursive:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := CountBytes(r.B, canotoTag_SpecFuzzer__RepeatedRecursive)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
-			c.RepeatedRecursive = MakeSlice(c.RepeatedRecursive, countMinus1+1)
+			if err := MakeSlice(&r, &c.RepeatedRecursive, countMinus1+1); err != nil {
+				return UnmarshalResult{}, err
+			}
 			field := c.RepeatedRecursive
 			additionalField := field[1:]
 			if HasNext(&msgReader) {
 				if err := UnwrapPointer(&msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
-				field[0] = MakePointer(field[0])
-				if err := (field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				if err := MakePointer(&r, &field[0]); err != nil {
+					return UnmarshalResult{}, err
 				}
+				msgReader.Budget = r.Budget
+				result, err := (field[0]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
+				}
+				r.Budget = result.Budget
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_SpecFuzzer__RepeatedRecursive):]
 				if err := ReadSubReader(&r, &msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 				if !HasNext(&msgReader) {
 					continue
 				}
 
 				if err := UnwrapPointer(&msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
-				additionalField[i] = MakePointer(additionalField[i])
-				if err := (additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				if err := MakePointer(&r, &additionalField[i]); err != nil {
+					return UnmarshalResult{}, err
 				}
+				msgReader.Budget = r.Budget
+				result, err := (additionalField[i]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
+				}
+				r.Budget = result.Budget
 			}
 		case canotoNumber_SpecFuzzer__RepeatedValueRecursive:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			// Count the number of additional entries after the first entry.
 			countMinus1, err := CountBytes(r.B, canotoTag_SpecFuzzer__RepeatedValueRecursive)
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
-			c.RepeatedValueRecursive = MakeSlice(c.RepeatedValueRecursive, countMinus1+1)
+			if err := MakeSlice(&r, &c.RepeatedValueRecursive, countMinus1+1); err != nil {
+				return UnmarshalResult{}, err
+			}
 			field := c.RepeatedValueRecursive
 			additionalField := field[1:]
 			if HasNext(&msgReader) {
 				if err := UnwrapPointer(&msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
-				field[0] = MakePointer(field[0])
-				if err := (field[0]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				if err := MakePointer(&r, &field[0]); err != nil {
+					return UnmarshalResult{}, err
 				}
+				msgReader.Budget = r.Budget
+				result, err := (field[0]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
+				}
+				r.Budget = result.Budget
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			for i := range additionalField {
 				r.B = r.B[len(canotoTag_SpecFuzzer__RepeatedValueRecursive):]
 				if err := ReadSubReader(&r, &msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 				if !HasNext(&msgReader) {
 					continue
 				}
 
 				if err := UnwrapPointer(&msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
-				additionalField[i] = MakePointer(additionalField[i])
-				if err := (additionalField[i]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				if err := MakePointer(&r, &additionalField[i]); err != nil {
+					return UnmarshalResult{}, err
 				}
+				msgReader.Budget = r.Budget
+				result, err := (additionalField[i]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
+				}
+				r.Budget = result.Budget
 			}
 		case canotoNumber_SpecFuzzer__FixedRepeatedInt8:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			length, err := ReadIntsInto(&r, (&c.FixedRepeatedInt8)[:])
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.FixedRepeatedInt8) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.FixedRepeatedInt8Size, length)
 		case canotoNumber_SpecFuzzer__FixedRepeatedInt16:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			length, err := ReadIntsInto(&r, (&c.FixedRepeatedInt16)[:])
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.FixedRepeatedInt16) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.FixedRepeatedInt16Size, length)
 		case canotoNumber_SpecFuzzer__FixedRepeatedInt32:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			length, err := ReadIntsInto(&r, (&c.FixedRepeatedInt32)[:])
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.FixedRepeatedInt32) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.FixedRepeatedInt32Size, length)
 		case canotoNumber_SpecFuzzer__FixedRepeatedInt64:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			length, err := ReadIntsInto(&r, (&c.FixedRepeatedInt64)[:])
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.FixedRepeatedInt64) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.FixedRepeatedInt64Size, length)
 		case canotoNumber_SpecFuzzer__FixedRepeatedUint8:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			length, err := ReadUintsInto(&r, (&c.FixedRepeatedUint8)[:])
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.FixedRepeatedUint8) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.FixedRepeatedUint8Size, length)
 		case canotoNumber_SpecFuzzer__FixedRepeatedUint16:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			length, err := ReadUintsInto(&r, (&c.FixedRepeatedUint16)[:])
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.FixedRepeatedUint16) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.FixedRepeatedUint16Size, length)
 		case canotoNumber_SpecFuzzer__FixedRepeatedUint32:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			length, err := ReadUintsInto(&r, (&c.FixedRepeatedUint32)[:])
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.FixedRepeatedUint32) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.FixedRepeatedUint32Size, length)
 		case canotoNumber_SpecFuzzer__FixedRepeatedUint64:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			length, err := ReadUintsInto(&r, (&c.FixedRepeatedUint64)[:])
 			if err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.FixedRepeatedUint64) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.FixedRepeatedUint64Size, length)
 		case canotoNumber_SpecFuzzer__FixedRepeatedSfixed32:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadFint32sInto(&r, (&c.FixedRepeatedSfixed32)[:]); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.FixedRepeatedSfixed32) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__FixedRepeatedFixed32:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadFint32sInto(&r, (&c.FixedRepeatedFixed32)[:]); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.FixedRepeatedFixed32) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__FixedRepeatedSfixed64:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadFint64sInto(&r, (&c.FixedRepeatedSfixed64)[:]); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.FixedRepeatedSfixed64) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__FixedRepeatedFixed64:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadFint64sInto(&r, (&c.FixedRepeatedFixed64)[:]); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.FixedRepeatedFixed64) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__FixedRepeatedBool:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadBoolsInto(&r, (&c.FixedRepeatedBool)[:]); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.FixedRepeatedBool) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__FixedRepeatedString:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			// Ensure this field has a constant length of at least one.
@@ -1664,7 +1751,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			// Read the first entry manually because the tag is already
 			// stripped.
 			if err := ReadString(&r, &(&c.FixedRepeatedString)[0]); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1672,20 +1759,20 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			field := (&c.FixedRepeatedString)[1:]
 			for i := range field {
 				if !HasPrefix(r.B, canotoTag_SpecFuzzer__FixedRepeatedString) {
-					return ErrUnknownField
+					return UnmarshalResult{}, ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_SpecFuzzer__FixedRepeatedString):]
 				if err := ReadString(&r, &field[i]); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 				isZero = isZero && len(field[i]) == 0
 			}
 			if isZero {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__FixedRepeatedBytes:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			// Ensure this field has a constant length of at least one.
@@ -1694,7 +1781,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			// Read the first entry manually because the tag is already
 			// stripped.
 			if err := ReadBytes(&r, &(&c.FixedRepeatedBytes)[0]); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1702,20 +1789,20 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			field := (&c.FixedRepeatedBytes)[1:]
 			for i := range field {
 				if !HasPrefix(r.B, canotoTag_SpecFuzzer__FixedRepeatedBytes) {
-					return ErrUnknownField
+					return UnmarshalResult{}, ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_SpecFuzzer__FixedRepeatedBytes):]
 				if err := ReadBytes(&r, &field[i]); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 				isZero = isZero && len(field[i]) == 0
 			}
 			if isZero {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__FixedRepeatedFixedBytes:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			const (
@@ -1729,13 +1816,13 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			// stripped.
 			var length uint64
 			if err := ReadUint(&r, &length); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if length != expectedLengthUint64 {
-				return ErrInvalidLength
+				return UnmarshalResult{}, ErrInvalidLength
 			}
 			if expectedLength > len(r.B) {
-				return io.ErrUnexpectedEOF
+				return UnmarshalResult{}, io.ErrUnexpectedEOF
 			}
 
 			newB := r.B[expectedLength:]
@@ -1746,18 +1833,18 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			field := (&c.FixedRepeatedFixedBytes)[1:]
 			for i := range field {
 				if !HasPrefix(r.B, canotoTag_SpecFuzzer__FixedRepeatedFixedBytes) {
-					return ErrUnknownField
+					return UnmarshalResult{}, ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_SpecFuzzer__FixedRepeatedFixedBytes):]
 
 				if err := ReadUint(&r, &length); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 				if length != expectedLengthUint64 {
-					return ErrInvalidLength
+					return UnmarshalResult{}, ErrInvalidLength
 				}
 				if expectedLength > len(r.B) {
-					return io.ErrUnexpectedEOF
+					return UnmarshalResult{}, io.ErrUnexpectedEOF
 				}
 
 				newB := r.B[expectedLength:]
@@ -1765,11 +1852,11 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 				r.B = newB
 			}
 			if IsZero(c.FixedRepeatedFixedBytes) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__FixedRepeatedValue:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			// Ensure this field has a constant length of at least one.
@@ -1779,41 +1866,47 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			// stripped.
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			isZero := !HasNext(&msgReader)
 			if !isZero {
-				if err := (&(&c.FixedRepeatedValue)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				msgReader.Budget = r.Budget
+				result, err := (&(&c.FixedRepeatedValue)[0]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
 				}
+				r.Budget = result.Budget
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			field := (&c.FixedRepeatedValue)[1:]
 			for i := range field {
 				if !HasPrefix(r.B, canotoTag_SpecFuzzer__FixedRepeatedValue) {
-					return ErrUnknownField
+					return UnmarshalResult{}, ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_SpecFuzzer__FixedRepeatedValue):]
 				if err := ReadSubReader(&r, &msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 				if !HasNext(&msgReader) {
 					continue
 				}
 
-				if err := (&field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				msgReader.Budget = r.Budget
+				result, err := (&field[i]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
 				}
+				r.Budget = result.Budget
 				isZero = false
 			}
 			if isZero {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__FixedRepeatedPointer:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			// Ensure this field has a constant length of at least one.
@@ -1823,49 +1916,59 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			// stripped.
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			isZero := !HasNext(&msgReader)
 			if !isZero {
 				if err := UnwrapPointer(&msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
-				(&c.FixedRepeatedPointer)[0] = MakePointer((&c.FixedRepeatedPointer)[0])
-				if err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				if err := MakePointer(&r, &(&c.FixedRepeatedPointer)[0]); err != nil {
+					return UnmarshalResult{}, err
 				}
+				msgReader.Budget = r.Budget
+				result, err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
+				}
+				r.Budget = result.Budget
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			field := (&c.FixedRepeatedPointer)[1:]
 			for i := range field {
 				if !HasPrefix(r.B, canotoTag_SpecFuzzer__FixedRepeatedPointer) {
-					return ErrUnknownField
+					return UnmarshalResult{}, ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_SpecFuzzer__FixedRepeatedPointer):]
 				if err := ReadSubReader(&r, &msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 				if !HasNext(&msgReader) {
 					continue
 				}
 
 				if err := UnwrapPointer(&msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
-				field[i] = MakePointer(field[i])
-				if err := (field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				if err := MakePointer(&r, &field[i]); err != nil {
+					return UnmarshalResult{}, err
 				}
+				msgReader.Budget = r.Budget
+				result, err := (field[i]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
+				}
+				r.Budget = result.Budget
 				isZero = false
 			}
 			if isZero {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__FixedRepeatedOneOf:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			// Ensure this field has a constant length of at least one.
@@ -1875,49 +1978,59 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			// stripped.
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			isZero := !HasNext(&msgReader)
 			if !isZero {
 				if err := UnwrapPointer(&msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
-				(&c.FixedRepeatedOneOf)[0] = MakePointer((&c.FixedRepeatedOneOf)[0])
-				if err := ((&c.FixedRepeatedOneOf)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				if err := MakePointer(&r, &(&c.FixedRepeatedOneOf)[0]); err != nil {
+					return UnmarshalResult{}, err
 				}
+				msgReader.Budget = r.Budget
+				result, err := ((&c.FixedRepeatedOneOf)[0]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
+				}
+				r.Budget = result.Budget
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			field := (&c.FixedRepeatedOneOf)[1:]
 			for i := range field {
 				if !HasPrefix(r.B, canotoTag_SpecFuzzer__FixedRepeatedOneOf) {
-					return ErrUnknownField
+					return UnmarshalResult{}, ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_SpecFuzzer__FixedRepeatedOneOf):]
 				if err := ReadSubReader(&r, &msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 				if !HasNext(&msgReader) {
 					continue
 				}
 
 				if err := UnwrapPointer(&msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
-				field[i] = MakePointer(field[i])
-				if err := (field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				if err := MakePointer(&r, &field[i]); err != nil {
+					return UnmarshalResult{}, err
 				}
+				msgReader.Budget = r.Budget
+				result, err := (field[i]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
+				}
+				r.Budget = result.Budget
 				isZero = false
 			}
 			if isZero {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__FixedRepeatedRecursive:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			// Ensure this field has a constant length of at least one.
@@ -1927,49 +2040,59 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			// stripped.
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			isZero := !HasNext(&msgReader)
 			if !isZero {
 				if err := UnwrapPointer(&msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
-				(&c.FixedRepeatedRecursive)[0] = MakePointer((&c.FixedRepeatedRecursive)[0])
-				if err := ((&c.FixedRepeatedRecursive)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				if err := MakePointer(&r, &(&c.FixedRepeatedRecursive)[0]); err != nil {
+					return UnmarshalResult{}, err
 				}
+				msgReader.Budget = r.Budget
+				result, err := ((&c.FixedRepeatedRecursive)[0]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
+				}
+				r.Budget = result.Budget
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			field := (&c.FixedRepeatedRecursive)[1:]
 			for i := range field {
 				if !HasPrefix(r.B, canotoTag_SpecFuzzer__FixedRepeatedRecursive) {
-					return ErrUnknownField
+					return UnmarshalResult{}, ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_SpecFuzzer__FixedRepeatedRecursive):]
 				if err := ReadSubReader(&r, &msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 				if !HasNext(&msgReader) {
 					continue
 				}
 
 				if err := UnwrapPointer(&msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
-				field[i] = MakePointer(field[i])
-				if err := (field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				if err := MakePointer(&r, &field[i]); err != nil {
+					return UnmarshalResult{}, err
 				}
+				msgReader.Budget = r.Budget
+				result, err := (field[i]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
+				}
+				r.Budget = result.Budget
 				isZero = false
 			}
 			if isZero {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__FixedRepeatedValueRecursive:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			// Ensure this field has a constant length of at least one.
@@ -1979,53 +2102,63 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) error {
 			// stripped.
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 
 			isZero := !HasNext(&msgReader)
 			if !isZero {
 				if err := UnwrapPointer(&msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
-				(&c.FixedRepeatedValueRecursive)[0] = MakePointer((&c.FixedRepeatedValueRecursive)[0])
-				if err := ((&c.FixedRepeatedValueRecursive)[0]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				if err := MakePointer(&r, &(&c.FixedRepeatedValueRecursive)[0]); err != nil {
+					return UnmarshalResult{}, err
 				}
+				msgReader.Budget = r.Budget
+				result, err := ((&c.FixedRepeatedValueRecursive)[0]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
+				}
+				r.Budget = result.Budget
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
 			field := (&c.FixedRepeatedValueRecursive)[1:]
 			for i := range field {
 				if !HasPrefix(r.B, canotoTag_SpecFuzzer__FixedRepeatedValueRecursive) {
-					return ErrUnknownField
+					return UnmarshalResult{}, ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_SpecFuzzer__FixedRepeatedValueRecursive):]
 				if err := ReadSubReader(&r, &msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
 				if !HasNext(&msgReader) {
 					continue
 				}
 
 				if err := UnwrapPointer(&msgReader); err != nil {
-					return err
+					return UnmarshalResult{}, err
 				}
-				field[i] = MakePointer(field[i])
-				if err := (field[i]).UnmarshalCanotoFrom(msgReader); err != nil {
-					return err
+				if err := MakePointer(&r, &field[i]); err != nil {
+					return UnmarshalResult{}, err
 				}
+				msgReader.Budget = r.Budget
+				result, err := (field[i]).UnmarshalCanotoFrom(msgReader)
+				if err != nil {
+					return UnmarshalResult{}, err
+				}
+				r.Budget = result.Budget
 				isZero = false
 			}
 			if isZero {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		default:
-			return ErrUnknownField
+			return UnmarshalResult{}, ErrUnknownField
 		}
 
 		minField = field + 1
 	}
-	return nil
+	return UnmarshalResult{Budget: r.Budget}, nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in
@@ -3024,7 +3157,8 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanoto(bytes []byte) error {
 	r := Reader{
 		B: bytes,
 	}
-	return c.UnmarshalCanotoFrom(r)
+	_, err := c.UnmarshalCanotoFrom(r)
+	return err
 }
 
 // UnmarshalCanotoFrom populates the struct from a [Reader]. Most users
@@ -3032,8 +3166,9 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanoto(bytes []byte) error {
 //
 // During parsing, the canoto cache is saved.
 //
-// This function enables configuration of reader options.
-func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) error {
+// This function enables configuration of reader options. If an error is
+// returned, the [UnmarshalResult] is unspecified.
+func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 	// Zero the struct before unmarshaling.
 	*c = LargestFieldNumber[T1]{}
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
@@ -3042,31 +3177,31 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) error {
 	for HasNext(&r) {
 		field, wireType, err := ReadTag(&r)
 		if err != nil {
-			return err
+			return UnmarshalResult{}, err
 		}
 		if field < minField {
-			return ErrInvalidFieldOrder
+			return UnmarshalResult{}, ErrInvalidFieldOrder
 		}
 
 		switch field {
 		case canotoNumber_LargestFieldNumber__Uint:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadUint(&r, &c.Uint); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.Uint) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		default:
-			return ErrUnknownField
+			return UnmarshalResult{}, ErrUnknownField
 		}
 
 		minField = field + 1
 	}
-	return nil
+	return UnmarshalResult{Budget: r.Budget}, nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in
@@ -3168,7 +3303,8 @@ func (c *SpecFuzzerPointer) UnmarshalCanoto(bytes []byte) error {
 	r := Reader{
 		B: bytes,
 	}
-	return c.UnmarshalCanotoFrom(r)
+	_, err := c.UnmarshalCanotoFrom(r)
+	return err
 }
 
 // UnmarshalCanotoFrom populates the struct from a [Reader]. Most users
@@ -3176,8 +3312,9 @@ func (c *SpecFuzzerPointer) UnmarshalCanoto(bytes []byte) error {
 //
 // During parsing, the canoto cache is saved.
 //
-// This function enables configuration of reader options.
-func (c *SpecFuzzerPointer) UnmarshalCanotoFrom(r Reader) error {
+// This function enables configuration of reader options. If an error is
+// returned, the [UnmarshalResult] is unspecified.
+func (c *SpecFuzzerPointer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 	// Zero the struct before unmarshaling.
 	*c = SpecFuzzerPointer{}
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
@@ -3186,36 +3323,39 @@ func (c *SpecFuzzerPointer) UnmarshalCanotoFrom(r Reader) error {
 	for HasNext(&r) {
 		field, wireType, err := ReadTag(&r)
 		if err != nil {
-			return err
+			return UnmarshalResult{}, err
 		}
 		if field < minField {
-			return ErrInvalidFieldOrder
+			return UnmarshalResult{}, ErrInvalidFieldOrder
 		}
 
 		switch field {
 		case canotoNumber_SpecFuzzerPointer__Value:
 			if wireType != Len {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if !HasNext(&msgReader) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 
-			if err := (&c.Value).UnmarshalCanotoFrom(msgReader); err != nil {
-				return err
+			msgReader.Budget = r.Budget
+			result, err := (&c.Value).UnmarshalCanotoFrom(msgReader)
+			if err != nil {
+				return UnmarshalResult{}, err
 			}
+			r.Budget = result.Budget
 		default:
-			return ErrUnknownField
+			return UnmarshalResult{}, ErrUnknownField
 		}
 
 		minField = field + 1
 	}
-	return nil
+	return UnmarshalResult{Budget: r.Budget}, nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in
@@ -3380,7 +3520,8 @@ func (c *OneOf) UnmarshalCanoto(bytes []byte) error {
 	r := Reader{
 		B: bytes,
 	}
-	return c.UnmarshalCanotoFrom(r)
+	_, err := c.UnmarshalCanotoFrom(r)
+	return err
 }
 
 // UnmarshalCanotoFrom populates the struct from a [Reader]. Most users
@@ -3388,8 +3529,9 @@ func (c *OneOf) UnmarshalCanoto(bytes []byte) error {
 //
 // During parsing, the canoto cache is saved.
 //
-// This function enables configuration of reader options.
-func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
+// This function enables configuration of reader options. If an error is
+// returned, the [UnmarshalResult] is unspecified.
+func (c *OneOf) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 	// Zero the struct before unmarshaling.
 	*c = OneOf{}
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
@@ -3398,94 +3540,94 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) error {
 	for HasNext(&r) {
 		field, wireType, err := ReadTag(&r)
 		if err != nil {
-			return err
+			return UnmarshalResult{}, err
 		}
 		if field < minField {
-			return ErrInvalidFieldOrder
+			return UnmarshalResult{}, ErrInvalidFieldOrder
 		}
 
 		switch field {
 		case canotoNumber_OneOf__A1:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 			atomic.StoreUint32(&c.canotoData.AOneOf, canotoNumber_OneOf__A1)
 
 			if err := ReadInt(&r, &c.A1); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.A1) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_OneOf__B1:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 			atomic.StoreUint32(&c.canotoData.BOneOf, canotoNumber_OneOf__B1)
 
 			if err := ReadInt(&r, &c.B1); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.B1) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_OneOf__B2:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 			if atomic.SwapUint32(&c.canotoData.BOneOf, canotoNumber_OneOf__B2) != 0 {
-				return ErrDuplicateOneOf
+				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
 			if err := ReadInt(&r, &c.B2); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.B2) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_OneOf__C:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadInt(&r, &c.C); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.C) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_OneOf__D:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
 			if err := ReadInt(&r, &c.D); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.D) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_OneOf__A2:
 			if wireType != Varint {
-				return ErrUnexpectedWireType
+				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 			if atomic.SwapUint32(&c.canotoData.AOneOf, canotoNumber_OneOf__A2) != 0 {
-				return ErrDuplicateOneOf
+				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
 			if err := ReadInt(&r, &c.A2); err != nil {
-				return err
+				return UnmarshalResult{}, err
 			}
 			if IsZero(c.A2) {
-				return ErrZeroValue
+				return UnmarshalResult{}, ErrZeroValue
 			}
 		default:
-			return ErrUnknownField
+			return UnmarshalResult{}, ErrUnknownField
 		}
 
 		minField = field + 1
 	}
-	return nil
+	return UnmarshalResult{Budget: r.Budget}, nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in
