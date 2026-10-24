@@ -77,6 +77,12 @@ const (
 	// SizePointerPresenceTag is the size of [PointerPresenceTag] in bytes.
 	SizePointerPresenceTag = uint64(len(PointerPresenceTag))
 
+	// DefaultMemoryLimit is the [Reader.MemoryRemaining] used by
+	// UnmarshalCanoto.
+	DefaultMemoryLimit uint64 = math.MaxUint64
+	// DefaultDepthLimit is the [Reader.DepthLimit] used by UnmarshalCanoto.
+	DefaultDepthLimit uint64 = math.MaxUint64
+
 	wireTypeLength = 3
 	wireTypeMask   = 0x07
 	maxTagLength   = 5
@@ -149,6 +155,9 @@ var (
 	// ErrMemoryLimitExceeded is returned when unmarshaling would allocate more
 	// memory than permitted by [Reader.MemoryRemaining].
 	ErrMemoryLimitExceeded = errors.New("memory limit exceeded")
+	// ErrDepthLimitExceeded is returned when messages are nested deeper than
+	// permitted by [Reader.DepthLimit].
+	ErrDepthLimitExceeded = errors.New("depth limit exceeded")
 )
 
 type (
@@ -250,15 +259,18 @@ type (
 		// strings and byte slices will alias the original input buffer,
 		// which must not be modified after unmarshaling.
 		Unsafe bool
-		// LimitMemory, when true, limits the memory allocated during
-		// unmarshaling to MemoryRemaining.
-		LimitMemory bool
 		// MemoryRemaining is the number of bytes that may be allocated during
-		// unmarshaling. It is only enforced if LimitMemory is true.
+		// unmarshaling.
 		//
 		// Each allocation is charged the in-memory size of the allocated value,
 		// which may vary between builds.
 		MemoryRemaining uint64
+		// DepthLimit is the number of nested messages that may be read.
+		//
+		// The stack used by nested messages is not charged against
+		// MemoryRemaining, so DepthLimit should be limited when unmarshaling
+		// recursive messages from untrusted input.
+		DepthLimit uint64
 		// Context is a user-defined value that can be used to pass additional
 		// state during the unmarshaling process.
 		Context any
@@ -406,12 +418,8 @@ func (s SizeEnum) shift() (shift uint64, mask uint64, ok bool) {
 }
 
 // UseMemory charges n bytes against [Reader.MemoryRemaining]. If the remaining
-// memory is insufficient, [ErrMemoryLimitExceeded] is returned. If
-// [Reader.LimitMemory] is false, UseMemory is a no-op.
+// memory is insufficient, [ErrMemoryLimitExceeded] is returned.
 func UseMemory(r *Reader, n uint64) error {
-	if !r.LimitMemory {
-		return nil
-	}
 	if n > r.MemoryRemaining {
 		return ErrMemoryLimitExceeded
 	}
@@ -422,9 +430,6 @@ func UseMemory(r *Reader, n uint64) error {
 // UseSliceMemory charges the memory of a slice of length elements of type E,
 // as [UseMemory] does.
 func UseSliceMemory[E any](r *Reader, length uint64) error {
-	if !r.LimitMemory {
-		return nil
-	}
 	var zero E
 	hi, total := bits.Mul64(length, uint64(unsafe.Sizeof(zero)))
 	if hi != 0 {
@@ -1288,8 +1293,14 @@ func SkipBytes(r *Reader) error {
 
 // ReadSubReader reads a length-prefixed byte slice from r and sets sub to a
 // Reader over those bytes. The bytes are never copied, regardless of r.Unsafe.
-// All configuration of sub is inherited from r.
+//
+// All configuration of sub is inherited from r, except that sub.DepthLimit is
+// one less than r.DepthLimit. If r.DepthLimit is 0, [ErrDepthLimitExceeded] is
+// returned.
 func ReadSubReader(r *Reader, sub *Reader) error {
+	if r.DepthLimit == 0 {
+		return ErrDepthLimitExceeded
+	}
 	var length uint64
 	if err := ReadUint(r, &length); err != nil {
 		return err
@@ -1305,8 +1316,8 @@ func ReadSubReader(r *Reader, sub *Reader) error {
 
 	sub.B = b[:n]
 	sub.Unsafe = r.Unsafe
-	sub.LimitMemory = r.LimitMemory
 	sub.MemoryRemaining = r.MemoryRemaining
+	sub.DepthLimit = r.DepthLimit - 1
 	sub.Context = r.Context
 	r.B = b[n:]
 	return nil
@@ -1321,8 +1332,8 @@ func AppendBytes[T Bytes](w *Writer, v T) {
 }
 
 // MakePointer sets *p to a new pointer after charging its size against the
-// remaining memory of r. It is equivalent to `*p = new(T)` when r does not
-// limit memory.
+// remaining memory of r. Other than charging memory, it is equivalent to
+// `*p = new(T)`.
 //
 // This function is useful to use in auto-generated code, when the type of a
 // variable is unknown.
@@ -1336,8 +1347,8 @@ func MakePointer[T any](r *Reader, p **T) error {
 }
 
 // MakeSlice sets *s to a new slice with the given length after charging its
-// size against the remaining memory of r. It is equivalent to
-// `*s = make(S, length)` when r does not limit memory.
+// size against the remaining memory of r. Other than charging memory, it is
+// equivalent to `*s = make(S, length)`.
 //
 // This function is useful to use in auto-generated code, when the type of a
 // variable is unknown.
@@ -1393,7 +1404,9 @@ func unsafeString(b []byte) string {
 func Unmarshal(s *Spec, b []byte) (Any, error) {
 	s.CacheCanoto()
 	r := Reader{
-		B: b,
+		B:               b,
+		MemoryRemaining: DefaultMemoryLimit,
+		DepthLimit:      DefaultDepthLimit,
 	}
 	return s.unmarshal(&r, nil)
 }
