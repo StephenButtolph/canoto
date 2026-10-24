@@ -642,15 +642,14 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
-			if err := MakePointer(&r, &c.TypeMessage); err != nil {
-				return UnmarshalResult{}, err
-			}
-
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return UnmarshalResult{}, err
 			}
 
+			if err := MakePointer(&msgReader, &c.TypeMessage); err != nil {
+				return UnmarshalResult{}, err
+			}
 			result, err := (c.TypeMessage).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return UnmarshalResult{}, err

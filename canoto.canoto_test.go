@@ -928,15 +928,14 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := MakePointer(&r, &c.Pointer); err != nil {
-				return UnmarshalResult{}, err
-			}
-
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return UnmarshalResult{}, err
 			}
 
+			if err := MakePointer(&msgReader, &c.Pointer); err != nil {
+				return UnmarshalResult{}, err
+			}
 			result, err := (c.Pointer).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return UnmarshalResult{}, err
@@ -947,15 +946,14 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := MakePointer(&r, &c.OneOf); err != nil {
-				return UnmarshalResult{}, err
-			}
-
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return UnmarshalResult{}, err
 			}
 
+			if err := MakePointer(&msgReader, &c.OneOf); err != nil {
+				return UnmarshalResult{}, err
+			}
 			result, err := (c.OneOf).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return UnmarshalResult{}, err
@@ -966,15 +964,14 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := MakePointer(&r, &c.Recursive); err != nil {
-				return UnmarshalResult{}, err
-			}
-
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return UnmarshalResult{}, err
 			}
 
+			if err := MakePointer(&msgReader, &c.Recursive); err != nil {
+				return UnmarshalResult{}, err
+			}
 			result, err := (c.Recursive).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return UnmarshalResult{}, err
@@ -985,15 +982,14 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := MakePointer(&r, &c.ValueRecursive); err != nil {
-				return UnmarshalResult{}, err
-			}
-
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return UnmarshalResult{}, err
 			}
 
+			if err := MakePointer(&msgReader, &c.ValueRecursive); err != nil {
+				return UnmarshalResult{}, err
+			}
 			result, err := (c.ValueRecursive).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return UnmarshalResult{}, err
@@ -1361,10 +1357,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
-				if err := MakePointer(&r, &field[0]); err != nil {
+				if err := MakePointer(&msgReader, &field[0]); err != nil {
 					return UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (field[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -1385,10 +1380,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
-				if err := MakePointer(&r, &additionalField[i]); err != nil {
+				if err := MakePointer(&msgReader, &additionalField[i]); err != nil {
 					return UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (additionalField[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -1422,10 +1416,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
-				if err := MakePointer(&r, &field[0]); err != nil {
+				if err := MakePointer(&msgReader, &field[0]); err != nil {
 					return UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (field[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -1446,10 +1439,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
-				if err := MakePointer(&r, &additionalField[i]); err != nil {
+				if err := MakePointer(&msgReader, &additionalField[i]); err != nil {
 					return UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (additionalField[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -1483,10 +1475,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
-				if err := MakePointer(&r, &field[0]); err != nil {
+				if err := MakePointer(&msgReader, &field[0]); err != nil {
 					return UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (field[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -1507,10 +1498,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
-				if err := MakePointer(&r, &additionalField[i]); err != nil {
+				if err := MakePointer(&msgReader, &additionalField[i]); err != nil {
 					return UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (additionalField[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -1544,10 +1534,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
-				if err := MakePointer(&r, &field[0]); err != nil {
+				if err := MakePointer(&msgReader, &field[0]); err != nil {
 					return UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (field[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -1568,10 +1557,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
-				if err := MakePointer(&r, &additionalField[i]); err != nil {
+				if err := MakePointer(&msgReader, &additionalField[i]); err != nil {
 					return UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (additionalField[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -1919,10 +1907,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
-				if err := MakePointer(&r, &(&c.FixedRepeatedPointer)[0]); err != nil {
+				if err := MakePointer(&msgReader, &(&c.FixedRepeatedPointer)[0]); err != nil {
 					return UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -1947,10 +1934,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
-				if err := MakePointer(&r, &field[i]); err != nil {
+				if err := MakePointer(&msgReader, &field[i]); err != nil {
 					return UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (field[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -1981,10 +1967,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
-				if err := MakePointer(&r, &(&c.FixedRepeatedOneOf)[0]); err != nil {
+				if err := MakePointer(&msgReader, &(&c.FixedRepeatedOneOf)[0]); err != nil {
 					return UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := ((&c.FixedRepeatedOneOf)[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -2009,10 +1994,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
-				if err := MakePointer(&r, &field[i]); err != nil {
+				if err := MakePointer(&msgReader, &field[i]); err != nil {
 					return UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (field[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -2043,10 +2027,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
-				if err := MakePointer(&r, &(&c.FixedRepeatedRecursive)[0]); err != nil {
+				if err := MakePointer(&msgReader, &(&c.FixedRepeatedRecursive)[0]); err != nil {
 					return UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := ((&c.FixedRepeatedRecursive)[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -2071,10 +2054,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
-				if err := MakePointer(&r, &field[i]); err != nil {
+				if err := MakePointer(&msgReader, &field[i]); err != nil {
 					return UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (field[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -2105,10 +2087,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
-				if err := MakePointer(&r, &(&c.FixedRepeatedValueRecursive)[0]); err != nil {
+				if err := MakePointer(&msgReader, &(&c.FixedRepeatedValueRecursive)[0]); err != nil {
 					return UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := ((&c.FixedRepeatedValueRecursive)[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -2133,10 +2114,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
-				if err := MakePointer(&r, &field[i]); err != nil {
+				if err := MakePointer(&msgReader, &field[i]); err != nil {
 					return UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (field[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err

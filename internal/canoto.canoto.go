@@ -1049,15 +1049,14 @@ func (c *Node) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, err
 			}
 			atomic.StoreUint32(&c.canotoData.OneOfOneOf, canotoNumber_Node__Next)
 
-			if err := canoto.MakePointer(&r, &c.Next); err != nil {
-				return canoto.UnmarshalResult{}, err
-			}
-
 			var msgReader canoto.Reader
 			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
 
+			if err := canoto.MakePointer(&msgReader, &c.Next); err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
 			result, err := (c.Next).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return canoto.UnmarshalResult{}, err
@@ -1236,15 +1235,14 @@ func (c *RecursiveA) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResul
 				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.MakePointer(&r, &c.Next); err != nil {
-				return canoto.UnmarshalResult{}, err
-			}
-
 			var msgReader canoto.Reader
 			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
 
+			if err := canoto.MakePointer(&msgReader, &c.Next); err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
 			result, err := (c.Next).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return canoto.UnmarshalResult{}, err
@@ -1400,15 +1398,14 @@ func (c *RecursiveB) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResul
 				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.MakePointer(&r, &c.Next); err != nil {
-				return canoto.UnmarshalResult{}, err
-			}
-
 			var msgReader canoto.Reader
 			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
 
+			if err := canoto.MakePointer(&msgReader, &c.Next); err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
 			result, err := (c.Next).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return canoto.UnmarshalResult{}, err
@@ -1738,15 +1735,14 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) (canoto.Unma
 				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.MakePointer(&r, &c.Pointer); err != nil {
-				return canoto.UnmarshalResult{}, err
-			}
-
 			var msgReader canoto.Reader
 			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
 
+			if err := canoto.MakePointer(&msgReader, &c.Pointer); err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
 			result, err := T2(c.Pointer).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return canoto.UnmarshalResult{}, err
@@ -1779,10 +1775,9 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) (canoto.Unma
 				if err := canoto.UnwrapPointer(&msgReader); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				if err := canoto.MakePointer(&r, &field[0]); err != nil {
+				if err := canoto.MakePointer(&msgReader, &field[0]); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := T2(field[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return canoto.UnmarshalResult{}, err
@@ -1803,10 +1798,9 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) (canoto.Unma
 				if err := canoto.UnwrapPointer(&msgReader); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				if err := canoto.MakePointer(&r, &additionalField[i]); err != nil {
+				if err := canoto.MakePointer(&msgReader, &additionalField[i]); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := T2(additionalField[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return canoto.UnmarshalResult{}, err
@@ -1833,10 +1827,9 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) (canoto.Unma
 				if err := canoto.UnwrapPointer(&msgReader); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				if err := canoto.MakePointer(&r, &(&c.FixedRepeatedPointer)[0]); err != nil {
+				if err := canoto.MakePointer(&msgReader, &(&c.FixedRepeatedPointer)[0]); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := T2((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return canoto.UnmarshalResult{}, err
@@ -1861,10 +1854,9 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) (canoto.Unma
 				if err := canoto.UnwrapPointer(&msgReader); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				if err := canoto.MakePointer(&r, &field[i]); err != nil {
+				if err := canoto.MakePointer(&msgReader, &field[i]); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := T2(field[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return canoto.UnmarshalResult{}, err
@@ -2345,15 +2337,14 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) (canot
 				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.MakePointer(&r, &c.Pointer); err != nil {
-				return canoto.UnmarshalResult{}, err
-			}
-
 			var msgReader canoto.Reader
 			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
 
+			if err := canoto.MakePointer(&msgReader, &c.Pointer); err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
 			result, err := (c.Pointer).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return canoto.UnmarshalResult{}, err
@@ -2386,10 +2377,9 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) (canot
 				if err := canoto.UnwrapPointer(&msgReader); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				if err := canoto.MakePointer(&r, &field[0]); err != nil {
+				if err := canoto.MakePointer(&msgReader, &field[0]); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (field[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return canoto.UnmarshalResult{}, err
@@ -2410,10 +2400,9 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) (canot
 				if err := canoto.UnwrapPointer(&msgReader); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				if err := canoto.MakePointer(&r, &additionalField[i]); err != nil {
+				if err := canoto.MakePointer(&msgReader, &additionalField[i]); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (additionalField[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return canoto.UnmarshalResult{}, err
@@ -2440,10 +2429,9 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) (canot
 				if err := canoto.UnwrapPointer(&msgReader); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				if err := canoto.MakePointer(&r, &(&c.FixedRepeatedPointer)[0]); err != nil {
+				if err := canoto.MakePointer(&msgReader, &(&c.FixedRepeatedPointer)[0]); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return canoto.UnmarshalResult{}, err
@@ -2468,10 +2456,9 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) (canot
 				if err := canoto.UnwrapPointer(&msgReader); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				if err := canoto.MakePointer(&r, &field[i]); err != nil {
+				if err := canoto.MakePointer(&msgReader, &field[i]); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (field[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return canoto.UnmarshalResult{}, err
@@ -2832,15 +2819,14 @@ func (c *Embedded) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult,
 				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.MakePointer(&r, &c.LargestFieldNumber); err != nil {
-				return canoto.UnmarshalResult{}, err
-			}
-
 			var msgReader canoto.Reader
 			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
 
+			if err := canoto.MakePointer(&msgReader, &c.LargestFieldNumber); err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
 			result, err := (c.LargestFieldNumber).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return canoto.UnmarshalResult{}, err
@@ -2851,15 +2837,14 @@ func (c *Embedded) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult,
 				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.MakePointer(&r, &c.GenericField); err != nil {
-				return canoto.UnmarshalResult{}, err
-			}
-
 			var msgReader canoto.Reader
 			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
 
+			if err := canoto.MakePointer(&msgReader, &c.GenericField); err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
 			result, err := (c.GenericField).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return canoto.UnmarshalResult{}, err
@@ -2870,15 +2855,14 @@ func (c *Embedded) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult,
 				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.MakePointer(&r, &c.Int); err != nil {
-				return canoto.UnmarshalResult{}, err
-			}
-
 			var msgReader canoto.Reader
 			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
 
+			if err := canoto.MakePointer(&msgReader, &c.Int); err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
 			result, err := (c.Int).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return canoto.UnmarshalResult{}, err
@@ -5262,15 +5246,14 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.MakePointer(&r, &c.Pointer); err != nil {
-				return canoto.UnmarshalResult{}, err
-			}
-
 			var msgReader canoto.Reader
 			if err := canoto.ReadSubReader(&r, &msgReader); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
 
+			if err := canoto.MakePointer(&msgReader, &c.Pointer); err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
 			result, err := (c.Pointer).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return canoto.UnmarshalResult{}, err
@@ -5303,10 +5286,9 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 				if err := canoto.UnwrapPointer(&msgReader); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				if err := canoto.MakePointer(&r, &field[0]); err != nil {
+				if err := canoto.MakePointer(&msgReader, &field[0]); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (field[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return canoto.UnmarshalResult{}, err
@@ -5327,10 +5309,9 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 				if err := canoto.UnwrapPointer(&msgReader); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				if err := canoto.MakePointer(&r, &additionalField[i]); err != nil {
+				if err := canoto.MakePointer(&msgReader, &additionalField[i]); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (additionalField[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return canoto.UnmarshalResult{}, err
@@ -5357,10 +5338,9 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 				if err := canoto.UnwrapPointer(&msgReader); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				if err := canoto.MakePointer(&r, &(&c.FixedRepeatedPointer)[0]); err != nil {
+				if err := canoto.MakePointer(&msgReader, &(&c.FixedRepeatedPointer)[0]); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := ((&c.FixedRepeatedPointer)[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return canoto.UnmarshalResult{}, err
@@ -5385,10 +5365,9 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 				if err := canoto.UnwrapPointer(&msgReader); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				if err := canoto.MakePointer(&r, &field[i]); err != nil {
+				if err := canoto.MakePointer(&msgReader, &field[i]); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := (field[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return canoto.UnmarshalResult{}, err

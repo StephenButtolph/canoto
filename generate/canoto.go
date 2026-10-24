@@ -1209,15 +1209,14 @@ func makeUnmarshal(m message) string {
 				return ${selector}UnmarshalResult{}, ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			if err := ${selector}MakePointer(&r, &c.${fieldName}); err != nil {
-				return ${selector}UnmarshalResult{}, err
-			}
-
 			var msgReader ${selector}Reader
 			if err := ${selector}ReadSubReader(&r, &msgReader); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
 
+			if err := ${selector}MakePointer(&msgReader, &c.${fieldName}); err != nil {
+				return ${selector}UnmarshalResult{}, err
+			}
 			result, err := ${genericTypeCast}(c.${fieldName}).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return ${selector}UnmarshalResult{}, err
@@ -1251,10 +1250,9 @@ func makeUnmarshal(m message) string {
 				if err := ${selector}UnwrapPointer(&msgReader); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				if err := ${selector}MakePointer(&r, &field[0]); err != nil {
+				if err := ${selector}MakePointer(&msgReader, &field[0]); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := ${genericTypeCast}(field[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
@@ -1275,10 +1273,9 @@ func makeUnmarshal(m message) string {
 				if err := ${selector}UnwrapPointer(&msgReader); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				if err := ${selector}MakePointer(&r, &additionalField[i]); err != nil {
+				if err := ${selector}MakePointer(&msgReader, &additionalField[i]); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := ${genericTypeCast}(additionalField[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
@@ -1306,10 +1303,9 @@ func makeUnmarshal(m message) string {
 				if err := ${selector}UnwrapPointer(&msgReader); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				if err := ${selector}MakePointer(&r, &(&c.${fieldName})[0]); err != nil {
+				if err := ${selector}MakePointer(&msgReader, &(&c.${fieldName})[0]); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := ${genericTypeCast}((&c.${fieldName})[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
@@ -1334,10 +1330,9 @@ func makeUnmarshal(m message) string {
 				if err := ${selector}UnwrapPointer(&msgReader); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				if err := ${selector}MakePointer(&r, &field[i]); err != nil {
+				if err := ${selector}MakePointer(&msgReader, &field[i]); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				msgReader.Budget = r.Budget
 				result, err := ${genericTypeCast}(field[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
