@@ -1633,10 +1633,11 @@ func TestLimitMemory(t *testing.T) {
 }
 
 func FuzzLimitMemory(f *testing.F) {
-	f.Fuzz(func(t *testing.T, b []byte) {
+	f.Fuzz(func(t *testing.T, b []byte, unsafe bool) {
 		var unlimited Scalars
 		result, err := unlimited.UnmarshalCanotoFrom(canoto.Reader{
 			B:               b,
+			Unsafe:          unsafe,
 			LimitMemory:     true,
 			MemoryRemaining: math.MaxUint64,
 		})
@@ -1648,6 +1649,7 @@ func FuzzLimitMemory(f *testing.F) {
 		var exact Scalars
 		result, err = exact.UnmarshalCanotoFrom(canoto.Reader{
 			B:               b,
+			Unsafe:          unsafe,
 			LimitMemory:     true,
 			MemoryRemaining: used,
 		})
@@ -1660,6 +1662,7 @@ func FuzzLimitMemory(f *testing.F) {
 		}
 		_, err = exact.UnmarshalCanotoFrom(canoto.Reader{
 			B:               b,
+			Unsafe:          unsafe,
 			LimitMemory:     true,
 			MemoryRemaining: used - 1,
 		})
