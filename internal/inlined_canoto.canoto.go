@@ -54,7 +54,9 @@ func (*justAnInt) DescribeCanoto(...reflect.Type) *canoto.Spec {
 // During parsing, the canoto cache is saved.
 func (c *justAnInt) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
-		B: bytes,
+		B:               bytes,
+		MemoryRemaining: canoto.DefaultMemoryLimit,
+		DepthLimit:      canoto.DefaultDepthLimit,
 	}
 	_, err := c.UnmarshalCanotoFrom(r)
 	return err

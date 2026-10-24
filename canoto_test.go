@@ -357,7 +357,7 @@ func TestReadUints_uint32(t *testing.T) {
 		t.Run(test.hex, func(t *testing.T) {
 			require := require.New(t)
 
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			var got []uint32
 			length, err := ReadUints(r, &got)
 			require.NoError(err)
@@ -372,7 +372,7 @@ func TestReadUints_uint32(t *testing.T) {
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			_, err := ReadUints(r, new([]uint32))
 			require.ErrorIs(t, err, test.want)
 		})
@@ -393,7 +393,7 @@ func TestReadUints_uint64(t *testing.T) {
 		t.Run(test.hex, func(t *testing.T) {
 			require := require.New(t)
 
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			var got []uint64
 			length, err := ReadUints(r, &got)
 			require.NoError(err)
@@ -415,7 +415,7 @@ func TestReadUints_uint64(t *testing.T) {
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			_, err := ReadUints(r, new([]uint64))
 			require.ErrorIs(t, err, test.want)
 		})
@@ -441,7 +441,7 @@ func testReadUints[S ~[]E, E Uint](t *testing.T, data []byte) {
 	w := &Writer{}
 	AppendBytes(w, values.B)
 
-	r := &Reader{B: w.B}
+	r := &Reader{B: w.B, MemoryRemaining: DefaultMemoryLimit}
 	var got S
 	length, err := ReadUints(r, &got)
 	require.NoError(err)
@@ -450,7 +450,7 @@ func testReadUints[S ~[]E, E Uint](t *testing.T, data []byte) {
 	require.Empty(r.B)
 
 	// Dropping the last byte must invalidate the length.
-	r = &Reader{B: w.B[:len(w.B)-1]}
+	r = &Reader{B: w.B[:len(w.B)-1], MemoryRemaining: DefaultMemoryLimit}
 	_, err = ReadUints(r, &got)
 	require.ErrorIs(err, io.ErrUnexpectedEOF)
 }
@@ -482,7 +482,7 @@ func testAppendUints[S ~[]E, E Uint](t *testing.T, data []byte) {
 	prefixed := &Writer{}
 	AppendBytes(prefixed, w.B)
 
-	r := &Reader{B: prefixed.B}
+	r := &Reader{B: prefixed.B, MemoryRemaining: DefaultMemoryLimit}
 	var got S
 	_, err := ReadUints(r, &got)
 	require.NoError(err)
@@ -517,7 +517,7 @@ func testAppendInts[S ~[]E, E Int](t *testing.T, data []byte) {
 	prefixed := &Writer{}
 	AppendBytes(prefixed, w.B)
 
-	r := &Reader{B: prefixed.B}
+	r := &Reader{B: prefixed.B, MemoryRemaining: DefaultMemoryLimit}
 	var got S
 	_, err := ReadInts(r, &got)
 	require.NoError(err)
@@ -694,7 +694,7 @@ func TestReadInts_int32(t *testing.T) {
 		t.Run(test.hex, func(t *testing.T) {
 			require := require.New(t)
 
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			var got []int32
 			length, err := ReadInts(r, &got)
 			require.NoError(err)
@@ -709,7 +709,7 @@ func TestReadInts_int32(t *testing.T) {
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			_, err := ReadInts(r, new([]int32))
 			require.ErrorIs(t, err, test.want)
 		})
@@ -730,7 +730,7 @@ func TestReadInts_int64(t *testing.T) {
 		t.Run(test.hex, func(t *testing.T) {
 			require := require.New(t)
 
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			var got []int64
 			length, err := ReadInts(r, &got)
 			require.NoError(err)
@@ -752,7 +752,7 @@ func TestReadInts_int64(t *testing.T) {
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			_, err := ReadInts(r, new([]int64))
 			require.ErrorIs(t, err, test.want)
 		})
@@ -778,7 +778,7 @@ func testReadInts[S ~[]E, E Int](t *testing.T, data []byte) {
 	w := &Writer{}
 	AppendBytes(w, values.B)
 
-	r := &Reader{B: w.B}
+	r := &Reader{B: w.B, MemoryRemaining: DefaultMemoryLimit}
 	var got S
 	length, err := ReadInts(r, &got)
 	require.NoError(err)
@@ -787,7 +787,7 @@ func testReadInts[S ~[]E, E Int](t *testing.T, data []byte) {
 	require.Empty(r.B)
 
 	// Dropping the last byte must invalidate the length.
-	r = &Reader{B: w.B[:len(w.B)-1]}
+	r = &Reader{B: w.B[:len(w.B)-1], MemoryRemaining: DefaultMemoryLimit}
 	_, err = ReadInts(r, &got)
 	require.ErrorIs(err, io.ErrUnexpectedEOF)
 }
@@ -889,7 +889,7 @@ func TestReadFint32s_int32(t *testing.T) {
 		t.Run(test.hex, func(t *testing.T) {
 			require := require.New(t)
 
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			var got []int32
 			require.NoError(ReadFint32s(r, &got))
 			require.Equal(test.want, got)
@@ -908,7 +908,7 @@ func TestReadFint32s_uint32(t *testing.T) {
 		t.Run(test.hex, func(t *testing.T) {
 			require := require.New(t)
 
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			var got []uint32
 			require.NoError(ReadFint32s(r, &got))
 			require.Equal(test.want, got)
@@ -925,7 +925,7 @@ func TestReadFint32s_uint32(t *testing.T) {
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			err := ReadFint32s(r, new([]uint32))
 			require.ErrorIs(t, err, test.want)
 		})
@@ -949,14 +949,14 @@ func testReadFint32s[S ~[]E, E Int32](t *testing.T, data []byte) {
 	w := &Writer{}
 	AppendBytes(w, values.B)
 
-	r := &Reader{B: w.B}
+	r := &Reader{B: w.B, MemoryRemaining: DefaultMemoryLimit}
 	var got S
 	require.NoError(ReadFint32s(r, &got))
 	require.True(slices.Equal(nums, got))
 	require.Empty(r.B)
 
 	// Dropping the last byte must invalidate the length.
-	r = &Reader{B: w.B[:len(w.B)-1]}
+	r = &Reader{B: w.B[:len(w.B)-1], MemoryRemaining: DefaultMemoryLimit}
 	require.ErrorIs(ReadFint32s(r, &got), io.ErrUnexpectedEOF)
 }
 
@@ -1075,7 +1075,7 @@ func testAppendFint32s[S ~[]E, E Int32](t *testing.T, data []byte) {
 	AppendFint32s(w, nums)
 	require.Equal(expected.B, w.B)
 
-	r := &Reader{B: w.B}
+	r := &Reader{B: w.B, MemoryRemaining: DefaultMemoryLimit}
 	var got S
 	require.NoError(ReadFint32s(r, &got))
 	require.True(slices.Equal(nums, got))
@@ -1187,7 +1187,7 @@ func TestReadFint64s_int64(t *testing.T) {
 		t.Run(test.hex, func(t *testing.T) {
 			require := require.New(t)
 
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			var got []int64
 			require.NoError(ReadFint64s(r, &got))
 			require.Equal(test.want, got)
@@ -1206,7 +1206,7 @@ func TestReadFint64s_uint64(t *testing.T) {
 		t.Run(test.hex, func(t *testing.T) {
 			require := require.New(t)
 
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			var got []uint64
 			require.NoError(ReadFint64s(r, &got))
 			require.Equal(test.want, got)
@@ -1223,7 +1223,7 @@ func TestReadFint64s_uint64(t *testing.T) {
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			err := ReadFint64s(r, new([]uint64))
 			require.ErrorIs(t, err, test.want)
 		})
@@ -1247,14 +1247,14 @@ func testReadFint64s[S ~[]E, E Int64](t *testing.T, data []byte) {
 	w := &Writer{}
 	AppendBytes(w, values.B)
 
-	r := &Reader{B: w.B}
+	r := &Reader{B: w.B, MemoryRemaining: DefaultMemoryLimit}
 	var got S
 	require.NoError(ReadFint64s(r, &got))
 	require.True(slices.Equal(nums, got))
 	require.Empty(r.B)
 
 	// Dropping the last byte must invalidate the length.
-	r = &Reader{B: w.B[:len(w.B)-1]}
+	r = &Reader{B: w.B[:len(w.B)-1], MemoryRemaining: DefaultMemoryLimit}
 	require.ErrorIs(ReadFint64s(r, &got), io.ErrUnexpectedEOF)
 }
 
@@ -1373,7 +1373,7 @@ func testAppendFint64s[S ~[]E, E Int64](t *testing.T, data []byte) {
 	AppendFint64s(w, nums)
 	require.Equal(expected.B, w.B)
 
-	r := &Reader{B: w.B}
+	r := &Reader{B: w.B, MemoryRemaining: DefaultMemoryLimit}
 	var got S
 	require.NoError(ReadFint64s(r, &got))
 	require.True(slices.Equal(nums, got))
@@ -1440,7 +1440,7 @@ func TestReadBools(t *testing.T) {
 		t.Run(test.hex, func(t *testing.T) {
 			require := require.New(t)
 
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			var got []bool
 			require.NoError(ReadBools(r, &got))
 			require.Equal(test.want, got)
@@ -1457,7 +1457,7 @@ func TestReadBools(t *testing.T) {
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			err := ReadBools(r, new([]bool))
 			require.ErrorIs(t, err, test.want)
 		})
@@ -1479,14 +1479,14 @@ func FuzzReadBools(f *testing.F) {
 		w := &Writer{}
 		AppendBytes(w, values.B)
 
-		r := &Reader{B: w.B}
+		r := &Reader{B: w.B, MemoryRemaining: DefaultMemoryLimit}
 		var got []bool
 		require.NoError(ReadBools(r, &got))
 		require.True(slices.Equal(nums, got))
 		require.Empty(r.B)
 
 		// Dropping the last byte must invalidate the length.
-		r = &Reader{B: w.B[:len(w.B)-1]}
+		r = &Reader{B: w.B[:len(w.B)-1], MemoryRemaining: DefaultMemoryLimit}
 		require.ErrorIs(ReadBools(r, &got), io.ErrUnexpectedEOF)
 	})
 }
@@ -1607,7 +1607,7 @@ func FuzzAppendBools(f *testing.F) {
 		AppendBools(w, nums)
 		require.Equal(expected.B, w.B)
 
-		r := &Reader{B: w.B}
+		r := &Reader{B: w.B, MemoryRemaining: DefaultMemoryLimit}
 		var got []bool
 		require.NoError(ReadBools(r, &got))
 		require.True(slices.Equal(nums, got))
@@ -1668,7 +1668,7 @@ func TestReadString(t *testing.T) {
 		t.Run(test.hex, func(t *testing.T) {
 			require := require.New(t)
 
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			var got string
 			require.NoError(ReadString(r, &got))
 			require.Equal(test.want, got)
@@ -1685,7 +1685,7 @@ func TestReadString(t *testing.T) {
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			err := ReadString(r, new(string))
 			require.ErrorIs(t, err, test.want)
 		})
@@ -1701,7 +1701,7 @@ func TestReadBytes(t *testing.T) {
 		t.Run(test.hex, func(t *testing.T) {
 			require := require.New(t)
 
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			var got []byte
 			require.NoError(ReadBytes(r, &got))
 			require.Equal(test.want, got)
@@ -1717,7 +1717,7 @@ func TestReadBytes(t *testing.T) {
 	}
 	for _, test := range invalidTests {
 		t.Run(test.hex, func(t *testing.T) {
-			r := &Reader{B: test.Bytes(t)}
+			r := &Reader{B: test.Bytes(t), MemoryRemaining: DefaultMemoryLimit}
 			err := ReadBytes(r, new([]byte))
 			require.ErrorIs(t, err, test.want)
 		})
@@ -1735,7 +1735,7 @@ func FuzzAppendBytes_string(f *testing.F) {
 		w := &Writer{}
 		AppendBytes(w, v)
 
-		r := &Reader{B: w.B}
+		r := &Reader{B: w.B, MemoryRemaining: DefaultMemoryLimit}
 		var got string
 		require.NoError(ReadString(r, &got))
 		require.Equal(v, got)
@@ -1750,7 +1750,7 @@ func FuzzAppendBytes_bytes(f *testing.F) {
 		w := &Writer{}
 		AppendBytes(w, v)
 
-		r := &Reader{B: w.B}
+		r := &Reader{B: w.B, MemoryRemaining: DefaultMemoryLimit}
 		var got []byte
 		require.NoError(ReadBytes(r, &got))
 		require.Equal(v, got)

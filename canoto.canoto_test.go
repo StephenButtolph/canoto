@@ -687,7 +687,9 @@ func (*SpecFuzzer) DescribeCanoto(types ...reflect.Type) *Spec {
 // During parsing, the canoto cache is saved.
 func (c *SpecFuzzer) UnmarshalCanoto(bytes []byte) error {
 	r := Reader{
-		B: bytes,
+		B:               bytes,
+		MemoryRemaining: DefaultMemoryLimit,
+		DepthLimit:      DefaultDepthLimit,
 	}
 	_, err := c.UnmarshalCanotoFrom(r)
 	return err
@@ -3134,7 +3136,9 @@ func (*LargestFieldNumber[T1]) DescribeCanoto(...reflect.Type) *Spec {
 // During parsing, the canoto cache is saved.
 func (c *LargestFieldNumber[T1]) UnmarshalCanoto(bytes []byte) error {
 	r := Reader{
-		B: bytes,
+		B:               bytes,
+		MemoryRemaining: DefaultMemoryLimit,
+		DepthLimit:      DefaultDepthLimit,
 	}
 	_, err := c.UnmarshalCanotoFrom(r)
 	return err
@@ -3279,7 +3283,9 @@ func (*SpecFuzzerPointer) DescribeCanoto(types ...reflect.Type) *Spec {
 // During parsing, the canoto cache is saved.
 func (c *SpecFuzzerPointer) UnmarshalCanoto(bytes []byte) error {
 	r := Reader{
-		B: bytes,
+		B:               bytes,
+		MemoryRemaining: DefaultMemoryLimit,
+		DepthLimit:      DefaultDepthLimit,
 	}
 	_, err := c.UnmarshalCanotoFrom(r)
 	return err
@@ -3494,7 +3500,9 @@ func (*OneOf) DescribeCanoto(...reflect.Type) *Spec {
 // During parsing, the canoto cache is saved.
 func (c *OneOf) UnmarshalCanoto(bytes []byte) error {
 	r := Reader{
-		B: bytes,
+		B:               bytes,
+		MemoryRemaining: DefaultMemoryLimit,
+		DepthLimit:      DefaultDepthLimit,
 	}
 	_, err := c.UnmarshalCanotoFrom(r)
 	return err

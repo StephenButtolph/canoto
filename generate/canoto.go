@@ -159,7 +159,9 @@ ${spec}	}
 // During parsing, the canoto cache is saved.
 func (c *${structName}${generics}) UnmarshalCanoto(bytes []byte) error {
 	r := ${selector}Reader{
-		B: bytes,
+		B:               bytes,
+		MemoryRemaining: ${selector}DefaultMemoryLimit,
+		DepthLimit:      ${selector}DefaultDepthLimit,
 	}
 	_, err := c.UnmarshalCanotoFrom(r)
 	return err

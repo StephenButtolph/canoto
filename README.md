@@ -169,20 +169,22 @@ Modifying a message, including by calling `UnmarshalCanoto`, while another gorou
 
 The memory allocated while unmarshaling a message can greatly exceed the size of the message. For example, an empty entry of a repeated message field is encoded in 2 bytes, but allocates an entire message.
 
-When unmarshaling untrusted input, the memory allocated can be limited. If an allocation would exceed the remaining memory, unmarshaling fails with `canoto.ErrMemoryLimitExceeded` before performing the allocation. The returned `canoto.UnmarshalResult` contains the remaining memory.
+When unmarshaling untrusted input, the memory allocated can be limited with `MemoryRemaining`. If an allocation would exceed the remaining memory, unmarshaling fails with `canoto.ErrMemoryLimitExceeded` before performing the allocation. The returned `canoto.UnmarshalResult` contains the remaining memory. `UnmarshalCanoto` uses `canoto.DefaultMemoryLimit`, which does not limit the memory allocated.
 
 ```golang
 var msg Message
 result, err := msg.UnmarshalCanotoFrom(canoto.Reader{
 	B:               bytes,
-	LimitMemory:     true,
 	MemoryRemaining: 1 << 20,
+	DepthLimit:      100,
 })
 ```
 
 Allocations are charged their Go size, which depends on the platform and the compiler. Allocator overhead, such as rounding up to a size class, is not charged, so the memory actually allocated may slightly exceed the limit.
 
 When `Unsafe` is set, strings and bytes alias the input rather than being copied, so they are not charged.
+
+The stack used to unmarshal nested messages is not charged against the memory limit. Deeply nested input can exhaust the stack, which would crash the process rather than returning an error. Use `DepthLimit` to bound the stack usage. `UnmarshalCanoto` uses `canoto.DefaultDepthLimit`, which does not limit the depth.
 
 Custom `canoto.Field` implementations should charge any memory they allocate with `canoto.UseMemory` or `canoto.UseSliceMemory`, and must return the remaining memory, `r.MemoryRemaining`, in the `canoto.UnmarshalResult`.
 

@@ -1,7 +1,6 @@
 package examples
 
 import (
-	"math"
 	"reflect"
 	"slices"
 	"strconv"
@@ -805,27 +804,16 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 					var (
 						s      Scalars
 						reader = canoto.Reader{
-							B:      bm.bytes,
-							Unsafe: unsafe,
+							B:               bm.bytes,
+							Unsafe:          unsafe,
+							MemoryRemaining: canoto.DefaultMemoryLimit,
+							DepthLimit:      canoto.DefaultDepthLimit,
 						}
 					)
 					_, _ = s.UnmarshalCanotoFrom(reader)
 				}
 			})
 		}
-		b.Run("unmarshal/"+bm.name+"/limit_memory", func(b *testing.B) {
-			for range b.N {
-				var (
-					s      Scalars
-					reader = canoto.Reader{
-						B:               bm.bytes,
-						LimitMemory:     true,
-						MemoryRemaining: math.MaxUint64,
-					}
-				)
-				_, _ = s.UnmarshalCanotoFrom(reader)
-			}
-		})
 		b.Run("unmarshal/"+bm.name+"/any", func(b *testing.B) {
 			for range b.N {
 				_, _ = canoto.Unmarshal(spec, bm.bytes)
@@ -1038,7 +1026,11 @@ func BenchmarkRepeatedFixed32_Canoto(b *testing.B) {
 			for range b.N {
 				var (
 					s      Scalars
-					reader = canoto.Reader{B: bytes}
+					reader = canoto.Reader{
+						B:               bytes,
+						MemoryRemaining: canoto.DefaultMemoryLimit,
+						DepthLimit:      canoto.DefaultDepthLimit,
+					}
 				)
 				_, _ = s.UnmarshalCanotoFrom(reader)
 			}
@@ -1085,7 +1077,11 @@ func BenchmarkRepeatedFixed64_Canoto(b *testing.B) {
 			for range b.N {
 				var (
 					s      Scalars
-					reader = canoto.Reader{B: bytes}
+					reader = canoto.Reader{
+						B:               bytes,
+						MemoryRemaining: canoto.DefaultMemoryLimit,
+						DepthLimit:      canoto.DefaultDepthLimit,
+					}
 				)
 				_, _ = s.UnmarshalCanotoFrom(reader)
 			}
@@ -1168,7 +1164,11 @@ func BenchmarkRepeatedUint64_Canoto(b *testing.B) {
 				for range b.N {
 					var (
 						s      Scalars
-						reader = canoto.Reader{B: bytes}
+						reader = canoto.Reader{
+							B:               bytes,
+							MemoryRemaining: canoto.DefaultMemoryLimit,
+							DepthLimit:      canoto.DefaultDepthLimit,
+						}
 					)
 					_, _ = s.UnmarshalCanotoFrom(reader)
 				}
@@ -1232,7 +1232,11 @@ func BenchmarkRepeatedBool_Canoto(b *testing.B) {
 			for range b.N {
 				var (
 					s      Scalars
-					reader = canoto.Reader{B: bytes}
+					reader = canoto.Reader{
+						B:               bytes,
+						MemoryRemaining: canoto.DefaultMemoryLimit,
+						DepthLimit:      canoto.DefaultDepthLimit,
+					}
 				)
 				_, _ = s.UnmarshalCanotoFrom(reader)
 			}
@@ -1316,7 +1320,11 @@ func BenchmarkFixedRepeatedFint_Canoto(b *testing.B) {
 			for range b.N {
 				var (
 					s      Scalars
-					reader = canoto.Reader{B: bytes}
+					reader = canoto.Reader{
+						B:               bytes,
+						MemoryRemaining: canoto.DefaultMemoryLimit,
+						DepthLimit:      canoto.DefaultDepthLimit,
+					}
 				)
 				_, _ = s.UnmarshalCanotoFrom(reader)
 			}
@@ -1615,8 +1623,8 @@ func TestLimitMemory(t *testing.T) {
 			var s GenericField[Scalars, *Scalars]
 			result, err := s.UnmarshalCanotoFrom(canoto.Reader{
 				B:               b,
-				LimitMemory:     true,
 				MemoryRemaining: test.memory,
+				DepthLimit:      canoto.DefaultDepthLimit,
 			})
 			require.NoError(t, err)
 			require.Equal(t, test.msg, s)
@@ -1624,8 +1632,8 @@ func TestLimitMemory(t *testing.T) {
 
 			_, err = s.UnmarshalCanotoFrom(canoto.Reader{
 				B:               b,
-				LimitMemory:     true,
 				MemoryRemaining: test.memory - 1,
+				DepthLimit:      canoto.DefaultDepthLimit,
 			})
 			require.ErrorIs(t, err, canoto.ErrMemoryLimitExceeded)
 		})
@@ -1638,20 +1646,20 @@ func FuzzLimitMemory(f *testing.F) {
 		result, err := unlimited.UnmarshalCanotoFrom(canoto.Reader{
 			B:               b,
 			Unsafe:          unsafe,
-			LimitMemory:     true,
-			MemoryRemaining: math.MaxUint64,
+			MemoryRemaining: canoto.DefaultMemoryLimit,
+			DepthLimit:      canoto.DefaultDepthLimit,
 		})
 		if err != nil {
 			t.Skip("invalid input")
 		}
-		used := math.MaxUint64 - result.MemoryRemaining
+		used := canoto.DefaultMemoryLimit - result.MemoryRemaining
 
 		var exact Scalars
 		result, err = exact.UnmarshalCanotoFrom(canoto.Reader{
 			B:               b,
 			Unsafe:          unsafe,
-			LimitMemory:     true,
 			MemoryRemaining: used,
+			DepthLimit:      canoto.DefaultDepthLimit,
 		})
 		require.NoError(t, err)
 		require.Zero(t, result.MemoryRemaining)
@@ -1663,9 +1671,35 @@ func FuzzLimitMemory(f *testing.F) {
 		_, err = exact.UnmarshalCanotoFrom(canoto.Reader{
 			B:               b,
 			Unsafe:          unsafe,
-			LimitMemory:     true,
 			MemoryRemaining: used - 1,
+			DepthLimit:      canoto.DefaultDepthLimit,
 		})
 		require.ErrorIs(t, err, canoto.ErrMemoryLimitExceeded)
 	})
+}
+
+// TestLimitDepth verifies that the depth limit bounds the nesting of messages.
+func TestLimitDepth(t *testing.T) {
+	const depth = 3
+	var msg Node
+	for range depth {
+		next := msg
+		msg = Node{Next: &next}
+	}
+	b := msg.MarshalCanoto()
+
+	var parsed Node
+	_, err := parsed.UnmarshalCanotoFrom(canoto.Reader{
+		B:               b,
+		MemoryRemaining: canoto.DefaultMemoryLimit,
+		DepthLimit:      depth,
+	})
+	require.NoError(t, err)
+
+	_, err = parsed.UnmarshalCanotoFrom(canoto.Reader{
+		B:               b,
+		MemoryRemaining: canoto.DefaultMemoryLimit,
+		DepthLimit:      depth - 1,
+	})
+	require.ErrorIs(t, err, canoto.ErrDepthLimitExceeded)
 }
