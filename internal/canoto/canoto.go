@@ -268,7 +268,7 @@ type (
 		// DepthLimit is the number of nested messages that may be read.
 		//
 		// The stack used by nested messages is not charged against
-		// MemoryRemaining, so DepthLimit should be set when unmarshaling
+		// MemoryRemaining, so DepthLimit should be limited when unmarshaling
 		// recursive messages from untrusted input.
 		DepthLimit uint64
 		// Context is a user-defined value that can be used to pass additional
