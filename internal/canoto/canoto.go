@@ -405,11 +405,11 @@ func (s SizeEnum) shift() (shift uint64, mask uint64, ok bool) {
 // UseMemory charges count * size against [Reader.MemoryRemaining]. If the
 // remaining memory is insufficient, [ErrMemoryLimitExceeded] is returned. If
 // [Reader.LimitMemory] is false, UseMemory is a no-op.
-func UseMemory(r *Reader, count, size uint64) error {
+func UseMemory(r *Reader, count uint64, size uintptr) error {
 	if !r.LimitMemory {
 		return nil
 	}
-	hi, total := bits.Mul64(count, size)
+	hi, total := bits.Mul64(count, uint64(size))
 	if hi != 0 || total > r.MemoryRemaining {
 		return ErrMemoryLimitExceeded
 	}
@@ -573,7 +573,7 @@ func ReadUints[S ~[]E, E Uint](r *Reader, v *S) (uint64, error) {
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
 	count := CountInts(b)
-	if err := UseMemory(r, count, uint64(unsafe.Sizeof(E(0)))); err != nil {
+	if err := UseMemory(r, count, unsafe.Sizeof(E(0))); err != nil {
 		return 0, err
 	}
 	vs := make(S, count)
@@ -749,7 +749,7 @@ func ReadInts[S ~[]E, E Int](r *Reader, v *S) (uint64, error) {
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
 	count := CountInts(b)
-	if err := UseMemory(r, count, uint64(unsafe.Sizeof(E(0)))); err != nil {
+	if err := UseMemory(r, count, unsafe.Sizeof(E(0))); err != nil {
 		return 0, err
 	}
 	vs := make(S, count)
@@ -1312,7 +1312,7 @@ func AppendBytes[T Bytes](w *Writer, v T) {
 // variable is unknown.
 func MakePointer[T any](r *Reader, p **T) error {
 	var zero T
-	if err := UseMemory(r, 1, uint64(unsafe.Sizeof(zero))); err != nil {
+	if err := UseMemory(r, 1, unsafe.Sizeof(zero)); err != nil {
 		return err
 	}
 	*p = new(T)
@@ -1327,7 +1327,7 @@ func MakePointer[T any](r *Reader, p **T) error {
 // variable is unknown.
 func MakeSlice[S ~[]E, E any](r *Reader, s *S, length uint64) error {
 	var zero E
-	if err := UseMemory(r, length, uint64(unsafe.Sizeof(zero))); err != nil {
+	if err := UseMemory(r, length, unsafe.Sizeof(zero)); err != nil {
 		return err
 	}
 	*s = make(S, length)
