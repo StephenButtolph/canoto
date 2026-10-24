@@ -1,6 +1,8 @@
 package examples
 
 import (
+	"math"
+	"reflect"
 	"slices"
 	"strconv"
 	"testing"
@@ -807,10 +809,23 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 							Unsafe: unsafe,
 						}
 					)
-					_ = s.UnmarshalCanotoFrom(reader)
+					_, _ = s.UnmarshalCanotoFrom(reader)
 				}
 			})
 		}
+		b.Run("unmarshal/"+bm.name+"/limit_memory", func(b *testing.B) {
+			for range b.N {
+				var (
+					s      Scalars
+					reader = canoto.Reader{
+						B:               bm.bytes,
+						LimitMemory:     true,
+						MemoryRemaining: math.MaxUint64,
+					}
+				)
+				_, _ = s.UnmarshalCanotoFrom(reader)
+			}
+		})
 		b.Run("unmarshal/"+bm.name+"/any", func(b *testing.B) {
 			for range b.N {
 				_, _ = canoto.Unmarshal(spec, bm.bytes)
@@ -1025,7 +1040,7 @@ func BenchmarkRepeatedFixed32_Canoto(b *testing.B) {
 					s      Scalars
 					reader = canoto.Reader{B: bytes}
 				)
-				_ = s.UnmarshalCanotoFrom(reader)
+				_, _ = s.UnmarshalCanotoFrom(reader)
 			}
 		})
 	}
@@ -1072,7 +1087,7 @@ func BenchmarkRepeatedFixed64_Canoto(b *testing.B) {
 					s      Scalars
 					reader = canoto.Reader{B: bytes}
 				)
-				_ = s.UnmarshalCanotoFrom(reader)
+				_, _ = s.UnmarshalCanotoFrom(reader)
 			}
 		})
 	}
@@ -1155,7 +1170,7 @@ func BenchmarkRepeatedUint64_Canoto(b *testing.B) {
 						s      Scalars
 						reader = canoto.Reader{B: bytes}
 					)
-					_ = s.UnmarshalCanotoFrom(reader)
+					_, _ = s.UnmarshalCanotoFrom(reader)
 				}
 			})
 		}
@@ -1219,7 +1234,7 @@ func BenchmarkRepeatedBool_Canoto(b *testing.B) {
 					s      Scalars
 					reader = canoto.Reader{B: bytes}
 				)
-				_ = s.UnmarshalCanotoFrom(reader)
+				_, _ = s.UnmarshalCanotoFrom(reader)
 			}
 		})
 	}
@@ -1303,7 +1318,7 @@ func BenchmarkFixedRepeatedFint_Canoto(b *testing.B) {
 					s      Scalars
 					reader = canoto.Reader{B: bytes}
 				)
-				_ = s.UnmarshalCanotoFrom(reader)
+				_, _ = s.UnmarshalCanotoFrom(reader)
 			}
 		})
 	}
@@ -1558,4 +1573,99 @@ func TestCopyDuringMarshal(t *testing.T) {
 	}()
 	_ = slices.Clone(a.Fields)
 	require.NoError(t, <-errs)
+}
+
+// TestLimitMemory verifies that the memory limit bounds allocations whose size
+// is unrelated to the size of the input.
+func TestLimitMemory(t *testing.T) {
+	const numElements = 1024
+	var (
+		pointerSize = uint64(reflect.TypeFor[*Scalars]().Size())
+		scalarsSize = uint64(reflect.TypeFor[Scalars]().Size())
+	)
+	tests := []struct {
+		name   string
+		msg    GenericField[Scalars, *Scalars]
+		memory uint64
+	}{
+		{
+			// At the time of writing, this showed an ~1000x memory
+			// amplification.
+			name: "repeated_value",
+			msg: GenericField[Scalars, *Scalars]{
+				RepeatedValue: make([]Scalars, numElements),
+			},
+			memory: numElements * scalarsSize,
+		},
+		{
+			// The pointer slice must be charged even when the first element is
+			// non-nil.
+			name: "repeated_pointer",
+			msg: GenericField[Scalars, *Scalars]{
+				RepeatedPointer: append([]*Scalars{{}}, make([]*Scalars, numElements-1)...),
+			},
+			memory: numElements*pointerSize + scalarsSize,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			b := test.msg.MarshalCanoto()
+			t.Logf("binary=%d ; memory=%d", len(b), test.memory)
+
+			var s GenericField[Scalars, *Scalars]
+			result, err := s.UnmarshalCanotoFrom(canoto.Reader{
+				B:               b,
+				LimitMemory:     true,
+				MemoryRemaining: test.memory,
+			})
+			require.NoError(t, err)
+			require.Equal(t, test.msg, s)
+			require.Zero(t, result.MemoryRemaining)
+
+			_, err = s.UnmarshalCanotoFrom(canoto.Reader{
+				B:               b,
+				LimitMemory:     true,
+				MemoryRemaining: test.memory - 1,
+			})
+			require.ErrorIs(t, err, canoto.ErrMemoryLimitExceeded)
+		})
+	}
+}
+
+func FuzzLimitMemory(f *testing.F) {
+	f.Fuzz(func(t *testing.T, b []byte, unsafe bool) {
+		var unlimited Scalars
+		result, err := unlimited.UnmarshalCanotoFrom(canoto.Reader{
+			B:               b,
+			Unsafe:          unsafe,
+			LimitMemory:     true,
+			MemoryRemaining: math.MaxUint64,
+		})
+		if err != nil {
+			t.Skip("invalid input")
+		}
+		used := math.MaxUint64 - result.MemoryRemaining
+
+		var exact Scalars
+		result, err = exact.UnmarshalCanotoFrom(canoto.Reader{
+			B:               b,
+			Unsafe:          unsafe,
+			LimitMemory:     true,
+			MemoryRemaining: used,
+		})
+		require.NoError(t, err)
+		require.Zero(t, result.MemoryRemaining)
+		require.Equal(t, unlimited, exact)
+
+		if used == 0 {
+			return
+		}
+		_, err = exact.UnmarshalCanotoFrom(canoto.Reader{
+			B:               b,
+			Unsafe:          unsafe,
+			LimitMemory:     true,
+			MemoryRemaining: used - 1,
+		})
+		require.ErrorIs(t, err, canoto.ErrMemoryLimitExceeded)
+	})
 }
