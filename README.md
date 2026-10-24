@@ -179,7 +179,7 @@ result, err := msg.UnmarshalCanotoFrom(canoto.Reader{
 
 Allocations are charged their Go size, which depends on the platform and the compiler. A memory limit should only be used to limit resource usage, not to determine whether a message is valid.
 
-Custom `canoto.Field` implementations should charge any memory they allocate with `canoto.UseMemory`.
+Custom `canoto.Field` implementations should charge any memory they allocate with `canoto.UseMemory` or `canoto.UseSliceMemory`.
 
 ### Standalone Implementations
 

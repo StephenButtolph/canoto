@@ -402,19 +402,31 @@ func (s SizeEnum) shift() (shift uint64, mask uint64, ok bool) {
 	}
 }
 
-// UseMemory charges count * size against [Reader.MemoryRemaining]. If the
-// remaining memory is insufficient, [ErrMemoryLimitExceeded] is returned. If
+// UseMemory charges n bytes against [Reader.MemoryRemaining]. If the remaining
+// memory is insufficient, [ErrMemoryLimitExceeded] is returned. If
 // [Reader.LimitMemory] is false, UseMemory is a no-op.
-func UseMemory(r *Reader, count uint64, size uintptr) error {
+func UseMemory(r *Reader, n uint64) error {
 	if !r.LimitMemory {
 		return nil
 	}
-	hi, total := bits.Mul64(count, uint64(size))
-	if hi != 0 || total > r.MemoryRemaining {
+	if n > r.MemoryRemaining {
 		return ErrMemoryLimitExceeded
 	}
-	r.MemoryRemaining -= total
+	r.MemoryRemaining -= n
 	return nil
+}
+
+// UseSliceMemory charges the memory of a slice with length elements of size
+// bytes each, as [UseMemory] does.
+func UseSliceMemory(r *Reader, length uint64, size uintptr) error {
+	if !r.LimitMemory {
+		return nil
+	}
+	hi, total := bits.Mul64(length, uint64(size))
+	if hi != 0 {
+		return ErrMemoryLimitExceeded
+	}
+	return UseMemory(r, total)
 }
 
 // UnwrapPointer strips the presence prefix from a non-nil repeated pointer
@@ -573,7 +585,7 @@ func ReadUints[S ~[]E, E Uint](r *Reader, v *S) (uint64, error) {
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
 	count := CountInts(b)
-	if err := UseMemory(r, count, unsafe.Sizeof(E(0))); err != nil {
+	if err := UseSliceMemory(r, count, unsafe.Sizeof(E(0))); err != nil {
 		return 0, err
 	}
 	vs := make(S, count)
@@ -749,7 +761,7 @@ func ReadInts[S ~[]E, E Int](r *Reader, v *S) (uint64, error) {
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
 	count := CountInts(b)
-	if err := UseMemory(r, count, unsafe.Sizeof(E(0))); err != nil {
+	if err := UseSliceMemory(r, count, unsafe.Sizeof(E(0))); err != nil {
 		return 0, err
 	}
 	vs := make(S, count)
@@ -915,7 +927,7 @@ func ReadFint32s[S ~[]E, E Int32](r *Reader, v *S) error {
 		return ErrInvalidLength
 	}
 	count := length / SizeFint32
-	if err := UseMemory(r, count, SizeFint32); err != nil {
+	if err := UseSliceMemory(r, count, SizeFint32); err != nil {
 		return err
 	}
 
@@ -1003,7 +1015,7 @@ func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
 		return ErrInvalidLength
 	}
 	count := length / SizeFint64
-	if err := UseMemory(r, count, SizeFint64); err != nil {
+	if err := UseSliceMemory(r, count, SizeFint64); err != nil {
 		return err
 	}
 
@@ -1090,7 +1102,7 @@ func ReadBools[S ~[]E, E ~bool](r *Reader, v *S) error {
 	if length > uint64(len(r.B)) {
 		return io.ErrUnexpectedEOF
 	}
-	if err := UseMemory(r, length, SizeBool); err != nil {
+	if err := UseMemory(r, length); err != nil {
 		return err
 	}
 
@@ -1221,7 +1233,7 @@ func ReadString[T ~string](r *Reader, v *T) error {
 		*v = T(unsafeString(bytes))
 		return nil
 	}
-	if err := UseMemory(r, length, 1); err != nil {
+	if err := UseMemory(r, length); err != nil {
 		return err
 	}
 	*v = T(bytes)
@@ -1247,7 +1259,7 @@ func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 	bytes := r.B[:length]
 	r.B = r.B[length:]
 	if !r.Unsafe {
-		if err := UseMemory(r, length, 1); err != nil {
+		if err := UseMemory(r, length); err != nil {
 			return err
 		}
 		bytes = slices.Clone(bytes)
@@ -1312,7 +1324,7 @@ func AppendBytes[T Bytes](w *Writer, v T) {
 // variable is unknown.
 func MakePointer[T any](r *Reader, p **T) error {
 	var zero T
-	if err := UseMemory(r, 1, unsafe.Sizeof(zero)); err != nil {
+	if err := UseMemory(r, uint64(unsafe.Sizeof(zero))); err != nil {
 		return err
 	}
 	*p = new(T)
@@ -1327,7 +1339,7 @@ func MakePointer[T any](r *Reader, p **T) error {
 // variable is unknown.
 func MakeSlice[S ~[]E, E any](r *Reader, s *S, length uint64) error {
 	var zero E
-	if err := UseMemory(r, length, unsafe.Sizeof(zero)); err != nil {
+	if err := UseSliceMemory(r, length, unsafe.Sizeof(zero)); err != nil {
 		return err
 	}
 	*s = make(S, length)
