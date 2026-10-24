@@ -415,13 +415,14 @@ func UseMemory(r *Reader, n uint64) error {
 	return nil
 }
 
-// UseSliceMemory charges the memory of a slice with length elements of size
-// bytes each, as [UseMemory] does.
-func UseSliceMemory(r *Reader, length uint64, size uintptr) error {
+// UseSliceMemory charges the memory of a slice of length elements of type E,
+// as [UseMemory] does.
+func UseSliceMemory[E any](r *Reader, length uint64) error {
 	if !r.LimitMemory {
 		return nil
 	}
-	hi, total := bits.Mul64(length, uint64(size))
+	var zero E
+	hi, total := bits.Mul64(length, uint64(unsafe.Sizeof(zero)))
 	if hi != 0 {
 		return ErrMemoryLimitExceeded
 	}
@@ -584,7 +585,7 @@ func ReadUints[S ~[]E, E Uint](r *Reader, v *S) (uint64, error) {
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
 	count := CountInts(b)
-	if err := UseSliceMemory(r, count, unsafe.Sizeof(E(0))); err != nil {
+	if err := UseSliceMemory[E](r, count); err != nil {
 		return 0, err
 	}
 	vs := make(S, count)
@@ -760,7 +761,7 @@ func ReadInts[S ~[]E, E Int](r *Reader, v *S) (uint64, error) {
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
 	count := CountInts(b)
-	if err := UseSliceMemory(r, count, unsafe.Sizeof(E(0))); err != nil {
+	if err := UseSliceMemory[E](r, count); err != nil {
 		return 0, err
 	}
 	vs := make(S, count)
@@ -1337,8 +1338,7 @@ func MakePointer[T any](r *Reader, p **T) error {
 // This function is useful to use in auto-generated code, when the type of a
 // variable is unknown.
 func MakeSlice[S ~[]E, E any](r *Reader, s *S, length uint64) error {
-	var zero E
-	if err := UseSliceMemory(r, length, unsafe.Sizeof(zero)); err != nil {
+	if err := UseSliceMemory[E](r, length); err != nil {
 		return err
 	}
 	*s = make(S, length)
