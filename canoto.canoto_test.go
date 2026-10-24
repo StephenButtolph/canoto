@@ -1357,6 +1357,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
+				msgReader.MemoryRemaining = r.MemoryRemaining
 				if err := MakePointer(&msgReader, &field[0]); err != nil {
 					return UnmarshalResult{}, err
 				}
@@ -1416,6 +1417,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
+				msgReader.MemoryRemaining = r.MemoryRemaining
 				if err := MakePointer(&msgReader, &field[0]); err != nil {
 					return UnmarshalResult{}, err
 				}
@@ -1475,6 +1477,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
+				msgReader.MemoryRemaining = r.MemoryRemaining
 				if err := MakePointer(&msgReader, &field[0]); err != nil {
 					return UnmarshalResult{}, err
 				}
@@ -1534,6 +1537,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err := UnwrapPointer(&msgReader); err != nil {
 					return UnmarshalResult{}, err
 				}
+				msgReader.MemoryRemaining = r.MemoryRemaining
 				if err := MakePointer(&msgReader, &field[0]); err != nil {
 					return UnmarshalResult{}, err
 				}

@@ -1575,35 +1575,59 @@ func TestCopyDuringMarshal(t *testing.T) {
 	require.NoError(t, <-errs)
 }
 
-// TestLimitMemory_Amplification verifies that the memory limit bounds
-// allocations whose size is unrelated to the size of the input.
-//
-// At the time of writing, this test showed an ~1000x memory amplification.
-func TestLimitMemory_Amplification(t *testing.T) {
-	// Each empty element is encoded in 2 bytes, but is allocated as an entire
-	// Scalars struct.
+// TestLimitMemory verifies that the memory limit bounds allocations whose size
+// is unrelated to the size of the input.
+func TestLimitMemory(t *testing.T) {
 	const numElements = 1024
 	var (
-		element  = append(canoto.Tag(2, canoto.Len), canoto.EmptyBytes...)
-		b        = slices.Repeat(element, numElements)
-		required = numElements * uint64(reflect.TypeFor[Scalars]().Size())
-		s        GenericField[Scalars, *Scalars]
+		pointerSize = uint64(reflect.TypeFor[*Scalars]().Size())
+		scalarsSize = uint64(reflect.TypeFor[Scalars]().Size())
 	)
-	t.Logf("binary=%d ; memory=%d", len(b), required)
+	tests := []struct {
+		name   string
+		msg    GenericField[Scalars, *Scalars]
+		memory uint64
+	}{
+		{
+			// At the time of writing, this showed an ~1000x memory
+			// amplification.
+			name: "repeated_value",
+			msg: GenericField[Scalars, *Scalars]{
+				RepeatedValue: make([]Scalars, numElements),
+			},
+			memory: numElements * scalarsSize,
+		},
+		{
+			// The pointer slice must be charged even when the first element is
+			// non-nil.
+			name: "repeated_pointer",
+			msg: GenericField[Scalars, *Scalars]{
+				RepeatedPointer: append([]*Scalars{{}}, make([]*Scalars, numElements-1)...),
+			},
+			memory: numElements*pointerSize + scalarsSize,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			b := test.msg.MarshalCanoto()
+			t.Logf("binary=%d ; memory=%d", len(b), test.memory)
 
-	result, err := s.UnmarshalCanotoFrom(canoto.Reader{
-		B:               b,
-		LimitMemory:     true,
-		MemoryRemaining: required,
-	})
-	require.NoError(t, err)
-	require.Len(t, s.RepeatedValue, numElements)
-	require.Zero(t, result.MemoryRemaining)
+			var s GenericField[Scalars, *Scalars]
+			result, err := s.UnmarshalCanotoFrom(canoto.Reader{
+				B:               b,
+				LimitMemory:     true,
+				MemoryRemaining: test.memory,
+			})
+			require.NoError(t, err)
+			require.Equal(t, test.msg, s)
+			require.Zero(t, result.MemoryRemaining)
 
-	_, err = s.UnmarshalCanotoFrom(canoto.Reader{
-		B:               b,
-		LimitMemory:     true,
-		MemoryRemaining: required - 1,
-	})
-	require.ErrorIs(t, err, canoto.ErrMemoryLimitExceeded)
+			_, err = s.UnmarshalCanotoFrom(canoto.Reader{
+				B:               b,
+				LimitMemory:     true,
+				MemoryRemaining: test.memory - 1,
+			})
+			require.ErrorIs(t, err, canoto.ErrMemoryLimitExceeded)
+		})
+	}
 }

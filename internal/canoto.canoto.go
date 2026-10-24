@@ -1775,6 +1775,7 @@ func (c *GenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) (canoto.Unma
 				if err := canoto.UnwrapPointer(&msgReader); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
+				msgReader.MemoryRemaining = r.MemoryRemaining
 				if err := canoto.MakePointer(&msgReader, &field[0]); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
@@ -2377,6 +2378,7 @@ func (c *NestedGenericField[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) (canot
 				if err := canoto.UnwrapPointer(&msgReader); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
+				msgReader.MemoryRemaining = r.MemoryRemaining
 				if err := canoto.MakePointer(&msgReader, &field[0]); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
@@ -5286,6 +5288,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 				if err := canoto.UnwrapPointer(&msgReader); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}
+				msgReader.MemoryRemaining = r.MemoryRemaining
 				if err := canoto.MakePointer(&msgReader, &field[0]); err != nil {
 					return canoto.UnmarshalResult{}, err
 				}

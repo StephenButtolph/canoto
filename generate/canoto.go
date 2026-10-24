@@ -1250,6 +1250,7 @@ func makeUnmarshal(m message) string {
 				if err := ${selector}UnwrapPointer(&msgReader); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
+				msgReader.MemoryRemaining = r.MemoryRemaining
 				if err := ${selector}MakePointer(&msgReader, &field[0]); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
