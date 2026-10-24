@@ -923,9 +923,6 @@ func ReadFint32s[S ~[]E, E Int32](r *Reader, v *S) error {
 		return ErrInvalidLength
 	}
 	count := length / SizeFint32
-	if err := UseSliceMemory(r, count, SizeFint32); err != nil {
-		return err
-	}
 
 	// Advancing a local slice keeps the slice header in registers. Advancing
 	// r.B on every element would reload the header through memory each
@@ -935,6 +932,9 @@ func ReadFint32s[S ~[]E, E Int32](r *Reader, v *S) error {
 	// store.
 	b := r.B[:length]
 	r.B = r.B[length:]
+	if err := UseSliceMemory(r, count, SizeFint32); err != nil {
+		return err
+	}
 	vs := make(S, count)
 	for i := range vs {
 		vs[i] = E(binary.LittleEndian.Uint32(b))
@@ -1011,9 +1011,6 @@ func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
 		return ErrInvalidLength
 	}
 	count := length / SizeFint64
-	if err := UseSliceMemory(r, count, SizeFint64); err != nil {
-		return err
-	}
 
 	// Advancing a local slice keeps the slice header in registers. Advancing
 	// r.B on every element would reload the header through memory each
@@ -1023,6 +1020,9 @@ func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
 	// store.
 	b := r.B[:length]
 	r.B = r.B[length:]
+	if err := UseSliceMemory(r, count, SizeFint64); err != nil {
+		return err
+	}
 	vs := make(S, count)
 	for i := range vs {
 		vs[i] = E(binary.LittleEndian.Uint64(b))
@@ -1098,15 +1098,15 @@ func ReadBools[S ~[]E, E ~bool](r *Reader, v *S) error {
 	if length > uint64(len(r.B)) {
 		return io.ErrUnexpectedEOF
 	}
+
+	b := r.B[:length]
+	r.B = r.B[length:]
 	if err := UseMemory(r, length); err != nil {
 		return err
 	}
-
-	vs := make(S, length)
-	// Slicing b by len(vs) proves to the compiler that b[i] can not exceed
+	// Making vs with len(b) proves to the compiler that b[i] can not exceed
 	// either slice, removing all bounds checks from the loop.
-	b := r.B[:len(vs)]
-	r.B = r.B[length:]
+	vs := make(S, len(b))
 	for i := range vs {
 		// This branch is typically predicted correctly for valid input, which
 		// is faster than accumulating the bytes.
