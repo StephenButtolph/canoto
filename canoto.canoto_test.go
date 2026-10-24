@@ -698,8 +698,7 @@ func (c *SpecFuzzer) UnmarshalCanoto(bytes []byte) error {
 //
 // During parsing, the canoto cache is saved.
 //
-// This function enables configuration of reader options. If an error is
-// returned, the [UnmarshalResult] is unspecified.
+// This function enables configuration of reader options.
 func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 	// Zero the struct before unmarshaling.
 	*c = SpecFuzzer{}
@@ -919,7 +918,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 
-			msgReader.Budget = r.Budget
 			result, err := (&c.Value).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return UnmarshalResult{}, err
@@ -930,15 +928,15 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
+			if err := MakePointer(&r, &c.Pointer); err != nil {
+				return UnmarshalResult{}, err
+			}
+
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return UnmarshalResult{}, err
 			}
 
-			if err := MakePointer(&r, &c.Pointer); err != nil {
-				return UnmarshalResult{}, err
-			}
-			msgReader.Budget = r.Budget
 			result, err := (c.Pointer).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return UnmarshalResult{}, err
@@ -949,15 +947,15 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
+			if err := MakePointer(&r, &c.OneOf); err != nil {
+				return UnmarshalResult{}, err
+			}
+
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return UnmarshalResult{}, err
 			}
 
-			if err := MakePointer(&r, &c.OneOf); err != nil {
-				return UnmarshalResult{}, err
-			}
-			msgReader.Budget = r.Budget
 			result, err := (c.OneOf).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return UnmarshalResult{}, err
@@ -968,15 +966,15 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
+			if err := MakePointer(&r, &c.Recursive); err != nil {
+				return UnmarshalResult{}, err
+			}
+
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return UnmarshalResult{}, err
 			}
 
-			if err := MakePointer(&r, &c.Recursive); err != nil {
-				return UnmarshalResult{}, err
-			}
-			msgReader.Budget = r.Budget
 			result, err := (c.Recursive).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return UnmarshalResult{}, err
@@ -987,15 +985,15 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
+			if err := MakePointer(&r, &c.ValueRecursive); err != nil {
+				return UnmarshalResult{}, err
+			}
+
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return UnmarshalResult{}, err
 			}
 
-			if err := MakePointer(&r, &c.ValueRecursive); err != nil {
-				return UnmarshalResult{}, err
-			}
-			msgReader.Budget = r.Budget
 			result, err := (c.ValueRecursive).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return UnmarshalResult{}, err
@@ -1330,7 +1328,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 					continue
 				}
 
-				msgReader.Budget = r.Budget
 				result, err := (&additionalField[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -1871,7 +1868,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 
 			isZero := !HasNext(&msgReader)
 			if !isZero {
-				msgReader.Budget = r.Budget
 				result, err := (&(&c.FixedRepeatedValue)[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -1893,7 +1889,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 					continue
 				}
 
-				msgReader.Budget = r.Budget
 				result, err := (&field[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -3166,8 +3161,7 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanoto(bytes []byte) error {
 //
 // During parsing, the canoto cache is saved.
 //
-// This function enables configuration of reader options. If an error is
-// returned, the [UnmarshalResult] is unspecified.
+// This function enables configuration of reader options.
 func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 	// Zero the struct before unmarshaling.
 	*c = LargestFieldNumber[T1]{}
@@ -3312,8 +3306,7 @@ func (c *SpecFuzzerPointer) UnmarshalCanoto(bytes []byte) error {
 //
 // During parsing, the canoto cache is saved.
 //
-// This function enables configuration of reader options. If an error is
-// returned, the [UnmarshalResult] is unspecified.
+// This function enables configuration of reader options.
 func (c *SpecFuzzerPointer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 	// Zero the struct before unmarshaling.
 	*c = SpecFuzzerPointer{}
@@ -3343,7 +3336,6 @@ func (c *SpecFuzzerPointer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, erro
 				return UnmarshalResult{}, ErrZeroValue
 			}
 
-			msgReader.Budget = r.Budget
 			result, err := (&c.Value).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return UnmarshalResult{}, err
@@ -3529,8 +3521,7 @@ func (c *OneOf) UnmarshalCanoto(bytes []byte) error {
 //
 // During parsing, the canoto cache is saved.
 //
-// This function enables configuration of reader options. If an error is
-// returned, the [UnmarshalResult] is unspecified.
+// This function enables configuration of reader options.
 func (c *OneOf) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 	// Zero the struct before unmarshaling.
 	*c = OneOf{}

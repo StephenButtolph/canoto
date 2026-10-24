@@ -78,8 +78,7 @@ func (c *Spec) UnmarshalCanoto(bytes []byte) error {
 //
 // During parsing, the canoto cache is saved.
 //
-// This function enables configuration of reader options. If an error is
-// returned, the [UnmarshalResult] is unspecified.
+// This function enables configuration of reader options.
 func (c *Spec) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 	// Zero the struct before unmarshaling.
 	*c = Spec{}
@@ -149,7 +148,6 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 					continue
 				}
 
-				msgReader.Budget = r.Budget
 				result, err := (&additionalField[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
@@ -443,8 +441,7 @@ func (c *FieldType) UnmarshalCanoto(bytes []byte) error {
 //
 // During parsing, the canoto cache is saved.
 //
-// This function enables configuration of reader options. If an error is
-// returned, the [UnmarshalResult] is unspecified.
+// This function enables configuration of reader options.
 func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 	// Zero the struct before unmarshaling.
 	*c = FieldType{}
@@ -645,15 +642,15 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
+			if err := MakePointer(&r, &c.TypeMessage); err != nil {
+				return UnmarshalResult{}, err
+			}
+
 			var msgReader Reader
 			if err := ReadSubReader(&r, &msgReader); err != nil {
 				return UnmarshalResult{}, err
 			}
 
-			if err := MakePointer(&r, &c.TypeMessage); err != nil {
-				return UnmarshalResult{}, err
-			}
-			msgReader.Budget = r.Budget
 			result, err := (c.TypeMessage).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return UnmarshalResult{}, err

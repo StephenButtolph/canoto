@@ -170,8 +170,7 @@ func (c *${structName}${generics}) UnmarshalCanoto(bytes []byte) error {
 //
 // During parsing, the canoto cache is saved.
 //
-// This function enables configuration of reader options. If an error is
-// returned, the [${selector}UnmarshalResult] is unspecified.
+// This function enables configuration of reader options.
 func (c *${structName}${generics}) UnmarshalCanotoFrom(r ${selector}Reader) (${selector}UnmarshalResult, error) {
 	// Zero the struct before unmarshaling.
 	*c = ${structName}${generics}{}
@@ -1099,7 +1098,6 @@ func makeUnmarshal(m message) string {
 				return ${selector}UnmarshalResult{}, ${selector}ErrZeroValue
 			}
 
-			msgReader.Budget = r.Budget
 			result, err := ${genericTypeCast}(&c.${fieldName}).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return ${selector}UnmarshalResult{}, err
@@ -1148,7 +1146,6 @@ func makeUnmarshal(m message) string {
 					continue
 				}
 
-				msgReader.Budget = r.Budget
 				result, err := ${genericTypeCast}(&additionalField[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
@@ -1173,7 +1170,6 @@ func makeUnmarshal(m message) string {
 
 			isZero := !${selector}HasNext(&msgReader)
 			if !isZero {
-				msgReader.Budget = r.Budget
 				result, err := ${genericTypeCast}(&(&c.${fieldName})[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
@@ -1195,7 +1191,6 @@ func makeUnmarshal(m message) string {
 					continue
 				}
 
-				msgReader.Budget = r.Budget
 				result, err := ${genericTypeCast}(&field[i]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
@@ -1214,15 +1209,15 @@ func makeUnmarshal(m message) string {
 				return ${selector}UnmarshalResult{}, ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
+			if err := ${selector}MakePointer(&r, &c.${fieldName}); err != nil {
+				return ${selector}UnmarshalResult{}, err
+			}
+
 			var msgReader ${selector}Reader
 			if err := ${selector}ReadSubReader(&r, &msgReader); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
 
-			if err := ${selector}MakePointer(&r, &c.${fieldName}); err != nil {
-				return ${selector}UnmarshalResult{}, err
-			}
-			msgReader.Budget = r.Budget
 			result, err := ${genericTypeCast}(c.${fieldName}).UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return ${selector}UnmarshalResult{}, err

@@ -65,8 +65,7 @@ func (c *justAnInt) UnmarshalCanoto(bytes []byte) error {
 //
 // During parsing, the canoto cache is saved.
 //
-// This function enables configuration of reader options. If an error is
-// returned, the [canoto.UnmarshalResult] is unspecified.
+// This function enables configuration of reader options.
 func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error) {
 	// Zero the struct before unmarshaling.
 	*c = justAnInt{}

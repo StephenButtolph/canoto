@@ -215,8 +215,6 @@ type (
 		// It is assumed that this field passes CheckCanoto.
 		AppendCanoto(w Writer) Writer
 		// UnmarshalCanotoFrom populates the field from a [Reader].
-		//
-		// If an error is returned, the [UnmarshalResult] is unspecified.
 		UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error)
 	}
 
