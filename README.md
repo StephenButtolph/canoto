@@ -99,6 +99,9 @@ type Field interface {
 	// It is assumed that this field passes CheckCanoto.
 	AppendCanoto(w Writer) Writer
 	// UnmarshalCanotoFrom populates the field from a [Reader].
+	//
+	// The returned [UnmarshalResult] must contain the memory remaining in r
+	// after charging for memory allocated by this call.
 	UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error)
 }
 ```
@@ -177,9 +180,11 @@ result, err := msg.UnmarshalCanotoFrom(canoto.Reader{
 })
 ```
 
-Allocations are charged their Go size, which depends on the platform and the compiler. A memory limit should only be used to limit resource usage, not to determine whether a message is valid.
+Allocations are charged their Go size, which depends on the platform and the compiler. Allocator overhead, such as rounding up to a size class, is not charged, so the memory actually allocated may slightly exceed the limit.
 
-Custom `canoto.Field` implementations should charge any memory they allocate with `canoto.UseMemory` or `canoto.UseSliceMemory`.
+When `Unsafe` is set, strings and bytes alias the input rather than being copied, so they are not charged.
+
+Custom `canoto.Field` implementations should charge any memory they allocate with `canoto.UseMemory` or `canoto.UseSliceMemory`, and must return the remaining memory, `r.MemoryRemaining`, in the `canoto.UnmarshalResult`.
 
 ### Standalone Implementations
 

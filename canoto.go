@@ -215,6 +215,9 @@ type (
 		// It is assumed that this field passes CheckCanoto.
 		AppendCanoto(w Writer) Writer
 		// UnmarshalCanotoFrom populates the field from a [Reader].
+		//
+		// The returned [UnmarshalResult] must contain the memory remaining in r
+		// after charging for memory allocated by this call.
 		UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error)
 	}
 
