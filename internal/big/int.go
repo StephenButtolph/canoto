@@ -2,14 +2,16 @@ package big
 
 import (
 	"math/big"
+	"math/bits"
 	"reflect"
-	"unsafe"
 
 	"github.com/StephenButtolph/canoto"
 )
 
 var _ canoto.Field = (*Int)(nil)
 
+// Int is a non-negative integer, encoded as big-endian bytes without leading
+// zeros.
 type Int struct {
 	Int *big.Int
 }
@@ -21,24 +23,32 @@ func (*Int) DescribeCanoto(...reflect.Type) *canoto.Spec {
 }
 
 func (i *Int) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error) {
-	if i.Int == nil {
-		if err := canoto.UseMemory(&r, 1, uint64(unsafe.Sizeof(big.Int{}))); err != nil {
-			return canoto.UnmarshalResult{}, err
-		}
-		i.Int = new(big.Int)
+	*i = Int{}
+	if len(r.B) == 0 {
+		return canoto.UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
 	}
-	if err := canoto.UseMemory(&r, 1, uint64(len(r.B))); err != nil {
-		return canoto.UnmarshalResult{}, err
-	}
-	i.Int.SetBytes(r.B)
-	if i.SizeCanoto() != uint64(len(r.B)) {
+	if r.B[0] == 0 {
 		return canoto.UnmarshalResult{}, canoto.ErrPaddedZeroes
 	}
+
+	const wordSize = bits.UintSize / 8
+	var words []big.Word
+	numWords := (uint64(len(r.B)) + wordSize - 1) / wordSize
+	if err := canoto.MakeSlice(&r, &words, numWords); err != nil {
+		return canoto.UnmarshalResult{}, err
+	}
+	if err := canoto.MakePointer(&r, &i.Int); err != nil {
+		return canoto.UnmarshalResult{}, err
+	}
+	i.Int.SetBits(words[:0]).SetBytes(r.B)
 	return canoto.UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
 }
 
-func (*Int) CheckCanoto() bool { return true }
-func (*Int) CacheCanoto()      {}
+func (i *Int) CheckCanoto() bool {
+	return i.Int == nil || i.Int.Sign() >= 0
+}
+
+func (*Int) CacheCanoto() {}
 
 func (i *Int) SizeCanoto() uint64 {
 	if i.Int == nil {
