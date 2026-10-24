@@ -932,11 +932,10 @@ func ReadFint32s[S ~[]E, E Int32](r *Reader, v *S) error {
 	b := r.B[:length]
 	r.B = r.B[length:]
 
-	count := length / SizeFint32
-	if err := UseSliceMemory(r, count, SizeFint32); err != nil {
+	if err := UseMemory(r, length); err != nil {
 		return err
 	}
-	vs := make(S, count)
+	vs := make(S, length/SizeFint32)
 	for i := range vs {
 		vs[i] = E(binary.LittleEndian.Uint32(b))
 		b = b[SizeFint32:]
@@ -1021,11 +1020,10 @@ func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
 	b := r.B[:length]
 	r.B = r.B[length:]
 
-	count := length / SizeFint64
-	if err := UseSliceMemory(r, count, SizeFint64); err != nil {
+	if err := UseMemory(r, length); err != nil {
 		return err
 	}
-	vs := make(S, count)
+	vs := make(S, length/SizeFint64)
 	for i := range vs {
 		vs[i] = E(binary.LittleEndian.Uint64(b))
 		b = b[SizeFint64:]
