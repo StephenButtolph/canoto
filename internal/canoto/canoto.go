@@ -78,10 +78,9 @@ const (
 	SizePointerPresenceTag = uint64(len(PointerPresenceTag))
 
 	// DefaultMemoryLimit is the [Reader.MemoryRemaining] used by
-	// UnmarshalCanoto. It does not limit the memory allocated.
+	// UnmarshalCanoto.
 	DefaultMemoryLimit uint64 = math.MaxUint64
-	// DefaultDepthLimit is the [Reader.DepthLimit] used by UnmarshalCanoto. It
-	// does not limit the depth of nested messages.
+	// DefaultDepthLimit is the [Reader.DepthLimit] used by UnmarshalCanoto.
 	DefaultDepthLimit uint64 = math.MaxUint64
 
 	wireTypeLength = 3
@@ -261,21 +260,16 @@ type (
 		// which must not be modified after unmarshaling.
 		Unsafe bool
 		// MemoryRemaining is the number of bytes that may be allocated during
-		// unmarshaling. Each allocation decrements it, and
-		// [ErrMemoryLimitExceeded] is returned rather than allocating more
-		// than it.
+		// unmarshaling.
 		//
 		// Each allocation is charged the in-memory size of the allocated value,
 		// which may vary between builds.
 		MemoryRemaining uint64
-		// DepthLimit is the number of nested messages that may be read. Each
-		// nested message read with [ReadSubReader] decrements it, and
-		// [ErrDepthLimitExceeded] is returned rather than reading a nested
-		// message when it is 0.
+		// DepthLimit is the number of nested messages that may be read.
 		//
 		// The stack used by nested messages is not charged against
 		// MemoryRemaining, so DepthLimit should be set when unmarshaling
-		// untrusted input.
+		// recursive messages from untrusted input.
 		DepthLimit uint64
 		// Context is a user-defined value that can be used to pass additional
 		// state during the unmarshaling process.
@@ -1299,6 +1293,7 @@ func SkipBytes(r *Reader) error {
 
 // ReadSubReader reads a length-prefixed byte slice from r and sets sub to a
 // Reader over those bytes. The bytes are never copied, regardless of r.Unsafe.
+//
 // All configuration of sub is inherited from r, except that sub.DepthLimit is
 // one less than r.DepthLimit. If r.DepthLimit is 0, [ErrDepthLimitExceeded] is
 // returned.
