@@ -922,7 +922,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
-			r.Budget = result.Budget
+			r.MemoryRemaining = result.MemoryRemaining
 		case canotoNumber_SpecFuzzer__Pointer:
 			if wireType != Len {
 				return UnmarshalResult{}, ErrUnexpectedWireType
@@ -940,7 +940,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
-			r.Budget = result.Budget
+			r.MemoryRemaining = result.MemoryRemaining
 		case canotoNumber_SpecFuzzer__OneOf:
 			if wireType != Len {
 				return UnmarshalResult{}, ErrUnexpectedWireType
@@ -958,7 +958,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
-			r.Budget = result.Budget
+			r.MemoryRemaining = result.MemoryRemaining
 		case canotoNumber_SpecFuzzer__Recursive:
 			if wireType != Len {
 				return UnmarshalResult{}, ErrUnexpectedWireType
@@ -976,7 +976,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
-			r.Budget = result.Budget
+			r.MemoryRemaining = result.MemoryRemaining
 		case canotoNumber_SpecFuzzer__ValueRecursive:
 			if wireType != Len {
 				return UnmarshalResult{}, ErrUnexpectedWireType
@@ -994,7 +994,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
-			r.Budget = result.Budget
+			r.MemoryRemaining = result.MemoryRemaining
 		case canotoNumber_SpecFuzzer__RepeatedInt8:
 			if wireType != Len {
 				return UnmarshalResult{}, ErrUnexpectedWireType
@@ -1306,12 +1306,12 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			field := c.RepeatedValue
 			additionalField := field[1:]
 			if HasNext(&msgReader) {
-				msgReader.Budget = r.Budget
+				msgReader.MemoryRemaining = r.MemoryRemaining
 				result, err := (&field[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1328,7 +1328,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 		case canotoNumber_SpecFuzzer__RepeatedPointer:
 			if wireType != Len {
@@ -1364,7 +1364,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1387,7 +1387,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 		case canotoNumber_SpecFuzzer__RepeatedOneOf:
 			if wireType != Len {
@@ -1423,7 +1423,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1446,7 +1446,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 		case canotoNumber_SpecFuzzer__RepeatedRecursive:
 			if wireType != Len {
@@ -1482,7 +1482,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1505,7 +1505,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 		case canotoNumber_SpecFuzzer__RepeatedValueRecursive:
 			if wireType != Len {
@@ -1541,7 +1541,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1564,7 +1564,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 		case canotoNumber_SpecFuzzer__FixedRepeatedInt8:
 			if wireType != Len {
@@ -1860,7 +1860,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1881,7 +1881,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 				isZero = false
 			}
 			if isZero {
@@ -1914,7 +1914,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1941,7 +1941,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 				isZero = false
 			}
 			if isZero {
@@ -1974,7 +1974,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -2001,7 +2001,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 				isZero = false
 			}
 			if isZero {
@@ -2034,7 +2034,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -2061,7 +2061,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 				isZero = false
 			}
 			if isZero {
@@ -2094,7 +2094,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -2121,7 +2121,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 				isZero = false
 			}
 			if isZero {
@@ -2133,7 +2133,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 
 		minField = field + 1
 	}
-	return UnmarshalResult{Budget: r.Budget}, nil
+	return UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in
@@ -3175,7 +3175,7 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) (UnmarshalResult,
 
 		minField = field + 1
 	}
-	return UnmarshalResult{Budget: r.Budget}, nil
+	return UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in
@@ -3320,14 +3320,14 @@ func (c *SpecFuzzerPointer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, erro
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
-			r.Budget = result.Budget
+			r.MemoryRemaining = result.MemoryRemaining
 		default:
 			return UnmarshalResult{}, ErrUnknownField
 		}
 
 		minField = field + 1
 	}
-	return UnmarshalResult{Budget: r.Budget}, nil
+	return UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in
@@ -3598,7 +3598,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 
 		minField = field + 1
 	}
-	return UnmarshalResult{Budget: r.Budget}, nil
+	return UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in

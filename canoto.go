@@ -142,9 +142,9 @@ var (
 	ErrInvalidBool = errors.New("decoded bool is neither true nor false")
 	// ErrStringNotUTF8 is returned when a decoded string is not valid UTF-8.
 	ErrStringNotUTF8 = errors.New("decoded string is not UTF-8")
-	// ErrBudgetExceeded is returned when unmarshaling would allocate more
-	// memory than permitted by the [Reader.Budget].
-	ErrBudgetExceeded = errors.New("allocation budget exceeded")
+	// ErrMemoryLimitExceeded is returned when unmarshaling would allocate more
+	// memory than permitted by [Reader.MemoryRemaining].
+	ErrMemoryLimitExceeded = errors.New("memory limit exceeded")
 )
 
 type (
@@ -243,25 +243,15 @@ type (
 		// strings and byte slices will alias the original input buffer,
 		// which must not be modified after unmarshaling.
 		Unsafe bool
-		// HasBudget, when true, limits the memory allocated during
-		// unmarshaling to Budget.
-		HasBudget bool
-		// Budget is the number of bytes that may still be allocated during
-		// unmarshaling. It is only enforced if HasBudget is true.
+		// LimitMemory, when true, limits the memory allocated during
+		// unmarshaling to MemoryRemaining.
+		LimitMemory bool
+		// MemoryRemaining is the number of bytes that may be allocated during
+		// unmarshaling. It is only enforced if LimitMemory is true.
 		//
-		// The memory allocated while unmarshaling a message can greatly exceed
-		// the size of the message. For example, an empty entry of a repeated
-		// message field is encoded in 2 bytes, but allocates an entire message.
-		//
-		// Allocated values are charged their Go size, and copied strings and
-		// bytes are charged their length. Allocations are rejected before they
-		// are performed. The message being unmarshaled into is not charged.
-		//
-		// The Go size of a type depends on the platform and the compiler, so
-		// whether a message fits within a budget is not canonical. A budget
-		// should only be used to limit resource usage, not to determine
-		// whether a message is valid.
-		Budget uint64
+		// Each allocation is charged the in-memory size of the allocated value,
+		// which may vary between builds.
+		MemoryRemaining uint64
 		// Context is a user-defined value that can be used to pass additional
 		// state during the unmarshaling process.
 		Context any
@@ -270,8 +260,8 @@ type (
 	// UnmarshalResult is the state returned after successfully unmarshaling a
 	// [Field].
 	UnmarshalResult struct {
-		// Budget is the remaining [Reader.Budget].
-		Budget uint64
+		// MemoryRemaining is the remaining [Reader.MemoryRemaining].
+		MemoryRemaining uint64
 	}
 
 	// Writer contains all the state needed to marshal a Canoto type.
@@ -408,21 +398,18 @@ func (s SizeEnum) shift() (shift uint64, mask uint64, ok bool) {
 	}
 }
 
-// Spend charges count values of size bytes each against the budget of r. If
-// the budget is insufficient, [ErrBudgetExceeded] is returned and the budget is
-// not charged. If r does not have a budget, Spend is a no-op.
-//
-// Spend allows custom [Field] implementations to charge their allocations
-// against the budget.
-func Spend(r *Reader, count, size uint64) error {
-	if !r.HasBudget {
+// UseMemory charges count * size against [Reader.MemoryRemaining]. If the
+// remaining memory is insufficient, [ErrMemoryLimitExceeded] is returned. If
+// [Reader.LimitMemory] is false, UseMemory is a no-op.
+func UseMemory(r *Reader, count, size uint64) error {
+	if !r.LimitMemory {
 		return nil
 	}
 	hi, total := bits.Mul64(count, size)
-	if hi != 0 || total > r.Budget {
-		return ErrBudgetExceeded
+	if hi != 0 || total > r.MemoryRemaining {
+		return ErrMemoryLimitExceeded
 	}
-	r.Budget -= total
+	r.MemoryRemaining -= total
 	return nil
 }
 
@@ -582,7 +569,7 @@ func ReadUints[S ~[]E, E Uint](r *Reader, v *S) (uint64, error) {
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
 	count := CountInts(b)
-	if err := Spend(r, count, uint64(unsafe.Sizeof(E(0)))); err != nil {
+	if err := UseMemory(r, count, uint64(unsafe.Sizeof(E(0)))); err != nil {
 		return 0, err
 	}
 	vs := make(S, count)
@@ -758,7 +745,7 @@ func ReadInts[S ~[]E, E Int](r *Reader, v *S) (uint64, error) {
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
 	count := CountInts(b)
-	if err := Spend(r, count, uint64(unsafe.Sizeof(E(0)))); err != nil {
+	if err := UseMemory(r, count, uint64(unsafe.Sizeof(E(0)))); err != nil {
 		return 0, err
 	}
 	vs := make(S, count)
@@ -924,7 +911,7 @@ func ReadFint32s[S ~[]E, E Int32](r *Reader, v *S) error {
 		return ErrInvalidLength
 	}
 	count := length / SizeFint32
-	if err := Spend(r, count, SizeFint32); err != nil {
+	if err := UseMemory(r, count, SizeFint32); err != nil {
 		return err
 	}
 
@@ -1012,7 +999,7 @@ func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
 		return ErrInvalidLength
 	}
 	count := length / SizeFint64
-	if err := Spend(r, count, SizeFint64); err != nil {
+	if err := UseMemory(r, count, SizeFint64); err != nil {
 		return err
 	}
 
@@ -1099,7 +1086,7 @@ func ReadBools[S ~[]E, E ~bool](r *Reader, v *S) error {
 	if length > uint64(len(r.B)) {
 		return io.ErrUnexpectedEOF
 	}
-	if err := Spend(r, length, SizeBool); err != nil {
+	if err := UseMemory(r, length, SizeBool); err != nil {
 		return err
 	}
 
@@ -1230,7 +1217,7 @@ func ReadString[T ~string](r *Reader, v *T) error {
 		*v = T(unsafeString(bytes))
 		return nil
 	}
-	if err := Spend(r, length, 1); err != nil {
+	if err := UseMemory(r, length, 1); err != nil {
 		return err
 	}
 	*v = T(bytes)
@@ -1256,7 +1243,7 @@ func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 	bytes := r.B[:length]
 	r.B = r.B[length:]
 	if !r.Unsafe {
-		if err := Spend(r, length, 1); err != nil {
+		if err := UseMemory(r, length, 1); err != nil {
 			return err
 		}
 		bytes = slices.Clone(bytes)
@@ -1298,8 +1285,8 @@ func ReadSubReader(r *Reader, sub *Reader) error {
 
 	sub.B = b[:n]
 	sub.Unsafe = r.Unsafe
-	sub.HasBudget = r.HasBudget
-	sub.Budget = r.Budget
+	sub.LimitMemory = r.LimitMemory
+	sub.MemoryRemaining = r.MemoryRemaining
 	sub.Context = r.Context
 	r.B = b[n:]
 	return nil
@@ -1314,13 +1301,14 @@ func AppendBytes[T Bytes](w *Writer, v T) {
 }
 
 // MakePointer sets *p to a new pointer after charging its size against the
-// budget of r. It is equivalent to `*p = new(T)` when r has no budget.
+// remaining memory of r. It is equivalent to `*p = new(T)` when r does not
+// limit memory.
 //
 // This function is useful to use in auto-generated code, when the type of a
 // variable is unknown.
 func MakePointer[T any](r *Reader, p **T) error {
 	var zero T
-	if err := Spend(r, 1, uint64(unsafe.Sizeof(zero))); err != nil {
+	if err := UseMemory(r, 1, uint64(unsafe.Sizeof(zero))); err != nil {
 		return err
 	}
 	*p = new(T)
@@ -1328,14 +1316,14 @@ func MakePointer[T any](r *Reader, p **T) error {
 }
 
 // MakeSlice sets *s to a new slice with the given length after charging its
-// size against the budget of r. It is equivalent to `*s = make(S, length)`
-// when r has no budget.
+// size against the remaining memory of r. It is equivalent to
+// `*s = make(S, length)` when r does not limit memory.
 //
 // This function is useful to use in auto-generated code, when the type of a
 // variable is unknown.
 func MakeSlice[S ~[]E, E any](r *Reader, s *S, length uint64) error {
 	var zero E
-	if err := Spend(r, length, uint64(unsafe.Sizeof(zero))); err != nil {
+	if err := UseMemory(r, length, uint64(unsafe.Sizeof(zero))); err != nil {
 		return err
 	}
 	*s = make(S, length)

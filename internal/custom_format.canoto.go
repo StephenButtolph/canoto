@@ -133,7 +133,7 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalRes
 
 		minField = field + 1
 	}
-	return canoto.UnmarshalResult{Budget: r.Budget}, nil
+	return canoto.UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in

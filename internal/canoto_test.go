@@ -814,14 +814,14 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 				}
 			})
 		}
-		b.Run("unmarshal/"+bm.name+"/budget", func(b *testing.B) {
+		b.Run("unmarshal/"+bm.name+"/limit_memory", func(b *testing.B) {
 			for range b.N {
 				var (
 					s      Scalars
 					reader = canoto.Reader{
-						B:         bm.bytes,
-						HasBudget: true,
-						Budget:    math.MaxUint64,
+						B:               bm.bytes,
+						LimitMemory:     true,
+						MemoryRemaining: math.MaxUint64,
 					}
 				)
 				_, _ = s.UnmarshalCanotoFrom(reader)
@@ -1576,7 +1576,7 @@ func TestCopyDuringMarshal(t *testing.T) {
 	require.NoError(t, <-errs)
 }
 
-func FuzzScalars_Budget(f *testing.F) {
+func FuzzScalars_LimitMemory(f *testing.F) {
 	seed := Scalars{
 		String:                     "hi",
 		Bytes:                      []byte{1},
@@ -1607,44 +1607,43 @@ func FuzzScalars_Budget(f *testing.F) {
 				Unsafe: isUnsafe,
 			})
 
-			unmarshal := func(budget uint64) (*Scalars, uint64, error) {
+			unmarshal := func(memory uint64) (*Scalars, uint64, error) {
 				var s Scalars
-				result, err := s.UnmarshalCanotoFrom(canoto.Reader{
-					B:         b,
-					Unsafe:    isUnsafe,
-					HasBudget: true,
-					Budget:    budget,
+				r, err := s.UnmarshalCanotoFrom(canoto.Reader{
+					B:               b,
+					Unsafe:          isUnsafe,
+					LimitMemory:     true,
+					MemoryRemaining: memory,
 				})
-				return &s, result.Budget, err
+				return &s, r.MemoryRemaining, err
 			}
 
-			// A sufficient budget must not change the result of unmarshaling.
+			// Sufficient memory must not change the result of unmarshaling.
 			s, remaining, err := unmarshal(math.MaxUint64)
 			require.ErrorIs(err, expectedErr)
 			require.Equal(&expected, s)
 			if err != nil {
-				// The remaining budget is only specified on success.
 				continue
 			}
 
-			// The budget must be charged deterministically, so exactly the
-			// amount used must be sufficient.
+			// Memory must be charged deterministically, so exactly the amount
+			// used must be sufficient.
 			used := math.MaxUint64 - remaining
 			s, remaining, err = unmarshal(used)
-			require.NoError(err)
+			require.ErrorIs(err, expectedErr)
 			require.Equal(&expected, s)
 			require.Zero(remaining)
 
-			// The budget must account for the memory that is actually
+			// The memory charged must account for the memory that is actually
 			// allocated. The runtime rounds allocations up to size classes,
 			// which at most doubles their size, and allocations smaller than
 			// 16 bytes may share 16 byte blocks.
 			allocated, mallocs := measureHeap(func() {
 				_, _ = s.UnmarshalCanotoFrom(canoto.Reader{
-					B:         b,
-					Unsafe:    isUnsafe,
-					HasBudget: true,
-					Budget:    math.MaxUint64,
+					B:               b,
+					Unsafe:          isUnsafe,
+					LimitMemory:     true,
+					MemoryRemaining: math.MaxUint64,
 				})
 			})
 			require.LessOrEqual(used, allocated+16)
@@ -1654,7 +1653,7 @@ func FuzzScalars_Budget(f *testing.F) {
 				continue
 			}
 			_, _, err = unmarshal(used - 1)
-			require.ErrorIs(err, canoto.ErrBudgetExceeded)
+			require.ErrorIs(err, canoto.ErrMemoryLimitExceeded)
 		}
 	})
 }
@@ -1677,9 +1676,9 @@ func measureHeap(f func()) (allocated uint64, mallocs uint64) {
 	return allocated, mallocs
 }
 
-// TestBudget_Amplification verifies that the budget bounds allocations whose
-// size is unrelated to the size of the input.
-func TestBudget_Amplification(t *testing.T) {
+// TestLimitMemory_Amplification verifies that the memory limit bounds
+// allocations whose size is unrelated to the size of the input.
+func TestLimitMemory_Amplification(t *testing.T) {
 	require := require.New(t)
 
 	// Each empty element is encoded in 2 bytes, but is allocated as an entire
@@ -1692,23 +1691,23 @@ func TestBudget_Amplification(t *testing.T) {
 		s        GenericField[Scalars, *Scalars]
 	)
 
-	result, err := s.UnmarshalCanotoFrom(canoto.Reader{
-		B:         b,
-		HasBudget: true,
-		Budget:    required,
+	r, err := s.UnmarshalCanotoFrom(canoto.Reader{
+		B:               b,
+		LimitMemory:     true,
+		MemoryRemaining: required,
 	})
 	require.NoError(err)
 	require.Len(s.RepeatedValue, numElements)
-	require.Zero(result.Budget)
+	require.Zero(r.MemoryRemaining)
 
-	// Exceeding the budget must be detected before allocating.
+	// Exceeding the memory limit must be detected before allocating.
 	allocs := testing.AllocsPerRun(10, func() {
 		_, err = s.UnmarshalCanotoFrom(canoto.Reader{
-			B:         b,
-			HasBudget: true,
-			Budget:    required - 1,
+			B:               b,
+			LimitMemory:     true,
+			MemoryRemaining: required - 1,
 		})
 	})
-	require.ErrorIs(err, canoto.ErrBudgetExceeded)
+	require.ErrorIs(err, canoto.ErrMemoryLimitExceeded)
 	require.Zero(allocs)
 }

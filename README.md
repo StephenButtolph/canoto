@@ -166,20 +166,20 @@ Modifying a message, including by calling `UnmarshalCanoto`, while another gorou
 
 The memory allocated while unmarshaling a message can greatly exceed the size of the message. For example, an empty entry of a repeated message field is encoded in 2 bytes, but allocates an entire message.
 
-When unmarshaling untrusted input, a budget can be provided to limit the memory allocated. If an allocation would exceed the budget, unmarshaling fails with `canoto.ErrBudgetExceeded` before performing the allocation. The returned `canoto.UnmarshalResult` contains the remaining budget.
+When unmarshaling untrusted input, the memory allocated can be limited. If an allocation would exceed the remaining memory, unmarshaling fails with `canoto.ErrMemoryLimitExceeded` before performing the allocation. The returned `canoto.UnmarshalResult` contains the remaining memory.
 
 ```golang
 var msg Message
 result, err := msg.UnmarshalCanotoFrom(canoto.Reader{
-	B:         bytes,
-	HasBudget: true,
-	Budget:    1 << 20,
+	B:               bytes,
+	LimitMemory:     true,
+	MemoryRemaining: 1 << 20,
 })
 ```
 
-Allocations are charged their Go size, which depends on the platform and the compiler. A budget should only be used to limit resource usage, not to determine whether a message is valid.
+Allocations are charged their Go size, which depends on the platform and the compiler. A memory limit should only be used to limit resource usage, not to determine whether a message is valid.
 
-Custom `canoto.Field` implementations should charge any memory they allocate with `canoto.Spend`.
+Custom `canoto.Field` implementations should charge any memory they allocate with `canoto.UseMemory`.
 
 ### Standalone Implementations
 

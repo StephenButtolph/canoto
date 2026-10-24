@@ -130,12 +130,12 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			field := c.Fields
 			additionalField := field[1:]
 			if HasNext(&msgReader) {
-				msgReader.Budget = r.Budget
+				msgReader.MemoryRemaining = r.MemoryRemaining
 				result, err := (&field[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -152,7 +152,7 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				if err != nil {
 					return UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 		default:
 			return UnmarshalResult{}, ErrUnknownField
@@ -160,7 +160,7 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 
 		minField = field + 1
 	}
-	return UnmarshalResult{Budget: r.Budget}, nil
+	return UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in
@@ -654,7 +654,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
-			r.Budget = result.Budget
+			r.MemoryRemaining = result.MemoryRemaining
 		case canotoNumber_FieldType__TypeRecursive:
 			if wireType != Varint {
 				return UnmarshalResult{}, ErrUnexpectedWireType
@@ -675,7 +675,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 
 		minField = field + 1
 	}
-	return UnmarshalResult{Budget: r.Budget}, nil
+	return UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in

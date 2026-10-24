@@ -21,22 +21,20 @@ func (*Int) DescribeCanoto(...reflect.Type) *canoto.Spec {
 }
 
 func (i *Int) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error) {
-	// Custom fields are responsible for charging their own allocations.
 	if i.Int == nil {
-		if err := canoto.Spend(&r, 1, uint64(unsafe.Sizeof(big.Int{}))); err != nil {
+		if err := canoto.UseMemory(&r, 1, uint64(unsafe.Sizeof(big.Int{}))); err != nil {
 			return canoto.UnmarshalResult{}, err
 		}
 		i.Int = new(big.Int)
 	}
-	// SetBytes allocates approximately len(r.B) bytes.
-	if err := canoto.Spend(&r, 1, uint64(len(r.B))); err != nil {
+	if err := canoto.UseMemory(&r, 1, uint64(len(r.B))); err != nil {
 		return canoto.UnmarshalResult{}, err
 	}
 	i.Int.SetBytes(r.B)
 	if i.SizeCanoto() != uint64(len(r.B)) {
 		return canoto.UnmarshalResult{}, canoto.ErrPaddedZeroes
 	}
-	return canoto.UnmarshalResult{Budget: r.Budget}, nil
+	return canoto.UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
 }
 
 func (*Int) CheckCanoto() bool { return true }

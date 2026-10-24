@@ -747,7 +747,7 @@ func makeUnmarshalBody(m message, canotoSelector string) string {
 		template = `	if ${canotoSelector}HasNext(&r) {
 		return ${canotoSelector}UnmarshalResult{}, ${canotoSelector}ErrUnknownField
 	}
-	return ${canotoSelector}UnmarshalResult{Budget: r.Budget}, nil
+	return ${canotoSelector}UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
 `
 	} else {
 		template = `	var minField uint32
@@ -767,7 +767,7 @@ ${unmarshal}		default:
 
 		minField = field + 1
 	}
-	return ${canotoSelector}UnmarshalResult{Budget: r.Budget}, nil
+	return ${canotoSelector}UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
 `
 	}
 
@@ -1102,7 +1102,7 @@ func makeUnmarshal(m message) string {
 			if err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
-			r.Budget = result.Budget
+			r.MemoryRemaining = result.MemoryRemaining
 `,
 			repeated: `		case ${fieldNumberConst}:
 			if wireType != ${selector}Len {
@@ -1128,12 +1128,12 @@ func makeUnmarshal(m message) string {
 			field := c.${fieldName}
 			additionalField := field[1:]
 			if ${selector}HasNext(&msgReader) {
-				msgReader.Budget = r.Budget
+				msgReader.MemoryRemaining = r.MemoryRemaining
 				result, err := ${genericTypeCast}(&field[0]).UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1150,7 +1150,7 @@ func makeUnmarshal(m message) string {
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 `,
 			fixedRepeated: `		case ${fieldNumberConst}:
@@ -1174,7 +1174,7 @@ func makeUnmarshal(m message) string {
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1195,7 +1195,7 @@ func makeUnmarshal(m message) string {
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 				isZero = false
 			}
 			if isZero {
@@ -1221,7 +1221,7 @@ func makeUnmarshal(m message) string {
 			if err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
-			r.Budget = result.Budget
+			r.MemoryRemaining = result.MemoryRemaining
 `,
 			repeated: `		case ${fieldNumberConst}:
 			if wireType != ${selector}Len {
@@ -1257,7 +1257,7 @@ func makeUnmarshal(m message) string {
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1280,7 +1280,7 @@ func makeUnmarshal(m message) string {
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 `,
 			fixedRepeated: `		case ${fieldNumberConst}:
@@ -1310,7 +1310,7 @@ func makeUnmarshal(m message) string {
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 			}
 
 			// Read the rest of the entries, stripping the tag each time.
@@ -1337,7 +1337,7 @@ func makeUnmarshal(m message) string {
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				r.Budget = result.Budget
+				r.MemoryRemaining = result.MemoryRemaining
 				isZero = false
 			}
 			if isZero {
