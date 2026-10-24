@@ -1631,3 +1631,38 @@ func TestLimitMemory(t *testing.T) {
 		})
 	}
 }
+
+func FuzzLimitMemory(f *testing.F) {
+	f.Fuzz(func(t *testing.T, b []byte) {
+		var unlimited Scalars
+		result, err := unlimited.UnmarshalCanotoFrom(canoto.Reader{
+			B:               b,
+			LimitMemory:     true,
+			MemoryRemaining: math.MaxUint64,
+		})
+		if err != nil {
+			t.Skip("invalid input")
+		}
+		used := math.MaxUint64 - result.MemoryRemaining
+
+		var exact Scalars
+		result, err = exact.UnmarshalCanotoFrom(canoto.Reader{
+			B:               b,
+			LimitMemory:     true,
+			MemoryRemaining: used,
+		})
+		require.NoError(t, err)
+		require.Zero(t, result.MemoryRemaining)
+		require.Equal(t, unlimited, exact)
+
+		if used == 0 {
+			return
+		}
+		_, err = exact.UnmarshalCanotoFrom(canoto.Reader{
+			B:               b,
+			LimitMemory:     true,
+			MemoryRemaining: used - 1,
+		})
+		require.ErrorIs(t, err, canoto.ErrMemoryLimitExceeded)
+	})
+}
