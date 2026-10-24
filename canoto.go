@@ -142,6 +142,9 @@ var (
 	ErrInvalidBool = errors.New("decoded bool is neither true nor false")
 	// ErrStringNotUTF8 is returned when a decoded string is not valid UTF-8.
 	ErrStringNotUTF8 = errors.New("decoded string is not UTF-8")
+	// ErrMemoryLimitExceeded is returned when unmarshaling would allocate more
+	// memory than permitted by [Reader.MemoryRemaining].
+	ErrMemoryLimitExceeded = errors.New("memory limit exceeded")
 )
 
 type (
@@ -212,7 +215,7 @@ type (
 		// It is assumed that this field passes CheckCanoto.
 		AppendCanoto(w Writer) Writer
 		// UnmarshalCanotoFrom populates the field from a [Reader].
-		UnmarshalCanotoFrom(r Reader) error
+		UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error)
 	}
 
 	// FieldPointer is a constraint that requires *T to implement [Field].
@@ -240,9 +243,25 @@ type (
 		// strings and byte slices will alias the original input buffer,
 		// which must not be modified after unmarshaling.
 		Unsafe bool
+		// LimitMemory, when true, limits the memory allocated during
+		// unmarshaling to MemoryRemaining.
+		LimitMemory bool
+		// MemoryRemaining is the number of bytes that may be allocated during
+		// unmarshaling. It is only enforced if LimitMemory is true.
+		//
+		// Each allocation is charged the in-memory size of the allocated value,
+		// which may vary between builds.
+		MemoryRemaining uint64
 		// Context is a user-defined value that can be used to pass additional
 		// state during the unmarshaling process.
 		Context any
+	}
+
+	// UnmarshalResult is the state returned after successfully unmarshaling a
+	// [Field].
+	UnmarshalResult struct {
+		// MemoryRemaining is the remaining [Reader.MemoryRemaining].
+		MemoryRemaining uint64
 	}
 
 	// Writer contains all the state needed to marshal a Canoto type.
@@ -377,6 +396,33 @@ func (s SizeEnum) shift() (shift uint64, mask uint64, ok bool) {
 	default:
 		return 0, 0, false
 	}
+}
+
+// UseMemory charges n bytes against [Reader.MemoryRemaining]. If the remaining
+// memory is insufficient, [ErrMemoryLimitExceeded] is returned. If
+// [Reader.LimitMemory] is false, UseMemory is a no-op.
+func UseMemory(r *Reader, n uint64) error {
+	if !r.LimitMemory {
+		return nil
+	}
+	if n > r.MemoryRemaining {
+		return ErrMemoryLimitExceeded
+	}
+	r.MemoryRemaining -= n
+	return nil
+}
+
+// UseSliceMemory charges the memory of a slice with length elements of size
+// bytes each, as [UseMemory] does.
+func UseSliceMemory(r *Reader, length uint64, size uintptr) error {
+	if !r.LimitMemory {
+		return nil
+	}
+	hi, total := bits.Mul64(length, uint64(size))
+	if hi != 0 {
+		return ErrMemoryLimitExceeded
+	}
+	return UseMemory(r, total)
 }
 
 // UnwrapPointer strips the presence prefix from a non-nil repeated pointer
@@ -534,7 +580,11 @@ func ReadUints[S ~[]E, E Uint](r *Reader, v *S) (uint64, error) {
 	// After the check above, b contains exactly CountInts(b) complete
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
-	vs := make(S, CountInts(b))
+	count := CountInts(b)
+	if err := UseSliceMemory(r, count, unsafe.Sizeof(E(0))); err != nil {
+		return 0, err
+	}
+	vs := make(S, count)
 	var (
 		i     int    // number of varints decoded so far
 		val   uint64 // value accumulated for the current varint
@@ -706,7 +756,11 @@ func ReadInts[S ~[]E, E Int](r *Reader, v *S) (uint64, error) {
 	// After the check above, b contains exactly CountInts(b) complete
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
-	vs := make(S, CountInts(b))
+	count := CountInts(b)
+	if err := UseSliceMemory(r, count, unsafe.Sizeof(E(0))); err != nil {
+		return 0, err
+	}
+	vs := make(S, count)
 	var (
 		i        int    // number of varints decoded so far
 		largeVal uint64 // value accumulated for the current varint
@@ -877,7 +931,12 @@ func ReadFint32s[S ~[]E, E Int32](r *Reader, v *S) error {
 	// store.
 	b := r.B[:length]
 	r.B = r.B[length:]
-	vs := make(S, length/SizeFint32)
+
+	count := length / SizeFint32
+	if err := UseSliceMemory(r, count, SizeFint32); err != nil {
+		return err
+	}
+	vs := make(S, count)
 	for i := range vs {
 		vs[i] = E(binary.LittleEndian.Uint32(b))
 		b = b[SizeFint32:]
@@ -961,7 +1020,12 @@ func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
 	// store.
 	b := r.B[:length]
 	r.B = r.B[length:]
-	vs := make(S, length/SizeFint64)
+
+	count := length / SizeFint64
+	if err := UseSliceMemory(r, count, SizeFint64); err != nil {
+		return err
+	}
+	vs := make(S, count)
 	for i := range vs {
 		vs[i] = E(binary.LittleEndian.Uint64(b))
 		b = b[SizeFint64:]
@@ -1037,11 +1101,14 @@ func ReadBools[S ~[]E, E ~bool](r *Reader, v *S) error {
 		return io.ErrUnexpectedEOF
 	}
 
-	vs := make(S, length)
-	// Slicing b by len(vs) proves to the compiler that b[i] can not exceed
-	// either slice, removing all bounds checks from the loop.
-	b := r.B[:len(vs)]
+	b := r.B[:length]
 	r.B = r.B[length:]
+	if err := UseMemory(r, length); err != nil {
+		return err
+	}
+	// Making vs with len(b) proves to the compiler that b[i] can not exceed
+	// either slice, removing all bounds checks from the loop.
+	vs := make(S, len(b))
 	for i := range vs {
 		// This branch is typically predicted correctly for valid input, which
 		// is faster than accumulating the bytes.
@@ -1162,9 +1229,12 @@ func ReadString[T ~string](r *Reader, v *T) error {
 
 	if r.Unsafe {
 		*v = T(unsafeString(bytes))
-	} else {
-		*v = T(bytes)
+		return nil
 	}
+	if err := UseMemory(r, length); err != nil {
+		return err
+	}
+	*v = T(bytes)
 	return nil
 }
 
@@ -1187,6 +1257,9 @@ func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 	bytes := r.B[:length]
 	r.B = r.B[length:]
 	if !r.Unsafe {
+		if err := UseMemory(r, length); err != nil {
+			return err
+		}
 		bytes = slices.Clone(bytes)
 	}
 	*v = T(bytes)
@@ -1226,6 +1299,8 @@ func ReadSubReader(r *Reader, sub *Reader) error {
 
 	sub.B = b[:n]
 	sub.Unsafe = r.Unsafe
+	sub.LimitMemory = r.LimitMemory
+	sub.MemoryRemaining = r.MemoryRemaining
 	sub.Context = r.Context
 	r.B = b[n:]
 	return nil
@@ -1239,25 +1314,34 @@ func AppendBytes[T Bytes](w *Writer, v T) {
 	w.B = b
 }
 
-// MakePointer creates a new pointer. It is equivalent to `new(T)`.
+// MakePointer sets *p to a new pointer after charging its size against the
+// remaining memory of r. It is equivalent to `*p = new(T)` when r does not
+// limit memory.
 //
 // This function is useful to use in auto-generated code, when the type of a
-// variable is unknown. For example, if we have a variable `v` which we know to
-// be a pointer, but we do not know the type of the pointer, we can use this
-// function to leverage golang's type inference to create the new pointer.
-func MakePointer[T any](_ *T) *T {
-	return new(T)
+// variable is unknown.
+func MakePointer[T any](r *Reader, p **T) error {
+	var zero T
+	if err := UseMemory(r, uint64(unsafe.Sizeof(zero))); err != nil {
+		return err
+	}
+	*p = new(T)
+	return nil
 }
 
-// MakeSlice creates a new slice with the given length. It is equivalent to
-// `make([]T, length)`.
+// MakeSlice sets *s to a new slice with the given length after charging its
+// size against the remaining memory of r. It is equivalent to
+// `*s = make(S, length)` when r does not limit memory.
 //
 // This function is useful to use in auto-generated code, when the type of a
-// variable is unknown. For example, if we have a variable `v` which we know to
-// be a slice, but we do not know the type of the elements, we can use this
-// function to leverage golang's type inference to create the new slice.
-func MakeSlice[T any](_ []T, length uint64) []T {
-	return make([]T, length)
+// variable is unknown.
+func MakeSlice[S ~[]E, E any](r *Reader, s *S, length uint64) error {
+	var zero E
+	if err := UseSliceMemory(r, length, unsafe.Sizeof(zero)); err != nil {
+		return err
+	}
+	*s = make(S, length)
+	return nil
 }
 
 // MakeEntry returns the zero value of an element in the provided slice.

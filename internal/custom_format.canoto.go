@@ -75,7 +75,8 @@ func (c *CustomFormat) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
 	}
-	return c.UnmarshalCanotoFrom(r)
+	_, err := c.UnmarshalCanotoFrom(r)
+	return err
 }
 
 // UnmarshalCanotoFrom populates the struct from a [canoto.Reader]. Most users
@@ -84,7 +85,7 @@ func (c *CustomFormat) UnmarshalCanoto(bytes []byte) error {
 // During parsing, the canoto cache is saved.
 //
 // This function enables configuration of reader options.
-func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) error {
+func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error) {
 	// Zero the struct before unmarshaling.
 	*c = CustomFormat{}
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
@@ -93,46 +94,46 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) error {
 	for canoto.HasNext(&r) {
 		field, wireType, err := canoto.ReadTag(&r)
 		if err != nil {
-			return err
+			return canoto.UnmarshalResult{}, err
 		}
 		if field < minField {
-			return canoto.ErrInvalidFieldOrder
+			return canoto.UnmarshalResult{}, canoto.ErrInvalidFieldOrder
 		}
 
 		switch field {
 		case CustomFormatANumber:
 			if wireType != canoto.Varint {
-				return canoto.ErrUnexpectedWireType
+				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
 			}
 			atomic.StoreUint32(&c.canotoData.FieldsOneOf, CustomFormatANumber)
 
 			if err := canoto.ReadUint(&r, &c.A); err != nil {
-				return err
+				return canoto.UnmarshalResult{}, err
 			}
 			if canoto.IsZero(c.A) {
-				return canoto.ErrZeroValue
+				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
 			}
 		case CustomFormatBNumber:
 			if wireType != canoto.Varint {
-				return canoto.ErrUnexpectedWireType
+				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
 			}
 			if atomic.SwapUint32(&c.canotoData.FieldsOneOf, CustomFormatBNumber) != 0 {
-				return canoto.ErrDuplicateOneOf
+				return canoto.UnmarshalResult{}, canoto.ErrDuplicateOneOf
 			}
 
 			if err := canoto.ReadUint(&r, &c.B); err != nil {
-				return err
+				return canoto.UnmarshalResult{}, err
 			}
 			if canoto.IsZero(c.B) {
-				return canoto.ErrZeroValue
+				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
 			}
 		default:
-			return canoto.ErrUnknownField
+			return canoto.UnmarshalResult{}, canoto.ErrUnknownField
 		}
 
 		minField = field + 1
 	}
-	return nil
+	return canoto.UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in

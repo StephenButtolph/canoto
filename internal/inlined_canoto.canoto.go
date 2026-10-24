@@ -56,7 +56,8 @@ func (c *justAnInt) UnmarshalCanoto(bytes []byte) error {
 	r := canoto.Reader{
 		B: bytes,
 	}
-	return c.UnmarshalCanotoFrom(r)
+	_, err := c.UnmarshalCanotoFrom(r)
+	return err
 }
 
 // UnmarshalCanotoFrom populates the struct from a [canoto.Reader]. Most users
@@ -65,7 +66,7 @@ func (c *justAnInt) UnmarshalCanoto(bytes []byte) error {
 // During parsing, the canoto cache is saved.
 //
 // This function enables configuration of reader options.
-func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) error {
+func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error) {
 	// Zero the struct before unmarshaling.
 	*c = justAnInt{}
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
@@ -74,31 +75,31 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) error {
 	for canoto.HasNext(&r) {
 		field, wireType, err := canoto.ReadTag(&r)
 		if err != nil {
-			return err
+			return canoto.UnmarshalResult{}, err
 		}
 		if field < minField {
-			return canoto.ErrInvalidFieldOrder
+			return canoto.UnmarshalResult{}, canoto.ErrInvalidFieldOrder
 		}
 
 		switch field {
 		case canotoNumber_justAnInt__Int8:
 			if wireType != canoto.Varint {
-				return canoto.ErrUnexpectedWireType
+				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
 			}
 
 			if err := canoto.ReadInt(&r, &c.Int8); err != nil {
-				return err
+				return canoto.UnmarshalResult{}, err
 			}
 			if canoto.IsZero(c.Int8) {
-				return canoto.ErrZeroValue
+				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
 			}
 		default:
-			return canoto.ErrUnknownField
+			return canoto.UnmarshalResult{}, canoto.ErrUnknownField
 		}
 
 		minField = field + 1
 	}
-	return nil
+	return canoto.UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in
