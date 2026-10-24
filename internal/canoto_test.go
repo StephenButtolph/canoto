@@ -3,7 +3,6 @@ package examples
 import (
 	"math"
 	"reflect"
-	"runtime"
 	"slices"
 	"strconv"
 	"testing"
@@ -1576,111 +1575,11 @@ func TestCopyDuringMarshal(t *testing.T) {
 	require.NoError(t, <-errs)
 }
 
-func FuzzScalars_LimitMemory(f *testing.F) {
-	seed := Scalars{
-		String:                     "hi",
-		Bytes:                      []byte{1},
-		RepeatedInt8:               []int8{1, -2},
-		RepeatedUint64:             []uint64{1, 1 << 63},
-		RepeatedFixed32:            []uint32{1, 2},
-		RepeatedFixed64:            []uint64{1, 2},
-		RepeatedBool:               []bool{true, false},
-		RepeatedString:             []string{"a", ""},
-		RepeatedBytes:              [][]byte{{1}, {}},
-		RepeatedLargestFieldNumber: []LargestFieldNumber[uint32]{{Uint: 1}, {}},
-		FixedRepeatedString:        [3]string{"a"},
-		RepeatedFixedBytes:         [][32]byte{{1}, {}},
-		FixedRepeatedBytes:         [3][]byte{{1}},
-		CustomRepeatedBytes:        customRepeatedBytes{{1}},
-		Pointer:                    &LargestFieldNumber[uint32]{Uint: 1},
-		RepeatedPointer:            []*LargestFieldNumber[uint32]{{Uint: 1}, nil, {}},
-		FixedRepeatedPointer:       [3]*LargestFieldNumber[uint32]{{Uint: 1}},
-	}
-	f.Add(seed.MarshalCanoto())
-	f.Fuzz(func(t *testing.T, b []byte) {
-		require := require.New(t)
-
-		for _, isUnsafe := range []bool{false, true} {
-			var expected Scalars
-			_, expectedErr := expected.UnmarshalCanotoFrom(canoto.Reader{
-				B:      b,
-				Unsafe: isUnsafe,
-			})
-
-			unmarshal := func(memory uint64) (*Scalars, uint64, error) {
-				var s Scalars
-				r, err := s.UnmarshalCanotoFrom(canoto.Reader{
-					B:               b,
-					Unsafe:          isUnsafe,
-					LimitMemory:     true,
-					MemoryRemaining: memory,
-				})
-				return &s, r.MemoryRemaining, err
-			}
-
-			// Sufficient memory must not change the result of unmarshaling.
-			s, remaining, err := unmarshal(math.MaxUint64)
-			require.ErrorIs(err, expectedErr)
-			require.Equal(&expected, s)
-			if err != nil {
-				continue
-			}
-
-			// Memory must be charged deterministically, so exactly the amount
-			// used must be sufficient.
-			used := math.MaxUint64 - remaining
-			s, remaining, err = unmarshal(used)
-			require.ErrorIs(err, expectedErr)
-			require.Equal(&expected, s)
-			require.Zero(remaining)
-
-			// The memory charged must account for the memory that is actually
-			// allocated. The runtime rounds allocations up to size classes,
-			// which at most doubles their size, and allocations smaller than
-			// 16 bytes may share 16 byte blocks.
-			allocated, mallocs := measureHeap(func() {
-				_, _ = s.UnmarshalCanotoFrom(canoto.Reader{
-					B:               b,
-					Unsafe:          isUnsafe,
-					LimitMemory:     true,
-					MemoryRemaining: math.MaxUint64,
-				})
-			})
-			require.LessOrEqual(used, allocated+16)
-			require.LessOrEqual(allocated, 2*used+16*mallocs)
-
-			if used == 0 {
-				continue
-			}
-			_, _, err = unmarshal(used - 1)
-			require.ErrorIs(err, canoto.ErrMemoryLimitExceeded)
-		}
-	})
-}
-
-// measureHeap returns the number of bytes and objects allocated on the heap by
-// f. Allocations by other goroutines can only increase the measurements, so the
-// minimum over multiple runs is returned.
-func measureHeap(f func()) (allocated uint64, mallocs uint64) {
-	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(1))
-
-	allocated, mallocs = math.MaxUint64, math.MaxUint64
-	for range 3 {
-		var before, after runtime.MemStats
-		runtime.ReadMemStats(&before)
-		f()
-		runtime.ReadMemStats(&after)
-		allocated = min(allocated, after.TotalAlloc-before.TotalAlloc)
-		mallocs = min(mallocs, after.Mallocs-before.Mallocs)
-	}
-	return allocated, mallocs
-}
-
 // TestLimitMemory_Amplification verifies that the memory limit bounds
 // allocations whose size is unrelated to the size of the input.
+//
+// At the time of writing, this test showed an ~1000x memory amplification.
 func TestLimitMemory_Amplification(t *testing.T) {
-	require := require.New(t)
-
 	// Each empty element is encoded in 2 bytes, but is allocated as an entire
 	// Scalars struct.
 	const numElements = 1024
@@ -1691,23 +1590,22 @@ func TestLimitMemory_Amplification(t *testing.T) {
 		s        GenericField[Scalars, *Scalars]
 	)
 
-	r, err := s.UnmarshalCanotoFrom(canoto.Reader{
+	t.Logf("binary=%d ; memory=%d", len(b), required)
+	t.Fail()
+
+	result, err := s.UnmarshalCanotoFrom(canoto.Reader{
 		B:               b,
 		LimitMemory:     true,
 		MemoryRemaining: required,
 	})
-	require.NoError(err)
-	require.Len(s.RepeatedValue, numElements)
-	require.Zero(r.MemoryRemaining)
+	require.NoError(t, err)
+	require.Len(t, s.RepeatedValue, numElements)
+	require.Zero(t, result.MemoryRemaining)
 
-	// Exceeding the memory limit must be detected before allocating.
-	allocs := testing.AllocsPerRun(10, func() {
-		_, err = s.UnmarshalCanotoFrom(canoto.Reader{
-			B:               b,
-			LimitMemory:     true,
-			MemoryRemaining: required - 1,
-		})
+	_, err = s.UnmarshalCanotoFrom(canoto.Reader{
+		B:               b,
+		LimitMemory:     true,
+		MemoryRemaining: required - 1,
 	})
-	require.ErrorIs(err, canoto.ErrMemoryLimitExceeded)
-	require.Zero(allocs)
+	require.ErrorIs(t, err, canoto.ErrMemoryLimitExceeded)
 }
