@@ -922,7 +922,6 @@ func ReadFint32s[S ~[]E, E Int32](r *Reader, v *S) error {
 	if length%SizeFint32 != 0 {
 		return ErrInvalidLength
 	}
-	count := length / SizeFint32
 
 	// Advancing a local slice keeps the slice header in registers. Advancing
 	// r.B on every element would reload the header through memory each
@@ -932,6 +931,8 @@ func ReadFint32s[S ~[]E, E Int32](r *Reader, v *S) error {
 	// store.
 	b := r.B[:length]
 	r.B = r.B[length:]
+
+	count := length / SizeFint32
 	if err := UseSliceMemory(r, count, SizeFint32); err != nil {
 		return err
 	}
@@ -1010,7 +1011,6 @@ func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
 	if length%SizeFint64 != 0 {
 		return ErrInvalidLength
 	}
-	count := length / SizeFint64
 
 	// Advancing a local slice keeps the slice header in registers. Advancing
 	// r.B on every element would reload the header through memory each
@@ -1020,6 +1020,8 @@ func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
 	// store.
 	b := r.B[:length]
 	r.B = r.B[length:]
+
+	count := length / SizeFint64
 	if err := UseSliceMemory(r, count, SizeFint64); err != nil {
 		return err
 	}
