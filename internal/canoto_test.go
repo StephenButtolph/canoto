@@ -1589,9 +1589,7 @@ func TestLimitMemory_Amplification(t *testing.T) {
 		required = numElements * uint64(reflect.TypeFor[Scalars]().Size())
 		s        GenericField[Scalars, *Scalars]
 	)
-
 	t.Logf("binary=%d ; memory=%d", len(b), required)
-	t.Fail()
 
 	result, err := s.UnmarshalCanotoFrom(canoto.Reader{
 		B:               b,
