@@ -296,7 +296,7 @@ func parseField(
 		const (
 			unmarshalOneOfTemplate = `
 			if atomic.SwapUint32(&c.canotoData.%sOneOf, %s) != 0 {
-				return %[3]sUnmarshalResult{}, %[3]sErrDuplicateOneOf
+				return %sUnmarshalResult{}, %sErrDuplicateOneOf
 			}`
 			firstUnmarshalOneOfTemplate = `
 			atomic.StoreUint32(&c.canotoData.%sOneOf, %s)`
@@ -312,6 +312,7 @@ func parseField(
 		unmarshalOneOf = fmt.Sprintf(unmarshalOneOfTemplate,
 			oneOfName,
 			fieldNumberConst,
+			selector,
 			selector,
 		)
 		firstUnmarshalOneOf = fmt.Sprintf(firstUnmarshalOneOfTemplate,
