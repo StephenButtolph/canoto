@@ -88,8 +88,9 @@ const (
 	wireTypeMask   = 0x07
 	maxTagLength   = 5
 
-	falseByte            = 0
-	trueByte             = 1
+	falseByte byte = 0
+	trueByte  byte = 1
+
 	continuationMask     = 0x80
 	continuationWordMask = 0x8080808080808080
 )
@@ -1172,7 +1173,7 @@ func ReadBoolsInto[S ~[]E, E ~bool](r *Reader, vs S) error {
 
 // AppendBool writes a boolean to the writer.
 func AppendBool[T ~bool](w *Writer, b T) {
-	v := byte(falseByte)
+	v := falseByte
 	if b {
 		v = trueByte
 	}
@@ -1185,7 +1186,7 @@ func AppendBools[S ~[]E, E ~bool](w *Writer, vs S) {
 	b := w.B
 	b = binary.AppendUvarint(b, uint64(len(vs))*SizeBool)
 	for _, v := range vs {
-		t := byte(falseByte)
+		t := falseByte
 		if v {
 			t = trueByte
 		}
@@ -1375,7 +1376,7 @@ func MakeSlice[S ~[]E, E any](r *Reader, s *S, length uint64) error {
 // variable is unknown. For example, if we have a variable `v` which we know to
 // be a slice, but we do not know the type of the elements, we can use this
 // function to leverage golang's type inference to create an element.
-func MakeEntry[S ~[]E, E any](_ S) (_ E) {
+func MakeEntry[S ~[]E, E any](S) (_ E) {
 	return
 }
 
@@ -1386,8 +1387,8 @@ func MakeEntry[S ~[]E, E any](_ S) (_ E) {
 // variable is unknown. For example, if we have a variable `v` which we know to
 // be a slice, but we do not know the type of the elements, we can use this
 // function to leverage golang's type inference to create the pointer.
-func MakeEntryNilPointer[S ~[]E, E any](_ S) *E {
-	return nil
+func MakeEntryNilPointer[S ~[]E, E any](S) (_ *E) {
+	return
 }
 
 // IsZero returns true if the value is the zero value for its type.
