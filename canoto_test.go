@@ -2047,6 +2047,36 @@ func FuzzSpec(f *testing.F) {
 	})
 }
 
+func FuzzSpec_DepthLimit(f *testing.F) {
+	f.Add((&SpecFuzzer{
+		Recursive: &SpecFuzzer{
+			Recursive: &SpecFuzzer{
+				Recursive: &SpecFuzzer{String: "a"},
+			},
+		},
+	}).MarshalCanoto(), uint8(2))
+	f.Add((&SpecFuzzer{
+		RepeatedRecursive: []*SpecFuzzer{
+			{RepeatedRecursive: []*SpecFuzzer{nil, {}}},
+		},
+	}).MarshalCanoto(), uint8(1))
+
+	f.Fuzz(func(t *testing.T, b []byte, depthLimit uint8) {
+		var msg SpecFuzzer
+		_, expectedErr := msg.UnmarshalCanotoFrom(Reader{
+			B:               b,
+			MemoryRemaining: DefaultMemoryLimit,
+			DepthLimit:      uint64(depthLimit),
+		})
+		_, actualErr := Unmarshal(msg.DescribeCanoto(), Reader{
+			B:               b,
+			MemoryRemaining: DefaultMemoryLimit,
+			DepthLimit:      uint64(depthLimit),
+		})
+		require.Equal(t, expectedErr, actualErr)
+	})
+}
+
 // TestFixedRepeatedFixedSize_InvalidLength verifies that a packed fixed size
 // field whose length doesn't match the array is rejected with
 // [ErrInvalidLength], both by the generated code and by [Unmarshal].

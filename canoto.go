@@ -2258,6 +2258,7 @@ func (f *FieldType) unmarshalString(r *Reader, _ []*Spec) (any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
+		ReadBytes[[]byte],
 		func(msgBytes []byte) (string, bool, error) {
 			if !utf8.Valid(msgBytes) {
 				return "", false, ErrStringNotUTF8
@@ -2283,6 +2284,7 @@ func (f *FieldType) unmarshalBytes(r *Reader, _ []*Spec) (any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
+		ReadBytes[[]byte],
 		func(msgBytes []byte) ([]byte, bool, error) {
 			return msgBytes, len(msgBytes) == 0, nil
 		},
@@ -2395,29 +2397,30 @@ func (f *FieldType) unmarshalSpec(r *Reader, specs []*Spec) (any, error) {
 }
 
 func (f *FieldType) unmarshalMessage(r *Reader, spec *Spec, specs []*Spec) (any, error) {
+	// unmarshal reads a message from msgReader, charging its memory to r.
+	unmarshal := func(msgReader Reader) (Any, error) {
+		msgReader.MemoryRemaining = r.MemoryRemaining
+		a, err := spec.unmarshal(&msgReader, specs)
+		r.MemoryRemaining = msgReader.MemoryRemaining
+		return a, err
+	}
 	if f.Pointer && f.Repeated {
-		return unmarshalUnpacked(f, r, func(msgBytes []byte) (*Any, bool, error) {
-			if len(msgBytes) == 0 {
+		return unmarshalUnpacked(f, r, ReadSubReader, func(msgReader Reader) (*Any, bool, error) {
+			if !HasNext(&msgReader) {
 				return nil, true, nil
 			}
-			remainingBytes := r.B
-			r.B = msgBytes
-			if err := UnwrapPointer(r); err != nil {
+			if err := UnwrapPointer(&msgReader); err != nil {
 				return nil, false, err
 			}
-			a, err := spec.unmarshal(r, specs)
-			r.B = remainingBytes
+			a, err := unmarshal(msgReader)
 			return &a, false, err
 		})
 	}
-	return unmarshalUnpacked(f, r, func(msgBytes []byte) (Any, bool, error) {
-		if len(msgBytes) == 0 {
+	return unmarshalUnpacked(f, r, ReadSubReader, func(msgReader Reader) (Any, bool, error) {
+		if !HasNext(&msgReader) {
 			return Any{}, !f.Pointer, nil
 		}
-		remainingBytes := r.B
-		r.B = msgBytes
-		a, err := spec.unmarshal(r, specs)
-		r.B = remainingBytes
+		a, err := unmarshal(msgReader)
 		return a, false, err
 	})
 }
@@ -2742,19 +2745,22 @@ func unmarshalPackedFixed[T comparable](
 	return values, nil
 }
 
-func unmarshalUnpacked[T any](
+// unmarshalUnpacked reads a length-delimited field. Each entry is read with
+// read and then converted into a value with unmarshal.
+func unmarshalUnpacked[E, T any](
 	f *FieldType,
 	r *Reader,
-	unmarshal func([]byte) (T, bool, error),
+	read func(r *Reader, entry *E) error,
+	unmarshal func(entry E) (T, bool, error),
 ) (any, error) {
 	// Read the first entry manually because the tag is already stripped.
-	var msgBytes []byte
-	if err := ReadBytes(r, &msgBytes); err != nil {
+	var entry E
+	if err := read(r, &entry); err != nil {
 		return nil, err
 	}
 	if !f.Repeated {
 		// If there is only one entry, return it.
-		value, isZero, err := unmarshal(msgBytes)
+		value, isZero, err := unmarshal(entry)
 		if err != nil {
 			return nil, err
 		}
@@ -2787,7 +2793,7 @@ func unmarshalUnpacked[T any](
 		capacity = min(count, countMinus1+1)
 	}
 
-	value, isZero, err := unmarshal(msgBytes)
+	value, isZero, err := unmarshal(entry)
 	if err != nil {
 		return nil, err
 	}
@@ -2802,11 +2808,11 @@ func unmarshalUnpacked[T any](
 		}
 		r.B = r.B[len(expectedTag):]
 
-		if err := ReadBytes(r, &msgBytes); err != nil {
+		if err := read(r, &entry); err != nil {
 			return nil, err
 		}
 
-		value, isFieldZero, err := unmarshal(msgBytes)
+		value, isFieldZero, err := unmarshal(entry)
 		if err != nil {
 			return nil, err
 		}
