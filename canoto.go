@@ -1401,19 +1401,16 @@ func unsafeString(b []byte) string {
 	return unsafe.String(unsafe.SliceData(b), len(b))
 }
 
-// Unmarshal unmarshals the given bytes into a message based on the
-// specification.
+// Unmarshal parses r.B as the message described by s.
 //
-// This function is significantly slower than calling UnmarshalCanoto on the
-// type directly. This function should only be used when the concrete type can
-// not be known ahead of time.
-func Unmarshal(s *Spec, b []byte) (Any, error) {
+// Unmarshaling is limited by the options of r, which should be bounded when
+// either s or r.B is untrusted.
+//
+// This function is slower than calling [Field.UnmarshalCanotoFrom] on the type
+// directly. This function should only be used when the concrete type can not be
+// known ahead of time.
+func Unmarshal(s *Spec, r Reader) (Any, error) {
 	s.CacheCanoto()
-	r := Reader{
-		B:               b,
-		MemoryRemaining: DefaultMemoryLimit,
-		DepthLimit:      DefaultDepthLimit,
-	}
 	return s.unmarshal(&r, nil)
 }
 

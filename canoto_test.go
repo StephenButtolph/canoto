@@ -2018,7 +2018,11 @@ func FuzzSpec(f *testing.F) {
 		)
 		expectedErr := msg.UnmarshalCanoto(unmarshaledBytes)
 		require.Equal(b, unmarshaledBytes)
-		anyMSG, actualErr := Unmarshal(spec, unmarshaledBytes)
+		anyMSG, actualErr := Unmarshal(spec, Reader{
+			B:               unmarshaledBytes,
+			MemoryRemaining: DefaultMemoryLimit,
+			DepthLimit:      DefaultDepthLimit,
+		})
 		require.Equal(b, unmarshaledBytes)
 		require.Equal(expectedErr, actualErr)
 
@@ -2074,7 +2078,11 @@ func TestFixedRepeatedFixedSize_InvalidLength(t *testing.T) {
 			var msg SpecFuzzer
 			require.ErrorIs(msg.UnmarshalCanoto(w.B), ErrInvalidLength)
 
-			_, err = Unmarshal(msg.DescribeCanoto(), w.B)
+			_, err = Unmarshal(msg.DescribeCanoto(), Reader{
+				B:               w.B,
+				MemoryRemaining: DefaultMemoryLimit,
+				DepthLimit:      DefaultDepthLimit,
+			})
 			require.ErrorIs(err, ErrInvalidLength)
 		})
 	}
@@ -2083,7 +2091,11 @@ func TestFixedRepeatedFixedSize_InvalidLength(t *testing.T) {
 func TestMarshalConcurrent(t *testing.T) {
 	v := fullSpecFuzzer(t)
 	spec := v.DescribeCanoto()
-	a, err := Unmarshal(spec, v.MarshalCanoto())
+	a, err := Unmarshal(spec, Reader{
+		B:               v.MarshalCanoto(),
+		MemoryRemaining: DefaultMemoryLimit,
+		DepthLimit:      DefaultDepthLimit,
+	})
 	require.NoError(t, err)
 
 	// Marshal the same Any value concurrently from multiple goroutines to
@@ -2106,7 +2118,12 @@ func BenchmarkSpec(b *testing.B) {
 	spec := v.DescribeCanoto()
 
 	bytes := v.MarshalCanoto()
-	a, err := Unmarshal(spec, bytes)
+	r := Reader{
+		B:               bytes,
+		MemoryRemaining: DefaultMemoryLimit,
+		DepthLimit:      DefaultDepthLimit,
+	}
+	a, err := Unmarshal(spec, r)
 	require.NoError(b, err)
 
 	b.Run("marshal", func(b *testing.B) {
@@ -2130,7 +2147,7 @@ func BenchmarkSpec(b *testing.B) {
 		})
 		b.Run("any", func(b *testing.B) {
 			for b.Loop() {
-				_, _ = Unmarshal(spec, bytes)
+				_, _ = Unmarshal(spec, r)
 			}
 		})
 	})
