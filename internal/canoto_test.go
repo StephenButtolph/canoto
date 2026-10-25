@@ -751,9 +751,17 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 	spec := (*Scalars)(nil).DescribeCanoto()
 	fullBytes := full.MarshalCanoto()
 	simpleBytes := simple.MarshalCanoto()
-	fullAny, err := canoto.Unmarshal(spec, fullBytes)
+	fullAny, err := canoto.Unmarshal(spec, canoto.Reader{
+		B:               fullBytes,
+		MemoryRemaining: canoto.DefaultMemoryLimit,
+		DepthLimit:      canoto.DefaultDepthLimit,
+	})
 	require.NoError(b, err)
-	simpleAny, err := canoto.Unmarshal(spec, simpleBytes)
+	simpleAny, err := canoto.Unmarshal(spec, canoto.Reader{
+		B:               simpleBytes,
+		MemoryRemaining: canoto.DefaultMemoryLimit,
+		DepthLimit:      canoto.DefaultDepthLimit,
+	})
 	require.NoError(b, err)
 
 	marshalBenchmarks := []struct {
@@ -817,7 +825,11 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 		}
 		b.Run("unmarshal/"+bm.name+"/any", func(b *testing.B) {
 			for range b.N {
-				_, _ = canoto.Unmarshal(spec, bm.bytes)
+				_, _ = canoto.Unmarshal(spec, canoto.Reader{
+					B:               bm.bytes,
+					MemoryRemaining: canoto.DefaultMemoryLimit,
+					DepthLimit:      canoto.DefaultDepthLimit,
+				})
 			}
 		})
 	}
@@ -1572,7 +1584,11 @@ func TestCopyDuringCacheCanoto(*testing.T) {
 func TestCopyDuringMarshal(t *testing.T) {
 	m := ValueOneOf{Value: OneOf{C: 1}}
 	spec := m.DescribeCanoto()
-	a, err := canoto.Unmarshal(spec, m.MarshalCanoto())
+	a, err := canoto.Unmarshal(spec, canoto.Reader{
+		B:               m.MarshalCanoto(),
+		MemoryRemaining: canoto.DefaultMemoryLimit,
+		DepthLimit:      canoto.DefaultDepthLimit,
+	})
 	require.NoError(t, err)
 
 	errs := make(chan error, 1)
