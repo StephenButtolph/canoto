@@ -6,7 +6,6 @@
 package canoto
 
 import (
-	"io"
 	"reflect"
 	"sync/atomic"
 )
@@ -16,9 +15,6 @@ const (
 	_ uint = VersionCompatibility - 1
 	_ uint = 1 - VersionCompatibility
 )
-
-// Ensure that unused imports do not error
-var _ = io.ErrUnexpectedEOF
 
 const (
 	canotoNumber_Spec__Name   = 1

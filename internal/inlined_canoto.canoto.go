@@ -6,7 +6,6 @@
 package examples
 
 import (
-	"io"
 	"reflect"
 	"sync/atomic"
 
@@ -18,9 +17,6 @@ const (
 	_ uint = canoto.VersionCompatibility - 1
 	_ uint = 1 - canoto.VersionCompatibility
 )
-
-// Ensure that unused imports do not error
-var _ = io.ErrUnexpectedEOF
 
 const (
 	canotoNumber_justAnInt__Int8 = 1

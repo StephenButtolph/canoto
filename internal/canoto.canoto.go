@@ -6,7 +6,6 @@
 package examples
 
 import (
-	"io"
 	"reflect"
 	"sync/atomic"
 
@@ -18,9 +17,6 @@ const (
 	_ uint = canoto.VersionCompatibility - 1
 	_ uint = 1 - canoto.VersionCompatibility
 )
-
-// Ensure that unused imports do not error
-var _ = io.ErrUnexpectedEOF
 
 const (
 	canotoNumber_LargestFieldNumber__Uint = 536870911
@@ -4792,7 +4788,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 				return canoto.UnmarshalResult{}, canoto.ErrInvalidLength
 			}
 			if expectedLength > len(r.B) {
-				return canoto.UnmarshalResult{}, io.ErrUnexpectedEOF
+				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedEOF
 			}
 
 			copy((&c.FixedBytes)[:], r.B)
@@ -4820,7 +4816,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 				return canoto.UnmarshalResult{}, canoto.ErrInvalidLength
 			}
 			if expectedLength > len(r.B) {
-				return canoto.UnmarshalResult{}, io.ErrUnexpectedEOF
+				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedEOF
 			}
 
 			firstEntry := r.B[:expectedLength]
@@ -4849,7 +4845,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 					return canoto.UnmarshalResult{}, canoto.ErrInvalidLength
 				}
 				if expectedLength > len(r.B) {
-					return canoto.UnmarshalResult{}, io.ErrUnexpectedEOF
+					return canoto.UnmarshalResult{}, canoto.ErrUnexpectedEOF
 				}
 
 				newB := r.B[expectedLength:]
@@ -4908,7 +4904,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 				return canoto.UnmarshalResult{}, canoto.ErrInvalidLength
 			}
 			if expectedLength > len(r.B) {
-				return canoto.UnmarshalResult{}, io.ErrUnexpectedEOF
+				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedEOF
 			}
 
 			newB := r.B[expectedLength:]
@@ -4930,7 +4926,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 					return canoto.UnmarshalResult{}, canoto.ErrInvalidLength
 				}
 				if expectedLength > len(r.B) {
-					return canoto.UnmarshalResult{}, io.ErrUnexpectedEOF
+					return canoto.UnmarshalResult{}, canoto.ErrUnexpectedEOF
 				}
 
 				newB := r.B[expectedLength:]
@@ -5069,7 +5065,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 				return canoto.UnmarshalResult{}, canoto.ErrInvalidLength
 			}
 			if expectedLength > len(r.B) {
-				return canoto.UnmarshalResult{}, io.ErrUnexpectedEOF
+				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedEOF
 			}
 
 			copy((&c.CustomFixedBytes)[:], r.B)
@@ -5133,7 +5129,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 				return canoto.UnmarshalResult{}, canoto.ErrInvalidLength
 			}
 			if expectedLength > len(r.B) {
-				return canoto.UnmarshalResult{}, io.ErrUnexpectedEOF
+				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedEOF
 			}
 
 			firstEntry := r.B[:expectedLength]
@@ -5162,7 +5158,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 					return canoto.UnmarshalResult{}, canoto.ErrInvalidLength
 				}
 				if expectedLength > len(r.B) {
-					return canoto.UnmarshalResult{}, io.ErrUnexpectedEOF
+					return canoto.UnmarshalResult{}, canoto.ErrUnexpectedEOF
 				}
 
 				newB := r.B[expectedLength:]
@@ -5221,7 +5217,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 				return canoto.UnmarshalResult{}, canoto.ErrInvalidLength
 			}
 			if expectedLength > len(r.B) {
-				return canoto.UnmarshalResult{}, io.ErrUnexpectedEOF
+				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedEOF
 			}
 
 			newB := r.B[expectedLength:]
@@ -5243,7 +5239,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 					return canoto.UnmarshalResult{}, canoto.ErrInvalidLength
 				}
 				if expectedLength > len(r.B) {
-					return canoto.UnmarshalResult{}, io.ErrUnexpectedEOF
+					return canoto.UnmarshalResult{}, canoto.ErrUnexpectedEOF
 				}
 
 				newB := r.B[expectedLength:]

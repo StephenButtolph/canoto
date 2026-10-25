@@ -6,7 +6,6 @@
 package canoto
 
 import (
-	"io"
 	"reflect"
 	"sync/atomic"
 )
@@ -16,9 +15,6 @@ const (
 	_ uint = VersionCompatibility - 1
 	_ uint = 1 - VersionCompatibility
 )
-
-// Ensure that unused imports do not error
-var _ = io.ErrUnexpectedEOF
 
 const (
 	canotoNumber_SpecFuzzer__Int8                        = 1
@@ -899,7 +895,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrInvalidLength
 			}
 			if expectedLength > len(r.B) {
-				return UnmarshalResult{}, io.ErrUnexpectedEOF
+				return UnmarshalResult{}, ErrUnexpectedEOF
 			}
 
 			copy((&c.FixedBytes)[:], r.B)
@@ -1248,7 +1244,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrInvalidLength
 			}
 			if expectedLength > len(r.B) {
-				return UnmarshalResult{}, io.ErrUnexpectedEOF
+				return UnmarshalResult{}, ErrUnexpectedEOF
 			}
 
 			firstEntry := r.B[:expectedLength]
@@ -1277,7 +1273,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 					return UnmarshalResult{}, ErrInvalidLength
 				}
 				if expectedLength > len(r.B) {
-					return UnmarshalResult{}, io.ErrUnexpectedEOF
+					return UnmarshalResult{}, ErrUnexpectedEOF
 				}
 
 				newB := r.B[expectedLength:]
@@ -1813,7 +1809,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrInvalidLength
 			}
 			if expectedLength > len(r.B) {
-				return UnmarshalResult{}, io.ErrUnexpectedEOF
+				return UnmarshalResult{}, ErrUnexpectedEOF
 			}
 
 			newB := r.B[expectedLength:]
@@ -1835,7 +1831,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 					return UnmarshalResult{}, ErrInvalidLength
 				}
 				if expectedLength > len(r.B) {
-					return UnmarshalResult{}, io.ErrUnexpectedEOF
+					return UnmarshalResult{}, ErrUnexpectedEOF
 				}
 
 				newB := r.B[expectedLength:]
