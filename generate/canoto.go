@@ -99,7 +99,6 @@ func writeCanoto(
 package ${package}
 
 import (
-	"io"
 	"reflect"
 	"sync/atomic"
 ${canotoImport})
@@ -109,9 +108,6 @@ const (
 	_ uint = ${selector}VersionCompatibility - ${genVersion}
 	_ uint = ${genVersion} - ${selector}VersionCompatibility
 )
-
-// Ensure that unused imports do not error
-var _ = io.ErrUnexpectedEOF
 `
 	// Only include the import for canoto if this is not an internal file.
 	var selector string
@@ -964,7 +960,7 @@ func makeUnmarshal(m message) string {
 				return ${selector}UnmarshalResult{}, ${selector}ErrInvalidLength
 			}
 			if expectedLength > len(r.B) {
-				return ${selector}UnmarshalResult{}, io.ErrUnexpectedEOF
+				return ${selector}UnmarshalResult{}, ${selector}ErrUnexpectedEOF
 			}
 
 			copy((&c.${fieldName})[:], r.B)
@@ -993,7 +989,7 @@ func makeUnmarshal(m message) string {
 				return ${selector}UnmarshalResult{}, ${selector}ErrInvalidLength
 			}
 			if expectedLength > len(r.B) {
-				return ${selector}UnmarshalResult{}, io.ErrUnexpectedEOF
+				return ${selector}UnmarshalResult{}, ${selector}ErrUnexpectedEOF
 			}
 
 			firstEntry := r.B[:expectedLength]
@@ -1022,7 +1018,7 @@ func makeUnmarshal(m message) string {
 					return ${selector}UnmarshalResult{}, ${selector}ErrInvalidLength
 				}
 				if expectedLength > len(r.B) {
-					return ${selector}UnmarshalResult{}, io.ErrUnexpectedEOF
+					return ${selector}UnmarshalResult{}, ${selector}ErrUnexpectedEOF
 				}
 
 				newB := r.B[expectedLength:]
@@ -1053,7 +1049,7 @@ func makeUnmarshal(m message) string {
 				return ${selector}UnmarshalResult{}, ${selector}ErrInvalidLength
 			}
 			if expectedLength > len(r.B) {
-				return ${selector}UnmarshalResult{}, io.ErrUnexpectedEOF
+				return ${selector}UnmarshalResult{}, ${selector}ErrUnexpectedEOF
 			}
 
 			newB := r.B[expectedLength:]
@@ -1075,7 +1071,7 @@ func makeUnmarshal(m message) string {
 					return ${selector}UnmarshalResult{}, ${selector}ErrInvalidLength
 				}
 				if expectedLength > len(r.B) {
-					return ${selector}UnmarshalResult{}, io.ErrUnexpectedEOF
+					return ${selector}UnmarshalResult{}, ${selector}ErrUnexpectedEOF
 				}
 
 				newB := r.B[expectedLength:]

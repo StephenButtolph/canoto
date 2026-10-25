@@ -522,6 +522,7 @@ func FuzzScalars_Canonical(f *testing.F) {
 
 		var scalars Scalars
 		if err := scalars.UnmarshalCanoto(b); err != nil {
+			require.ErrorIs(err, canoto.Err)
 			return
 		}
 		require.True(scalars.ValidCanoto())
