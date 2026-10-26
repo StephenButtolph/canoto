@@ -2186,15 +2186,11 @@ func BenchmarkSpec(b *testing.B) {
 // BenchmarkUnmarshal_WideSpec unmarshals many small messages whose spec
 // contains many fields.
 func BenchmarkUnmarshal_WideSpec(b *testing.B) {
-	const (
-		numFields   = 1024
-		numMessages = 1024
-	)
-
+	const numFields uint32 = 1024
 	fields := make([]FieldType, numFields)
 	for i := range numFields {
 		fields[i] = FieldType{
-			FieldNumber: uint32(i) + 1,
+			FieldNumber: i + 1,
 			Name:        strconv.FormatUint(uint64(i), 10),
 			TypeUint:    SizeEnum64,
 		}
@@ -2212,6 +2208,7 @@ func BenchmarkUnmarshal_WideSpec(b *testing.B) {
 		},
 	}
 
+	const numMessages = 1024
 	messages := make([]Any, numMessages)
 	for i := range messages {
 		messages[i] = Any{
