@@ -2182,3 +2182,60 @@ func BenchmarkSpec(b *testing.B) {
 		})
 	})
 }
+
+// BenchmarkUnmarshal_WideSpec unmarshals many small messages whose spec
+// contains many fields.
+func BenchmarkUnmarshal_WideSpec(b *testing.B) {
+	const numFields uint32 = 1024
+	fields := make([]FieldType, numFields)
+	for i := range numFields {
+		fields[i] = FieldType{
+			FieldNumber: i + 1,
+			Name:        strconv.FormatUint(uint64(i), 10),
+			TypeUint:    SizeEnum64,
+		}
+	}
+	spec := &Spec{
+		Fields: []FieldType{
+			{
+				FieldNumber: 1,
+				Name:        "messages",
+				Repeated:    true,
+				TypeMessage: &Spec{
+					Fields: fields,
+				},
+			},
+		},
+	}
+
+	const numMessages = 1024
+	messages := make([]Any, numMessages)
+	for i := range messages {
+		messages[i] = Any{
+			Fields: []AnyField{
+				{
+					Name:  "0",
+					Value: uint64(1),
+				},
+			},
+		}
+	}
+	bytes, err := Marshal(spec, Any{
+		Fields: []AnyField{
+			{
+				Name:  "messages",
+				Value: messages,
+			},
+		},
+	})
+	require.NoError(b, err)
+
+	r := Reader{
+		B:               bytes,
+		MemoryRemaining: DefaultMemoryLimit,
+		DepthLimit:      DefaultDepthLimit,
+	}
+	for b.Loop() {
+		_, _ = Unmarshal(spec, r)
+	}
+}
