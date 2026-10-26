@@ -1568,7 +1568,7 @@ func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 		minField      uint32
 		minFieldIndex int
 		a             = Any{
-			Fields: make([]AnyField, 0, len(s.Fields)),
+			Fields: make([]AnyField, 0, countFields(r.B)),
 		}
 		oneOfs = make(map[string]struct{})
 	)
@@ -1614,6 +1614,47 @@ func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 		minFieldIndex = fieldIndex + 1
 	}
 	return a, nil
+}
+
+// countFields counts the fields in a message, treating the entries of a
+// repeated field as one field. Counting stops at the first malformed field.
+func countFields(b []byte) int {
+	var (
+		r     = Reader{B: b}
+		count int
+		// Initially set to an invalid field number so that deduplication
+		// doesn't need to handle 0s as a special case.
+		prevFieldNumber uint32 = MaxFieldNumber + 1
+
+		// Throw away values.
+		v64 uint64
+		v32 uint32
+	)
+	for HasNext(&r) {
+		fieldNumber, wireType, err := ReadTag(&r)
+		if err != nil {
+			return count
+		}
+		switch wireType {
+		case Varint:
+			err = ReadUint(&r, &v64)
+		case I64:
+			err = ReadFint64(&r, &v64)
+		case Len:
+			err = SkipBytes(&r)
+		case I32:
+			err = ReadFint32(&r, &v32)
+		}
+		if err != nil {
+			return count
+		}
+		// Repeated fields count as a single field.
+		if fieldNumber != prevFieldNumber {
+			count++
+		}
+		prevFieldNumber = fieldNumber
+	}
+	return count
 }
 
 func (s *Spec) calculateSize(a *Any, specs []*Spec) error {
