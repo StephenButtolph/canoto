@@ -748,16 +748,16 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 			Uint: 216457,
 		},
 	}
-	spec := (*Scalars)(nil).DescribeCanoto()
+	codec := canoto.NewCodec((*Scalars)(nil).DescribeCanoto())
 	fullBytes := full.MarshalCanoto()
 	simpleBytes := simple.MarshalCanoto()
-	fullAny, err := canoto.Unmarshal(spec, canoto.Reader{
+	fullAny, err := codec.Unmarshal(canoto.Reader{
 		B:               fullBytes,
 		MemoryRemaining: canoto.DefaultMemoryLimit,
 		DepthLimit:      canoto.DefaultDepthLimit,
 	})
 	require.NoError(b, err)
-	simpleAny, err := canoto.Unmarshal(spec, canoto.Reader{
+	simpleAny, err := codec.Unmarshal(canoto.Reader{
 		B:               simpleBytes,
 		MemoryRemaining: canoto.DefaultMemoryLimit,
 		DepthLimit:      canoto.DefaultDepthLimit,
@@ -788,7 +788,7 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 		})
 		b.Run("marshal/"+bm.name+"/any", func(b *testing.B) {
 			for range b.N {
-				_, _ = canoto.Marshal(spec, bm.a)
+				_, _ = codec.Marshal(bm.a)
 			}
 		})
 	}
@@ -825,7 +825,7 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 		}
 		b.Run("unmarshal/"+bm.name+"/any", func(b *testing.B) {
 			for range b.N {
-				_, _ = canoto.Unmarshal(spec, canoto.Reader{
+				_, _ = codec.Unmarshal(canoto.Reader{
 					B:               bm.bytes,
 					MemoryRemaining: canoto.DefaultMemoryLimit,
 					DepthLimit:      canoto.DefaultDepthLimit,
@@ -1583,8 +1583,8 @@ func TestCopyDuringCacheCanoto(*testing.T) {
 // a data race.
 func TestCopyDuringMarshal(t *testing.T) {
 	m := ValueOneOf{Value: OneOf{C: 1}}
-	spec := m.DescribeCanoto()
-	a, err := canoto.Unmarshal(spec, canoto.Reader{
+	codec := canoto.NewCodec(m.DescribeCanoto())
+	a, err := codec.Unmarshal(canoto.Reader{
 		B:               m.MarshalCanoto(),
 		MemoryRemaining: canoto.DefaultMemoryLimit,
 		DepthLimit:      canoto.DefaultDepthLimit,
@@ -1593,7 +1593,7 @@ func TestCopyDuringMarshal(t *testing.T) {
 
 	errs := make(chan error, 1)
 	go func() {
-		_, err := canoto.Marshal(spec, a)
+		_, err := codec.Marshal(a)
 		errs <- err
 	}()
 	_ = slices.Clone(a.Fields)

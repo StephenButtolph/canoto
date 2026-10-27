@@ -304,7 +304,7 @@ type (
 
 	// Spec is the specification of a Canoto message.
 	//
-	// Given a message specification, [Unmarshal] can be used to parse bytes
+	// Given a message specification, a [Codec] can be used to parse bytes
 	// into an [Any].
 	//
 	// Spec is itself a message, to allow for implementations of universal
@@ -314,6 +314,11 @@ type (
 		Fields []FieldType `canoto:"repeated value,2" json:"fields"`
 
 		canotoData canotoData_Spec
+	}
+
+	// Codec marshals and unmarshals messages described by a [Spec].
+	Codec struct {
+		spec *Spec
 	}
 
 	// FieldType is the specification of a field in a Canoto message.
@@ -1405,33 +1410,39 @@ func unsafeString(b []byte) string {
 	return unsafe.String(unsafe.SliceData(b), len(b))
 }
 
-// Unmarshal parses r.B as the message described by s.
+// NewCodec returns a [Codec] for messages described by s.
+//
+// s must not be modified after calling NewCodec.
+func NewCodec(s *Spec) *Codec {
+	s.CacheCanoto()
+	return &Codec{spec: s}
+}
+
+// Unmarshal parses r.B as the message described by the Codec's [Spec].
 //
 // Unmarshaling is limited by the options of r, which should be bounded when
-// either s or r.B is untrusted.
+// either the Spec or r.B is untrusted.
 //
 // This function is slower than calling [Field.UnmarshalCanotoFrom] on the type
 // directly. This function should only be used when the concrete type can not be
 // known ahead of time.
-func Unmarshal(s *Spec, r Reader) (Any, error) {
-	s.CacheCanoto()
-	return s.unmarshal(&r, nil)
+func (c *Codec) Unmarshal(r Reader) (Any, error) {
+	return c.spec.unmarshal(&r, nil)
 }
 
-// Marshal marshals the given message into bytes based on the specification.
+// Marshal marshals a into bytes based on the Codec's [Spec].
 //
 // This function is significantly slower than calling MarshalCanoto on the type
 // directly. This function should only be used when the concrete type can not be
 // known ahead of time.
-func Marshal(s *Spec, a Any) ([]byte, error) {
-	s.CacheCanoto()
-	if err := s.calculateSize(&a, nil); err != nil {
+func (c *Codec) Marshal(a Any) ([]byte, error) {
+	if err := c.spec.calculateSize(&a, nil); err != nil {
 		return nil, err
 	}
 	w := Writer{
 		B: make([]byte, 0, a.cachedSize),
 	}
-	w, err := s.marshal(w, &a, nil)
+	w, err := c.spec.marshal(w, &a, nil)
 	if err != nil {
 		return nil, err
 	}

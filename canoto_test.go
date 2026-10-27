@@ -2009,16 +2009,16 @@ func FuzzSpec(f *testing.F) {
 	f.Fuzz(func(t *testing.T, b []byte) {
 		require := require.New(t)
 
-		// Verify that unmarshalling the message using [Unmarshal] returns the
-		// same error as the unmarshalling the message directly.
+		// Verify that unmarshalling the message using [Codec.Unmarshal] returns
+		// the same error as unmarshalling the message directly.
 		var (
 			msg              SpecFuzzer
-			spec             = msg.DescribeCanoto()
+			codec            = NewCodec(msg.DescribeCanoto())
 			unmarshaledBytes = slices.Clone(b)
 		)
 		expectedErr := msg.UnmarshalCanoto(unmarshaledBytes)
 		require.Equal(b, unmarshaledBytes)
-		anyMSG, actualErr := Unmarshal(spec, Reader{
+		anyMSG, actualErr := codec.Unmarshal(Reader{
 			B:               unmarshaledBytes,
 			MemoryRemaining: DefaultMemoryLimit,
 			DepthLimit:      DefaultDepthLimit,
@@ -2030,8 +2030,8 @@ func FuzzSpec(f *testing.F) {
 			return
 		}
 
-		// Modify the bytes to ensure that [Unmarshal] does not hold a reference
-		// to the provided slice.
+		// Modify the bytes to ensure that [Codec.Unmarshal] does not hold a
+		// reference to the provided slice.
 		for i := range unmarshaledBytes {
 			unmarshaledBytes[i]++
 		}
@@ -2041,7 +2041,7 @@ func FuzzSpec(f *testing.F) {
 
 		// Verify that re-marshalling the unmarshalled message returns the same
 		// bytes as the original message.
-		actualBytes, err := Marshal(spec, anyMSG)
+		actualBytes, err := codec.Marshal(anyMSG)
 		require.NoError(err)
 		require.True(bytes.Equal(b, actualBytes))
 	})
@@ -2061,25 +2061,25 @@ func FuzzSpec_DepthLimit(f *testing.F) {
 		},
 	}).MarshalCanoto(), uint8(1))
 
+	var (
+		msg   SpecFuzzer
+		codec = NewCodec(msg.DescribeCanoto())
+	)
 	f.Fuzz(func(t *testing.T, b []byte, depthLimit uint8) {
-		var msg SpecFuzzer
-		_, expectedErr := msg.UnmarshalCanotoFrom(Reader{
+		reader := Reader{
 			B:               b,
 			MemoryRemaining: DefaultMemoryLimit,
 			DepthLimit:      uint64(depthLimit),
-		})
-		_, actualErr := Unmarshal(msg.DescribeCanoto(), Reader{
-			B:               b,
-			MemoryRemaining: DefaultMemoryLimit,
-			DepthLimit:      uint64(depthLimit),
-		})
+		}
+		_, expectedErr := msg.UnmarshalCanotoFrom(reader)
+		_, actualErr := codec.Unmarshal(reader)
 		require.Equal(t, expectedErr, actualErr)
 	})
 }
 
 // TestFixedRepeatedFixedSize_InvalidLength verifies that a packed fixed size
 // field whose length doesn't match the array is rejected with
-// [ErrInvalidLength], both by the generated code and by [Unmarshal].
+// [ErrInvalidLength], both by the generated code and by [Codec.Unmarshal].
 func TestFixedRepeatedFixedSize_InvalidLength(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -2108,7 +2108,7 @@ func TestFixedRepeatedFixedSize_InvalidLength(t *testing.T) {
 			var msg SpecFuzzer
 			require.ErrorIs(msg.UnmarshalCanoto(w.B), ErrInvalidLength)
 
-			_, err = Unmarshal(msg.DescribeCanoto(), Reader{
+			_, err = NewCodec(msg.DescribeCanoto()).Unmarshal(Reader{
 				B:               w.B,
 				MemoryRemaining: DefaultMemoryLimit,
 				DepthLimit:      DefaultDepthLimit,
@@ -2120,8 +2120,8 @@ func TestFixedRepeatedFixedSize_InvalidLength(t *testing.T) {
 
 func TestMarshalConcurrent(t *testing.T) {
 	v := fullSpecFuzzer(t)
-	spec := v.DescribeCanoto()
-	a, err := Unmarshal(spec, Reader{
+	codec := NewCodec(v.DescribeCanoto())
+	a, err := codec.Unmarshal(Reader{
 		B:               v.MarshalCanoto(),
 		MemoryRemaining: DefaultMemoryLimit,
 		DepthLimit:      DefaultDepthLimit,
@@ -2134,7 +2134,7 @@ func TestMarshalConcurrent(t *testing.T) {
 	errs := make(chan error, goroutines)
 	for range goroutines {
 		go func() {
-			_, err := Marshal(spec, a)
+			_, err := codec.Marshal(a)
 			errs <- err
 		}()
 	}
@@ -2145,7 +2145,7 @@ func TestMarshalConcurrent(t *testing.T) {
 
 func BenchmarkSpec(b *testing.B) {
 	v := fullSpecFuzzer(b)
-	spec := v.DescribeCanoto()
+	codec := NewCodec(v.DescribeCanoto())
 
 	bytes := v.MarshalCanoto()
 	r := Reader{
@@ -2153,7 +2153,7 @@ func BenchmarkSpec(b *testing.B) {
 		MemoryRemaining: DefaultMemoryLimit,
 		DepthLimit:      DefaultDepthLimit,
 	}
-	a, err := Unmarshal(spec, r)
+	a, err := codec.Unmarshal(r)
 	require.NoError(b, err)
 
 	b.Run("marshal", func(b *testing.B) {
@@ -2164,7 +2164,7 @@ func BenchmarkSpec(b *testing.B) {
 		})
 		b.Run("any", func(b *testing.B) {
 			for b.Loop() {
-				_, _ = Marshal(spec, a)
+				_, _ = codec.Marshal(a)
 			}
 		})
 	})
@@ -2177,7 +2177,7 @@ func BenchmarkSpec(b *testing.B) {
 		})
 		b.Run("any", func(b *testing.B) {
 			for b.Loop() {
-				_, _ = Unmarshal(spec, r)
+				_, _ = codec.Unmarshal(r)
 			}
 		})
 	})
@@ -2195,7 +2195,7 @@ func BenchmarkUnmarshal_WideSpec(b *testing.B) {
 			TypeUint:    SizeEnum64,
 		}
 	}
-	spec := &Spec{
+	codec := NewCodec(&Spec{
 		Fields: []FieldType{
 			{
 				FieldNumber: 1,
@@ -2206,7 +2206,7 @@ func BenchmarkUnmarshal_WideSpec(b *testing.B) {
 				},
 			},
 		},
-	}
+	})
 
 	const numMessages = 1024
 	messages := make([]Any, numMessages)
@@ -2220,7 +2220,7 @@ func BenchmarkUnmarshal_WideSpec(b *testing.B) {
 			},
 		}
 	}
-	bytes, err := Marshal(spec, Any{
+	bytes, err := codec.Marshal(Any{
 		Fields: []AnyField{
 			{
 				Name:  "messages",
@@ -2236,6 +2236,6 @@ func BenchmarkUnmarshal_WideSpec(b *testing.B) {
 		DepthLimit:      DefaultDepthLimit,
 	}
 	for b.Loop() {
-		_, _ = Unmarshal(spec, r)
+		_, _ = codec.Unmarshal(r)
 	}
 }
