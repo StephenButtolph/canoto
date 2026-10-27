@@ -1411,7 +1411,9 @@ func unsafeString(b []byte) string {
 // s must not be modified after calling NewCodec.
 func NewCodec(s *Spec) *Codec {
 	s.CacheCanoto()
-	return &Codec{spec: s}
+	return &Codec{
+		spec: s,
+	}
 }
 
 // Unmarshal parses r.B as the message described by the Codec's [Spec].
