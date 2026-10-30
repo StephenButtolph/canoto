@@ -1456,9 +1456,11 @@ func NewCodec(s *Spec) (*Codec, error) {
 	}, nil
 }
 
-// newSpec prepares s for use by the [Codec]. ancestors is the stack of
-// prepared messages enclosing s, which Recursive fields refer to. It is shared
-// across the recursion so that preparing s is linear in its size.
+// newSpec prepares s for use by the [Codec].
+//
+// ancestors is the stack of prepared messages enclosing s, which Recursive
+// fields refer to. It is shared across the recursion so that preparing s is
+// linear in its size.
 //
 // s must already be validated.
 func newSpec(s *Spec, ancestors *[]*spec) *spec {
@@ -1470,6 +1472,10 @@ func newSpec(s *Spec, ancestors *[]*spec) *spec {
 		oneOfs = make(map[string]uint32)
 	)
 	*ancestors = append(*ancestors, m)
+	defer func() {
+		*ancestors = (*ancestors)[:len(*ancestors)-1]
+	}()
+
 	for i := range s.Fields {
 		ft := &s.Fields[i]
 		f := &field{
@@ -1520,7 +1526,6 @@ func newSpec(s *Spec, ancestors *[]*spec) *spec {
 		m.fieldsByNumber[f.number] = f
 		m.fieldsByName[f.name] = f
 	}
-	*ancestors = (*ancestors)[:len(*ancestors)-1]
 	return m
 }
 
