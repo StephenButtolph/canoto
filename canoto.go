@@ -337,8 +337,7 @@ type (
 		pointer  bool
 		kind     FieldTypeOneOf
 		wireType WireType
-		// tag is the encoded tag of the field. For repeated fields that are
-		// not packed, it is also the tag before each additional entry.
+		// tag is the encoded tag of the field.
 		tag []byte
 		// size is the size of an Int, Uint, FixedInt, or FixedUint field.
 		size SizeEnum
