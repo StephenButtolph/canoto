@@ -2457,6 +2457,436 @@ func TestNewCodec_Invalid(t *testing.T) {
 	}
 }
 
+// TestCodec_Marshal_Invalid verifies that [Codec.Marshal] rejects values that
+// [Codec.Unmarshal] could not unmarshal.
+func TestCodec_Marshal_Invalid(t *testing.T) {
+	message := &Spec{
+		Name: "Message",
+		Fields: []FieldType{
+			{
+				FieldNumber: 1,
+				Name:        "a",
+				TypeUint:    SizeEnum64,
+			},
+		},
+	}
+	tests := []struct {
+		name   string
+		fields []FieldType
+		value  Any
+		want   error
+	}{
+		{
+			name: "duplicate oneof",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					OneOf:       "oneOf",
+					TypeUint:    SizeEnum64,
+				},
+				{
+					FieldNumber: 2,
+					Name:        "b",
+					OneOf:       "oneOf",
+					TypeUint:    SizeEnum64,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: uint64(1),
+					},
+					{
+						Name:  "b",
+						Value: uint64(1),
+					},
+				},
+			},
+			want: ErrDuplicateOneOf,
+		},
+		{
+			name: "zero uint",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					TypeUint:    SizeEnum64,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: uint64(0),
+					},
+				},
+			},
+			want: ErrZeroValue,
+		},
+		{
+			name: "empty string",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					TypeString:  true,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: "",
+					},
+				},
+			},
+			want: ErrZeroValue,
+		},
+		{
+			name: "empty bytes",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					TypeBytes:   true,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: []byte{},
+					},
+				},
+			},
+			want: ErrZeroValue,
+		},
+		{
+			name: "zero fixed bytes",
+			fields: []FieldType{
+				{
+					FieldNumber:    1,
+					Name:           "a",
+					TypeFixedBytes: 2,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: []byte{0, 0},
+					},
+				},
+			},
+			want: ErrZeroValue,
+		},
+		{
+			name: "empty message",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					TypeMessage: message,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: Any{},
+					},
+				},
+			},
+			want: ErrZeroValue,
+		},
+		{
+			name: "empty repeated uint",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					Repeated:    true,
+					TypeUint:    SizeEnum64,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: []uint64{},
+					},
+				},
+			},
+			want: ErrZeroValue,
+		},
+		{
+			name: "fixed repeated uint wrong length",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					FixedLength: 2,
+					Repeated:    true,
+					TypeUint:    SizeEnum64,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: []uint64{1},
+					},
+				},
+			},
+			want: ErrInvalidLength,
+		},
+		{
+			name: "fixed repeated string wrong length",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					FixedLength: 2,
+					Repeated:    true,
+					TypeString:  true,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: []string{"a"},
+					},
+				},
+			},
+			want: ErrInvalidLength,
+		},
+		{
+			name: "fixed repeated message wrong length",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					FixedLength: 2,
+					Repeated:    true,
+					TypeMessage: message,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: []Any{{}},
+					},
+				},
+			},
+			want: ErrInvalidLength,
+		},
+		{
+			name: "fixed repeated pointer message wrong length",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					FixedLength: 2,
+					Repeated:    true,
+					Pointer:     true,
+					TypeMessage: message,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: []*Any{nil},
+					},
+				},
+			},
+			want: ErrInvalidLength,
+		},
+		{
+			name: "fixed repeated uint all zero",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					FixedLength: 2,
+					Repeated:    true,
+					TypeUint:    SizeEnum64,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: []uint64{0, 0},
+					},
+				},
+			},
+			want: ErrZeroValue,
+		},
+		{
+			name: "fixed repeated string all empty",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					FixedLength: 2,
+					Repeated:    true,
+					TypeString:  true,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: []string{"", ""},
+					},
+				},
+			},
+			want: ErrZeroValue,
+		},
+		{
+			name: "fixed repeated pointer bytes all nil",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					FixedLength: 2,
+					Repeated:    true,
+					Pointer:     true,
+					TypeBytes:   true,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: []*[]byte{nil, nil},
+					},
+				},
+			},
+			want: ErrZeroValue,
+		},
+		{
+			name: "fixed repeated fixed bytes all zero",
+			fields: []FieldType{
+				{
+					FieldNumber:    1,
+					Name:           "a",
+					FixedLength:    2,
+					Repeated:       true,
+					TypeFixedBytes: 1,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: [][]byte{{0}, {0}},
+					},
+				},
+			},
+			want: ErrZeroValue,
+		},
+		{
+			name: "fixed repeated message all empty",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					FixedLength: 2,
+					Repeated:    true,
+					TypeMessage: message,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: []Any{{}, {}},
+					},
+				},
+			},
+			want: ErrZeroValue,
+		},
+		{
+			name: "fixed repeated pointer message all nil",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					FixedLength: 2,
+					Repeated:    true,
+					Pointer:     true,
+					TypeMessage: message,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: []*Any{nil, nil},
+					},
+				},
+			},
+			want: ErrZeroValue,
+		},
+		{
+			name: "invalid utf8 string",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					TypeString:  true,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: "\xff",
+					},
+				},
+			},
+			want: ErrStringNotUTF8,
+		},
+		{
+			name: "fixed bytes wrong length",
+			fields: []FieldType{
+				{
+					FieldNumber:    1,
+					Name:           "a",
+					TypeFixedBytes: 2,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: []byte{1},
+					},
+				},
+			},
+			want: ErrInvalidLength,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			codec, err := NewCodec(&Spec{
+				Name:   "Spec",
+				Fields: test.fields,
+			})
+			require.NoError(t, err)
+
+			_, err = codec.Marshal(test.value)
+			require.ErrorIs(t, err, test.want)
+		})
+	}
+}
+
 // TestFixedRepeatedFixedSize_InvalidLength verifies that a packed fixed size
 // field whose length doesn't match the array is rejected with
 // [ErrInvalidLength], both by the generated code and by [Codec.Unmarshal].
