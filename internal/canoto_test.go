@@ -1720,3 +1720,66 @@ func TestLimitDepth(t *testing.T) {
 	})
 	require.ErrorIs(t, err, canoto.ErrDepthLimitExceeded)
 }
+
+var _ canoto.Field = (*opaqueBytes)(nil)
+
+// opaqueBytes is a field without a spec that accepts any encoding.
+type opaqueBytes []byte
+
+func (*opaqueBytes) DescribeCanoto(...reflect.Type) *canoto.Spec {
+	return nil
+}
+
+func (b *opaqueBytes) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error) {
+	if err := canoto.UseMemory(&r, uint64(len(r.B))); err != nil {
+		return canoto.UnmarshalResult{}, err
+	}
+	*b = slices.Clone(r.B)
+	return canoto.UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
+}
+
+func (*opaqueBytes) CheckCanoto() bool {
+	return true
+}
+
+func (*opaqueBytes) CacheCanoto() {}
+
+func (b *opaqueBytes) SizeCanoto() uint64 {
+	return uint64(len(*b))
+}
+
+func (b *opaqueBytes) AppendCanoto(w canoto.Writer) canoto.Writer {
+	canoto.Append(&w, *b)
+	return w
+}
+
+// FuzzGenericFieldOpaque_Codec verifies that a [canoto.Codec] handles fields
+// whose type does not have a spec in the same way as the generated code.
+func FuzzGenericFieldOpaque_Codec(f *testing.F) {
+	codec := canoto.NewCodec((*GenericField[opaqueBytes, *opaqueBytes])(nil).DescribeCanoto())
+
+	f.Add((&GenericField[opaqueBytes, *opaqueBytes]{
+		Pointer: &opaqueBytes{},
+	}).MarshalCanoto())
+	f.Add((&GenericField[opaqueBytes, *opaqueBytes]{
+		RepeatedPointer: []*opaqueBytes{nil, {}},
+	}).MarshalCanoto())
+
+	f.Fuzz(func(t *testing.T, b []byte) {
+		var msg GenericField[opaqueBytes, *opaqueBytes]
+		expectedErr := msg.UnmarshalCanoto(b)
+		a, actualErr := codec.Unmarshal(canoto.Reader{
+			B:               b,
+			MemoryRemaining: canoto.DefaultMemoryLimit,
+			DepthLimit:      canoto.DefaultDepthLimit,
+		})
+		require.Equal(t, expectedErr, actualErr)
+		if expectedErr != nil {
+			return
+		}
+
+		actualBytes, err := codec.Marshal(a)
+		require.NoError(t, err)
+		require.Equal(t, b, actualBytes)
+	})
+}

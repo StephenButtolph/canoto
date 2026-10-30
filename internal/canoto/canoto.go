@@ -365,10 +365,11 @@ type (
 		//   - string, []string
 		//   - []byte, [][]byte
 		//   - Any,    []Any
+		//   - []*[]byte
 		//   - []*Any
 		//
-		// Notice that *Any is not allowed. A nil pointer should not have any
-		// field entry.
+		// Notice that *Any and *[]byte are not allowed. A nil pointer should
+		// not have any field entry.
 		Value any
 
 		// cachedSize is only used to cache the size of Value when it is [Any].
@@ -1752,7 +1753,20 @@ func (f *FieldType) calculateSize(af *AnyField, specs []*Spec) (uint64, error) {
 		})
 	case FieldTypeString:
 		size, err = calculateSizeUnpacked(f, af.Value, SizeBytes[string])
-	case FieldTypeBytes, FieldTypeFixedBytes:
+	case FieldTypeBytes:
+		if f.Pointer && f.Repeated {
+			size, err = calculateSizeUnpacked(f, af.Value, func(v *[]byte) uint64 {
+				if v == nil {
+					return uint64(len(EmptyBytes))
+				}
+				innerSize := SizeBytes(*v)
+				outerLen := SizePointerPresenceTag + innerSize
+				return SizeUint(outerLen) + outerLen
+			})
+		} else {
+			size, err = calculateSizeUnpacked(f, af.Value, SizeBytes[[]byte])
+		}
+	case FieldTypeFixedBytes:
 		size, err = calculateSizeUnpacked(f, af.Value, SizeBytes[[]byte])
 	case FieldTypeRecursive:
 		var spec *Spec
@@ -2339,17 +2353,53 @@ func (f *FieldType) marshalString(w Writer, value any, _ []*Spec) (Writer, error
 }
 
 func (f *FieldType) unmarshalBytes(r *Reader, _ []*Spec) (any, error) {
+	if f.Pointer && f.Repeated {
+		return unmarshalUnpacked(f, r, ReadSubReader, func(msgReader Reader) (*[]byte, bool, error) {
+			if !HasNext(&msgReader) {
+				return nil, true, nil
+			}
+			if err := UnwrapPointer(&msgReader); err != nil {
+				return nil, false, err
+			}
+			msgBytes := msgReader.B
+			if !r.Unsafe {
+				if err := UseMemory(r, uint64(len(msgBytes))); err != nil {
+					return nil, false, err
+				}
+				msgBytes = slices.Clone(msgBytes)
+			}
+			return &msgBytes, false, nil
+		})
+	}
 	return unmarshalUnpacked(
 		f,
 		r,
 		ReadBytes[[]byte],
 		func(msgBytes []byte) ([]byte, bool, error) {
-			return msgBytes, len(msgBytes) == 0, nil
+			// Non-nil pointers are not considered empty.
+			return msgBytes, len(msgBytes) == 0 && !f.Pointer, nil
 		},
 	)
 }
 
 func (f *FieldType) marshalBytes(w Writer, value any, _ []*Spec) (Writer, error) {
+	if f.Pointer && f.Repeated {
+		return marshalUnpacked(
+			f,
+			w,
+			value,
+			func(w Writer, value *[]byte) (Writer, error) {
+				if value == nil {
+					Append(&w, EmptyBytes)
+					return w, nil
+				}
+				AppendUint(&w, SizePointerPresenceTag+SizeBytes(*value))
+				Append(&w, PointerPresenceTag)
+				AppendBytes(&w, *value)
+				return w, nil
+			},
+		)
+	}
 	return marshalUnpacked(
 		f,
 		w,
