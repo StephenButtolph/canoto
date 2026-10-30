@@ -2506,21 +2506,15 @@ func (f *field) marshalString(w Writer, value any) (Writer, error) {
 
 func (f *field) unmarshalBytes(r *Reader) (any, error) {
 	if f.pointer && f.repeated {
-		return unmarshalUnpacked(f, r, ReadSubReader, func(msgReader Reader) (*[]byte, bool, error) {
-			if !HasNext(&msgReader) {
+		return unmarshalUnpacked(f, r, ReadBytes[[]byte], func(msgBytes []byte) (*[]byte, bool, error) {
+			if len(msgBytes) == 0 {
 				return nil, true, nil
 			}
+			msgReader := Reader{B: msgBytes}
 			if err := UnwrapPointer(&msgReader); err != nil {
 				return nil, false, err
 			}
-			msgBytes := msgReader.B
-			if !r.Unsafe {
-				if err := UseMemory(r, uint64(len(msgBytes))); err != nil {
-					return nil, false, err
-				}
-				msgBytes = slices.Clone(msgBytes)
-			}
-			return &msgBytes, false, nil
+			return &msgReader.B, false, nil
 		})
 	}
 	return unmarshalUnpacked(

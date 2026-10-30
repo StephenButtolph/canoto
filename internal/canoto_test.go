@@ -1804,6 +1804,46 @@ func FuzzGenericFieldOpaque_Codec(f *testing.F) {
 	})
 }
 
+// FuzzGenericFieldOpaque_DepthLimit verifies that a [canoto.Codec] treats
+// fields whose type does not have a spec as bytes, which do not consume depth.
+func FuzzGenericFieldOpaque_DepthLimit(f *testing.F) {
+	codec, err := canoto.NewCodec((*GenericField[opaqueBytes, *opaqueBytes])(nil).DescribeCanoto())
+	require.NoError(f, err)
+
+	f.Add(
+		(&GenericField[opaqueBytes, *opaqueBytes]{
+			Pointer: &opaqueBytes{1},
+		}).MarshalCanoto(),
+		uint8(0),
+	)
+	f.Add(
+		(&GenericField[opaqueBytes, *opaqueBytes]{
+			RepeatedPointer: []*opaqueBytes{nil, {1}},
+		}).MarshalCanoto(),
+		uint8(0),
+	)
+	f.Add(
+		(&GenericField[opaqueBytes, *opaqueBytes]{
+			FixedRepeatedPointer: [3]*opaqueBytes{nil, {1}, nil},
+		}).MarshalCanoto(),
+		uint8(0),
+	)
+
+	f.Fuzz(func(t *testing.T, b []byte, depthLimit uint8) {
+		r := canoto.Reader{
+			B:               b,
+			MemoryRemaining: canoto.DefaultMemoryLimit,
+			DepthLimit:      canoto.DefaultDepthLimit,
+		}
+		expected, expectedErr := codec.Unmarshal(r)
+
+		r.DepthLimit = uint64(depthLimit)
+		actual, actualErr := codec.Unmarshal(r)
+		require.Equal(t, expectedErr, actualErr)
+		require.Equal(t, expected, actual)
+	})
+}
+
 // TestNewCodec_DescribeCanoto verifies that every spec produced by generated
 // code is accepted by [canoto.NewCodec].
 func TestNewCodec_DescribeCanoto(t *testing.T) {
