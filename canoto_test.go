@@ -2569,9 +2569,9 @@ func BenchmarkSpec(b *testing.B) {
 	})
 }
 
-// BenchmarkUnmarshal_WideSpec unmarshals many small messages whose spec
+// BenchmarkWideSpec marshals and unmarshals many small messages whose spec
 // contains many fields.
-func BenchmarkUnmarshal_WideSpec(b *testing.B) {
+func BenchmarkWideSpec(b *testing.B) {
 	const numFields uint32 = 1024
 	fields := make([]FieldType, numFields)
 	for i := range numFields {
@@ -2611,29 +2611,35 @@ func BenchmarkUnmarshal_WideSpec(b *testing.B) {
 		},
 	}
 	for _, test := range tests {
-		b.Run(test.name, func(b *testing.B) {
-			const numMessages = 1024
-			messages := make([]Any, numMessages)
-			for i := range messages {
-				messages[i] = Any{
-					Fields: []AnyField{
-						{
-							Name:  test.field,
-							Value: uint64(1),
-						},
-					},
-				}
-			}
-			bytes, err := codec.Marshal(Any{
+		const numMessages = 1024
+		messages := make([]Any, numMessages)
+		for i := range messages {
+			messages[i] = Any{
 				Fields: []AnyField{
 					{
-						Name:  "messages",
-						Value: messages,
+						Name:  test.field,
+						Value: uint64(1),
 					},
 				},
-			})
-			require.NoError(b, err)
+			}
+		}
+		a := Any{
+			Fields: []AnyField{
+				{
+					Name:  "messages",
+					Value: messages,
+				},
+			},
+		}
+		bytes, err := codec.Marshal(a)
+		require.NoError(b, err)
 
+		b.Run("marshal/"+test.name, func(b *testing.B) {
+			for b.Loop() {
+				_, _ = codec.Marshal(a)
+			}
+		})
+		b.Run("unmarshal/"+test.name, func(b *testing.B) {
 			r := Reader{
 				B:               bytes,
 				MemoryRemaining: DefaultMemoryLimit,
@@ -2643,40 +2649,6 @@ func BenchmarkUnmarshal_WideSpec(b *testing.B) {
 				_, _ = codec.Unmarshal(r)
 			}
 		})
-	}
-}
-
-// BenchmarkMarshal_WideSpec marshals a message whose spec contains many fields
-// when only the last field is set.
-func BenchmarkMarshal_WideSpec(b *testing.B) {
-	const numFields uint32 = 1024
-	fields := make([]FieldType, numFields)
-	for i := range numFields {
-		fields[i] = FieldType{
-			FieldNumber: i + 1,
-			Name:        strconv.FormatUint(uint64(i), 10),
-			TypeUint:    SizeEnum64,
-		}
-	}
-	codec, err := NewCodec(&Spec{
-		Name:   "Message",
-		Fields: fields,
-	})
-	require.NoError(b, err)
-
-	a := Any{
-		Fields: []AnyField{
-			{
-				Name:  fields[numFields-1].Name,
-				Value: uint64(1),
-			},
-		},
-	}
-	_, err = codec.Marshal(a)
-	require.NoError(b, err)
-
-	for b.Loop() {
-		_, _ = codec.Marshal(a)
 	}
 }
 
