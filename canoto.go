@@ -138,6 +138,9 @@ var (
 	// zero bytes, violating canonical encoding.
 	ErrPaddedZeroes = fmt.Errorf("%w: padded zeroes", Err)
 
+	// ErrInvalidSpec is returned when a [Spec] does not describe a message that
+	// could have been described by generated code.
+	ErrInvalidSpec = fmt.Errorf("%w: invalid spec", Err)
 	// ErrInvalidRecursiveDepth is returned when a recursive type references a
 	// depth that exceeds the available specification stack.
 	ErrInvalidRecursiveDepth = fmt.Errorf("%w: invalid recursive depth", Err)
@@ -1410,10 +1413,107 @@ func unsafeString(b []byte) string {
 // NewCodec returns a [Codec] for messages described by s.
 //
 // s must not be modified after calling NewCodec.
-func NewCodec(s *Spec) *Codec {
-	s.CacheCanoto()
+func NewCodec(s *Spec) (*Codec, error) {
+	if !s.ValidCanoto() {
+		return nil, ErrInvalidSpec
+	}
+	if err := s.validate(0); err != nil {
+		return nil, err
+	}
 	return &Codec{
 		spec: s,
+	}, nil
+}
+
+// validate returns an error if s does not describe a message that could have
+// been described by generated code. depth is the number of messages enclosing
+// s.
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to s.
+func (s *Spec) validate(depth uint64) error {
+	if len(s.Name) == 0 {
+		return ErrInvalidSpec
+	}
+
+	depth++
+	var (
+		prevFieldNumber uint32
+		names           = make(map[string]struct{}, len(s.Fields))
+	)
+	for i := range s.Fields {
+		f := &s.Fields[i]
+		if err := f.validate(depth); err != nil {
+			return err
+		}
+
+		if f.FieldNumber <= prevFieldNumber {
+			return ErrInvalidSpec
+		}
+		prevFieldNumber = f.FieldNumber
+
+		if _, ok := names[f.Name]; ok {
+			return ErrInvalidSpec
+		}
+		names[f.Name] = struct{}{}
+	}
+	return nil
+}
+
+// validate returns an error if f does not describe a field that could have
+// been described by generated code. depth is the number of messages enclosing
+// f.
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to f.
+func (f *FieldType) validate(depth uint64) error {
+	switch {
+	case false,
+		f.FieldNumber == 0,
+		f.FieldNumber > MaxFieldNumber,
+		len(f.Name) == 0,
+		f.FixedLength != 0 && !f.Repeated,
+		len(f.OneOf) != 0 && f.Repeated:
+		return ErrInvalidSpec
+	}
+
+	var (
+		validSize     = true
+		allowsPointer bool
+	)
+	switch f.WhichCanotoType() {
+	case FieldTypeInt:
+		_, _, validSize = f.TypeInt.shift()
+	case FieldTypeUint:
+		_, _, validSize = f.TypeUint.shift()
+	case FieldTypeFixedInt:
+		_, validSize = f.TypeFixedInt.fixedWireType()
+	case FieldTypeFixedUint:
+		_, validSize = f.TypeFixedUint.fixedWireType()
+	case FieldTypeBool, FieldTypeString, FieldTypeFixedBytes:
+	case FieldTypeBytes:
+		allowsPointer = true
+	case FieldTypeRecursive:
+		if f.TypeRecursive > depth {
+			return ErrInvalidRecursiveDepth
+		}
+		allowsPointer = true
+	case FieldTypeMessage:
+		if err := f.TypeMessage.validate(depth); err != nil {
+			return err
+		}
+		allowsPointer = true
+	default:
+		return ErrUnknownFieldType
+	}
+
+	switch {
+	case !validSize:
+		return ErrUnexpectedFieldSize
+	case f.Pointer && !allowsPointer:
+		return ErrInvalidSpec
+	default:
+		return nil
 	}
 }
 

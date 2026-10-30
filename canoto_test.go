@@ -2013,9 +2013,10 @@ func FuzzSpec(f *testing.F) {
 		// the same error as unmarshalling the message directly.
 		var (
 			msg              SpecFuzzer
-			codec            = NewCodec(msg.DescribeCanoto())
 			unmarshaledBytes = slices.Clone(b)
 		)
+		codec, err := NewCodec(msg.DescribeCanoto())
+		require.NoError(err)
 		expectedErr := msg.UnmarshalCanoto(unmarshaledBytes)
 		require.Equal(b, unmarshaledBytes)
 		anyMSG, actualErr := codec.Unmarshal(Reader{
@@ -2061,10 +2062,9 @@ func FuzzSpec_DepthLimit(f *testing.F) {
 		},
 	}).MarshalCanoto(), uint8(1))
 
-	var (
-		msg   SpecFuzzer
-		codec = NewCodec(msg.DescribeCanoto())
-	)
+	var msg SpecFuzzer
+	codec, err := NewCodec(msg.DescribeCanoto())
+	require.NoError(f, err)
 	f.Fuzz(func(t *testing.T, b []byte, depthLimit uint8) {
 		reader := Reader{
 			B:               b,
@@ -2075,6 +2075,385 @@ func FuzzSpec_DepthLimit(f *testing.F) {
 		_, actualErr := codec.Unmarshal(reader)
 		require.Equal(t, expectedErr, actualErr)
 	})
+}
+
+func FuzzUnmarshalUntrustedSpec(f *testing.F) {
+	const (
+		memoryLimit = 1 << 20
+		depthLimit  = 16
+	)
+
+	// A recursive message nested deeper than the depth limit.
+	nested := &SpecFuzzer{String: "a"}
+	for range 2 * depthLimit {
+		nested = &SpecFuzzer{Recursive: nested}
+	}
+	f.Add(nested.DescribeCanoto().MarshalCanoto(), nested.MarshalCanoto())
+
+	f.Fuzz(func(t *testing.T, specBytes []byte, anyBytes []byte) {
+		var spec Spec
+		_, err := spec.UnmarshalCanotoFrom(Reader{
+			B:               specBytes,
+			MemoryRemaining: memoryLimit,
+			DepthLimit:      depthLimit,
+		})
+		if err != nil {
+			t.Skipf("invalid spec: %v", err)
+		}
+
+		codec, err := NewCodec(&spec)
+		if err != nil {
+			t.Skipf("invalid codec: %v", err)
+		}
+
+		a, err := codec.Unmarshal(Reader{
+			B:               anyBytes,
+			MemoryRemaining: memoryLimit,
+			DepthLimit:      depthLimit,
+		})
+		if err != nil {
+			t.Skipf("invalid any: %v", err)
+		}
+
+		actualBytes, err := codec.Marshal(a)
+		require.NoError(t, err)
+		require.Equal(t, anyBytes, actualBytes)
+	})
+}
+
+func TestNewCodec_Invalid(t *testing.T) {
+	tests := []struct {
+		name string
+		spec *Spec
+		want error
+	}{
+		{
+			name: "empty name",
+			spec: &Spec{},
+			want: ErrInvalidSpec,
+		},
+		{
+			name: "nested empty name",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: 1,
+						Name:        "a",
+						TypeMessage: &Spec{},
+					},
+				},
+			},
+			want: ErrInvalidSpec,
+		},
+		{
+			name: "zero field number",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: 0,
+						Name:        "a",
+						TypeBool:    true,
+					},
+				},
+			},
+			want: ErrInvalidSpec,
+		},
+		{
+			name: "field number too large",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: MaxFieldNumber + 1,
+						Name:        "a",
+						TypeBool:    true,
+					},
+				},
+			},
+			want: ErrInvalidSpec,
+		},
+		{
+			name: "duplicate field number",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: 1,
+						Name:        "a",
+						TypeBool:    true,
+					},
+					{
+						FieldNumber: 1,
+						Name:        "b",
+						TypeBool:    true,
+					},
+				},
+			},
+			want: ErrInvalidSpec,
+		},
+		{
+			name: "unsorted field numbers",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: 2,
+						Name:        "a",
+						TypeBool:    true,
+					},
+					{
+						FieldNumber: 1,
+						Name:        "b",
+						TypeBool:    true,
+					},
+				},
+			},
+			want: ErrInvalidSpec,
+		},
+		{
+			name: "empty field name",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: 1,
+						TypeBool:    true,
+					},
+				},
+			},
+			want: ErrInvalidSpec,
+		},
+		{
+			name: "duplicate field name",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: 1,
+						Name:        "a",
+						TypeBool:    true,
+					},
+					{
+						FieldNumber: 2,
+						Name:        "a",
+						TypeBool:    true,
+					},
+				},
+			},
+			want: ErrInvalidSpec,
+		},
+		{
+			name: "invalid UTF-8 field name",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: 1,
+						Name:        "\xff",
+						TypeBool:    true,
+					},
+				},
+			},
+			want: ErrInvalidSpec,
+		},
+		{
+			name: "no type",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: 1,
+						Name:        "a",
+					},
+				},
+			},
+			want: ErrUnknownFieldType,
+		},
+		{
+			name: "multiple types",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: 1,
+						Name:        "a",
+						TypeBool:    true,
+						TypeString:  true,
+					},
+				},
+			},
+			want: ErrInvalidSpec,
+		},
+		{
+			name: "invalid int size",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: 1,
+						Name:        "a",
+						TypeInt:     SizeEnum64 + 1,
+					},
+				},
+			},
+			want: ErrUnexpectedFieldSize,
+		},
+		{
+			name: "invalid uint size",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: 1,
+						Name:        "a",
+						TypeUint:    SizeEnum64 + 1,
+					},
+				},
+			},
+			want: ErrUnexpectedFieldSize,
+		},
+		{
+			name: "invalid fixed int size",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber:  1,
+						Name:         "a",
+						TypeFixedInt: SizeEnum16,
+					},
+				},
+			},
+			want: ErrUnexpectedFieldSize,
+		},
+		{
+			name: "invalid fixed uint size",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber:   1,
+						Name:          "a",
+						TypeFixedUint: SizeEnum8,
+					},
+				},
+			},
+			want: ErrUnexpectedFieldSize,
+		},
+		{
+			name: "recursive depth too large",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber:   1,
+						Name:          "a",
+						TypeRecursive: 2,
+					},
+				},
+			},
+			want: ErrInvalidRecursiveDepth,
+		},
+		{
+			name: "nested recursive depth too large",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: 1,
+						Name:        "a",
+						TypeMessage: &Spec{
+							Name: "a",
+							Fields: []FieldType{
+								{
+									FieldNumber:   1,
+									Name:          "b",
+									TypeRecursive: 3,
+								},
+							},
+						},
+					},
+				},
+			},
+			want: ErrInvalidRecursiveDepth,
+		},
+		{
+			name: "nested invalid field",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: 1,
+						Name:        "a",
+						TypeMessage: &Spec{
+							Name: "a",
+							Fields: []FieldType{
+								{
+									FieldNumber: 0,
+									Name:        "b",
+									TypeBool:    true,
+								},
+							},
+						},
+					},
+				},
+			},
+			want: ErrInvalidSpec,
+		},
+		{
+			name: "fixed length without repeated",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: 1,
+						Name:        "a",
+						FixedLength: 1,
+						TypeBool:    true,
+					},
+				},
+			},
+			want: ErrInvalidSpec,
+		},
+		{
+			name: "repeated oneof",
+			spec: &Spec{
+				Name: "a", Fields: []FieldType{
+					{
+						FieldNumber: 1,
+						Name:        "a",
+						Repeated:    true,
+						OneOf:       "b",
+						TypeBool:    true,
+					},
+				},
+			},
+			want: ErrInvalidSpec,
+		},
+		{
+			name: "pointer to non-message",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: 1,
+						Name:        "a",
+						Pointer:     true,
+						TypeBool:    true,
+					},
+				},
+			},
+			want: ErrInvalidSpec,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := NewCodec(test.spec)
+			require.ErrorIs(t, err, test.want)
+		})
+	}
 }
 
 // TestFixedRepeatedFixedSize_InvalidLength verifies that a packed fixed size
@@ -2108,7 +2487,10 @@ func TestFixedRepeatedFixedSize_InvalidLength(t *testing.T) {
 			var msg SpecFuzzer
 			require.ErrorIs(msg.UnmarshalCanoto(w.B), ErrInvalidLength)
 
-			_, err = NewCodec(msg.DescribeCanoto()).Unmarshal(Reader{
+			codec, err := NewCodec(msg.DescribeCanoto())
+			require.NoError(err)
+
+			_, err = codec.Unmarshal(Reader{
 				B:               w.B,
 				MemoryRemaining: DefaultMemoryLimit,
 				DepthLimit:      DefaultDepthLimit,
@@ -2120,7 +2502,9 @@ func TestFixedRepeatedFixedSize_InvalidLength(t *testing.T) {
 
 func TestMarshalConcurrent(t *testing.T) {
 	v := fullSpecFuzzer(t)
-	codec := NewCodec(v.DescribeCanoto())
+	codec, err := NewCodec(v.DescribeCanoto())
+	require.NoError(t, err)
+
 	a, err := codec.Unmarshal(Reader{
 		B:               v.MarshalCanoto(),
 		MemoryRemaining: DefaultMemoryLimit,
@@ -2145,7 +2529,8 @@ func TestMarshalConcurrent(t *testing.T) {
 
 func BenchmarkSpec(b *testing.B) {
 	v := fullSpecFuzzer(b)
-	codec := NewCodec(v.DescribeCanoto())
+	codec, err := NewCodec(v.DescribeCanoto())
+	require.NoError(b, err)
 
 	bytes := v.MarshalCanoto()
 	r := Reader{
@@ -2195,18 +2580,21 @@ func BenchmarkUnmarshal_WideSpec(b *testing.B) {
 			TypeUint:    SizeEnum64,
 		}
 	}
-	codec := NewCodec(&Spec{
+	codec, err := NewCodec(&Spec{
+		Name: "Messages",
 		Fields: []FieldType{
 			{
 				FieldNumber: 1,
 				Name:        "messages",
 				Repeated:    true,
 				TypeMessage: &Spec{
+					Name:   "Message",
 					Fields: fields,
 				},
 			},
 		},
 	})
+	require.NoError(b, err)
 
 	const numMessages = 1024
 	messages := make([]Any, numMessages)

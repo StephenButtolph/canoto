@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/StephenButtolph/canoto"
+	"github.com/StephenButtolph/canoto/internal/big"
 	"github.com/StephenButtolph/canoto/internal/pb"
 )
 
@@ -748,7 +749,9 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 			Uint: 216457,
 		},
 	}
-	codec := canoto.NewCodec((*Scalars)(nil).DescribeCanoto())
+	codec, err := canoto.NewCodec((*Scalars)(nil).DescribeCanoto())
+	require.NoError(b, err)
+
 	fullBytes := full.MarshalCanoto()
 	simpleBytes := simple.MarshalCanoto()
 	fullAny, err := codec.Unmarshal(canoto.Reader{
@@ -1583,7 +1586,9 @@ func TestCopyDuringCacheCanoto(*testing.T) {
 // a data race.
 func TestCopyDuringMarshal(t *testing.T) {
 	m := ValueOneOf{Value: OneOf{C: 1}}
-	codec := canoto.NewCodec(m.DescribeCanoto())
+	codec, err := canoto.NewCodec(m.DescribeCanoto())
+	require.NoError(t, err)
+
 	a, err := codec.Unmarshal(canoto.Reader{
 		B:               m.MarshalCanoto(),
 		MemoryRemaining: canoto.DefaultMemoryLimit,
@@ -1756,7 +1761,8 @@ func (b *opaqueBytes) AppendCanoto(w canoto.Writer) canoto.Writer {
 // FuzzGenericFieldOpaque_Codec verifies that a [canoto.Codec] handles fields
 // whose type does not have a spec in the same way as the generated code.
 func FuzzGenericFieldOpaque_Codec(f *testing.F) {
-	codec := canoto.NewCodec((*GenericField[opaqueBytes, *opaqueBytes])(nil).DescribeCanoto())
+	codec, err := canoto.NewCodec((*GenericField[opaqueBytes, *opaqueBytes])(nil).DescribeCanoto())
+	require.NoError(f, err)
 
 	f.Add(
 		(&GenericField[opaqueBytes, *opaqueBytes]{
@@ -1796,4 +1802,41 @@ func FuzzGenericFieldOpaque_Codec(f *testing.F) {
 		require.NoError(t, err)
 		require.Equal(t, b, actualBytes)
 	})
+}
+
+// TestNewCodec_DescribeCanoto verifies that every spec produced by generated
+// code is accepted by [canoto.NewCodec].
+func TestNewCodec_DescribeCanoto(t *testing.T) {
+	tests := []struct {
+		name  string
+		field canoto.Field
+	}{
+		{"LargestFieldNumber", (*LargestFieldNumber[uint32])(nil)},
+		{"OneOf", (*OneOf)(nil)},
+		{"unexportedOneOf", (*unexportedOneOf)(nil)},
+		{"ValueOneOf", (*ValueOneOf)(nil)},
+		{"Node", (*Node)(nil)},
+		{"RecursiveA", (*RecursiveA)(nil)},
+		{"RecursiveB", (*RecursiveB)(nil)},
+		{"GenericField[Scalars]", (*GenericField[Scalars, *Scalars])(nil)},
+		{"GenericField[big.Int]", (*GenericField[big.Int, *big.Int])(nil)},
+		{"GenericField[opaqueBytes]", (*GenericField[opaqueBytes, *opaqueBytes])(nil)},
+		{"NestedGenericField[Scalars]", (*NestedGenericField[Scalars, *Scalars])(nil)},
+		{"NestedGenericField[big.Int]", (*NestedGenericField[big.Int, *big.Int])(nil)},
+		{"Embedded", (*Embedded)(nil)},
+		{"A", (*A)(nil)},
+		{"A__B", (*A__B)(nil)},
+		{"A__Pointer", (*A__Pointer)(nil)},
+		{"Scalars", (*Scalars)(nil)},
+		{"SpecUnusedZero", (*SpecUnusedZero)(nil)},
+		{"EmptyMessage", (*EmptyMessage)(nil)},
+		{"CustomFormat", (*CustomFormat)(nil)},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			spec := test.field.DescribeCanoto()
+			_, err := canoto.NewCodec(spec)
+			require.NoError(t, err)
+		})
+	}
 }
