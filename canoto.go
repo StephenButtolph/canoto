@@ -1862,6 +1862,7 @@ func (s *spec) calculateSize(a *Any) error {
 	var (
 		size     uint64
 		minField uint32
+		oneOfs   = make(map[uint32]struct{})
 	)
 	for i := range a.Fields {
 		af := &a.Fields[i]
@@ -1871,6 +1872,13 @@ func (s *spec) calculateSize(a *Any) error {
 		}
 		if f.number < minField {
 			return ErrInvalidFieldOrder
+		}
+
+		if f.oneOf != 0 {
+			if _, ok := oneOfs[f.oneOf]; ok {
+				return ErrDuplicateOneOf
+			}
+			oneOfs[f.oneOf] = struct{}{}
 		}
 
 		contentSize, err := f.calculateSize(af)
@@ -1927,22 +1935,35 @@ func (f *field) calculateSize(af *AnyField) (uint64, error) {
 			return SizeBool
 		})
 	case FieldTypeString:
-		size, err = calculateSizeUnpacked(f, af.Value, SizeBytes[string])
+		size, err = calculateSizeUnpacked(f, af.Value, func(v string) (uint64, bool, error) {
+			if !utf8.ValidString(v) {
+				return 0, false, ErrStringNotUTF8
+			}
+			return SizeBytes(v), len(v) == 0, nil
+		})
 	case FieldTypeBytes:
 		if f.pointer && f.repeated {
-			size, err = calculateSizeUnpacked(f, af.Value, func(v *[]byte) uint64 {
+			size, err = calculateSizeUnpacked(f, af.Value, func(v *[]byte) (uint64, bool, error) {
 				if v == nil {
-					return uint64(len(EmptyBytes))
+					return uint64(len(EmptyBytes)), true, nil
 				}
 				innerSize := SizeBytes(*v)
 				outerLen := SizePointerPresenceTag + innerSize
-				return SizeUint(outerLen) + outerLen
+				return SizeUint(outerLen) + outerLen, false, nil
 			})
 		} else {
-			size, err = calculateSizeUnpacked(f, af.Value, SizeBytes[[]byte])
+			size, err = calculateSizeUnpacked(f, af.Value, func(v []byte) (uint64, bool, error) {
+				// Non-nil pointers are not considered empty.
+				return SizeBytes(v), len(v) == 0 && !f.pointer, nil
+			})
 		}
 	case FieldTypeFixedBytes:
-		size, err = calculateSizeUnpacked(f, af.Value, SizeBytes[[]byte])
+		size, err = calculateSizeUnpacked(f, af.Value, func(v []byte) (uint64, bool, error) {
+			if uint64(len(v)) != f.fixedBytes {
+				return 0, false, ErrInvalidLength
+			}
+			return SizeBytes(v), isBytesEmpty(v), nil
+		})
 	case FieldTypeRecursive, FieldTypeMessage:
 		size, err = f.calculateSizeMessage(af)
 	default:
@@ -1961,30 +1982,8 @@ func calculateSizePacked[T comparable](
 		if !ok {
 			return 0, ErrInvalidFieldType
 		}
-		return size(v), nil
-	}
-
-	vl, ok := value.([]T)
-	if !ok {
-		return 0, ErrInvalidFieldType
-	}
-
-	var packedSize uint64
-	for _, v := range vl {
-		packedSize += size(v)
-	}
-	return SizeUint(packedSize) + packedSize, nil
-}
-
-func calculateSizeUnpacked[T any](
-	f *field,
-	value any,
-	size func(T) uint64,
-) (uint64, error) {
-	if !f.repeated {
-		v, ok := value.(T)
-		if !ok {
-			return 0, ErrInvalidFieldType
+		if IsZero(v) {
+			return 0, ErrZeroValue
 		}
 		return size(v), nil
 	}
@@ -1993,15 +1992,72 @@ func calculateSizeUnpacked[T any](
 	if !ok {
 		return 0, ErrInvalidFieldType
 	}
-
-	if len(vl) == 0 {
+	if f.fixedLength != 0 && uint64(len(vl)) != f.fixedLength {
 		return 0, ErrInvalidLength
 	}
 
-	total := size(vl[0])
-	tagSize := uint64(len(f.tag))
-	for _, v := range vl[1:] {
-		total += tagSize + size(v)
+	var (
+		packedSize uint64
+		isZero     = true
+	)
+	for _, v := range vl {
+		packedSize += size(v)
+		isZero = isZero && IsZero(v)
+	}
+	if len(vl) == 0 || (f.fixedLength > 0 && isZero) {
+		return 0, ErrZeroValue
+	}
+	return SizeUint(packedSize) + packedSize, nil
+}
+
+// calculateSizeUnpacked calculates the size of a length-delimited field. Each
+// entry is sized with size, which also reports whether the entry is zero.
+func calculateSizeUnpacked[T any](
+	f *field,
+	value any,
+	size func(T) (uint64, bool, error),
+) (uint64, error) {
+	if !f.repeated {
+		v, ok := value.(T)
+		if !ok {
+			return 0, ErrInvalidFieldType
+		}
+		s, isZero, err := size(v)
+		if err != nil {
+			return 0, err
+		}
+		if isZero {
+			return 0, ErrZeroValue
+		}
+		return s, nil
+	}
+
+	vl, ok := value.([]T)
+	if !ok {
+		return 0, ErrInvalidFieldType
+	}
+	if f.fixedLength != 0 && uint64(len(vl)) != f.fixedLength {
+		return 0, ErrInvalidLength
+	}
+	if len(vl) == 0 {
+		return 0, ErrZeroValue
+	}
+
+	var (
+		// The tag of the first entry is not included in the field size.
+		total  = uint64(len(f.tag)) * (uint64(len(vl)) - 1)
+		isZero = true
+	)
+	for _, v := range vl {
+		s, isEntryZero, err := size(v)
+		if err != nil {
+			return 0, err
+		}
+		total += s
+		isZero = isZero && isEntryZero
+	}
+	if f.fixedLength > 0 && isZero {
+		return 0, ErrZeroValue
 	}
 	return total, nil
 }
@@ -2011,6 +2067,10 @@ func (f *field) calculateSizeMessage(af *AnyField) (uint64, error) {
 		v, ok := af.Value.(Any)
 		if !ok {
 			return 0, ErrInvalidFieldType
+		}
+		// Non-nil pointers are not considered empty.
+		if len(v.Fields) == 0 && !f.pointer {
+			return 0, ErrZeroValue
 		}
 		if err := f.message.calculateSize(&v); err != nil {
 			return 0, err
@@ -2024,35 +2084,33 @@ func (f *field) calculateSizeMessage(af *AnyField) (uint64, error) {
 		if !ok {
 			return 0, ErrInvalidFieldType
 		}
-
-		if len(vl) == 0 {
+		if f.fixedLength != 0 && uint64(len(vl)) != f.fixedLength {
 			return 0, ErrInvalidLength
 		}
+		if len(vl) == 0 {
+			return 0, ErrZeroValue
+		}
 
-		sizeElement := func(v *Any) (uint64, error) {
+		var (
+			// The tag of the first entry is not included in the field size.
+			total  = uint64(len(f.tag)) * (uint64(len(vl)) - 1)
+			isZero = true
+		)
+		for _, v := range vl {
 			if v == nil {
-				return uint64(len(EmptyBytes)), nil
+				total += uint64(len(EmptyBytes))
+				continue
 			}
 			if err := f.message.calculateSize(v); err != nil {
 				return 0, err
 			}
 			innerSize := atomic.LoadUint64(&v.cachedSize)
 			outerLen := SizePointerPresenceTag + SizeUint(innerSize) + innerSize
-			return SizeUint(outerLen) + outerLen, nil
+			total += SizeUint(outerLen) + outerLen
+			isZero = false
 		}
-
-		total, err := sizeElement(vl[0])
-		if err != nil {
-			return 0, err
-		}
-
-		tagSize := uint64(len(f.tag))
-		for _, v := range vl[1:] {
-			elemSize, err := sizeElement(v)
-			if err != nil {
-				return 0, err
-			}
-			total += tagSize + elemSize
+		if f.fixedLength > 0 && isZero {
+			return 0, ErrZeroValue
 		}
 		return total, nil
 	}
@@ -2061,27 +2119,29 @@ func (f *field) calculateSizeMessage(af *AnyField) (uint64, error) {
 	if !ok {
 		return 0, ErrInvalidFieldType
 	}
-
-	if len(vl) == 0 {
+	if f.fixedLength != 0 && uint64(len(vl)) != f.fixedLength {
 		return 0, ErrInvalidLength
 	}
-
-	v := &vl[0]
-	if err := f.message.calculateSize(v); err != nil {
-		return 0, err
+	if len(vl) == 0 {
+		return 0, ErrZeroValue
 	}
-	elementSize := atomic.LoadUint64(&v.cachedSize)
-	total := SizeUint(elementSize) + elementSize
 
-	tagSize := uint64(len(f.tag))
-	rvl := vl[1:]
-	for i := range rvl {
-		v := &rvl[i]
+	var (
+		// The tag of the first entry is not included in the field size.
+		total  = uint64(len(f.tag)) * (uint64(len(vl)) - 1)
+		isZero = true
+	)
+	for i := range vl {
+		v := &vl[i]
 		if err := f.message.calculateSize(v); err != nil {
 			return 0, err
 		}
 		elementSize := atomic.LoadUint64(&v.cachedSize)
-		total += tagSize + SizeUint(elementSize) + elementSize
+		total += SizeUint(elementSize) + elementSize
+		isZero = isZero && len(v.Fields) == 0
+	}
+	if f.fixedLength > 0 && isZero {
+		return 0, ErrZeroValue
 	}
 	return total, nil
 }
