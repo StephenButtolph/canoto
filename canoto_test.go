@@ -11,6 +11,7 @@ import (
 	"math/rand/v2"
 	"slices"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -2568,9 +2569,9 @@ func BenchmarkSpec(b *testing.B) {
 	})
 }
 
-// BenchmarkUnmarshal_WideSpec unmarshals many small messages whose spec
+// BenchmarkWideSpec marshals and unmarshals many small messages whose spec
 // contains many fields.
-func BenchmarkUnmarshal_WideSpec(b *testing.B) {
+func BenchmarkWideSpec(b *testing.B) {
 	const numFields uint32 = 1024
 	fields := make([]FieldType, numFields)
 	for i := range numFields {
@@ -2596,13 +2597,134 @@ func BenchmarkUnmarshal_WideSpec(b *testing.B) {
 	})
 	require.NoError(b, err)
 
+	tests := []struct {
+		name  string
+		field string
+	}{
+		{
+			name:  "first",
+			field: fields[0].Name,
+		},
+		{
+			name:  "last",
+			field: fields[numFields-1].Name,
+		},
+	}
+	for _, test := range tests {
+		const numMessages = 1024
+		messages := make([]Any, numMessages)
+		for i := range messages {
+			messages[i] = Any{
+				Fields: []AnyField{
+					{
+						Name:  test.field,
+						Value: uint64(1),
+					},
+				},
+			}
+		}
+		a := Any{
+			Fields: []AnyField{
+				{
+					Name:  "messages",
+					Value: messages,
+				},
+			},
+		}
+		bytes, err := codec.Marshal(a)
+		require.NoError(b, err)
+
+		b.Run("marshal/"+test.name, func(b *testing.B) {
+			for b.Loop() {
+				_, _ = codec.Marshal(a)
+			}
+		})
+		b.Run("unmarshal/"+test.name, func(b *testing.B) {
+			r := Reader{
+				B:               bytes,
+				MemoryRemaining: DefaultMemoryLimit,
+				DepthLimit:      DefaultDepthLimit,
+			}
+			for b.Loop() {
+				_, _ = codec.Unmarshal(r)
+			}
+		})
+	}
+}
+
+// BenchmarkNewCodec_DeepSpec creates a codec for a deeply nested spec whose
+// innermost message contains many message fields.
+func BenchmarkNewCodec_DeepSpec(b *testing.B) {
+	// The depth is chosen so that a slice of the innermost message's ancestors
+	// is full when it is grown one element at a time.
+	const depth uint32 = 1023
+	fields := make([]FieldType, depth)
+	for i := range depth {
+		fields[i] = FieldType{
+			FieldNumber: i + 1,
+			Name:        strconv.FormatUint(uint64(i), 10),
+			TypeMessage: &Spec{
+				Name: "Empty",
+			},
+		}
+	}
+	spec := &Spec{
+		Name:   "Leaf",
+		Fields: fields,
+	}
+	for range depth - 1 {
+		spec = &Spec{
+			Name: "Node",
+			Fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "next",
+					TypeMessage: spec,
+				},
+			},
+		}
+	}
+	_, err := NewCodec(spec)
+	require.NoError(b, err)
+
+	for b.Loop() {
+		_, _ = NewCodec(spec)
+	}
+}
+
+// BenchmarkUnmarshal_LongOneOf unmarshals many small messages whose only field
+// is part of a oneof with a long name.
+func BenchmarkUnmarshal_LongOneOf(b *testing.B) {
+	codec, err := NewCodec(&Spec{
+		Name: "Messages",
+		Fields: []FieldType{
+			{
+				FieldNumber: 1,
+				Name:        "messages",
+				Repeated:    true,
+				TypeMessage: &Spec{
+					Name: "Message",
+					Fields: []FieldType{
+						{
+							FieldNumber: 1,
+							Name:        "value",
+							OneOf:       strings.Repeat("a", 1024),
+							TypeUint:    SizeEnum64,
+						},
+					},
+				},
+			},
+		},
+	})
+	require.NoError(b, err)
+
 	const numMessages = 1024
 	messages := make([]Any, numMessages)
 	for i := range messages {
 		messages[i] = Any{
 			Fields: []AnyField{
 				{
-					Name:  "0",
+					Name:  "value",
 					Value: uint64(1),
 				},
 			},
