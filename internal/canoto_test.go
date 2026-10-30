@@ -1758,21 +1758,35 @@ func (b *opaqueBytes) AppendCanoto(w canoto.Writer) canoto.Writer {
 func FuzzGenericFieldOpaque_Codec(f *testing.F) {
 	codec := canoto.NewCodec((*GenericField[opaqueBytes, *opaqueBytes])(nil).DescribeCanoto())
 
-	f.Add((&GenericField[opaqueBytes, *opaqueBytes]{
-		Pointer: &opaqueBytes{},
-	}).MarshalCanoto())
-	f.Add((&GenericField[opaqueBytes, *opaqueBytes]{
-		RepeatedPointer: []*opaqueBytes{nil, {}},
-	}).MarshalCanoto())
+	f.Add(
+		(&GenericField[opaqueBytes, *opaqueBytes]{
+			Pointer: &opaqueBytes{},
+		}).MarshalCanoto(),
+		false,
+	)
+	f.Add(
+		(&GenericField[opaqueBytes, *opaqueBytes]{
+			RepeatedPointer: []*opaqueBytes{nil, {}},
+		}).MarshalCanoto(),
+		true,
+	)
+	f.Add(
+		(&GenericField[opaqueBytes, *opaqueBytes]{
+			FixedRepeatedPointer: [3]*opaqueBytes{nil, {}, nil},
+		}).MarshalCanoto(),
+		false,
+	)
 
-	f.Fuzz(func(t *testing.T, b []byte) {
-		var msg GenericField[opaqueBytes, *opaqueBytes]
-		expectedErr := msg.UnmarshalCanoto(b)
-		a, actualErr := codec.Unmarshal(canoto.Reader{
+	f.Fuzz(func(t *testing.T, b []byte, unsafe bool) {
+		r := canoto.Reader{
 			B:               b,
+			Unsafe:          unsafe,
 			MemoryRemaining: canoto.DefaultMemoryLimit,
 			DepthLimit:      canoto.DefaultDepthLimit,
-		})
+		}
+		var msg GenericField[opaqueBytes, *opaqueBytes]
+		_, expectedErr := msg.UnmarshalCanotoFrom(r)
+		a, actualErr := codec.Unmarshal(r)
 		require.Equal(t, expectedErr, actualErr)
 		if expectedErr != nil {
 			return
