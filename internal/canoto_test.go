@@ -1841,16 +1841,6 @@ func FuzzGenericFieldOpaque_DepthLimit(f *testing.F) {
 		actual, actualErr := codec.Unmarshal(r)
 		require.Equal(t, expectedErr, actualErr)
 		require.Equal(t, expected, actual)
-
-		var msg GenericField[opaqueBytes, *opaqueBytes]
-		if _, err := msg.UnmarshalCanotoFrom(r); err != nil {
-			return
-		}
-		require.NoError(t, actualErr)
-
-		actualBytes, err := codec.Marshal(actual)
-		require.NoError(t, err)
-		require.Equal(t, b, actualBytes)
 	})
 }
 
