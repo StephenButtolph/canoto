@@ -86,7 +86,6 @@ const (
 
 	wireTypeLength = 3
 	wireTypeMask   = 0x07
-	maxTagLength   = 5
 
 	falseByte byte = 0
 	trueByte  byte = 1
@@ -321,7 +320,36 @@ type (
 
 	// Codec marshals and unmarshals messages described by a [Spec].
 	Codec struct {
-		spec *Spec
+		spec *spec
+	}
+
+	// spec is a [Spec] prepared for use by the [Codec].
+	spec struct {
+		fieldsByNumber map[uint32]*field
+		fieldsByName   map[string]*field
+	}
+
+	// field is a [FieldType] prepared for use by the [Codec].
+	field struct {
+		number      uint32
+		name        string
+		fixedLength uint64
+		repeated    bool
+		// oneOf identifies the oneof that the field is in, or is 0 if the
+		// field is not in a oneof.
+		oneOf    uint32
+		pointer  bool
+		kind     FieldTypeOneOf
+		wireType WireType
+		// tag is the encoded tag of the field. For repeated fields that are
+		// not packed, it is also the tag before each additional entry.
+		tag []byte
+		// size is the size of an Int, Uint, FixedInt, or FixedUint field.
+		size SizeEnum
+		// fixedBytes is the length of a FixedBytes field.
+		fixedBytes uint64
+		// message is the type of a Message or Recursive field.
+		message *spec
 	}
 
 	// FieldType is the specification of a field in a Canoto message.
@@ -1415,8 +1443,6 @@ func unsafeString(b []byte) string {
 }
 
 // NewCodec returns a [Codec] for messages described by s.
-//
-// s must not be modified after calling NewCodec.
 func NewCodec(s *Spec) (*Codec, error) {
 	if !s.ValidCanoto() {
 		return nil, ErrInvalidSpec
@@ -1424,9 +1450,78 @@ func NewCodec(s *Spec) (*Codec, error) {
 	if err := s.validate(0); err != nil {
 		return nil, err
 	}
+	var ancestors []*spec
 	return &Codec{
-		spec: s,
+		spec: newSpec(s, &ancestors),
 	}, nil
+}
+
+// newSpec prepares s for use by the [Codec]. ancestors is the stack of
+// prepared messages enclosing s, which Recursive fields refer to. It is shared
+// across the recursion so that preparing s is linear in its size.
+//
+// s must already be validated.
+func newSpec(s *Spec, ancestors *[]*spec) *spec {
+	var (
+		m = &spec{
+			fieldsByNumber: make(map[uint32]*field, len(s.Fields)),
+			fieldsByName:   make(map[string]*field, len(s.Fields)),
+		}
+		oneOfs = make(map[string]uint32)
+	)
+	*ancestors = append(*ancestors, m)
+	for i := range s.Fields {
+		ft := &s.Fields[i]
+		f := &field{
+			number:      ft.FieldNumber,
+			name:        ft.Name,
+			fixedLength: ft.FixedLength,
+			repeated:    ft.Repeated,
+			pointer:     ft.Pointer,
+			kind:        ft.WhichCanotoType(),
+			wireType:    Len,
+		}
+
+		if ft.OneOf != "" {
+			id, ok := oneOfs[ft.OneOf]
+			if !ok {
+				id = uint32(len(oneOfs)) + 1 //#nosec G115 // Bounded by the number of fields
+				oneOfs[ft.OneOf] = id
+			}
+			f.oneOf = id
+		}
+
+		switch f.kind {
+		case FieldTypeInt:
+			f.size = ft.TypeInt
+		case FieldTypeUint:
+			f.size = ft.TypeUint
+		case FieldTypeFixedInt:
+			f.size = ft.TypeFixedInt
+		case FieldTypeFixedUint:
+			f.size = ft.TypeFixedUint
+		case FieldTypeFixedBytes:
+			f.fixedBytes = ft.TypeFixedBytes
+		case FieldTypeRecursive:
+			a := *ancestors
+			f.message = a[uint64(len(a))-ft.TypeRecursive]
+		case FieldTypeMessage:
+			f.message = newSpec(ft.TypeMessage, ancestors)
+		}
+		if !f.repeated {
+			switch f.kind {
+			case FieldTypeInt, FieldTypeUint, FieldTypeBool:
+				f.wireType = Varint
+			case FieldTypeFixedInt, FieldTypeFixedUint:
+				f.wireType, _ = f.size.fixedWireType() // validated
+			}
+		}
+		f.tag = Tag(f.number, f.wireType)
+		m.fieldsByNumber[f.number] = f
+		m.fieldsByName[f.name] = f
+	}
+	*ancestors = (*ancestors)[:len(*ancestors)-1]
+	return m
 }
 
 // validate returns an error if s does not describe a message that could have
@@ -1530,7 +1625,7 @@ func (f *FieldType) validate(depth uint64) error {
 // directly. This function should only be used when the concrete type can not be
 // known ahead of time.
 func (c *Codec) Unmarshal(r Reader) (Any, error) {
-	return c.spec.unmarshal(&r, nil)
+	return c.spec.unmarshal(&r)
 }
 
 // Marshal marshals a into bytes based on the Codec's [Spec].
@@ -1539,13 +1634,13 @@ func (c *Codec) Unmarshal(r Reader) (Any, error) {
 // directly. This function should only be used when the concrete type can not be
 // known ahead of time.
 func (c *Codec) Marshal(a Any) ([]byte, error) {
-	if err := c.spec.calculateSize(&a, nil); err != nil {
+	if err := c.spec.calculateSize(&a); err != nil {
 		return nil, err
 	}
 	w := Writer{
 		B: make([]byte, 0, a.cachedSize),
 	}
-	w, err := c.spec.marshal(w, &a, nil)
+	w, err := c.spec.marshal(w, &a)
 	if err != nil {
 		return nil, err
 	}
@@ -1676,15 +1771,13 @@ func SizeOf[T integer](v T) SizeEnum {
 	}
 }
 
-func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
-	specs = append(specs, s)
+func (s *spec) unmarshal(r *Reader) (Any, error) {
 	var (
-		minField      uint32
-		minFieldIndex int
-		a             = Any{
+		minField uint32
+		a        = Any{
 			Fields: make([]AnyField, 0, countFields(r.B)),
 		}
-		oneOfs = make(map[string]struct{})
+		oneOfs = make(map[uint32]struct{})
 	)
 	for HasNext(r) {
 		fieldNumber, wireType, err := ReadTag(r)
@@ -1695,37 +1788,31 @@ func (s *Spec) unmarshal(r *Reader, specs []*Spec) (Any, error) {
 			return Any{}, ErrInvalidFieldOrder
 		}
 
-		fieldType, fieldIndex, err := s.findFieldByNumber(fieldNumber, minFieldIndex)
-		if err != nil {
-			return Any{}, err
+		f, ok := s.fieldsByNumber[fieldNumber]
+		if !ok {
+			return Any{}, ErrUnknownField
 		}
-
-		expectedWireType, err := fieldType.wireType()
-		if err != nil {
-			return Any{}, err
-		}
-		if wireType != expectedWireType {
+		if wireType != f.wireType {
 			return Any{}, ErrUnexpectedWireType
 		}
 
-		if fieldType.OneOf != "" {
-			if _, ok := oneOfs[fieldType.OneOf]; ok {
+		if f.oneOf != 0 {
+			if _, ok := oneOfs[f.oneOf]; ok {
 				return Any{}, ErrDuplicateOneOf
 			}
-			oneOfs[fieldType.OneOf] = struct{}{}
+			oneOfs[f.oneOf] = struct{}{}
 		}
 
-		value, err := fieldType.unmarshal(r, specs)
+		value, err := f.unmarshal(r)
 		if err != nil {
 			return Any{}, err
 		}
 		a.Fields = append(a.Fields, AnyField{
-			Name:  fieldType.Name,
+			Name:  f.name,
 			Value: value,
 		})
 
 		minField = fieldNumber + 1
-		minFieldIndex = fieldIndex + 1
 	}
 	return a, nil
 }
@@ -1771,59 +1858,47 @@ func countFields(b []byte) int {
 	return count
 }
 
-func (s *Spec) calculateSize(a *Any, specs []*Spec) error {
-	specs = append(specs, s)
+func (s *spec) calculateSize(a *Any) error {
 	var (
-		size          uint64
-		minField      uint32
-		minFieldIndex int
+		size     uint64
+		minField uint32
 	)
 	for i := range a.Fields {
-		f := &a.Fields[i]
-		ft, fieldIndex, err := s.findFieldByName(f.Name, minFieldIndex)
-		if err != nil {
-			return err
-		}
-		if ft.FieldNumber == 0 || ft.FieldNumber > MaxFieldNumber {
+		af := &a.Fields[i]
+		f, ok := s.fieldsByName[af.Name]
+		if !ok {
 			return ErrUnknownField
 		}
-		if ft.FieldNumber < minField {
+		if f.number < minField {
 			return ErrInvalidFieldOrder
 		}
 
-		wireType, err := ft.wireType()
+		contentSize, err := f.calculateSize(af)
 		if err != nil {
 			return err
 		}
 
-		tag := tagValue(ft.FieldNumber, wireType)
-		contentSize, err := ft.calculateSize(f, specs)
-		if err != nil {
-			return err
-		}
+		size += uint64(len(f.tag)) + contentSize
 
-		size += SizeUint(tag) + contentSize
-
-		minField = ft.FieldNumber + 1
-		minFieldIndex = fieldIndex + 1
+		minField = f.number + 1
 	}
 	CacheUint64(&a.cachedSize, size)
 	return nil
 }
 
-func (f *FieldType) calculateSize(af *AnyField, specs []*Spec) (uint64, error) {
+func (f *field) calculateSize(af *AnyField) (uint64, error) {
 	var (
 		size uint64
 		err  error
 	)
-	switch f.WhichCanotoType() {
+	switch f.kind {
 	case FieldTypeInt:
 		size, err = calculateSizePacked(f, af.Value, SizeInt[int64])
 	case FieldTypeUint:
 		size, err = calculateSizePacked(f, af.Value, SizeUint[uint64])
 	case FieldTypeFixedInt:
 		var elementSize uint64
-		switch f.TypeFixedInt {
+		switch f.size {
 		case SizeEnum32:
 			elementSize = SizeFint32
 		case SizeEnum64:
@@ -1836,7 +1911,7 @@ func (f *FieldType) calculateSize(af *AnyField, specs []*Spec) (uint64, error) {
 		})
 	case FieldTypeFixedUint:
 		var elementSize uint64
-		switch f.TypeFixedUint {
+		switch f.size {
 		case SizeEnum32:
 			elementSize = SizeFint32
 		case SizeEnum64:
@@ -1854,7 +1929,7 @@ func (f *FieldType) calculateSize(af *AnyField, specs []*Spec) (uint64, error) {
 	case FieldTypeString:
 		size, err = calculateSizeUnpacked(f, af.Value, SizeBytes[string])
 	case FieldTypeBytes:
-		if f.Pointer && f.Repeated {
+		if f.pointer && f.repeated {
 			size, err = calculateSizeUnpacked(f, af.Value, func(v *[]byte) uint64 {
 				if v == nil {
 					return uint64(len(EmptyBytes))
@@ -1868,15 +1943,8 @@ func (f *FieldType) calculateSize(af *AnyField, specs []*Spec) (uint64, error) {
 		}
 	case FieldTypeFixedBytes:
 		size, err = calculateSizeUnpacked(f, af.Value, SizeBytes[[]byte])
-	case FieldTypeRecursive:
-		var spec *Spec
-		spec, specs, err = f.recursiveSpec(specs)
-		if err != nil {
-			return 0, err
-		}
-		size, err = f.calculateSizeMessage(af, spec, specs)
-	case FieldTypeMessage:
-		size, err = f.calculateSizeMessage(af, f.TypeMessage, specs)
+	case FieldTypeRecursive, FieldTypeMessage:
+		size, err = f.calculateSizeMessage(af)
 	default:
 		return 0, ErrUnknownFieldType
 	}
@@ -1884,11 +1952,11 @@ func (f *FieldType) calculateSize(af *AnyField, specs []*Spec) (uint64, error) {
 }
 
 func calculateSizePacked[T comparable](
-	f *FieldType,
+	f *field,
 	value any,
 	size func(T) uint64,
 ) (uint64, error) {
-	if !f.Repeated {
+	if !f.repeated {
 		v, ok := value.(T)
 		if !ok {
 			return 0, ErrInvalidFieldType
@@ -1909,11 +1977,11 @@ func calculateSizePacked[T comparable](
 }
 
 func calculateSizeUnpacked[T any](
-	f *FieldType,
+	f *field,
 	value any,
 	size func(T) uint64,
 ) (uint64, error) {
-	if !f.Repeated {
+	if !f.repeated {
 		v, ok := value.(T)
 		if !ok {
 			return 0, ErrInvalidFieldType
@@ -1931,32 +1999,27 @@ func calculateSizeUnpacked[T any](
 	}
 
 	total := size(vl[0])
-	tag := tagValue(f.FieldNumber, Len)
-	tagSize := SizeUint(tag)
+	tagSize := uint64(len(f.tag))
 	for _, v := range vl[1:] {
 		total += tagSize + size(v)
 	}
 	return total, nil
 }
 
-func (f *FieldType) calculateSizeMessage(
-	af *AnyField,
-	spec *Spec,
-	specs []*Spec,
-) (uint64, error) {
-	if !f.Repeated {
+func (f *field) calculateSizeMessage(af *AnyField) (uint64, error) {
+	if !f.repeated {
 		v, ok := af.Value.(Any)
 		if !ok {
 			return 0, ErrInvalidFieldType
 		}
-		if err := spec.calculateSize(&v, specs); err != nil {
+		if err := f.message.calculateSize(&v); err != nil {
 			return 0, err
 		}
 		CacheUint64(&af.cachedSize, v.cachedSize)
 		return SizeUint(v.cachedSize) + v.cachedSize, nil
 	}
 
-	if f.Pointer {
+	if f.pointer {
 		vl, ok := af.Value.([]*Any)
 		if !ok {
 			return 0, ErrInvalidFieldType
@@ -1970,7 +2033,7 @@ func (f *FieldType) calculateSizeMessage(
 			if v == nil {
 				return uint64(len(EmptyBytes)), nil
 			}
-			if err := spec.calculateSize(v, specs); err != nil {
+			if err := f.message.calculateSize(v); err != nil {
 				return 0, err
 			}
 			innerSize := atomic.LoadUint64(&v.cachedSize)
@@ -1983,8 +2046,7 @@ func (f *FieldType) calculateSizeMessage(
 			return 0, err
 		}
 
-		tag := tagValue(f.FieldNumber, Len)
-		tagSize := SizeUint(tag)
+		tagSize := uint64(len(f.tag))
 		for _, v := range vl[1:] {
 			elemSize, err := sizeElement(v)
 			if err != nil {
@@ -2005,18 +2067,17 @@ func (f *FieldType) calculateSizeMessage(
 	}
 
 	v := &vl[0]
-	if err := spec.calculateSize(v, specs); err != nil {
+	if err := f.message.calculateSize(v); err != nil {
 		return 0, err
 	}
 	elementSize := atomic.LoadUint64(&v.cachedSize)
 	total := SizeUint(elementSize) + elementSize
 
-	tag := tagValue(f.FieldNumber, Len)
-	tagSize := SizeUint(tag)
+	tagSize := uint64(len(f.tag))
 	rvl := vl[1:]
 	for i := range rvl {
 		v := &rvl[i]
-		if err := spec.calculateSize(v, specs); err != nil {
+		if err := f.message.calculateSize(v); err != nil {
 			return 0, err
 		}
 		elementSize := atomic.LoadUint64(&v.cachedSize)
@@ -2025,158 +2086,85 @@ func (f *FieldType) calculateSizeMessage(
 	return total, nil
 }
 
-func (s *Spec) marshal(w Writer, a *Any, specs []*Spec) (Writer, error) {
-	specs = append(specs, s)
-	var (
-		minField      uint32
-		minFieldIndex int
-	)
+func (s *spec) marshal(w Writer, a *Any) (Writer, error) {
+	var minField uint32
 	for i := range a.Fields {
-		f := &a.Fields[i]
-		ft, fieldIndex, err := s.findFieldByName(f.Name, minFieldIndex)
-		if err != nil {
-			return Writer{}, err
-		}
-		if ft.FieldNumber == 0 || ft.FieldNumber > MaxFieldNumber {
+		af := &a.Fields[i]
+		f, ok := s.fieldsByName[af.Name]
+		if !ok {
 			return Writer{}, ErrUnknownField
 		}
-		if ft.FieldNumber < minField {
+		if f.number < minField {
 			return Writer{}, ErrInvalidFieldOrder
 		}
 
-		wireType, err := ft.wireType()
+		Append(&w, f.tag)
+
+		var err error
+		w, err = f.marshal(w, af)
 		if err != nil {
 			return Writer{}, err
 		}
 
-		tag := tagValue(ft.FieldNumber, wireType)
-		AppendUint(&w, tag)
-
-		w, err = ft.marshal(w, f, specs)
-		if err != nil {
-			return Writer{}, err
-		}
-
-		minField = ft.FieldNumber + 1
-		minFieldIndex = fieldIndex + 1
+		minField = f.number + 1
 	}
 	return w, nil
 }
 
-func (s *Spec) findFieldByNumber(fieldNumber uint32, startIndex int) (*FieldType, int, error) {
-	fields := s.Fields
-	for i := startIndex; i < len(fields); i++ {
-		f := &fields[i]
-		if f.FieldNumber == fieldNumber {
-			return f, i, nil
-		}
-	}
-	return nil, 0, ErrUnknownField
-}
-
-func (s *Spec) findFieldByName(name string, startIndex int) (*FieldType, int, error) {
-	fields := s.Fields
-	for i := startIndex; i < len(fields); i++ {
-		f := &fields[i]
-		if f.Name == name {
-			return f, i, nil
-		}
-	}
-	return nil, 0, ErrUnknownField
-}
-
-func (f *FieldType) wireType() (WireType, error) {
-	switch f.WhichCanotoType() {
-	case FieldTypeInt, FieldTypeUint, FieldTypeBool:
-		if f.Repeated {
-			return Len, nil
-		}
-		return Varint, nil
-	case FieldTypeFixedInt:
-		if f.Repeated {
-			return Len, nil
-		}
-		w, ok := f.TypeFixedInt.fixedWireType()
-		if !ok {
-			return 0, ErrUnexpectedFieldSize
-		}
-		return w, nil
-	case FieldTypeFixedUint:
-		if f.Repeated {
-			return Len, nil
-		}
-		w, ok := f.TypeFixedUint.fixedWireType()
-		if !ok {
-			return 0, ErrUnexpectedFieldSize
-		}
-		return w, nil
-	case FieldTypeString, FieldTypeBytes, FieldTypeFixedBytes, FieldTypeRecursive, FieldTypeMessage:
-		return Len, nil
-	default:
-		return 0, ErrUnknownFieldType
-	}
-}
-
-func (f *FieldType) unmarshal(r *Reader, specs []*Spec) (any, error) {
-	var unmarshal func(f *FieldType, r *Reader, specs []*Spec) (any, error)
-	switch f.WhichCanotoType() {
+func (f *field) unmarshal(r *Reader) (any, error) {
+	switch f.kind {
 	case FieldTypeInt:
-		unmarshal = (*FieldType).unmarshalInt
+		return f.unmarshalInt(r)
 	case FieldTypeUint:
-		unmarshal = (*FieldType).unmarshalUint
+		return f.unmarshalUint(r)
 	case FieldTypeFixedInt:
-		unmarshal = (*FieldType).unmarshalFixedInt
+		return f.unmarshalFixedInt(r)
 	case FieldTypeFixedUint:
-		unmarshal = (*FieldType).unmarshalFixedUint
+		return f.unmarshalFixedUint(r)
 	case FieldTypeBool:
-		unmarshal = (*FieldType).unmarshalBool
+		return f.unmarshalBool(r)
 	case FieldTypeString:
-		unmarshal = (*FieldType).unmarshalString
+		return f.unmarshalString(r)
 	case FieldTypeBytes:
-		unmarshal = (*FieldType).unmarshalBytes
+		return f.unmarshalBytes(r)
 	case FieldTypeFixedBytes:
-		unmarshal = (*FieldType).unmarshalFixedBytes
-	case FieldTypeRecursive:
-		unmarshal = (*FieldType).unmarshalRecursive
-	case FieldTypeMessage:
-		unmarshal = (*FieldType).unmarshalSpec
+		return f.unmarshalFixedBytes(r)
+	case FieldTypeRecursive, FieldTypeMessage:
+		return f.unmarshalMessage(r)
 	default:
 		return nil, ErrUnknownFieldType
 	}
-	return unmarshal(f, r, specs)
 }
 
-func (f *FieldType) marshal(w Writer, af *AnyField, specs []*Spec) (Writer, error) {
-	switch f.WhichCanotoType() {
+func (f *field) marshal(w Writer, af *AnyField) (Writer, error) {
+	switch f.kind {
 	case FieldTypeInt:
-		return f.marshalInt(w, af.Value, specs)
+		return f.marshalInt(w, af.Value)
 	case FieldTypeUint:
-		return f.marshalUint(w, af.Value, specs)
+		return f.marshalUint(w, af.Value)
 	case FieldTypeFixedInt:
-		return f.marshalFixedInt(w, af.Value, specs)
+		return f.marshalFixedInt(w, af.Value)
 	case FieldTypeFixedUint:
-		return f.marshalFixedUint(w, af.Value, specs)
+		return f.marshalFixedUint(w, af.Value)
 	case FieldTypeBool:
-		return f.marshalBool(w, af.Value, specs)
+		return f.marshalBool(w, af.Value)
 	case FieldTypeString:
-		return f.marshalString(w, af.Value, specs)
+		return f.marshalString(w, af.Value)
 	case FieldTypeBytes, FieldTypeFixedBytes:
-		return f.marshalBytes(w, af.Value, specs)
-	case FieldTypeRecursive:
-		return f.marshalRecursive(w, af, specs)
-	case FieldTypeMessage:
-		return f.marshalSpec(w, af, specs)
+		return f.marshalBytes(w, af.Value)
+	case FieldTypeRecursive, FieldTypeMessage:
+		return f.marshalMessage(w, af)
 	default:
 		return Writer{}, ErrUnknownFieldType
 	}
 }
 
-func (f *FieldType) unmarshalInt(r *Reader, _ []*Spec) (any, error) {
+func (f *field) unmarshalInt(r *Reader) (any, error) {
 	var (
 		read         func(*Reader) (int64, error)
 		readRepeated func(*Reader, uint64) ([]int64, error)
 	)
-	switch f.TypeInt {
+	switch f.size {
 	case SizeEnum8:
 		read, readRepeated = unmarshalInt[int8], unmarshalInts[int8]
 	case SizeEnum16:
@@ -2196,12 +2184,12 @@ func (f *FieldType) unmarshalInt(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalInt(w Writer, value any, _ []*Spec) (Writer, error) {
+func (f *field) marshalInt(w Writer, value any) (Writer, error) {
 	var (
 		minimum int64
 		maximum int64
 	)
-	switch f.TypeInt {
+	switch f.size {
 	case SizeEnum8:
 		minimum, maximum = math.MinInt8, math.MaxInt8
 	case SizeEnum16:
@@ -2228,12 +2216,12 @@ func (f *FieldType) marshalInt(w Writer, value any, _ []*Spec) (Writer, error) {
 	)
 }
 
-func (f *FieldType) unmarshalUint(r *Reader, _ []*Spec) (any, error) {
+func (f *field) unmarshalUint(r *Reader) (any, error) {
 	var (
 		read         func(*Reader) (uint64, error)
 		readRepeated func(*Reader, uint64) ([]uint64, error)
 	)
-	switch f.TypeUint {
+	switch f.size {
 	case SizeEnum8:
 		read, readRepeated = unmarshalUint[uint8], unmarshalUints[uint8]
 	case SizeEnum16:
@@ -2253,9 +2241,9 @@ func (f *FieldType) unmarshalUint(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalUint(w Writer, value any, _ []*Spec) (Writer, error) {
+func (f *field) marshalUint(w Writer, value any) (Writer, error) {
 	var maximum uint64
-	switch f.TypeUint {
+	switch f.size {
 	case SizeEnum8:
 		maximum = math.MaxUint8
 	case SizeEnum16:
@@ -2282,9 +2270,9 @@ func (f *FieldType) marshalUint(w Writer, value any, _ []*Spec) (Writer, error) 
 	)
 }
 
-func (f *FieldType) unmarshalFixedInt(r *Reader, _ []*Spec) (any, error) {
+func (f *field) unmarshalFixedInt(r *Reader) (any, error) {
 	var read func(*Reader) (int64, error)
-	switch f.TypeFixedInt {
+	switch f.size {
 	case SizeEnum32:
 		read = func(r *Reader) (int64, error) {
 			var v int32
@@ -2304,16 +2292,16 @@ func (f *FieldType) unmarshalFixedInt(r *Reader, _ []*Spec) (any, error) {
 		f,
 		r,
 		read,
-		f.TypeFixedInt,
+		f.size,
 	)
 }
 
-func (f *FieldType) marshalFixedInt(w Writer, value any, _ []*Spec) (Writer, error) {
+func (f *field) marshalFixedInt(w Writer, value any) (Writer, error) {
 	var (
 		elementSize uint64
 		write       func(w Writer, value int64) (Writer, error)
 	)
-	switch f.TypeFixedInt {
+	switch f.size {
 	case SizeEnum32:
 		elementSize = SizeFint32
 		write = func(w Writer, value int64) (Writer, error) {
@@ -2341,9 +2329,9 @@ func (f *FieldType) marshalFixedInt(w Writer, value any, _ []*Spec) (Writer, err
 	)
 }
 
-func (f *FieldType) unmarshalFixedUint(r *Reader, _ []*Spec) (any, error) {
+func (f *field) unmarshalFixedUint(r *Reader) (any, error) {
 	var read func(*Reader) (uint64, error)
-	switch f.TypeFixedUint {
+	switch f.size {
 	case SizeEnum32:
 		read = func(r *Reader) (uint64, error) {
 			var v uint32
@@ -2363,16 +2351,16 @@ func (f *FieldType) unmarshalFixedUint(r *Reader, _ []*Spec) (any, error) {
 		f,
 		r,
 		read,
-		f.TypeFixedUint,
+		f.size,
 	)
 }
 
-func (f *FieldType) marshalFixedUint(w Writer, value any, _ []*Spec) (Writer, error) {
+func (f *field) marshalFixedUint(w Writer, value any) (Writer, error) {
 	var (
 		elementSize uint64
 		write       func(w Writer, value uint64) (Writer, error)
 	)
-	switch f.TypeFixedUint {
+	switch f.size {
 	case SizeEnum32:
 		elementSize = SizeFint32
 		write = func(w Writer, value uint64) (Writer, error) {
@@ -2400,7 +2388,7 @@ func (f *FieldType) marshalFixedUint(w Writer, value any, _ []*Spec) (Writer, er
 	)
 }
 
-func (f *FieldType) unmarshalBool(r *Reader, _ []*Spec) (any, error) {
+func (f *field) unmarshalBool(r *Reader) (any, error) {
 	return unmarshalPackedFixed(
 		f,
 		r,
@@ -2413,7 +2401,7 @@ func (f *FieldType) unmarshalBool(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalBool(w Writer, value any, _ []*Spec) (Writer, error) {
+func (f *field) marshalBool(w Writer, value any) (Writer, error) {
 	return marshalPacked(
 		f,
 		w,
@@ -2426,7 +2414,7 @@ func (f *FieldType) marshalBool(w Writer, value any, _ []*Spec) (Writer, error) 
 	)
 }
 
-func (f *FieldType) unmarshalString(r *Reader, _ []*Spec) (any, error) {
+func (f *field) unmarshalString(r *Reader) (any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
@@ -2440,7 +2428,7 @@ func (f *FieldType) unmarshalString(r *Reader, _ []*Spec) (any, error) {
 	)
 }
 
-func (f *FieldType) marshalString(w Writer, value any, _ []*Spec) (Writer, error) {
+func (f *field) marshalString(w Writer, value any) (Writer, error) {
 	return marshalUnpacked(
 		f,
 		w,
@@ -2452,8 +2440,8 @@ func (f *FieldType) marshalString(w Writer, value any, _ []*Spec) (Writer, error
 	)
 }
 
-func (f *FieldType) unmarshalBytes(r *Reader, _ []*Spec) (any, error) {
-	if f.Pointer && f.Repeated {
+func (f *field) unmarshalBytes(r *Reader) (any, error) {
+	if f.pointer && f.repeated {
 		return unmarshalUnpacked(f, r, ReadSubReader, func(msgReader Reader) (*[]byte, bool, error) {
 			if !HasNext(&msgReader) {
 				return nil, true, nil
@@ -2477,13 +2465,13 @@ func (f *FieldType) unmarshalBytes(r *Reader, _ []*Spec) (any, error) {
 		ReadBytes[[]byte],
 		func(msgBytes []byte) ([]byte, bool, error) {
 			// Non-nil pointers are not considered empty.
-			return msgBytes, len(msgBytes) == 0 && !f.Pointer, nil
+			return msgBytes, len(msgBytes) == 0 && !f.pointer, nil
 		},
 	)
 }
 
-func (f *FieldType) marshalBytes(w Writer, value any, _ []*Spec) (Writer, error) {
-	if f.Pointer && f.Repeated {
+func (f *field) marshalBytes(w Writer, value any) (Writer, error) {
+	if f.pointer && f.repeated {
 		return marshalUnpacked(
 			f,
 			w,
@@ -2511,108 +2499,40 @@ func (f *FieldType) marshalBytes(w Writer, value any, _ []*Spec) (Writer, error)
 	)
 }
 
-func (f *FieldType) unmarshalFixedBytes(r *Reader, _ []*Spec) (any, error) {
-	// Read the first entry manually because the tag is already stripped.
-	var length uint64
-	if err := ReadUint(r, &length); err != nil {
-		return nil, err
-	}
-	if length != f.TypeFixedBytes {
-		return nil, ErrInvalidLength
-	}
-	if f.TypeFixedBytes > uint64(len(r.B)) {
-		return nil, ErrUnexpectedEOF
-	}
-
-	msgBytes := r.B[:f.TypeFixedBytes]
-	r.B = r.B[f.TypeFixedBytes:]
-
-	if !f.Repeated {
-		// If there is only one entry, return it.
-		if isBytesEmpty(msgBytes) {
-			return nil, ErrZeroValue
-		}
-		return slices.Clone(msgBytes), nil
-	}
-
-	// Count the number of additional entries after the first entry.
-	expectedTag := make([]byte, 0, maxTagLength)
-	expectedTagValue := tagValue(f.FieldNumber, Len)
-	expectedTag = binary.AppendUvarint(expectedTag, uint64(expectedTagValue))
-
-	var count, capacity uint64
-	if f.FixedLength == 0 {
-		countMinus1, err := CountBytes(r.B, expectedTag)
-		if err != nil {
-			return nil, err
-		}
-		count = countMinus1 + 1
-		capacity = count
-	} else {
-		count = f.FixedLength
-		// The spec is untrusted, so the fixed length is bounded by the number
-		// of entries present before it is used to size the allocation. The
-		// error is ignored because, if the malformed entry is part of this
-		// field, reading the entries below reports it.
-		countMinus1, _ := CountBytes(r.B, expectedTag)
-		capacity = min(count, countMinus1+1)
-	}
-
-	values := make([][]byte, 1, capacity)
-	values[0] = slices.Clone(msgBytes)
-
-	isZero := isBytesEmpty(msgBytes)
-
-	// Read the rest of the entries, stripping the tag each time.
-	for range count - 1 {
-		if !HasPrefix(r.B, expectedTag) {
-			return nil, ErrUnknownField
-		}
-		r.B = r.B[len(expectedTag):]
-
-		if err := ReadUint(r, &length); err != nil {
-			return nil, err
-		}
-		if length != f.TypeFixedBytes {
-			return nil, ErrInvalidLength
-		}
-		if f.TypeFixedBytes > uint64(len(r.B)) {
-			return nil, ErrUnexpectedEOF
-		}
-
-		msgBytes := r.B[:f.TypeFixedBytes]
-		r.B = r.B[f.TypeFixedBytes:]
-
-		values = append(values, slices.Clone(msgBytes))
-		isZero = isZero && isBytesEmpty(msgBytes)
-	}
-	if f.FixedLength > 0 && isZero {
-		return nil, ErrZeroValue
-	}
-	return values, nil
+func (f *field) unmarshalFixedBytes(r *Reader) (any, error) {
+	return unmarshalUnpacked(
+		f,
+		r,
+		func(r *Reader, msgBytes *[]byte) error {
+			var length uint64
+			if err := ReadUint(r, &length); err != nil {
+				return err
+			}
+			if length != f.fixedBytes {
+				return ErrInvalidLength
+			}
+			if length > uint64(len(r.B)) {
+				return ErrUnexpectedEOF
+			}
+			*msgBytes = r.B[:length]
+			r.B = r.B[length:]
+			return nil
+		},
+		func(msgBytes []byte) ([]byte, bool, error) {
+			return slices.Clone(msgBytes), isBytesEmpty(msgBytes), nil
+		},
+	)
 }
 
-func (f *FieldType) unmarshalRecursive(r *Reader, specs []*Spec) (any, error) {
-	spec, specs, err := f.recursiveSpec(specs)
-	if err != nil {
-		return nil, err
-	}
-	return f.unmarshalMessage(r, spec, specs)
-}
-
-func (f *FieldType) unmarshalSpec(r *Reader, specs []*Spec) (any, error) {
-	return f.unmarshalMessage(r, f.TypeMessage, specs)
-}
-
-func (f *FieldType) unmarshalMessage(r *Reader, spec *Spec, specs []*Spec) (any, error) {
+func (f *field) unmarshalMessage(r *Reader) (any, error) {
 	// unmarshal reads a message from msgReader, charging its memory to r.
 	unmarshal := func(msgReader Reader) (Any, error) {
 		msgReader.MemoryRemaining = r.MemoryRemaining
-		a, err := spec.unmarshal(&msgReader, specs)
+		a, err := f.message.unmarshal(&msgReader)
 		r.MemoryRemaining = msgReader.MemoryRemaining
 		return a, err
 	}
-	if f.Pointer && f.Repeated {
+	if f.pointer && f.repeated {
 		return unmarshalUnpacked(f, r, ReadSubReader, func(msgReader Reader) (*Any, bool, error) {
 			if !HasNext(&msgReader) {
 				return nil, true, nil
@@ -2626,52 +2546,24 @@ func (f *FieldType) unmarshalMessage(r *Reader, spec *Spec, specs []*Spec) (any,
 	}
 	return unmarshalUnpacked(f, r, ReadSubReader, func(msgReader Reader) (Any, bool, error) {
 		if !HasNext(&msgReader) {
-			return Any{}, !f.Pointer, nil
+			return Any{}, !f.pointer, nil
 		}
 		a, err := unmarshal(msgReader)
 		return a, false, err
 	})
 }
 
-func (f *FieldType) marshalRecursive(w Writer, af *AnyField, specs []*Spec) (Writer, error) {
-	spec, specs, err := f.recursiveSpec(specs)
-	if err != nil {
-		return Writer{}, err
-	}
-	return f.marshalMessage(w, af, spec, specs)
-}
-
-func (f *FieldType) recursiveSpec(specs []*Spec) (*Spec, []*Spec, error) {
-	numSpecs := uint64(len(specs))
-	if f.TypeRecursive > numSpecs {
-		return nil, nil, ErrInvalidRecursiveDepth
-	}
-	index := numSpecs - f.TypeRecursive
-	spec := specs[index]
-	specs = specs[:index:index]
-	return spec, specs, nil
-}
-
-func (f *FieldType) marshalSpec(w Writer, af *AnyField, specs []*Spec) (Writer, error) {
-	return f.marshalMessage(w, af, f.TypeMessage, specs)
-}
-
-func (f *FieldType) marshalMessage(
-	w Writer,
-	af *AnyField,
-	spec *Spec,
-	specs []*Spec,
-) (Writer, error) {
-	if !f.Repeated {
+func (f *field) marshalMessage(w Writer, af *AnyField) (Writer, error) {
+	if !f.repeated {
 		v, ok := af.Value.(Any)
 		if !ok {
 			return Writer{}, ErrInvalidFieldType
 		}
 		AppendUint(&w, atomic.LoadUint64(&af.cachedSize))
-		return spec.marshal(w, &v, specs)
+		return f.message.marshal(w, &v)
 	}
 
-	if f.Pointer {
+	if f.pointer {
 		vl, ok := af.Value.([]*Any)
 		if !ok {
 			return Writer{}, ErrInvalidFieldType
@@ -2689,7 +2581,7 @@ func (f *FieldType) marshalMessage(
 			AppendUint(&w, SizePointerPresenceTag+SizeUint(innerSize)+innerSize)
 			Append(&w, PointerPresenceTag)
 			AppendUint(&w, innerSize)
-			return spec.marshal(w, v, specs)
+			return f.message.marshal(w, v)
 		}
 
 		var err error
@@ -2698,9 +2590,8 @@ func (f *FieldType) marshalMessage(
 			return Writer{}, err
 		}
 
-		tag := tagValue(f.FieldNumber, Len)
 		for _, v := range vl[1:] {
-			AppendUint(&w, tag)
+			Append(&w, f.tag)
 			w, err = marshalElement(w, v)
 			if err != nil {
 				return Writer{}, err
@@ -2720,7 +2611,7 @@ func (f *FieldType) marshalMessage(
 	marshalElement := func(w Writer, v *Any) (Writer, error) {
 		innerSize := atomic.LoadUint64(&v.cachedSize)
 		AppendUint(&w, innerSize)
-		return spec.marshal(w, v, specs)
+		return f.message.marshal(w, v)
 	}
 
 	var err error
@@ -2729,10 +2620,9 @@ func (f *FieldType) marshalMessage(
 		return Writer{}, err
 	}
 
-	tag := tagValue(f.FieldNumber, Len)
 	rvl := vl[1:]
 	for i := range rvl {
-		AppendUint(&w, tag)
+		Append(&w, f.tag)
 		w, err = marshalElement(w, &rvl[i])
 		if err != nil {
 			return Writer{}, err
@@ -2832,12 +2722,12 @@ func unmarshalUints[T Uint](r *Reader, fixedLength uint64) ([]uint64, error) {
 // the same functions as the generated code, so that both return the same
 // errors.
 func unmarshalPackedVarint[T comparable](
-	f *FieldType,
+	f *field,
 	r *Reader,
 	unmarshal func(r *Reader) (T, error),
 	unmarshalRepeated func(r *Reader, fixedLength uint64) ([]T, error),
 ) (any, error) {
-	if !f.Repeated {
+	if !f.repeated {
 		// If there is only one entry, read it.
 		value, err := unmarshal(r)
 		if err != nil {
@@ -2849,7 +2739,7 @@ func unmarshalPackedVarint[T comparable](
 		return value, nil
 	}
 
-	values, err := unmarshalRepeated(r, f.FixedLength)
+	values, err := unmarshalRepeated(r, f.fixedLength)
 	if err != nil {
 		return nil, err
 	}
@@ -2857,20 +2747,20 @@ func unmarshalPackedVarint[T comparable](
 	for _, value := range values {
 		isZero = isZero && IsZero(value)
 	}
-	if len(values) == 0 || (f.FixedLength > 0 && isZero) {
+	if len(values) == 0 || (f.fixedLength > 0 && isZero) {
 		return nil, ErrZeroValue
 	}
 	return values, nil
 }
 
 func marshalPacked[T comparable](
-	f *FieldType,
+	f *field,
 	w Writer,
 	value any,
 	size func(T) uint64,
 	marshal func(w Writer, value T) (Writer, error),
 ) (Writer, error) {
-	if !f.Repeated {
+	if !f.repeated {
 		// If there is only one entry, write it.
 		v, ok := value.(T)
 		if !ok {
@@ -2901,12 +2791,12 @@ func marshalPacked[T comparable](
 }
 
 func unmarshalPackedFixed[T comparable](
-	f *FieldType,
+	f *field,
 	r *Reader,
 	unmarshal func(r *Reader) (T, error),
 	sizeEnum SizeEnum,
 ) (any, error) {
-	if !f.Repeated {
+	if !f.repeated {
 		// If there is only one entry, read it.
 		value, err := unmarshal(r)
 		if err != nil {
@@ -2930,7 +2820,7 @@ func unmarshalPackedFixed[T comparable](
 	}
 	numMsgBytes := uint64(len(msgBytes))
 	count := numMsgBytes >> shift
-	if numMsgBytes&mask != 0 || (f.FixedLength != 0 && count != f.FixedLength) {
+	if numMsgBytes&mask != 0 || (f.fixedLength != 0 && count != f.fixedLength) {
 		return nil, ErrInvalidLength
 	}
 
@@ -2946,7 +2836,7 @@ func unmarshalPackedFixed[T comparable](
 		values[i] = value
 		isZero = isZero && IsZero(value)
 	}
-	if count == 0 || (f.FixedLength > 0 && isZero) {
+	if count == 0 || (f.fixedLength > 0 && isZero) {
 		return nil, ErrZeroValue
 	}
 	r.B = remainingBytes
@@ -2956,7 +2846,7 @@ func unmarshalPackedFixed[T comparable](
 // unmarshalUnpacked reads a length-delimited field. Each entry is read with
 // read and then converted into a value with unmarshal.
 func unmarshalUnpacked[E, T any](
-	f *FieldType,
+	f *field,
 	r *Reader,
 	read func(r *Reader, entry *E) error,
 	unmarshal func(entry E) (T, bool, error),
@@ -2966,7 +2856,7 @@ func unmarshalUnpacked[E, T any](
 	if err := read(r, &entry); err != nil {
 		return nil, err
 	}
-	if !f.Repeated {
+	if !f.repeated {
 		// If there is only one entry, return it.
 		value, isZero, err := unmarshal(entry)
 		if err != nil {
@@ -2979,13 +2869,9 @@ func unmarshalUnpacked[E, T any](
 	}
 
 	// Count the number of additional entries after the first entry.
-	expectedTag := make([]byte, 0, maxTagLength)
-	expectedTagValue := tagValue(f.FieldNumber, Len)
-	expectedTag = binary.AppendUvarint(expectedTag, uint64(expectedTagValue))
-
 	var count, capacity uint64
-	if f.FixedLength == 0 {
-		countMinus1, err := CountBytes(r.B, expectedTag)
+	if f.fixedLength == 0 {
+		countMinus1, err := CountBytes(r.B, f.tag)
 		if err != nil {
 			return nil, err
 		}
@@ -2996,8 +2882,8 @@ func unmarshalUnpacked[E, T any](
 		// of entries present before it is used to size the allocation. The
 		// error is ignored because, if the malformed entry is part of this
 		// field, reading the entries below reports it.
-		countMinus1, _ := CountBytes(r.B, expectedTag)
-		count = f.FixedLength
+		countMinus1, _ := CountBytes(r.B, f.tag)
+		count = f.fixedLength
 		capacity = min(count, countMinus1+1)
 	}
 
@@ -3011,10 +2897,10 @@ func unmarshalUnpacked[E, T any](
 
 	// Read the rest of the entries, stripping the tag each time.
 	for range count - 1 {
-		if !HasPrefix(r.B, expectedTag) {
+		if !HasPrefix(r.B, f.tag) {
 			return nil, ErrUnknownField
 		}
-		r.B = r.B[len(expectedTag):]
+		r.B = r.B[len(f.tag):]
 
 		if err := read(r, &entry); err != nil {
 			return nil, err
@@ -3027,19 +2913,19 @@ func unmarshalUnpacked[E, T any](
 		values = append(values, value)
 		isZero = isZero && isFieldZero
 	}
-	if f.FixedLength > 0 && isZero {
+	if f.fixedLength > 0 && isZero {
 		return nil, ErrZeroValue
 	}
 	return values, nil
 }
 
 func marshalUnpacked[T any](
-	f *FieldType,
+	f *field,
 	w Writer,
 	value any,
 	marshal func(w Writer, value T) (Writer, error),
 ) (Writer, error) {
-	if !f.Repeated {
+	if !f.repeated {
 		// If there is only one entry, write it.
 		v, ok := value.(T)
 		if !ok {
@@ -3064,9 +2950,8 @@ func marshalUnpacked[T any](
 		return Writer{}, err
 	}
 
-	tag := tagValue(f.FieldNumber, Len)
 	for _, v := range vl[1:] {
-		AppendUint(&w, tag)
+		Append(&w, f.tag)
 		w, err = marshal(w, v)
 		if err != nil {
 			return Writer{}, err
