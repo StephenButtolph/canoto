@@ -2646,6 +2646,40 @@ func BenchmarkUnmarshal_WideSpec(b *testing.B) {
 	}
 }
 
+// BenchmarkMarshal_WideSpec marshals a message whose spec contains many fields
+// when only the last field is set.
+func BenchmarkMarshal_WideSpec(b *testing.B) {
+	const numFields uint32 = 1024
+	fields := make([]FieldType, numFields)
+	for i := range numFields {
+		fields[i] = FieldType{
+			FieldNumber: i + 1,
+			Name:        strconv.FormatUint(uint64(i), 10),
+			TypeUint:    SizeEnum64,
+		}
+	}
+	codec, err := NewCodec(&Spec{
+		Name:   "Message",
+		Fields: fields,
+	})
+	require.NoError(b, err)
+
+	a := Any{
+		Fields: []AnyField{
+			{
+				Name:  fields[numFields-1].Name,
+				Value: uint64(1),
+			},
+		},
+	}
+	_, err = codec.Marshal(a)
+	require.NoError(b, err)
+
+	for b.Loop() {
+		_, _ = codec.Marshal(a)
+	}
+}
+
 // BenchmarkNewCodec_DeepSpec creates a codec for a deeply nested spec whose
 // innermost message contains many message fields.
 func BenchmarkNewCodec_DeepSpec(b *testing.B) {
