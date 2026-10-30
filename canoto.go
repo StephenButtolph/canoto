@@ -2036,8 +2036,11 @@ func calculateSizeUnpacked[T any](
 	if !ok {
 		return 0, ErrInvalidFieldType
 	}
-	if len(vl) == 0 || (f.fixedLength != 0 && uint64(len(vl)) != f.fixedLength) {
+	if f.fixedLength != 0 && uint64(len(vl)) != f.fixedLength {
 		return 0, ErrInvalidLength
+	}
+	if len(vl) == 0 {
+		return 0, ErrZeroValue
 	}
 
 	var (
@@ -2081,8 +2084,11 @@ func (f *field) calculateSizeMessage(af *AnyField) (uint64, error) {
 		if !ok {
 			return 0, ErrInvalidFieldType
 		}
-		if len(vl) == 0 || (f.fixedLength != 0 && uint64(len(vl)) != f.fixedLength) {
+		if f.fixedLength != 0 && uint64(len(vl)) != f.fixedLength {
 			return 0, ErrInvalidLength
+		}
+		if len(vl) == 0 {
+			return 0, ErrZeroValue
 		}
 
 		var (
@@ -2113,8 +2119,11 @@ func (f *field) calculateSizeMessage(af *AnyField) (uint64, error) {
 	if !ok {
 		return 0, ErrInvalidFieldType
 	}
-	if len(vl) == 0 || (f.fixedLength != 0 && uint64(len(vl)) != f.fixedLength) {
+	if f.fixedLength != 0 && uint64(len(vl)) != f.fixedLength {
 		return 0, ErrInvalidLength
+	}
+	if len(vl) == 0 {
+		return 0, ErrZeroValue
 	}
 
 	var (

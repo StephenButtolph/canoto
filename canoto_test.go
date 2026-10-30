@@ -2622,6 +2622,67 @@ func TestCodec_Marshal_Invalid(t *testing.T) {
 			want: ErrZeroValue,
 		},
 		{
+			name: "empty repeated string",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					Repeated:    true,
+					TypeString:  true,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: []string{},
+					},
+				},
+			},
+			want: ErrZeroValue,
+		},
+		{
+			name: "empty repeated message",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					Repeated:    true,
+					TypeMessage: message,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: []Any{},
+					},
+				},
+			},
+			want: ErrZeroValue,
+		},
+		{
+			name: "empty repeated pointer message",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					Repeated:    true,
+					Pointer:     true,
+					TypeMessage: message,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: []*Any{},
+					},
+				},
+			},
+			want: ErrZeroValue,
+		},
+		{
 			name: "fixed repeated uint wrong length",
 			fields: []FieldType{
 				{
