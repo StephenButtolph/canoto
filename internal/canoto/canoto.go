@@ -1471,16 +1471,13 @@ func (s *Spec) validate(depth uint64) error {
 // It is assumed that CacheCanoto has been called since the last modification
 // to f.
 func (f *FieldType) validate(depth uint64) error {
-	if f.FieldNumber == 0 || f.FieldNumber > MaxFieldNumber {
-		return ErrInvalidSpec
-	}
-	if len(f.Name) == 0 {
-		return ErrInvalidSpec
-	}
-	if f.FixedLength != 0 && !f.Repeated {
-		return ErrInvalidSpec
-	}
-	if len(f.OneOf) != 0 && f.Repeated {
+	switch {
+	case false,
+		f.FieldNumber == 0,
+		f.FieldNumber > MaxFieldNumber,
+		len(f.Name) == 0,
+		f.FixedLength != 0 && !f.Repeated,
+		len(f.OneOf) != 0 && f.Repeated:
 		return ErrInvalidSpec
 	}
 
@@ -1513,13 +1510,15 @@ func (f *FieldType) validate(depth uint64) error {
 	default:
 		return ErrUnknownFieldType
 	}
-	if !validSize {
+
+	switch {
+	case !validSize:
 		return ErrUnexpectedFieldSize
-	}
-	if f.Pointer && !allowsPointer {
+	case f.Pointer && !allowsPointer:
 		return ErrInvalidSpec
+	default:
+		return nil
 	}
-	return nil
 }
 
 // Unmarshal parses r.B as the message described by the Codec's [Spec].
