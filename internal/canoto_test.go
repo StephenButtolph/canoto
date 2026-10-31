@@ -728,6 +728,18 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 			C:  3,
 			D:  4,
 		},
+
+		Pointer: &LargestFieldNumber[uint32]{Uint: 123455},
+		RepeatedPointer: []*LargestFieldNumber[uint32]{
+			{Uint: 123455},
+			nil,
+			{Uint: 576214},
+		},
+		FixedRepeatedPointer: [3]*LargestFieldNumber[uint32]{
+			{Uint: 123455},
+			nil,
+			{Uint: 576214},
+		},
 	}
 	simple := Scalars{
 		Int8:     -31,
@@ -825,16 +837,17 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 					_, _ = s.UnmarshalCanotoFrom(reader)
 				}
 			})
+			b.Run("unmarshal/"+bm.name+"/any/unsafe="+strconv.FormatBool(unsafe), func(b *testing.B) {
+				for range b.N {
+					_, _ = codec.Unmarshal(canoto.Reader{
+						B:               bm.bytes,
+						Unsafe:          unsafe,
+						MemoryRemaining: canoto.DefaultMemoryLimit,
+						DepthLimit:      canoto.DefaultDepthLimit,
+					})
+				}
+			})
 		}
-		b.Run("unmarshal/"+bm.name+"/any", func(b *testing.B) {
-			for range b.N {
-				_, _ = codec.Unmarshal(canoto.Reader{
-					B:               bm.bytes,
-					MemoryRemaining: canoto.DefaultMemoryLimit,
-					DepthLimit:      canoto.DefaultDepthLimit,
-				})
-			}
-		})
 	}
 
 	for _, bm := range marshalBenchmarks {
