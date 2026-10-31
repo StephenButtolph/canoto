@@ -385,7 +385,13 @@ type (
 		// Value is the value of the field.
 		//
 		// It can be any of the following types:
+		//   - int8,   []int8
+		//   - int16,  []int16
+		//   - int32,  []int32
 		//   - int64,  []int64
+		//   - uint8,  []uint8
+		//   - uint16, []uint16
+		//   - uint32, []uint32
 		//   - uint64, []uint64
 		//   - bool,   []bool
 		//   - string, []string
@@ -393,6 +399,8 @@ type (
 		//   - Any,    []Any
 		//   - []*[]byte
 		//   - []*Any
+		//
+		// Integers must use the type matching the size of their field.
 		//
 		// Notice that *Any and *[]byte are not allowed. A nil pointer should
 		// not have any field entry.
@@ -441,21 +449,13 @@ func (s SizeEnum) fixedWireType() (WireType, bool) {
 	}
 }
 
-// shift returns the log2 of the number of bytes and the corresponding bitmask
-// (numBytes - 1) for an integer of this size. It returns false if this size is
-// not valid.
-func (s SizeEnum) shift() (shift uint64, mask uint64, ok bool) {
+// isValid returns true if this size is a valid integer size.
+func (s SizeEnum) isValid() bool {
 	switch s {
-	case SizeEnum8:
-		return 0, 0b000, true
-	case SizeEnum16:
-		return 1, 0b001, true
-	case SizeEnum32:
-		return 2, 0b011, true
-	case SizeEnum64:
-		return 3, 0b111, true
+	case SizeEnum8, SizeEnum16, SizeEnum32, SizeEnum64:
+		return true
 	default:
-		return 0, 0, false
+		return false
 	}
 }
 
@@ -1582,9 +1582,9 @@ func (f *FieldType) validate(depth uint64) error {
 	)
 	switch f.WhichCanotoType() {
 	case FieldTypeInt:
-		_, _, validSize = f.TypeInt.shift()
+		validSize = f.TypeInt.isValid()
 	case FieldTypeUint:
-		_, _, validSize = f.TypeUint.shift()
+		validSize = f.TypeUint.isValid()
 	case FieldTypeFixedInt:
 		_, validSize = f.TypeFixedInt.fixedWireType()
 	case FieldTypeFixedUint:
@@ -1901,39 +1901,51 @@ func (f *field) calculateSize(af *AnyField) (uint64, error) {
 	)
 	switch f.kind {
 	case FieldTypeInt:
-		size, err = calculateSizePacked(f, af.Value, SizeInt[int64])
+		switch f.size {
+		case SizeEnum8:
+			size, err = calculateSizePacked(f, af.Value, SizeInt[int8])
+		case SizeEnum16:
+			size, err = calculateSizePacked(f, af.Value, SizeInt[int16])
+		case SizeEnum32:
+			size, err = calculateSizePacked(f, af.Value, SizeInt[int32])
+		case SizeEnum64:
+			size, err = calculateSizePacked(f, af.Value, SizeInt[int64])
+		default:
+			return 0, ErrUnexpectedFieldSize
+		}
 	case FieldTypeUint:
-		size, err = calculateSizePacked(f, af.Value, SizeUint[uint64])
+		switch f.size {
+		case SizeEnum8:
+			size, err = calculateSizePacked(f, af.Value, SizeUint[uint8])
+		case SizeEnum16:
+			size, err = calculateSizePacked(f, af.Value, SizeUint[uint16])
+		case SizeEnum32:
+			size, err = calculateSizePacked(f, af.Value, SizeUint[uint32])
+		case SizeEnum64:
+			size, err = calculateSizePacked(f, af.Value, SizeUint[uint64])
+		default:
+			return 0, ErrUnexpectedFieldSize
+		}
 	case FieldTypeFixedInt:
-		var elementSize uint64
 		switch f.size {
 		case SizeEnum32:
-			elementSize = SizeFint32
+			size, err = calculateSizePacked(f, af.Value, sizeFint32[int32])
 		case SizeEnum64:
-			elementSize = SizeFint64
+			size, err = calculateSizePacked(f, af.Value, sizeFint64[int64])
 		default:
 			return 0, ErrUnexpectedFieldSize
 		}
-		size, err = calculateSizePacked(f, af.Value, func(int64) uint64 {
-			return elementSize
-		})
 	case FieldTypeFixedUint:
-		var elementSize uint64
 		switch f.size {
 		case SizeEnum32:
-			elementSize = SizeFint32
+			size, err = calculateSizePacked(f, af.Value, sizeFint32[uint32])
 		case SizeEnum64:
-			elementSize = SizeFint64
+			size, err = calculateSizePacked(f, af.Value, sizeFint64[uint64])
 		default:
 			return 0, ErrUnexpectedFieldSize
 		}
-		size, err = calculateSizePacked(f, af.Value, func(uint64) uint64 {
-			return elementSize
-		})
 	case FieldTypeBool:
-		size, err = calculateSizePacked(f, af.Value, func(bool) uint64 {
-			return SizeBool
-		})
+		size, err = calculateSizePacked(f, af.Value, sizeBool)
 	case FieldTypeString:
 		size, err = calculateSizeUnpacked(f, af.Value, func(v string) (uint64, bool, error) {
 			if !utf8.ValidString(v) {
@@ -2220,258 +2232,142 @@ func (f *field) marshal(w Writer, af *AnyField) (Writer, error) {
 }
 
 func (f *field) unmarshalInt(r *Reader) (any, error) {
-	var (
-		read         func(*Reader) (int64, error)
-		readRepeated func(*Reader, uint64) ([]int64, error)
-	)
 	switch f.size {
 	case SizeEnum8:
-		read, readRepeated = unmarshalInt[int8], unmarshalInts[int8]
+		return unmarshalInt[int8](f, r)
 	case SizeEnum16:
-		read, readRepeated = unmarshalInt[int16], unmarshalInts[int16]
+		return unmarshalInt[int16](f, r)
 	case SizeEnum32:
-		read, readRepeated = unmarshalInt[int32], unmarshalInts[int32]
+		return unmarshalInt[int32](f, r)
 	case SizeEnum64:
-		read, readRepeated = unmarshalInt[int64], unmarshalInts[int64]
+		return unmarshalInt[int64](f, r)
 	default:
-		return 0, ErrUnexpectedFieldSize
+		return nil, ErrUnexpectedFieldSize
 	}
-	return unmarshalPackedVarint(
-		f,
-		r,
-		read,
-		readRepeated,
-	)
 }
 
 func (f *field) marshalInt(w Writer, value any) (Writer, error) {
-	var (
-		minimum int64
-		maximum int64
-	)
 	switch f.size {
 	case SizeEnum8:
-		minimum, maximum = math.MinInt8, math.MaxInt8
+		return marshalPacked(f, w, value, SizeInt[int8], appendInt[int8])
 	case SizeEnum16:
-		minimum, maximum = math.MinInt16, math.MaxInt16
+		return marshalPacked(f, w, value, SizeInt[int16], appendInt[int16])
 	case SizeEnum32:
-		minimum, maximum = math.MinInt32, math.MaxInt32
+		return marshalPacked(f, w, value, SizeInt[int32], appendInt[int32])
 	case SizeEnum64:
-		minimum, maximum = math.MinInt64, math.MaxInt64
+		return marshalPacked(f, w, value, SizeInt[int64], appendInt[int64])
 	default:
 		return Writer{}, ErrUnexpectedFieldSize
 	}
-	return marshalPacked(
-		f,
-		w,
-		value,
-		SizeInt[int64],
-		func(w Writer, value int64) (Writer, error) {
-			if value < minimum || value > maximum {
-				return Writer{}, ErrOverflow
-			}
-			AppendInt(&w, value)
-			return w, nil
-		},
-	)
 }
 
 func (f *field) unmarshalUint(r *Reader) (any, error) {
-	var (
-		read         func(*Reader) (uint64, error)
-		readRepeated func(*Reader, uint64) ([]uint64, error)
-	)
 	switch f.size {
 	case SizeEnum8:
-		read, readRepeated = unmarshalUint[uint8], unmarshalUints[uint8]
+		return unmarshalUint[uint8](f, r)
 	case SizeEnum16:
-		read, readRepeated = unmarshalUint[uint16], unmarshalUints[uint16]
+		return unmarshalUint[uint16](f, r)
 	case SizeEnum32:
-		read, readRepeated = unmarshalUint[uint32], unmarshalUints[uint32]
+		return unmarshalUint[uint32](f, r)
 	case SizeEnum64:
-		read, readRepeated = unmarshalUint[uint64], unmarshalUints[uint64]
+		return unmarshalUint[uint64](f, r)
 	default:
-		return 0, ErrUnexpectedFieldSize
+		return nil, ErrUnexpectedFieldSize
 	}
-	return unmarshalPackedVarint(
-		f,
-		r,
-		read,
-		readRepeated,
-	)
 }
 
 func (f *field) marshalUint(w Writer, value any) (Writer, error) {
-	var maximum uint64
 	switch f.size {
 	case SizeEnum8:
-		maximum = math.MaxUint8
+		return marshalPacked(f, w, value, SizeUint[uint8], appendUint[uint8])
 	case SizeEnum16:
-		maximum = math.MaxUint16
+		return marshalPacked(f, w, value, SizeUint[uint16], appendUint[uint16])
 	case SizeEnum32:
-		maximum = math.MaxUint32
+		return marshalPacked(f, w, value, SizeUint[uint32], appendUint[uint32])
 	case SizeEnum64:
-		maximum = math.MaxUint64
+		return marshalPacked(f, w, value, SizeUint[uint64], appendUint[uint64])
 	default:
 		return Writer{}, ErrUnexpectedFieldSize
 	}
-	return marshalPacked(
-		f,
-		w,
-		value,
-		SizeUint[uint64],
-		func(w Writer, value uint64) (Writer, error) {
-			if value > maximum {
-				return Writer{}, ErrOverflow
-			}
-			AppendUint(&w, value)
-			return w, nil
-		},
-	)
 }
 
 func (f *field) unmarshalFixedInt(r *Reader) (any, error) {
-	var read func(*Reader) (int64, error)
 	switch f.size {
 	case SizeEnum32:
-		read = func(r *Reader) (int64, error) {
-			var v int32
-			err := ReadFint32(r, &v)
-			return int64(v), err
-		}
+		return unmarshalFint32[int32](f, r)
 	case SizeEnum64:
-		read = func(r *Reader) (int64, error) {
-			var v int64
-			err := ReadFint64(r, &v)
-			return v, err
-		}
+		return unmarshalFint64[int64](f, r)
 	default:
-		return 0, ErrUnexpectedFieldSize
+		return nil, ErrUnexpectedFieldSize
 	}
-	return unmarshalPackedFixed(
-		f,
-		r,
-		read,
-		f.size,
-	)
 }
 
 func (f *field) marshalFixedInt(w Writer, value any) (Writer, error) {
-	var (
-		elementSize uint64
-		write       func(w Writer, value int64) (Writer, error)
-	)
 	switch f.size {
 	case SizeEnum32:
-		elementSize = SizeFint32
-		write = func(w Writer, value int64) (Writer, error) {
-			if value < math.MinInt32 || value > math.MaxInt32 {
-				return Writer{}, ErrOverflow
-			}
-			AppendFint32(&w, int32(value))
-			return w, nil
-		}
+		return marshalPacked(f, w, value, sizeFint32[int32], appendFint32[int32])
 	case SizeEnum64:
-		elementSize = SizeFint64
-		write = func(w Writer, value int64) (Writer, error) {
-			AppendFint64(&w, value)
-			return w, nil
-		}
+		return marshalPacked(f, w, value, sizeFint64[int64], appendFint64[int64])
 	default:
 		return Writer{}, ErrUnexpectedFieldSize
 	}
-	return marshalPacked(
-		f,
-		w,
-		value,
-		func(int64) uint64 { return elementSize },
-		write,
-	)
 }
 
 func (f *field) unmarshalFixedUint(r *Reader) (any, error) {
-	var read func(*Reader) (uint64, error)
 	switch f.size {
 	case SizeEnum32:
-		read = func(r *Reader) (uint64, error) {
-			var v uint32
-			err := ReadFint32(r, &v)
-			return uint64(v), err
-		}
+		return unmarshalFint32[uint32](f, r)
 	case SizeEnum64:
-		read = func(r *Reader) (uint64, error) {
-			var v uint64
-			err := ReadFint64(r, &v)
-			return v, err
-		}
+		return unmarshalFint64[uint64](f, r)
 	default:
-		return 0, ErrUnexpectedFieldSize
+		return nil, ErrUnexpectedFieldSize
 	}
-	return unmarshalPackedFixed(
-		f,
-		r,
-		read,
-		f.size,
-	)
 }
 
 func (f *field) marshalFixedUint(w Writer, value any) (Writer, error) {
-	var (
-		elementSize uint64
-		write       func(w Writer, value uint64) (Writer, error)
-	)
 	switch f.size {
 	case SizeEnum32:
-		elementSize = SizeFint32
-		write = func(w Writer, value uint64) (Writer, error) {
-			if value > math.MaxUint32 {
-				return Writer{}, ErrOverflow
-			}
-			AppendFint32(&w, uint32(value))
-			return w, nil
-		}
+		return marshalPacked(f, w, value, sizeFint32[uint32], appendFint32[uint32])
 	case SizeEnum64:
-		elementSize = SizeFint64
-		write = func(w Writer, value uint64) (Writer, error) {
-			AppendFint64(&w, value)
-			return w, nil
-		}
+		return marshalPacked(f, w, value, sizeFint64[uint64], appendFint64[uint64])
 	default:
 		return Writer{}, ErrUnexpectedFieldSize
 	}
-	return marshalPacked(
-		f,
-		w,
-		value,
-		func(uint64) uint64 { return elementSize },
-		write,
-	)
 }
 
+// unmarshalBool reads a bool field. Fields are read with the same functions as
+// the generated code, so that both return the same errors.
 func (f *field) unmarshalBool(r *Reader) (any, error) {
-	return unmarshalPackedFixed(
-		f,
-		r,
-		func(r *Reader) (bool, error) {
-			var v bool
-			err := ReadBool(r, &v)
-			return v, err
-		},
-		SizeEnum8,
-	)
+	if !f.repeated {
+		var v bool
+		if err := ReadBool(r, &v); err != nil {
+			return nil, err
+		}
+		return nonZero(v)
+	}
+
+	if f.fixedLength == 0 {
+		var vs []bool
+		if err := ReadBools(r, &vs); err != nil {
+			return nil, err
+		}
+		return packedValue(f, vs)
+	}
+
+	vs, err := makePacked[bool](r, f.fixedLength, func(b []byte) uint64 {
+		return uint64(len(b))
+	})
+	if err != nil {
+		return nil, err
+	}
+	if err := ReadBoolsInto(r, vs); err != nil {
+		return nil, err
+	}
+	return packedValue(f, vs)
 }
 
 func (f *field) marshalBool(w Writer, value any) (Writer, error) {
-	return marshalPacked(
-		f,
-		w,
-		value,
-		func(bool) uint64 { return SizeBool },
-		func(w Writer, value bool) (Writer, error) {
-			AppendBool(&w, value)
-			return w, nil
-		},
-	)
+	return marshalPacked(f, w, value, sizeBool, appendBool)
 }
 
 func (f *field) unmarshalString(r *Reader) (any, error) {
@@ -2685,118 +2581,162 @@ func (f *field) marshalMessage(w Writer, af *AnyField) (Writer, error) {
 	return w, nil
 }
 
-func unmarshalInt[T Int](r *Reader) (int64, error) {
-	var v T
-	err := ReadInt(r, &v)
-	return int64(v), err
+// unmarshalInt reads a zigzag encoded varint field. Fields are read with the
+// same functions as the generated code, so that both return the same errors.
+func unmarshalInt[T Int](f *field, r *Reader) (any, error) {
+	if !f.repeated {
+		var v T
+		if err := ReadInt(r, &v); err != nil {
+			return nil, err
+		}
+		return nonZero(v)
+	}
+
+	if f.fixedLength == 0 {
+		var vs []T
+		if _, err := ReadInts(r, &vs); err != nil {
+			return nil, err
+		}
+		return packedValue(f, vs)
+	}
+
+	vs, err := makePacked[T](r, f.fixedLength, CountInts)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := ReadIntsInto(r, vs); err != nil {
+		return nil, err
+	}
+	return packedValue(f, vs)
 }
 
-func unmarshalUint[T Uint](r *Reader) (uint64, error) {
-	var v T
-	err := ReadUint(r, &v)
-	return uint64(v), err
+// unmarshalUint reads a varint field. Fields are read with the same functions
+// as the generated code, so that both return the same errors.
+func unmarshalUint[T Uint](f *field, r *Reader) (any, error) {
+	if !f.repeated {
+		var v T
+		if err := ReadUint(r, &v); err != nil {
+			return nil, err
+		}
+		return nonZero(v)
+	}
+
+	if f.fixedLength == 0 {
+		var vs []T
+		if _, err := ReadUints(r, &vs); err != nil {
+			return nil, err
+		}
+		return packedValue(f, vs)
+	}
+
+	vs, err := makePacked[T](r, f.fixedLength, CountInts)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := ReadUintsInto(r, vs); err != nil {
+		return nil, err
+	}
+	return packedValue(f, vs)
 }
 
-// packedVarintsLength returns the length of the slice to read a packed varint
-// field into, when the field must contain exactly fixedLength values.
-func packedVarintsLength(r *Reader, fixedLength uint64) (uint64, error) {
+// unmarshalFint32 reads a 32-bit fixed size integer field. Fields are read with
+// the same functions as the generated code, so that both return the same
+// errors.
+func unmarshalFint32[T Int32](f *field, r *Reader) (any, error) {
+	if !f.repeated {
+		var v T
+		if err := ReadFint32(r, &v); err != nil {
+			return nil, err
+		}
+		return nonZero(v)
+	}
+
+	if f.fixedLength == 0 {
+		var vs []T
+		if err := ReadFint32s(r, &vs); err != nil {
+			return nil, err
+		}
+		return packedValue(f, vs)
+	}
+
+	vs, err := makePacked[T](r, f.fixedLength, func(b []byte) uint64 {
+		return uint64(len(b)) / SizeFint32
+	})
+	if err != nil {
+		return nil, err
+	}
+	if err := ReadFint32sInto(r, vs); err != nil {
+		return nil, err
+	}
+	return packedValue(f, vs)
+}
+
+// unmarshalFint64 reads a 64-bit fixed size integer field. Fields are read with
+// the same functions as the generated code, so that both return the same
+// errors.
+func unmarshalFint64[T Int64](f *field, r *Reader) (any, error) {
+	if !f.repeated {
+		var v T
+		if err := ReadFint64(r, &v); err != nil {
+			return nil, err
+		}
+		return nonZero(v)
+	}
+
+	if f.fixedLength == 0 {
+		var vs []T
+		if err := ReadFint64s(r, &vs); err != nil {
+			return nil, err
+		}
+		return packedValue(f, vs)
+	}
+
+	vs, err := makePacked[T](r, f.fixedLength, func(b []byte) uint64 {
+		return uint64(len(b)) / SizeFint64
+	})
+	if err != nil {
+		return nil, err
+	}
+	if err := ReadFint64sInto(r, vs); err != nil {
+		return nil, err
+	}
+	return packedValue(f, vs)
+}
+
+// makePacked allocates the slice to read a packed field into, when the field
+// must contain exactly fixedLength values. count returns the number of values
+// in the packed bytes.
+func makePacked[T any](
+	r *Reader,
+	fixedLength uint64,
+	count func(b []byte) uint64,
+) ([]T, error) {
 	var (
 		peek = Reader{B: r.B, Unsafe: true}
 		b    []byte
 	)
 	if err := ReadBytes(&peek, &b); err != nil {
-		return 0, err
+		return nil, err
 	}
 	// The spec may be malicious, so fixedLength is bounded by the actual number
 	// of values in the field. If the field contains fewer than fixedLength
-	// values, the returned length still exceeds the number of values so that
-	// reading the field fails as if we allocated the full fixedLength.
-	return min(fixedLength, CountInts(b)+1), nil
+	// values, the slice still exceeds the number of values so that reading the
+	// field fails as if we allocated the full fixedLength.
+	var vs []T
+	err := MakeSlice(r, &vs, min(fixedLength, count(b)+1))
+	return vs, err
 }
 
-// unmarshalInts reads a packed repeated zigzag encoded varint field. If
-// fixedLength is non-zero, the field must contain exactly fixedLength values.
-func unmarshalInts[T Int](r *Reader, fixedLength uint64) ([]int64, error) {
-	var (
-		vs  []T
-		err error
-	)
-	if fixedLength == 0 {
-		_, err = ReadInts(r, &vs)
-	} else {
-		var length uint64
-		length, err = packedVarintsLength(r, fixedLength)
-		if err != nil {
-			return nil, err
-		}
-		vs = make([]T, length)
-		_, err = ReadIntsInto(r, vs)
+// nonZero returns v if it is not the zero value.
+func nonZero[T comparable](v T) (any, error) {
+	if IsZero(v) {
+		return nil, ErrZeroValue
 	}
-	if err != nil {
-		return nil, err
-	}
-
-	values := make([]int64, len(vs))
-	for i, v := range vs {
-		values[i] = int64(v)
-	}
-	return values, nil
+	return v, nil
 }
 
-// unmarshalUints reads a packed repeated varint field. If fixedLength is
-// non-zero, the field must contain exactly fixedLength values.
-func unmarshalUints[T Uint](r *Reader, fixedLength uint64) ([]uint64, error) {
-	var (
-		vs  []T
-		err error
-	)
-	if fixedLength == 0 {
-		_, err = ReadUints(r, &vs)
-	} else {
-		var length uint64
-		length, err = packedVarintsLength(r, fixedLength)
-		if err != nil {
-			return nil, err
-		}
-		vs = make([]T, length)
-		_, err = ReadUintsInto(r, vs)
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	values := make([]uint64, len(vs))
-	for i, v := range vs {
-		values[i] = uint64(v)
-	}
-	return values, nil
-}
-
-// unmarshalPackedVarint reads a varint field. Repeated fields are read with
-// the same functions as the generated code, so that both return the same
-// errors.
-func unmarshalPackedVarint[T comparable](
-	f *field,
-	r *Reader,
-	unmarshal func(r *Reader) (T, error),
-	unmarshalRepeated func(r *Reader, fixedLength uint64) ([]T, error),
-) (any, error) {
-	if !f.repeated {
-		// If there is only one entry, read it.
-		value, err := unmarshal(r)
-		if err != nil {
-			return nil, err
-		}
-		if IsZero(value) {
-			return nil, ErrZeroValue
-		}
-		return value, nil
-	}
-
-	values, err := unmarshalRepeated(r, f.fixedLength)
-	if err != nil {
-		return nil, err
-	}
+// packedValue returns values if they are a valid packed field.
+func packedValue[T comparable](f *field, values []T) (any, error) {
 	isZero := true
 	for _, value := range values {
 		isZero = isZero && IsZero(value)
@@ -2807,12 +2747,46 @@ func unmarshalPackedVarint[T comparable](
 	return values, nil
 }
 
+func sizeFint32[T Int32](T) uint64 { return SizeFint32 }
+
+func sizeFint64[T Int64](T) uint64 { return SizeFint64 }
+
+func sizeBool(bool) uint64 { return SizeBool }
+
+// The append functions take and return w by value, because passing &w to a
+// function value would move w to the heap.
+
+func appendInt[T Int](w Writer, v T) Writer {
+	AppendInt(&w, v)
+	return w
+}
+
+func appendUint[T Uint](w Writer, v T) Writer {
+	AppendUint(&w, v)
+	return w
+}
+
+func appendFint32[T Int32](w Writer, v T) Writer {
+	AppendFint32(&w, v)
+	return w
+}
+
+func appendFint64[T Int64](w Writer, v T) Writer {
+	AppendFint64(&w, v)
+	return w
+}
+
+func appendBool(w Writer, v bool) Writer {
+	AppendBool(&w, v)
+	return w
+}
+
 func marshalPacked[T comparable](
 	f *field,
 	w Writer,
 	value any,
 	size func(T) uint64,
-	marshal func(w Writer, value T) (Writer, error),
+	appendValue func(w Writer, value T) Writer,
 ) (Writer, error) {
 	if !f.repeated {
 		// If there is only one entry, write it.
@@ -2820,7 +2794,7 @@ func marshalPacked[T comparable](
 		if !ok {
 			return Writer{}, ErrInvalidFieldType
 		}
-		return marshal(w, v)
+		return appendValue(w, v), nil
 	}
 
 	vl, ok := value.([]T)
@@ -2833,68 +2807,10 @@ func marshalPacked[T comparable](
 		packedSize += size(v)
 	}
 	AppendUint(&w, packedSize)
-
-	var err error
 	for _, v := range vl {
-		w, err = marshal(w, v)
-		if err != nil {
-			return Writer{}, err
-		}
+		w = appendValue(w, v)
 	}
 	return w, nil
-}
-
-func unmarshalPackedFixed[T comparable](
-	f *field,
-	r *Reader,
-	unmarshal func(r *Reader) (T, error),
-	sizeEnum SizeEnum,
-) (any, error) {
-	if !f.repeated {
-		// If there is only one entry, read it.
-		value, err := unmarshal(r)
-		if err != nil {
-			return nil, err
-		}
-		if IsZero(value) {
-			return nil, ErrZeroValue
-		}
-		return value, nil
-	}
-
-	// Read the full packed bytes.
-	var msgBytes []byte
-	if err := ReadBytes(r, &msgBytes); err != nil {
-		return nil, err
-	}
-
-	shift, mask, ok := sizeEnum.shift()
-	if !ok {
-		return nil, ErrUnexpectedFieldSize
-	}
-	numMsgBytes := uint64(len(msgBytes))
-	count := numMsgBytes >> shift
-	if numMsgBytes&mask != 0 || (f.fixedLength != 0 && count != f.fixedLength) {
-		return nil, ErrInvalidLength
-	}
-
-	values := make([]T, count)
-	remainingBytes := r.B
-	r.B = msgBytes
-	isZero := true
-	for i := range values {
-		value, err := unmarshal(r)
-		if err != nil {
-			return nil, err
-		}
-		values[i] = value
-		isZero = isZero && IsZero(value)
-	}
-	if count == 0 || (f.fixedLength > 0 && isZero) {
-		return nil, ErrZeroValue
-	}
-	r.B = remainingBytes
-	return values, nil
 }
 
 // unmarshalUnpacked reads a length-delimited field. Each entry is read with

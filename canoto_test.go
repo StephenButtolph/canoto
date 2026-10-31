@@ -2526,6 +2526,25 @@ func TestCodec_Marshal_Invalid(t *testing.T) {
 			want: ErrZeroValue,
 		},
 		{
+			name: "wrong int size",
+			fields: []FieldType{
+				{
+					FieldNumber: 1,
+					Name:        "a",
+					TypeInt:     SizeEnum8,
+				},
+			},
+			value: Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: int64(1),
+					},
+				},
+			},
+			want: ErrInvalidFieldType,
+		},
+		{
 			name: "empty string",
 			fields: []FieldType{
 				{
@@ -2944,6 +2963,73 @@ func TestCodec_Marshal_Invalid(t *testing.T) {
 
 			_, err = codec.Marshal(test.value)
 			require.ErrorIs(t, err, test.want)
+		})
+	}
+}
+
+func TestCodec_IntTypes(t *testing.T) {
+	tests := []struct {
+		name  string
+		field FieldType
+		value any
+	}{
+		{name: "int8", field: FieldType{TypeInt: SizeEnum8}, value: int8(-1)},
+		{name: "int16", field: FieldType{TypeInt: SizeEnum16}, value: int16(-1)},
+		{name: "int32", field: FieldType{TypeInt: SizeEnum32}, value: int32(-1)},
+		{name: "int64", field: FieldType{TypeInt: SizeEnum64}, value: int64(-1)},
+		{name: "uint8", field: FieldType{TypeUint: SizeEnum8}, value: uint8(1)},
+		{name: "uint16", field: FieldType{TypeUint: SizeEnum16}, value: uint16(1)},
+		{name: "uint32", field: FieldType{TypeUint: SizeEnum32}, value: uint32(1)},
+		{name: "uint64", field: FieldType{TypeUint: SizeEnum64}, value: uint64(1)},
+		{name: "fixed int32", field: FieldType{TypeFixedInt: SizeEnum32}, value: int32(-1)},
+		{name: "fixed int64", field: FieldType{TypeFixedInt: SizeEnum64}, value: int64(-1)},
+		{name: "fixed uint32", field: FieldType{TypeFixedUint: SizeEnum32}, value: uint32(1)},
+		{name: "fixed uint64", field: FieldType{TypeFixedUint: SizeEnum64}, value: uint64(1)},
+		{name: "repeated int8", field: FieldType{TypeInt: SizeEnum8, Repeated: true}, value: []int8{-1, 0}},
+		{name: "repeated int16", field: FieldType{TypeInt: SizeEnum16, Repeated: true}, value: []int16{-1, 0}},
+		{name: "repeated int32", field: FieldType{TypeInt: SizeEnum32, Repeated: true}, value: []int32{-1, 0}},
+		{name: "repeated int64", field: FieldType{TypeInt: SizeEnum64, Repeated: true}, value: []int64{-1, 0}},
+		{name: "repeated uint8", field: FieldType{TypeUint: SizeEnum8, Repeated: true}, value: []uint8{1, 0}},
+		{name: "repeated uint16", field: FieldType{TypeUint: SizeEnum16, Repeated: true}, value: []uint16{1, 0}},
+		{name: "repeated uint32", field: FieldType{TypeUint: SizeEnum32, Repeated: true}, value: []uint32{1, 0}},
+		{name: "repeated uint64", field: FieldType{TypeUint: SizeEnum64, Repeated: true}, value: []uint64{1, 0}},
+		{name: "repeated fixed int32", field: FieldType{TypeFixedInt: SizeEnum32, Repeated: true}, value: []int32{-1, 0}},
+		{name: "repeated fixed int64", field: FieldType{TypeFixedInt: SizeEnum64, Repeated: true}, value: []int64{-1, 0}},
+		{name: "repeated fixed uint32", field: FieldType{TypeFixedUint: SizeEnum32, Repeated: true}, value: []uint32{1, 0}},
+		{name: "repeated fixed uint64", field: FieldType{TypeFixedUint: SizeEnum64, Repeated: true}, value: []uint64{1, 0}},
+		{name: "fixed repeated int8", field: FieldType{TypeInt: SizeEnum8, Repeated: true, FixedLength: 2}, value: []int8{-1, 0}},
+		{name: "fixed repeated fixed uint32", field: FieldType{TypeFixedUint: SizeEnum32, Repeated: true, FixedLength: 2}, value: []uint32{1, 0}},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			require := require.New(t)
+
+			test.field.FieldNumber = 1
+			test.field.Name = "a"
+			codec, err := NewCodec(&Spec{
+				Name:   "Spec",
+				Fields: []FieldType{test.field},
+			})
+			require.NoError(err)
+
+			want := Any{
+				Fields: []AnyField{
+					{
+						Name:  "a",
+						Value: test.value,
+					},
+				},
+			}
+			b, err := codec.Marshal(want)
+			require.NoError(err)
+
+			got, err := codec.Unmarshal(Reader{
+				B:               b,
+				MemoryRemaining: DefaultMemoryLimit,
+				DepthLimit:      DefaultDepthLimit,
+			})
+			require.NoError(err)
+			require.Equal(want, got)
 		})
 	}
 }
