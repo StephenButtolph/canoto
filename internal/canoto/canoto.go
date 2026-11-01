@@ -206,7 +206,7 @@ type (
 		//
 		// The memory allocated and the depth of nested messages are not
 		// limited. bytes may only be untrusted if the message bounds both by
-		// its structure: it has no repeated fields and can not contain itself.
+		// its structure: it is not recursive and has no repeated fields.
 		// Otherwise, use UnmarshalCanotoFrom to read untrusted input.
 		UnmarshalCanoto(bytes []byte) error
 	}
