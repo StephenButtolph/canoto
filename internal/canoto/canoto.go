@@ -201,6 +201,11 @@ type (
 		MarshalCanoto() []byte
 		// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the
 		// message.
+		//
+		// The memory allocated and the depth of nested messages are not
+		// limited. bytes should only be untrusted if the message is not
+		// recursive and has no variable-length repeated fields. Otherwise,
+		// UnmarshalCanotoFrom should be used.
 		UnmarshalCanoto(bytes []byte) error
 	}
 
@@ -241,6 +246,9 @@ type (
 		AppendCanoto(w Writer) Writer
 		// UnmarshalCanotoFrom populates the field from a [Reader].
 		//
+		// [Reader.B] may be untrusted, as long as [Reader.MemoryRemaining] and
+		// [Reader.DepthLimit] are bounded.
+		//
 		// The returned [UnmarshalResult] must contain the memory remaining in r
 		// after charging for memory allocated by this call.
 		UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error)
@@ -276,6 +284,8 @@ type (
 		//
 		// Each allocation is charged the in-memory size of the allocated value,
 		// which may vary between builds.
+		//
+		// Allocator overhead, such as size class rounding, is not charged.
 		MemoryRemaining uint64
 		// DepthLimit is the number of nested messages that may be read.
 		//
@@ -1442,6 +1452,8 @@ func unsafeString(b []byte) string {
 }
 
 // NewCodec returns a [Codec] for messages described by s.
+//
+// s may be read from untrusted input. If s is invalid, an error is returned.
 func NewCodec(s *Spec) (*Codec, error) {
 	if !s.ValidCanoto() {
 		return nil, ErrInvalidSpec
@@ -1622,8 +1634,8 @@ func (f *FieldType) validate(depth uint64) error {
 
 // Unmarshal parses r.B as the message described by the Codec's [Spec].
 //
-// Unmarshaling is limited by the options of r, which should be bounded when
-// either the Spec or r.B is untrusted.
+// [Reader.B] may be untrusted, as long as [Reader.MemoryRemaining] and
+// [Reader.DepthLimit] are bounded.
 //
 // The returned [UnmarshalResult] contains the memory remaining in r after
 // charging for the memory of the returned [Any]. Unmarshal may also use
