@@ -180,37 +180,32 @@ Reading untrusted input is safe when the memory allocated and the depth of neste
 A message with both properties can safely be read from untrusted input with `UnmarshalCanoto`. To read untrusted input into any other message, use `UnmarshalCanotoFrom` with a `canoto.Reader` whose `MemoryRemaining` and `DepthLimit` are bounded.
 
 ```mermaid
-flowchart TD
+flowchart LR
     bytes[Untrusted bytes]
-    structure{Repeated fields or recursion?}
-    unmarshal[UnmarshalCanoto]
-    program[Values built by your program]
+    bounded{"Repeated fields or<br/>can contain itself?"}
+    message[Message]
+    spec[Spec]
+    codec[Codec]
+    any[Any]
+    program[Values built by<br/>your program]
 
-    subgraph limited [With bounded limits]
-        unmarshalFrom[UnmarshalCanotoFrom]
-        specUnmarshal[Spec.UnmarshalCanotoFrom]
-        codecUnmarshal[Codec.Unmarshal]
-    end
+    bytes --> bounded
+    bounded -- No --> unmarshal[UnmarshalCanoto]
+    bounded -- Yes --> from["UnmarshalCanotoFrom<br/>with bounded limits"]
+    unmarshal --> message
+    from --> message
+    bytes -- "Spec.UnmarshalCanotoFrom<br/>with bounded limits" --> spec
+    spec -- NewCodec --> codec
+    bytes -- "Codec.Unmarshal<br/>with bounded limits" --> any
+    codec -.-> any
+    program --> message & spec & any
 
     subgraph trusted [Trusted values]
-        message[Message]
-        spec[Spec]
-        codec[Codec]
-        any[Any]
+        message
+        spec
+        codec
+        any
     end
-
-    bytes --> structure
-    structure -- No --> unmarshal
-    structure -- Yes --> unmarshalFrom
-    bytes --> specUnmarshal
-    bytes --> codecUnmarshal
-    unmarshal --> message
-    unmarshalFrom --> message
-    specUnmarshal --> spec
-    spec -- NewCodec --> codec
-    codec -.-> codecUnmarshal
-    codecUnmarshal --> any
-    program --> trusted
 ```
 
 A value read from untrusted input contains no cycles, and the memory and depth used to build it were bounded. Its contents may still have been chosen by an attacker. For example, a `Spec` read from untrusted input can describe any message, so `NewCodec` validates it and returns `canoto.ErrInvalidSpec` if it is invalid. Because such a `Spec` can also describe a message with repeated fields or recursion, a `Codec` built from it must be given bounded limits in `Codec.Unmarshal`.
