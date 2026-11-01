@@ -1621,6 +1621,10 @@ func (f *FieldType) validate(depth uint64) error {
 // Unmarshaling is limited by the options of r, which should be bounded when
 // either the Spec or r.B is untrusted.
 //
+// The memory of the returned Any is charged against r.MemoryRemaining.
+// Unmarshal may also use temporary memory that is not charged, but it is at
+// most proportional to the memory that is charged.
+//
 // This function is slower than calling [Field.UnmarshalCanotoFrom] on the type
 // directly. This function should only be used when the concrete type can not be
 // known ahead of time.
