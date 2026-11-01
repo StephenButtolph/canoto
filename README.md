@@ -169,37 +169,50 @@ Modifying a message, including by calling `UnmarshalCanoto`, while another gorou
 
 Canoto distinguishes between two kinds of input:
 
-- **Untrusted input** is bytes that came from outside of your program, such as from the network or from disk.
-- **Trusted values** are Go values that your program built, or that Canoto read from untrusted input with bounded limits.
+- **Untrusted input** is bytes that came from outside of your program, such as from the network.
+- **Trusted values** are Go values that your program built, or that Canoto read from untrusted input.
 
-Untrusted input can only be converted into trusted values by reading it with a `canoto.Reader` whose `MemoryRemaining` and `DepthLimit` are bounded. Every other function expects trusted values. Each function documents which kind of input it accepts.
+Reading untrusted input is safe when the memory allocated and the depth of nested messages are bounded. Some messages bound both by their structure:
+
+- A message that can not contain itself, directly or indirectly, is never nested deeper than its definition.
+- A message without repeated fields allocates at most its own size, plus copies of its strings and bytes, which are no longer than the input.
+
+A message with both properties can safely be read from untrusted input with `UnmarshalCanoto`. To read untrusted input into any other message, use `UnmarshalCanotoFrom` with a `canoto.Reader` whose `MemoryRemaining` and `DepthLimit` are bounded.
 
 ```mermaid
 flowchart LR
-    subgraph untrusted [Untrusted input]
-        bytes[Bytes]
-    end
+    bytes[Untrusted bytes]
+    bounded{"Repeated fields or<br/>can contain itself?"}
+    message[Message]
+    spec[Spec]
+    codec[Codec]
+    any[Any]
+    program[Values built by<br/>your program]
+
+    bytes --> bounded
+    bounded -- No --> unmarshal[UnmarshalCanoto]
+    bounded -- Yes --> from["UnmarshalCanotoFrom<br/>with bounded limits"]
+    unmarshal --> message
+    from --> message
+    bytes -- "Spec.UnmarshalCanotoFrom<br/>with bounded limits" --> spec
+    spec -- NewCodec --> codec
+    bytes -- "Codec.Unmarshal<br/>with bounded limits" --> any
+    codec -.-> any
+    program --> message & spec & any
 
     subgraph trusted [Trusted values]
-        msg[Message]
-        spec[Spec]
-        codec[Codec]
-        any[Any]
+        message
+        spec
+        codec
+        any
     end
-
-    bytes -- "UnmarshalCanotoFrom<br/>with bounded limits" --> msg
-    bytes -- "Spec.UnmarshalCanotoFrom<br/>with bounded limits" --> spec
-    bytes -- "Codec.Unmarshal<br/>with bounded limits" --> any
-    bytes -. "UnmarshalCanoto<br/>has no limits" .-x msg
-    spec -- NewCodec --> codec
-    program[Values built by your program] --> trusted
 ```
 
-A value read from untrusted input contains no cycles, its messages are nested at most `DepthLimit` deep, and the memory to build it was charged against `MemoryRemaining`. Its contents may still have been chosen by an attacker. For example, a `Spec` read from untrusted input can describe any message, so `NewCodec` validates it and returns `canoto.ErrInvalidSpec` if it is invalid.
+A value read from untrusted input contains no cycles, and the memory and depth used to build it were bounded. Its contents may still have been chosen by an attacker. For example, a `Spec` read from untrusted input can describe any message, so `NewCodec` validates it and returns `canoto.ErrInvalidSpec` if it is invalid. Because such a `Spec` can also describe a message with repeated fields or recursion, a `Codec` built from it must be given bounded limits in `Codec.Unmarshal`.
 
 Values built by your program must not contain cycles. For example, marshaling a message or `Any` that contains itself, or calling `NewCodec` with a `Spec` that contains itself, recurses until the stack overflows, which crashes the process.
 
-`UnmarshalCanoto` uses `canoto.DefaultMemoryLimit` and `canoto.DefaultDepthLimit`, which do not limit anything, so it should only be used to read trusted bytes, such as bytes that your program marshaled itself.
+Custom `canoto.Field` implementations are not covered by the structure of the message that contains them, so they must bound their own memory, as described in [Custom Fields](#custom-fields).
 
 #### Limiting Memory
 
