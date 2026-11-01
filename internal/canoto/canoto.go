@@ -2399,17 +2399,24 @@ func (f *field) unmarshalString(r *Reader) (any, error) {
 
 // readBytesNoCopy reads a length-prefixed byte slice from r without copying
 // it, regardless of r.Unsafe.
-func readBytesNoCopy(r *Reader, msgBytes *[]byte) error {
+func readBytesNoCopy(r *Reader) ([]byte, error) {
 	var length uint64
 	if err := ReadUint(r, &length); err != nil {
-		return err
+		return nil, err
 	}
 	if length > uint64(len(r.B)) {
-		return ErrUnexpectedEOF
+		return nil, ErrUnexpectedEOF
 	}
-	*msgBytes = r.B[:length]
+	msgBytes := r.B[:length]
 	r.B = r.B[length:]
-	return nil
+	return msgBytes, nil
+}
+
+// readBytes reads a byte slice from r with [ReadBytes].
+func readBytes(r *Reader) ([]byte, error) {
+	var msgBytes []byte
+	err := ReadBytes(r, &msgBytes)
+	return msgBytes, err
 }
 
 func (f *field) marshalString(w Writer, value any) (Writer, error) {
@@ -2426,7 +2433,7 @@ func (f *field) marshalString(w Writer, value any) (Writer, error) {
 
 func (f *field) unmarshalBytes(r *Reader) (any, error) {
 	if f.pointer && f.repeated {
-		return unmarshalUnpacked(f, r, ReadBytes[[]byte], func(msgBytes []byte) (*[]byte, bool, error) {
+		return unmarshalUnpacked(f, r, readBytes, func(msgBytes []byte) (*[]byte, bool, error) {
 			if len(msgBytes) == 0 {
 				return nil, true, nil
 			}
@@ -2441,7 +2448,7 @@ func (f *field) unmarshalBytes(r *Reader) (any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
-		ReadBytes[[]byte],
+		readBytes,
 		func(msgBytes []byte) ([]byte, bool, error) {
 			// Non-nil pointers are not considered empty.
 			return msgBytes, len(msgBytes) == 0 && !f.pointer, nil
@@ -2482,20 +2489,20 @@ func (f *field) unmarshalFixedBytes(r *Reader) (any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
-		func(r *Reader, msgBytes *[]byte) error {
+		func(r *Reader) ([]byte, error) {
 			var length uint64
 			if err := ReadUint(r, &length); err != nil {
-				return err
+				return nil, err
 			}
 			if length != f.fixedBytes {
-				return ErrInvalidLength
+				return nil, ErrInvalidLength
 			}
 			if length > uint64(len(r.B)) {
-				return ErrUnexpectedEOF
+				return nil, ErrUnexpectedEOF
 			}
-			*msgBytes = r.B[:length]
+			msgBytes := r.B[:length]
 			r.B = r.B[length:]
-			return nil
+			return msgBytes, nil
 		},
 		func(msgBytes []byte) ([]byte, bool, error) {
 			if r.Unsafe {
@@ -2515,7 +2522,7 @@ func (f *field) unmarshalMessage(r *Reader) (any, error) {
 		return a, err
 	}
 	if f.pointer && f.repeated {
-		return unmarshalUnpacked(f, r, ReadSubReader, func(msgReader Reader) (*Any, bool, error) {
+		return unmarshalUnpacked(f, r, readSubReader, func(msgReader Reader) (*Any, bool, error) {
 			if !HasNext(&msgReader) {
 				return nil, true, nil
 			}
@@ -2526,13 +2533,20 @@ func (f *field) unmarshalMessage(r *Reader) (any, error) {
 			return &a, false, err
 		})
 	}
-	return unmarshalUnpacked(f, r, ReadSubReader, func(msgReader Reader) (Any, bool, error) {
+	return unmarshalUnpacked(f, r, readSubReader, func(msgReader Reader) (Any, bool, error) {
 		if !HasNext(&msgReader) {
 			return Any{}, !f.pointer, nil
 		}
 		a, err := unmarshal(msgReader)
 		return a, false, err
 	})
+}
+
+// readSubReader reads a length-prefixed message from r with [ReadSubReader].
+func readSubReader(r *Reader) (Reader, error) {
+	var msgReader Reader
+	err := ReadSubReader(r, &msgReader)
+	return msgReader, err
 }
 
 func (f *field) marshalMessage(w Writer, af *AnyField) (Writer, error) {
@@ -2850,12 +2864,12 @@ func marshalPacked[T comparable](
 func unmarshalUnpacked[E, T any](
 	f *field,
 	r *Reader,
-	read func(r *Reader, entry *E) error,
+	read func(r *Reader) (E, error),
 	unmarshal func(entry E) (T, bool, error),
 ) (any, error) {
 	// Read the first entry manually because the tag is already stripped.
-	var entry E
-	if err := read(r, &entry); err != nil {
+	entry, err := read(r)
+	if err != nil {
 		return nil, err
 	}
 	if !f.repeated {
@@ -2904,7 +2918,8 @@ func unmarshalUnpacked[E, T any](
 		}
 		r.B = r.B[len(f.tag):]
 
-		if err := read(r, &entry); err != nil {
+		entry, err := read(r)
+		if err != nil {
 			return nil, err
 		}
 
