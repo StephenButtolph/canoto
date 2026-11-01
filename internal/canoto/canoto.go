@@ -308,9 +308,6 @@ type (
 
 	// Writer contains all the state needed to marshal a Canoto type.
 	//
-	// The functions in this package that write to a Writer expect trusted
-	// values.
-	//
 	// The functions in this package are not methods on the Writer type to
 	// enable the usage of generics.
 	Writer struct {
