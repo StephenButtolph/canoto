@@ -180,6 +180,7 @@ Reading untrusted input is safe when the memory allocated and the depth of neste
 A message with both properties can safely be read from untrusted input with `UnmarshalCanoto`. To read untrusted input into any other message, use `UnmarshalCanotoFrom` with a `canoto.Reader` whose `MemoryRemaining` and `DepthLimit` are bounded.
 
 ```mermaid
+%%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
     bytes[Untrusted bytes]
     bounded{"Repeated fields or<br/>can contain itself?"}
