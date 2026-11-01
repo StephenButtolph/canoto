@@ -193,8 +193,6 @@ type (
 		ValidCanoto() bool
 		// MarshalCanoto returns the Canoto representation of this message.
 		//
-		// The message must be trusted, so it must not contain cycles.
-		//
 		// It is assumed that this message is ValidCanoto.
 		MarshalCanoto() []byte
 		// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the
@@ -208,9 +206,6 @@ type (
 	}
 
 	// Field defines a type that can be included in a Canoto message.
-	//
-	// Other than UnmarshalCanotoFrom, the methods expect the field to be
-	// trusted, so it must not contain cycles.
 	Field interface {
 		// DescribeCanoto returns a [Spec] describing the Canoto encoding of
 		// this type.
@@ -1458,8 +1453,8 @@ func unsafeString(b []byte) string {
 
 // NewCodec returns a [Codec] for messages described by s.
 //
-// s must be trusted, so it must not contain cycles. A Spec read from untrusted
-// input is trusted, and [ErrInvalidSpec] is returned if it is invalid.
+// s may be read from untrusted input. If s is invalid, [ErrInvalidSpec] is
+// returned.
 func NewCodec(s *Spec) (*Codec, error) {
 	if !s.ValidCanoto() {
 		return nil, ErrInvalidSpec
@@ -1661,9 +1656,6 @@ func (c *Codec) Unmarshal(r Reader) (Any, UnmarshalResult, error) {
 
 // Marshal marshals a into bytes based on the Codec's [Spec].
 //
-// a must be trusted, so it must not contain cycles. An Any returned by
-// [Codec.Unmarshal] is trusted.
-//
 // This function is significantly slower than calling MarshalCanoto on the type
 // directly. This function should only be used when the concrete type can not be
 // known ahead of time.
@@ -1684,8 +1676,6 @@ func (c *Codec) Marshal(a Any) ([]byte, error) {
 var _ json.Marshaler = Any{}
 
 // MarshalJSON implements the [json.Marshaler] interface.
-//
-// a must be trusted, so it must not contain cycles.
 func (a Any) MarshalJSON() ([]byte, error) {
 	var sb strings.Builder
 	sb.WriteString("{")
