@@ -2091,6 +2091,9 @@ func FuzzUnmarshalUntrustedSpec(f *testing.F) {
 	}
 	f.Add(nested.DescribeCanoto().MarshalCanoto(), nested.MarshalCanoto())
 
+	full := fullSpecFuzzer(f)
+	f.Add(full.DescribeCanoto().MarshalCanoto(), full.MarshalCanoto())
+
 	f.Fuzz(func(t *testing.T, specBytes []byte, anyBytes []byte) {
 		var spec Spec
 		_, err := spec.UnmarshalCanotoFrom(Reader{
