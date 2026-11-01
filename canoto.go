@@ -2493,6 +2493,9 @@ func (f *field) unmarshalFixedBytes(r *Reader) (any, error) {
 			return nil
 		},
 		func(msgBytes []byte) ([]byte, bool, error) {
+			if r.Unsafe {
+				return msgBytes, isBytesEmpty(msgBytes), nil
+			}
 			return slices.Clone(msgBytes), isBytesEmpty(msgBytes), nil
 		},
 	)
