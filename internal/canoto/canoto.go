@@ -284,6 +284,8 @@ type (
 		//
 		// Each allocation is charged the in-memory size of the allocated value,
 		// which may vary between builds.
+		//
+		// Allocator overhead, such as size class rounding, is not charged.
 		MemoryRemaining uint64
 		// DepthLimit is the number of nested messages that may be read.
 		//
@@ -1451,8 +1453,7 @@ func unsafeString(b []byte) string {
 
 // NewCodec returns a [Codec] for messages described by s.
 //
-// s may be read from untrusted input. If s is invalid, [ErrInvalidSpec] is
-// returned.
+// s may be read from untrusted input. If s is invalid, an error is returned.
 func NewCodec(s *Spec) (*Codec, error) {
 	if !s.ValidCanoto() {
 		return nil, ErrInvalidSpec
