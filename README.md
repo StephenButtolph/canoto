@@ -180,21 +180,12 @@ Reading untrusted input is safe when the memory allocated and the depth of neste
 A message with both properties can safely be read from untrusted input with `UnmarshalCanoto`. To read untrusted input into any other message, use `UnmarshalCanotoFrom` with a `canoto.Reader` whose `MemoryRemaining` and `DepthLimit` are bounded.
 
 ```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
     bytes[Untrusted bytes]
-    bounded{"Repeated fields or<br/>can contain itself?"}
-    message[Message]
-    spec[Spec]
-    codec[Codec]
-    any[Any]
     program[Values built by<br/>your program]
 
-    bytes --> bounded
-    bounded -- No --> unmarshal[UnmarshalCanoto]
-    bounded -- Yes --> from["UnmarshalCanotoFrom<br/>with bounded limits"]
-    unmarshal --> message
-    from --> message
+    bytes -- "UnmarshalCanoto<br/>without repeated fields or recursion" --> message
+    bytes -- "UnmarshalCanotoFrom<br/>with bounded limits" --> message
     bytes -- "Spec.UnmarshalCanotoFrom<br/>with bounded limits" --> spec
     spec -- NewCodec --> codec
     bytes -- "Codec.Unmarshal<br/>with bounded limits" --> any
@@ -202,10 +193,10 @@ flowchart LR
     program --> message & spec & any
 
     subgraph trusted [Trusted values]
-        message
-        spec
-        codec
-        any
+        message[Message]
+        spec[Spec]
+        codec[Codec]
+        any[Any]
     end
 ```
 
