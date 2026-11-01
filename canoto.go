@@ -1632,8 +1632,8 @@ func (f *FieldType) validate(depth uint64) error {
 
 // Unmarshal parses r.B as the message described by the Codec's [Spec].
 //
-// r.B may be untrusted, as long as r.MemoryRemaining and r.DepthLimit are
-// bounded.
+// [Reader.B] may be untrusted, as long as [Reader.MemoryRemaining] and
+// [Reader.DepthLimit] are bounded.
 //
 // The returned [UnmarshalResult] contains the memory remaining in r after
 // charging for the memory of the returned [Any]. Unmarshal may also use
