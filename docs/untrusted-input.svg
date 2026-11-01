@@ -29,7 +29,7 @@
 <rect x="228" y="75" width="21" height="24" rx="5" class="untrusted"/>
 <text x="234" y="92" class="chip" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" textLength="9" lengthAdjust="spacingAndGlyphs" xml:space="preserve">b</text>
 <text x="249" y="92" class="code" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" textLength="9" lengthAdjust="spacingAndGlyphs" xml:space="preserve">)</text>
-<text x="36" y="114" class="note" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" xml:space="preserve">msg is not recursive and has no repeated fields</text>
+<text x="36" y="114" class="note" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" xml:space="preserve">msg is not recursive and has no variable-length repeated fields</text>
 <line x1="570" y1="95" x2="628" y2="95" class="arrow" marker-end="url(#head)"/>
 <rect x="640" y="80" width="91" height="30" rx="6" class="trusted"/>
 <text x="654" y="100" class="chip" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" textLength="63" lengthAdjust="spacingAndGlyphs" xml:space="preserve">Message</text>

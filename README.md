@@ -175,13 +175,13 @@ Canoto distinguishes between two kinds of input:
 Reading untrusted input is safe when the memory allocated and the depth of nested messages are bounded. Some messages bound both by their structure:
 
 - A message that is not recursive is never nested deeper than its definition.
-- A message without repeated fields allocates at most its own size, plus copies of its strings and bytes, which are no longer than the input.
+- A message without variable-length repeated fields allocates at most its own size, plus copies of its strings and bytes, which are no longer than the input.
 
 A message with both properties can safely be read from untrusted input with `UnmarshalCanoto`. To read untrusted input into any other message, use `UnmarshalCanotoFrom` with a `canoto.Reader` whose `MemoryRemaining` and `DepthLimit` are bounded.
 
 ![Which inputs each function accepts](docs/untrusted-input.svg)
 
-A value read from untrusted input contains no cycles, and the memory and depth used to build it were bounded. Its contents may still have been chosen by an attacker. For example, a `Spec` read from untrusted input can describe any message, so `NewCodec` validates it and returns `canoto.ErrInvalidSpec` if it is invalid. Because such a `Spec` can also describe a message with repeated fields or recursion, a `Codec` built from it must be given bounded limits in `Codec.Unmarshal`.
+A value read from untrusted input contains no cycles, and the memory and depth used to build it were bounded. Its contents may still have been chosen by an attacker. For example, a `Spec` read from untrusted input can describe any message, so `NewCodec` validates it and returns `canoto.ErrInvalidSpec` if it is invalid. Because such a `Spec` can also describe a message with variable-length repeated fields or recursion, a `Codec` built from it must be given bounded limits in `Codec.Unmarshal`.
 
 Values built by your program must not contain cycles. For example, marshaling a message or `Any` that contains itself, or calling `NewCodec` with a `Spec` that contains itself, recurses until the stack overflows, which crashes the process.
 
