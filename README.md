@@ -167,9 +167,45 @@ Modifying a message, including by calling `UnmarshalCanoto`, while another gorou
 
 ### Untrusted Input
 
+Canoto distinguishes between two kinds of input:
+
+- **Untrusted input** is bytes that came from outside of your program, such as from the network or from disk.
+- **Trusted values** are Go values that your program built, or that Canoto read from untrusted input with bounded limits.
+
+Untrusted input can only be converted into trusted values by reading it with a `canoto.Reader` whose `MemoryRemaining` and `DepthLimit` are bounded. Every other function expects trusted values. Each function documents which kind of input it accepts.
+
+```mermaid
+flowchart LR
+    subgraph untrusted [Untrusted input]
+        bytes[Bytes]
+    end
+
+    subgraph trusted [Trusted values]
+        msg[Message]
+        spec[Spec]
+        codec[Codec]
+        any[Any]
+    end
+
+    bytes -- "UnmarshalCanotoFrom<br/>with bounded limits" --> msg
+    bytes -- "Spec.UnmarshalCanotoFrom<br/>with bounded limits" --> spec
+    bytes -- "Codec.Unmarshal<br/>with bounded limits" --> any
+    bytes -. "UnmarshalCanoto<br/>has no limits" .-x msg
+    spec -- NewCodec --> codec
+    program[Values built by your program] --> trusted
+```
+
+A value read from untrusted input contains no cycles, its messages are nested at most `DepthLimit` deep, and the memory to build it was charged against `MemoryRemaining`. Its contents may still have been chosen by an attacker. For example, a `Spec` read from untrusted input can describe any message, so `NewCodec` validates it and returns `canoto.ErrInvalidSpec` if it is invalid.
+
+Values built by your program must not contain cycles. For example, marshaling a message or `Any` that contains itself, or calling `NewCodec` with a `Spec` that contains itself, recurses until the stack overflows, which crashes the process.
+
+`UnmarshalCanoto` uses `canoto.DefaultMemoryLimit` and `canoto.DefaultDepthLimit`, which do not limit anything, so it should only be used to read trusted bytes, such as bytes that your program marshaled itself.
+
+#### Limiting Memory
+
 The memory allocated while unmarshaling a message can greatly exceed the size of the message. For example, an empty entry of a repeated message field is encoded in 2 bytes, but allocates an entire message.
 
-When unmarshaling untrusted input, the memory allocated can be limited with `MemoryRemaining`. If an allocation would exceed the remaining memory, unmarshaling fails with `canoto.ErrMemoryLimitExceeded` before performing the allocation. The returned `canoto.UnmarshalResult` contains the remaining memory. `UnmarshalCanoto` uses `canoto.DefaultMemoryLimit`, which does not limit the memory allocated.
+When unmarshaling untrusted input, the memory allocated is limited with `MemoryRemaining`. If an allocation would exceed the remaining memory, unmarshaling fails with `canoto.ErrMemoryLimitExceeded` before performing the allocation. The returned `canoto.UnmarshalResult` contains the remaining memory.
 
 ```golang
 var msg Message
@@ -184,9 +220,15 @@ Allocations are charged their Go size, which depends on the platform and the com
 
 When `Unsafe` is set, strings and bytes alias the input rather than being copied, so they are not charged.
 
-The stack used to unmarshal nested messages is not charged against the memory limit. Deeply nested input can exhaust the stack, which would crash the process rather than returning an error. Use `DepthLimit` to bound the stack usage. `UnmarshalCanoto` uses `canoto.DefaultDepthLimit`, which does not limit the depth.
+`Codec.Unmarshal` charges the memory of the returned `Any`. It may also use temporary memory that is not charged, but it is at most proportional to the memory that is charged.
 
-Custom `canoto.Field` implementations should charge any memory they allocate with `canoto.UseMemory` or `canoto.UseSliceMemory`, and must return the remaining memory, `r.MemoryRemaining`, in the `canoto.UnmarshalResult`.
+#### Limiting Depth
+
+The stack used to unmarshal nested messages is not charged against the memory limit. Deeply nested input can exhaust the stack, which would crash the process rather than returning an error. Use `DepthLimit` to bound the stack usage.
+
+#### Custom Fields
+
+`UnmarshalCanotoFrom` on a custom `canoto.Field` may be given untrusted input. Implementations should charge any memory they allocate with `canoto.UseMemory` or `canoto.UseSliceMemory`, and must return the remaining memory, `r.MemoryRemaining`, in the `canoto.UnmarshalResult`.
 
 ### Standalone Implementations
 

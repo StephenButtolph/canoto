@@ -193,14 +193,23 @@ type (
 		ValidCanoto() bool
 		// MarshalCanoto returns the Canoto representation of this message.
 		//
+		// The message must be trusted, so it must not contain cycles.
+		//
 		// It is assumed that this message is ValidCanoto.
 		MarshalCanoto() []byte
 		// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the
 		// message.
+		//
+		// bytes must be trusted, because the memory allocated and the depth of
+		// nested messages are not limited. Use UnmarshalCanotoFrom to read
+		// untrusted input.
 		UnmarshalCanoto(bytes []byte) error
 	}
 
 	// Field defines a type that can be included in a Canoto message.
+	//
+	// Other than UnmarshalCanotoFrom, the methods expect the field to be
+	// trusted, so it must not contain cycles.
 	Field interface {
 		// DescribeCanoto returns a [Spec] describing the Canoto encoding of
 		// this type.
@@ -237,6 +246,9 @@ type (
 		AppendCanoto(w Writer) Writer
 		// UnmarshalCanotoFrom populates the field from a [Reader].
 		//
+		// r.B may be untrusted, as long as r.MemoryRemaining and r.DepthLimit
+		// are bounded.
+		//
 		// The returned [UnmarshalResult] must contain the memory remaining in r
 		// after charging for memory allocated by this call.
 		UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error)
@@ -257,6 +269,9 @@ type (
 	WireType byte
 
 	// Reader contains all the state needed to unmarshal a Canoto type.
+	//
+	// The functions in this package that read from a Reader accept untrusted
+	// input in B, as long as MemoryRemaining and DepthLimit are bounded.
 	//
 	// The functions in this package are not methods on the Reader type to
 	// enable the usage of generics.
@@ -292,6 +307,9 @@ type (
 	}
 
 	// Writer contains all the state needed to marshal a Canoto type.
+	//
+	// The functions in this package that write to a Writer expect trusted
+	// values.
 	//
 	// The functions in this package are not methods on the Writer type to
 	// enable the usage of generics.
@@ -1438,6 +1456,9 @@ func unsafeString(b []byte) string {
 }
 
 // NewCodec returns a [Codec] for messages described by s.
+//
+// s must be trusted, so it must not contain cycles. A Spec read from untrusted
+// input is trusted, and [ErrInvalidSpec] is returned if it is invalid.
 func NewCodec(s *Spec) (*Codec, error) {
 	if !s.ValidCanoto() {
 		return nil, ErrInvalidSpec
@@ -1618,8 +1639,8 @@ func (f *FieldType) validate(depth uint64) error {
 
 // Unmarshal parses r.B as the message described by the Codec's [Spec].
 //
-// Unmarshaling is limited by the options of r, which should be bounded when
-// either the Spec or r.B is untrusted.
+// r.B may be untrusted, as long as r.MemoryRemaining and r.DepthLimit are
+// bounded.
 //
 // The returned [UnmarshalResult] contains the memory remaining in r after
 // charging for the memory of the returned [Any]. Unmarshal may also use
@@ -1638,6 +1659,9 @@ func (c *Codec) Unmarshal(r Reader) (Any, UnmarshalResult, error) {
 }
 
 // Marshal marshals a into bytes based on the Codec's [Spec].
+//
+// a must be trusted, so it must not contain cycles. An Any returned by
+// [Codec.Unmarshal] is trusted.
 //
 // This function is significantly slower than calling MarshalCanoto on the type
 // directly. This function should only be used when the concrete type can not be
@@ -1659,6 +1683,8 @@ func (c *Codec) Marshal(a Any) ([]byte, error) {
 var _ json.Marshaler = Any{}
 
 // MarshalJSON implements the [json.Marshaler] interface.
+//
+// a must be trusted, so it must not contain cycles.
 func (a Any) MarshalJSON() ([]byte, error) {
 	var sb strings.Builder
 	sb.WriteString("{")
