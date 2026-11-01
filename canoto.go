@@ -266,9 +266,6 @@ type (
 
 	// Reader contains all the state needed to unmarshal a Canoto type.
 	//
-	// The functions in this package that read from a Reader accept untrusted
-	// input in B, as long as MemoryRemaining and DepthLimit are bounded.
-	//
 	// The functions in this package are not methods on the Reader type to
 	// enable the usage of generics.
 	Reader struct {
