@@ -246,8 +246,8 @@ type (
 		AppendCanoto(w Writer) Writer
 		// UnmarshalCanotoFrom populates the field from a [Reader].
 		//
-		// r.B may be untrusted, as long as r.MemoryRemaining and r.DepthLimit
-		// are bounded.
+		// [Reader.B] may be untrusted, as long as [Reader.MemoryRemaining] and
+		// [Reader.DepthLimit] are bounded.
 		//
 		// The returned [UnmarshalResult] must contain the memory remaining in r
 		// after charging for memory allocated by this call.
