@@ -65,7 +65,7 @@ const (
 	// VersionCompatibility is used to ensure generated code is compatible with
 	// the library it is using. It is incremented whenever the library includes
 	// a breaking change.
-	VersionCompatibility = 1
+	VersionCompatibility = 2
 
 	// EmptyBytes is the length-prefixed encoding of empty bytes.
 	EmptyBytes = "\x00" // AppendBytes(&Writer{}, []byte{}).B
