@@ -1625,11 +1625,20 @@ func (f *FieldType) validate(depth uint64) error {
 // Unmarshaling is limited by the options of r, which should be bounded when
 // either the Spec or r.B is untrusted.
 //
+// The returned [UnmarshalResult] contains the memory remaining in r after
+// charging for the memory of the returned [Any]. Unmarshal may also use
+// temporary memory that is not charged, but it is at most proportional to the
+// memory that is charged.
+//
 // This function is slower than calling [Field.UnmarshalCanotoFrom] on the type
 // directly. This function should only be used when the concrete type can not be
 // known ahead of time.
-func (c *Codec) Unmarshal(r Reader) (Any, error) {
-	return c.spec.unmarshal(&r)
+func (c *Codec) Unmarshal(r Reader) (Any, UnmarshalResult, error) {
+	a, err := c.spec.unmarshal(&r)
+	if err != nil {
+		return Any{}, UnmarshalResult{}, err
+	}
+	return a, UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
 }
 
 // Marshal marshals a into bytes based on the Codec's [Spec].
@@ -1776,10 +1785,15 @@ func SizeOf[T integer](v T) SizeEnum {
 }
 
 func (s *spec) unmarshal(r *Reader) (Any, error) {
+	numFields := countFields(r.B)
+	if err := UseSliceMemory[AnyField](r, numFields); err != nil {
+		return Any{}, err
+	}
+
 	var (
 		minField uint32
 		a        = Any{
-			Fields: make([]AnyField, 0, countFields(r.B)),
+			Fields: make([]AnyField, 0, numFields),
 		}
 		oneOfs = make(map[uint32]struct{})
 	)
@@ -1823,10 +1837,10 @@ func (s *spec) unmarshal(r *Reader) (Any, error) {
 
 // countFields counts the fields in a message, treating the entries of a
 // repeated field as one field. Counting stops at the first malformed field.
-func countFields(b []byte) int {
+func countFields(b []byte) uint64 {
 	var (
 		r     = Reader{B: b}
-		count int
+		count uint64
 		// Initially set to an invalid field number so that deduplication
 		// doesn't need to handle 0s as a special case.
 		prevFieldNumber uint32 = MaxFieldNumber + 1
@@ -2347,7 +2361,7 @@ func (f *field) unmarshalBool(r *Reader) (any, error) {
 		if err := ReadBool(r, &v); err != nil {
 			return nil, err
 		}
-		return nonZero(v)
+		return nonZero(r, v)
 	}
 
 	if f.fixedLength == 0 {
@@ -2355,7 +2369,7 @@ func (f *field) unmarshalBool(r *Reader) (any, error) {
 		if err := ReadBools(r, &vs); err != nil {
 			return nil, err
 		}
-		return packedValue(f, vs)
+		return packedValue(f, r, vs)
 	}
 
 	vs, err := makePacked[bool](r, f.fixedLength, func(b []byte) uint64 {
@@ -2367,7 +2381,7 @@ func (f *field) unmarshalBool(r *Reader) (any, error) {
 	if err := ReadBoolsInto(r, vs); err != nil {
 		return nil, err
 	}
-	return packedValue(f, vs)
+	return packedValue(f, r, vs)
 }
 
 func (f *field) marshalBool(w Writer, value any) (Writer, error) {
@@ -2408,10 +2422,6 @@ func (f *field) marshalString(w Writer, value any) (Writer, error) {
 func (f *field) unmarshalBytes(r *Reader) (any, error) {
 	if f.pointer && f.repeated {
 		return unmarshalUnpacked(f, r, func(msgBytes []byte) (*[]byte, bool, error) {
-			msgBytes, err := copyBytes(r, msgBytes)
-			if err != nil {
-				return nil, false, err
-			}
 			if len(msgBytes) == 0 {
 				return nil, true, nil
 			}
@@ -2419,8 +2429,13 @@ func (f *field) unmarshalBytes(r *Reader) (any, error) {
 			if err := UnwrapPointer(&msgReader); err != nil {
 				return nil, false, err
 			}
-			value := msgReader.B
-			return &value, false, nil
+			var value *[]byte
+			if err := MakePointer(r, &value); err != nil {
+				return nil, false, err
+			}
+			var err error
+			*value, err = copyBytes(r, msgReader.B)
+			return value, false, err
 		})
 	}
 	return unmarshalUnpacked(
@@ -2468,10 +2483,8 @@ func (f *field) unmarshalFixedBytes(r *Reader) (any, error) {
 		f,
 		r,
 		func(msgBytes []byte) ([]byte, bool, error) {
-			if r.Unsafe {
-				return msgBytes, isBytesEmpty(msgBytes), nil
-			}
-			return slices.Clone(msgBytes), isBytesEmpty(msgBytes), nil
+			msgBytes, err := copyBytes(r, msgBytes)
+			return msgBytes, isBytesEmpty(msgBytes), err
 		},
 	)
 }
@@ -2508,8 +2521,13 @@ func (f *field) unmarshalMessage(r *Reader) (any, error) {
 			if err := UnwrapPointer(&ptrReader); err != nil {
 				return nil, false, err
 			}
-			a, err := unmarshal(ptrReader.B)
-			return &a, false, err
+			var a *Any
+			if err := MakePointer(r, &a); err != nil {
+				return nil, false, err
+			}
+			var err error
+			*a, err = unmarshal(ptrReader.B)
+			return a, false, err
 		})
 	}
 	return unmarshalUnpacked(f, r, func(msgBytes []byte) (Any, bool, error) {
@@ -2607,7 +2625,7 @@ func unmarshalInt[T Int](f *field, r *Reader) (any, error) {
 		if err := ReadInt(r, &v); err != nil {
 			return nil, err
 		}
-		return nonZero(v)
+		return nonZero(r, v)
 	}
 
 	if f.fixedLength == 0 {
@@ -2615,7 +2633,7 @@ func unmarshalInt[T Int](f *field, r *Reader) (any, error) {
 		if _, err := ReadInts(r, &vs); err != nil {
 			return nil, err
 		}
-		return packedValue(f, vs)
+		return packedValue(f, r, vs)
 	}
 
 	vs, err := makePacked[T](r, f.fixedLength, CountInts)
@@ -2625,7 +2643,7 @@ func unmarshalInt[T Int](f *field, r *Reader) (any, error) {
 	if _, err := ReadIntsInto(r, vs); err != nil {
 		return nil, err
 	}
-	return packedValue(f, vs)
+	return packedValue(f, r, vs)
 }
 
 // unmarshalUint reads a varint field. Fields are read with the same functions
@@ -2636,7 +2654,7 @@ func unmarshalUint[T Uint](f *field, r *Reader) (any, error) {
 		if err := ReadUint(r, &v); err != nil {
 			return nil, err
 		}
-		return nonZero(v)
+		return nonZero(r, v)
 	}
 
 	if f.fixedLength == 0 {
@@ -2644,7 +2662,7 @@ func unmarshalUint[T Uint](f *field, r *Reader) (any, error) {
 		if _, err := ReadUints(r, &vs); err != nil {
 			return nil, err
 		}
-		return packedValue(f, vs)
+		return packedValue(f, r, vs)
 	}
 
 	vs, err := makePacked[T](r, f.fixedLength, CountInts)
@@ -2654,7 +2672,7 @@ func unmarshalUint[T Uint](f *field, r *Reader) (any, error) {
 	if _, err := ReadUintsInto(r, vs); err != nil {
 		return nil, err
 	}
-	return packedValue(f, vs)
+	return packedValue(f, r, vs)
 }
 
 // unmarshalFint32 reads a 32-bit fixed size integer field. Fields are read with
@@ -2666,7 +2684,7 @@ func unmarshalFint32[T Int32](f *field, r *Reader) (any, error) {
 		if err := ReadFint32(r, &v); err != nil {
 			return nil, err
 		}
-		return nonZero(v)
+		return nonZero(r, v)
 	}
 
 	if f.fixedLength == 0 {
@@ -2674,7 +2692,7 @@ func unmarshalFint32[T Int32](f *field, r *Reader) (any, error) {
 		if err := ReadFint32s(r, &vs); err != nil {
 			return nil, err
 		}
-		return packedValue(f, vs)
+		return packedValue(f, r, vs)
 	}
 
 	vs, err := makePacked[T](r, f.fixedLength, func(b []byte) uint64 {
@@ -2686,7 +2704,7 @@ func unmarshalFint32[T Int32](f *field, r *Reader) (any, error) {
 	if err := ReadFint32sInto(r, vs); err != nil {
 		return nil, err
 	}
-	return packedValue(f, vs)
+	return packedValue(f, r, vs)
 }
 
 // unmarshalFint64 reads a 64-bit fixed size integer field. Fields are read with
@@ -2698,7 +2716,7 @@ func unmarshalFint64[T Int64](f *field, r *Reader) (any, error) {
 		if err := ReadFint64(r, &v); err != nil {
 			return nil, err
 		}
-		return nonZero(v)
+		return nonZero(r, v)
 	}
 
 	if f.fixedLength == 0 {
@@ -2706,7 +2724,7 @@ func unmarshalFint64[T Int64](f *field, r *Reader) (any, error) {
 		if err := ReadFint64s(r, &vs); err != nil {
 			return nil, err
 		}
-		return packedValue(f, vs)
+		return packedValue(f, r, vs)
 	}
 
 	vs, err := makePacked[T](r, f.fixedLength, func(b []byte) uint64 {
@@ -2718,7 +2736,7 @@ func unmarshalFint64[T Int64](f *field, r *Reader) (any, error) {
 	if err := ReadFint64sInto(r, vs); err != nil {
 		return nil, err
 	}
-	return packedValue(f, vs)
+	return packedValue(f, r, vs)
 }
 
 // makePacked allocates the slice to read a packed field into, when the field
@@ -2745,16 +2763,16 @@ func makePacked[T any](
 	return vs, err
 }
 
-// nonZero returns v if it is not the zero value.
-func nonZero[T comparable](v T) (any, error) {
+// nonZero returns v, as [box] does, if it is not the zero value.
+func nonZero[T comparable](r *Reader, v T) (any, error) {
 	if IsZero(v) {
 		return nil, ErrZeroValue
 	}
-	return v, nil
+	return box(r, v)
 }
 
-// packedValue returns values if they are a valid packed field.
-func packedValue[T comparable](f *field, values []T) (any, error) {
+// packedValue returns values, as [box] does, if they are a valid packed field.
+func packedValue[T comparable](f *field, r *Reader, values []T) (any, error) {
 	isZero := true
 	for _, value := range values {
 		isZero = isZero && IsZero(value)
@@ -2762,7 +2780,16 @@ func packedValue[T comparable](f *field, values []T) (any, error) {
 	if len(values) == 0 || (f.fixedLength > 0 && isZero) {
 		return nil, ErrZeroValue
 	}
-	return values, nil
+	return box(r, values)
+}
+
+// box returns v as an interface after charging the memory of the boxed copy
+// of v against r.
+func box[T any](r *Reader, v T) (any, error) {
+	if err := UseMemory(r, uint64(unsafe.Sizeof(v))); err != nil {
+		return nil, err
+	}
+	return v, nil
 }
 
 func sizeFint32[T Int32](T) uint64 { return SizeFint32 }
@@ -2854,7 +2881,7 @@ func unmarshalUnpacked[T any](
 		if isZero {
 			return nil, ErrZeroValue
 		}
-		return value, nil
+		return box(r, value)
 	}
 
 	// Count the number of additional entries after the first entry.
@@ -2874,6 +2901,9 @@ func unmarshalUnpacked[T any](
 		countMinus1, _ := CountBytes(r.B, f.tag)
 		count = f.fixedLength
 		capacity = min(count, countMinus1+1)
+	}
+	if err := UseSliceMemory[T](r, capacity); err != nil {
+		return nil, err
 	}
 
 	value, isZero, err := unmarshal(entry)
@@ -2906,7 +2936,7 @@ func unmarshalUnpacked[T any](
 	if f.fixedLength > 0 && isZero {
 		return nil, ErrZeroValue
 	}
-	return values, nil
+	return box(r, values)
 }
 
 // readEntry reads a length-prefixed entry of f from r without copying it.

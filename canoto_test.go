@@ -2020,7 +2020,7 @@ func FuzzSpec(f *testing.F) {
 		require.NoError(err)
 		expectedErr := msg.UnmarshalCanoto(unmarshaledBytes)
 		require.Equal(b, unmarshaledBytes)
-		anyMSG, actualErr := codec.Unmarshal(Reader{
+		anyMSG, _, actualErr := codec.Unmarshal(Reader{
 			B:               unmarshaledBytes,
 			MemoryRemaining: DefaultMemoryLimit,
 			DepthLimit:      DefaultDepthLimit,
@@ -2073,7 +2073,7 @@ func FuzzSpec_DepthLimit(f *testing.F) {
 			DepthLimit:      uint64(depthLimit),
 		}
 		_, expectedErr := msg.UnmarshalCanotoFrom(reader)
-		_, actualErr := codec.Unmarshal(reader)
+		_, _, actualErr := codec.Unmarshal(reader)
 		require.Equal(t, expectedErr, actualErr)
 	})
 }
@@ -2091,6 +2091,9 @@ func FuzzUnmarshalUntrustedSpec(f *testing.F) {
 	}
 	f.Add(nested.DescribeCanoto().MarshalCanoto(), nested.MarshalCanoto())
 
+	full := fullSpecFuzzer(f)
+	f.Add(full.DescribeCanoto().MarshalCanoto(), full.MarshalCanoto())
+
 	f.Fuzz(func(t *testing.T, specBytes []byte, anyBytes []byte) {
 		var spec Spec
 		_, err := spec.UnmarshalCanotoFrom(Reader{
@@ -2107,7 +2110,7 @@ func FuzzUnmarshalUntrustedSpec(f *testing.F) {
 			t.Skipf("invalid codec: %v", err)
 		}
 
-		a, err := codec.Unmarshal(Reader{
+		a, result, err := codec.Unmarshal(Reader{
 			B:               anyBytes,
 			MemoryRemaining: memoryLimit,
 			DepthLimit:      depthLimit,
@@ -2119,6 +2122,27 @@ func FuzzUnmarshalUntrustedSpec(f *testing.F) {
 		actualBytes, err := codec.Marshal(a)
 		require.NoError(t, err)
 		require.Equal(t, anyBytes, actualBytes)
+
+		// Unmarshaling must succeed with exactly the memory that it reported
+		// using, and fail with any less.
+		memoryUsed := memoryLimit - result.MemoryRemaining
+		_, result, err = codec.Unmarshal(Reader{
+			B:               anyBytes,
+			MemoryRemaining: memoryUsed,
+			DepthLimit:      depthLimit,
+		})
+		require.NoError(t, err)
+		require.Zero(t, result.MemoryRemaining)
+
+		if memoryUsed == 0 {
+			return
+		}
+		_, _, err = codec.Unmarshal(Reader{
+			B:               anyBytes,
+			MemoryRemaining: memoryUsed - 1,
+			DepthLimit:      depthLimit,
+		})
+		require.ErrorIs(t, err, ErrMemoryLimitExceeded)
 	})
 }
 
@@ -3023,7 +3047,7 @@ func TestCodec_IntTypes(t *testing.T) {
 			b, err := codec.Marshal(want)
 			require.NoError(err)
 
-			got, err := codec.Unmarshal(Reader{
+			got, _, err := codec.Unmarshal(Reader{
 				B:               b,
 				MemoryRemaining: DefaultMemoryLimit,
 				DepthLimit:      DefaultDepthLimit,
@@ -3068,7 +3092,7 @@ func TestFixedRepeatedFixedSize_InvalidLength(t *testing.T) {
 			codec, err := NewCodec(msg.DescribeCanoto())
 			require.NoError(err)
 
-			_, err = codec.Unmarshal(Reader{
+			_, _, err = codec.Unmarshal(Reader{
 				B:               w.B,
 				MemoryRemaining: DefaultMemoryLimit,
 				DepthLimit:      DefaultDepthLimit,
@@ -3083,7 +3107,7 @@ func TestMarshalConcurrent(t *testing.T) {
 	codec, err := NewCodec(v.DescribeCanoto())
 	require.NoError(t, err)
 
-	a, err := codec.Unmarshal(Reader{
+	a, _, err := codec.Unmarshal(Reader{
 		B:               v.MarshalCanoto(),
 		MemoryRemaining: DefaultMemoryLimit,
 		DepthLimit:      DefaultDepthLimit,
@@ -3116,7 +3140,7 @@ func BenchmarkSpec(b *testing.B) {
 		MemoryRemaining: DefaultMemoryLimit,
 		DepthLimit:      DefaultDepthLimit,
 	}
-	a, err := codec.Unmarshal(r)
+	a, _, err := codec.Unmarshal(r)
 	require.NoError(b, err)
 
 	b.Run("marshal", func(b *testing.B) {
@@ -3140,7 +3164,7 @@ func BenchmarkSpec(b *testing.B) {
 		})
 		b.Run("any", func(b *testing.B) {
 			for b.Loop() {
-				_, _ = codec.Unmarshal(r)
+				_, _, _ = codec.Unmarshal(r)
 			}
 		})
 	})
@@ -3223,7 +3247,7 @@ func BenchmarkWideSpec(b *testing.B) {
 				DepthLimit:      DefaultDepthLimit,
 			}
 			for b.Loop() {
-				_, _ = codec.Unmarshal(r)
+				_, _, _ = codec.Unmarshal(r)
 			}
 		})
 	}
@@ -3323,6 +3347,6 @@ func BenchmarkUnmarshal_LongOneOf(b *testing.B) {
 		DepthLimit:      DefaultDepthLimit,
 	}
 	for b.Loop() {
-		_, _ = codec.Unmarshal(r)
+		_, _, _ = codec.Unmarshal(r)
 	}
 }
