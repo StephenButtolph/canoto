@@ -2378,14 +2378,38 @@ func (f *field) unmarshalString(r *Reader) (any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
-		ReadBytes[[]byte],
+		// The string is validated and copied after reading, rather than with
+		// [ReadString], so that the entries of a repeated field are counted
+		// first, as in the generated code.
+		readBytesNoCopy,
 		func(msgBytes []byte) (string, bool, error) {
 			if !utf8.Valid(msgBytes) {
 				return "", false, ErrStringNotUTF8
 			}
+			if r.Unsafe {
+				return unsafeString(msgBytes), len(msgBytes) == 0, nil
+			}
+			if err := UseMemory(r, uint64(len(msgBytes))); err != nil {
+				return "", false, err
+			}
 			return string(msgBytes), len(msgBytes) == 0, nil
 		},
 	)
+}
+
+// readBytesNoCopy reads a length-prefixed byte slice from r without copying
+// it, regardless of r.Unsafe.
+func readBytesNoCopy(r *Reader, msgBytes *[]byte) error {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return err
+	}
+	if length > uint64(len(r.B)) {
+		return ErrUnexpectedEOF
+	}
+	*msgBytes = r.B[:length]
+	r.B = r.B[length:]
+	return nil
 }
 
 func (f *field) marshalString(w Writer, value any) (Writer, error) {
