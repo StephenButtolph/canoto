@@ -2434,7 +2434,8 @@ func (f *field) unmarshalBytes(r *Reader) (any, error) {
 			if err := UnwrapPointer(&msgReader); err != nil {
 				return nil, false, err
 			}
-			return &msgReader.B, false, nil
+			value := msgReader.B
+			return &value, false, nil
 		})
 	}
 	return unmarshalUnpacked(
