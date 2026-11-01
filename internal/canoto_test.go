@@ -1652,6 +1652,28 @@ func FuzzGenericFieldOpaque_DepthLimit(f *testing.F) {
 	})
 }
 
+func BenchmarkGenericFieldOpaque_Codec(b *testing.B) {
+	codec, err := canoto.NewCodec((*GenericField[opaqueBytes, *opaqueBytes])(nil).DescribeCanoto())
+	require.NoError(b, err)
+
+	bytes := (&GenericField[opaqueBytes, *opaqueBytes]{
+		RepeatedPointer: []*opaqueBytes{{1}, {2}, {3}},
+	}).MarshalCanoto()
+	for _, unsafe := range []bool{false, true} {
+		reader := canoto.Reader{
+			B:               bytes,
+			Unsafe:          unsafe,
+			MemoryRemaining: canoto.DefaultMemoryLimit,
+			DepthLimit:      canoto.DefaultDepthLimit,
+		}
+		b.Run("unmarshal/repeatedPointer/unsafe="+strconv.FormatBool(unsafe), func(b *testing.B) {
+			for range b.N {
+				_, _ = codec.Unmarshal(reader)
+			}
+		})
+	}
+}
+
 // TestNewCodec_DescribeCanoto verifies that every spec produced by generated
 // code is accepted by [canoto.NewCodec].
 func TestNewCodec_DescribeCanoto(t *testing.T) {
