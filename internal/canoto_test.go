@@ -683,13 +683,13 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 
 	fullBytes := full.MarshalCanoto()
 	simpleBytes := simple.MarshalCanoto()
-	fullAny, err := codec.Unmarshal(canoto.Reader{
+	fullAny, _, err := codec.Unmarshal(canoto.Reader{
 		B:               fullBytes,
 		MemoryRemaining: canoto.DefaultMemoryLimit,
 		DepthLimit:      canoto.DefaultDepthLimit,
 	})
 	require.NoError(b, err)
-	simpleAny, err := codec.Unmarshal(canoto.Reader{
+	simpleAny, _, err := codec.Unmarshal(canoto.Reader{
 		B:               simpleBytes,
 		MemoryRemaining: canoto.DefaultMemoryLimit,
 		DepthLimit:      canoto.DefaultDepthLimit,
@@ -754,7 +754,7 @@ func BenchmarkScalars_Canoto(b *testing.B) {
 			})
 			b.Run("unmarshal/"+bm.name+"/any/unsafe="+strconv.FormatBool(unsafe), func(b *testing.B) {
 				for range b.N {
-					_, _ = codec.Unmarshal(reader)
+					_, _, _ = codec.Unmarshal(reader)
 				}
 			})
 		}
@@ -1397,7 +1397,7 @@ func TestCopyDuringMarshal(t *testing.T) {
 	codec, err := canoto.NewCodec(m.DescribeCanoto())
 	require.NoError(t, err)
 
-	a, err := codec.Unmarshal(canoto.Reader{
+	a, _, err := codec.Unmarshal(canoto.Reader{
 		B:               m.MarshalCanoto(),
 		MemoryRemaining: canoto.DefaultMemoryLimit,
 		DepthLimit:      canoto.DefaultDepthLimit,
@@ -1600,7 +1600,7 @@ func FuzzGenericFieldOpaque_Codec(f *testing.F) {
 		}
 		var msg GenericField[opaqueBytes, *opaqueBytes]
 		_, expectedErr := msg.UnmarshalCanotoFrom(r)
-		a, actualErr := codec.Unmarshal(r)
+		a, _, actualErr := codec.Unmarshal(r)
 		require.Equal(t, expectedErr, actualErr)
 		if expectedErr != nil {
 			return
@@ -1643,10 +1643,10 @@ func FuzzGenericFieldOpaque_DepthLimit(f *testing.F) {
 			MemoryRemaining: canoto.DefaultMemoryLimit,
 			DepthLimit:      canoto.DefaultDepthLimit,
 		}
-		expected, expectedErr := codec.Unmarshal(r)
+		expected, _, expectedErr := codec.Unmarshal(r)
 
 		r.DepthLimit = uint64(depthLimit)
-		actual, actualErr := codec.Unmarshal(r)
+		actual, _, actualErr := codec.Unmarshal(r)
 		require.Equal(t, expectedErr, actualErr)
 		require.Equal(t, expected, actual)
 	})
@@ -1668,7 +1668,7 @@ func BenchmarkGenericFieldOpaque_Codec(b *testing.B) {
 		}
 		b.Run("unmarshal/repeatedPointer/unsafe="+strconv.FormatBool(unsafe), func(b *testing.B) {
 			for range b.N {
-				_, _ = codec.Unmarshal(reader)
+				_, _, _ = codec.Unmarshal(reader)
 			}
 		})
 	}

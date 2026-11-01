@@ -1621,15 +1621,20 @@ func (f *FieldType) validate(depth uint64) error {
 // Unmarshaling is limited by the options of r, which should be bounded when
 // either the Spec or r.B is untrusted.
 //
-// The memory of the returned Any is charged against r.MemoryRemaining.
-// Unmarshal may also use temporary memory that is not charged, but it is at
-// most proportional to the memory that is charged.
+// The returned [UnmarshalResult] contains the memory remaining in r after
+// charging for the memory of the returned [Any]. Unmarshal may also use
+// temporary memory that is not charged, but it is at most proportional to the
+// memory that is charged.
 //
 // This function is slower than calling [Field.UnmarshalCanotoFrom] on the type
 // directly. This function should only be used when the concrete type can not be
 // known ahead of time.
-func (c *Codec) Unmarshal(r Reader) (Any, error) {
-	return c.spec.unmarshal(&r)
+func (c *Codec) Unmarshal(r Reader) (Any, UnmarshalResult, error) {
+	a, err := c.spec.unmarshal(&r)
+	if err != nil {
+		return Any{}, UnmarshalResult{}, err
+	}
+	return a, UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
 }
 
 // Marshal marshals a into bytes based on the Codec's [Spec].
@@ -1776,15 +1781,17 @@ func SizeOf[T integer](v T) SizeEnum {
 }
 
 func (s *spec) unmarshal(r *Reader) (Any, error) {
-	var a Any
-	if err := MakeSlice(r, &a.Fields, countFields(r.B)); err != nil {
+	numFields := countFields(r.B)
+	if err := UseSliceMemory[AnyField](r, numFields); err != nil {
 		return Any{}, err
 	}
-	a.Fields = a.Fields[:0]
 
 	var (
 		minField uint32
-		oneOfs   = make(map[uint32]struct{})
+		a        = Any{
+			Fields: make([]AnyField, 0, numFields),
+		}
+		oneOfs = make(map[uint32]struct{})
 	)
 	for HasNext(r) {
 		fieldNumber, wireType, err := ReadTag(r)
@@ -2891,17 +2898,17 @@ func unmarshalUnpacked[T any](
 		count = f.fixedLength
 		capacity = min(count, countMinus1+1)
 	}
-	var values []T //nolint:prealloc // Allocated by MakeSlice
-	if err := MakeSlice(r, &values, capacity); err != nil {
+	if err := UseSliceMemory[T](r, capacity); err != nil {
 		return nil, err
 	}
-	values = values[:0]
 
 	value, isZero, err := unmarshal(entry)
 	if err != nil {
 		return nil, err
 	}
-	values = append(values, value)
+
+	values := make([]T, 1, capacity)
+	values[0] = value
 
 	// Read the rest of the entries, stripping the tag each time.
 	for range count - 1 {
