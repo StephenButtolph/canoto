@@ -2378,10 +2378,6 @@ func (f *field) unmarshalString(r *Reader) (any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
-		// The string is validated and copied after reading, rather than with
-		// [ReadString], so that the entries of a repeated field are counted
-		// first, as in the generated code.
-		readBytesNoCopy,
 		func(msgBytes []byte) (string, bool, error) {
 			if !utf8.Valid(msgBytes) {
 				return "", false, ErrStringNotUTF8
@@ -2395,28 +2391,6 @@ func (f *field) unmarshalString(r *Reader) (any, error) {
 			return string(msgBytes), len(msgBytes) == 0, nil
 		},
 	)
-}
-
-// readBytesNoCopy reads a length-prefixed byte slice from r without copying
-// it, regardless of r.Unsafe.
-func readBytesNoCopy(r *Reader) ([]byte, error) {
-	var length uint64
-	if err := ReadUint(r, &length); err != nil {
-		return nil, err
-	}
-	if length > uint64(len(r.B)) {
-		return nil, ErrUnexpectedEOF
-	}
-	msgBytes := r.B[:length]
-	r.B = r.B[length:]
-	return msgBytes, nil
-}
-
-// readBytes reads a byte slice from r with [ReadBytes].
-func readBytes(r *Reader) ([]byte, error) {
-	var msgBytes []byte
-	err := ReadBytes(r, &msgBytes)
-	return msgBytes, err
 }
 
 func (f *field) marshalString(w Writer, value any) (Writer, error) {
@@ -2433,7 +2407,11 @@ func (f *field) marshalString(w Writer, value any) (Writer, error) {
 
 func (f *field) unmarshalBytes(r *Reader) (any, error) {
 	if f.pointer && f.repeated {
-		return unmarshalUnpacked(f, r, readBytes, func(msgBytes []byte) (*[]byte, bool, error) {
+		return unmarshalUnpacked(f, r, func(msgBytes []byte) (*[]byte, bool, error) {
+			msgBytes, err := copyBytes(r, msgBytes)
+			if err != nil {
+				return nil, false, err
+			}
 			if len(msgBytes) == 0 {
 				return nil, true, nil
 			}
@@ -2448,10 +2426,10 @@ func (f *field) unmarshalBytes(r *Reader) (any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
-		readBytes,
 		func(msgBytes []byte) ([]byte, bool, error) {
+			msgBytes, err := copyBytes(r, msgBytes)
 			// Non-nil pointers are not considered empty.
-			return msgBytes, len(msgBytes) == 0 && !f.pointer, nil
+			return msgBytes, len(msgBytes) == 0 && !f.pointer, err
 		},
 	)
 }
@@ -2489,21 +2467,6 @@ func (f *field) unmarshalFixedBytes(r *Reader) (any, error) {
 	return unmarshalUnpacked(
 		f,
 		r,
-		func(r *Reader) ([]byte, error) {
-			var length uint64
-			if err := ReadUint(r, &length); err != nil {
-				return nil, err
-			}
-			if length != f.fixedBytes {
-				return nil, ErrInvalidLength
-			}
-			if length > uint64(len(r.B)) {
-				return nil, ErrUnexpectedEOF
-			}
-			msgBytes := r.B[:length]
-			r.B = r.B[length:]
-			return msgBytes, nil
-		},
 		func(msgBytes []byte) ([]byte, bool, error) {
 			if r.Unsafe {
 				return msgBytes, isBytesEmpty(msgBytes), nil
@@ -2514,39 +2477,48 @@ func (f *field) unmarshalFixedBytes(r *Reader) (any, error) {
 }
 
 func (f *field) unmarshalMessage(r *Reader) (any, error) {
-	// unmarshal reads a message from msgReader, charging its memory to r.
-	unmarshal := func(msgReader Reader) (Any, error) {
-		msgReader.MemoryRemaining = r.MemoryRemaining
+	// [ReadSubReader] checks the depth limit before reading each entry. The
+	// depth limit is the same for every entry, so checking it once before the
+	// first entry is equivalent.
+	if r.DepthLimit == 0 {
+		return nil, ErrDepthLimitExceeded
+	}
+	// msgReader is declared outside of unmarshal, which captures r, so that it
+	// does not escape to the heap.
+	var msgReader Reader
+	// unmarshal reads a message from msgBytes, charging its memory to r.
+	unmarshal := func(msgBytes []byte) (Any, error) {
+		msgReader = Reader{
+			B:               msgBytes,
+			Unsafe:          r.Unsafe,
+			MemoryRemaining: r.MemoryRemaining,
+			DepthLimit:      r.DepthLimit - 1,
+			Context:         r.Context,
+		}
 		a, err := f.message.unmarshal(&msgReader)
 		r.MemoryRemaining = msgReader.MemoryRemaining
 		return a, err
 	}
 	if f.pointer && f.repeated {
-		return unmarshalUnpacked(f, r, readSubReader, func(msgReader Reader) (*Any, bool, error) {
-			if !HasNext(&msgReader) {
+		return unmarshalUnpacked(f, r, func(msgBytes []byte) (*Any, bool, error) {
+			if len(msgBytes) == 0 {
 				return nil, true, nil
 			}
-			if err := UnwrapPointer(&msgReader); err != nil {
+			ptrReader := Reader{B: msgBytes}
+			if err := UnwrapPointer(&ptrReader); err != nil {
 				return nil, false, err
 			}
-			a, err := unmarshal(msgReader)
+			a, err := unmarshal(ptrReader.B)
 			return &a, false, err
 		})
 	}
-	return unmarshalUnpacked(f, r, readSubReader, func(msgReader Reader) (Any, bool, error) {
-		if !HasNext(&msgReader) {
+	return unmarshalUnpacked(f, r, func(msgBytes []byte) (Any, bool, error) {
+		if len(msgBytes) == 0 {
 			return Any{}, !f.pointer, nil
 		}
-		a, err := unmarshal(msgReader)
+		a, err := unmarshal(msgBytes)
 		return a, false, err
 	})
-}
-
-// readSubReader reads a length-prefixed message from r with [ReadSubReader].
-func readSubReader(r *Reader) (Reader, error) {
-	var msgReader Reader
-	err := ReadSubReader(r, &msgReader)
-	return msgReader, err
 }
 
 func (f *field) marshalMessage(w Writer, af *AnyField) (Writer, error) {
@@ -2860,15 +2832,16 @@ func marshalPacked[T comparable](
 }
 
 // unmarshalUnpacked reads a length-delimited field. Each entry is read with
-// read and then converted into a value with unmarshal.
-func unmarshalUnpacked[E, T any](
+// [field.readEntry] and then converted into a value with unmarshal.
+//
+// r is only passed to direct calls, so that it does not escape to the heap.
+func unmarshalUnpacked[T any](
 	f *field,
 	r *Reader,
-	read func(r *Reader) (E, error),
-	unmarshal func(entry E) (T, bool, error),
+	unmarshal func(msgBytes []byte) (T, bool, error),
 ) (any, error) {
 	// Read the first entry manually because the tag is already stripped.
-	entry, err := read(r)
+	entry, err := f.readEntry(r)
 	if err != nil {
 		return nil, err
 	}
@@ -2918,7 +2891,7 @@ func unmarshalUnpacked[E, T any](
 		}
 		r.B = r.B[len(f.tag):]
 
-		entry, err := read(r)
+		entry, err := f.readEntry(r)
 		if err != nil {
 			return nil, err
 		}
@@ -2934,6 +2907,34 @@ func unmarshalUnpacked[E, T any](
 		return nil, ErrZeroValue
 	}
 	return values, nil
+}
+
+// readEntry reads a length-prefixed entry of f from r without copying it.
+func (f *field) readEntry(r *Reader) ([]byte, error) {
+	var length uint64
+	if err := ReadUint(r, &length); err != nil {
+		return nil, err
+	}
+	if f.kind == FieldTypeFixedBytes && length != f.fixedBytes {
+		return nil, ErrInvalidLength
+	}
+	if length > uint64(len(r.B)) {
+		return nil, ErrUnexpectedEOF
+	}
+	msgBytes := r.B[:length]
+	r.B = r.B[length:]
+	return msgBytes, nil
+}
+
+// copyBytes copies b, charging its memory to r, unless r.Unsafe is set.
+func copyBytes(r *Reader, b []byte) ([]byte, error) {
+	if r.Unsafe {
+		return b, nil
+	}
+	if err := UseMemory(r, uint64(len(b))); err != nil {
+		return nil, err
+	}
+	return slices.Clone(b), nil
 }
 
 func marshalUnpacked[T any](
