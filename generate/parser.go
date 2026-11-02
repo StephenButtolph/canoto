@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"reflect"
 	"regexp"
 	"slices"
 	"strconv"
 	"strings"
-
-	"github.com/fatih/structtag"
 
 	"github.com/StephenButtolph/canoto"
 )
@@ -395,35 +394,40 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (
 		return "", 0, "", false, nil
 	}
 
-	rawTag := strings.Trim(field.Tag.Value, "`")
-	tags, err := structtag.Parse(rawTag)
+	rawTag, err := strconv.Unquote(field.Tag.Value)
 	if err != nil {
-		return "", 0, "", false, err
+		return "", 0, "", false, fmt.Errorf("%w at %s",
+			err,
+			fs.Position(field.Pos()),
+		)
 	}
 
-	tag, err := tags.Get(canotoTag)
-	if err != nil {
-		return "", 0, "", false, nil //nolint: nilerr // errors imply the tag was not found
+	// Malformed tags are treated as not containing the canoto tag.
+	tag, ok := reflect.StructTag(rawTag).Lookup(canotoTag)
+	if !ok {
+		return "", 0, "", false, nil
 	}
 
-	fieldType := canotoType(tag.Name)
+	name, rawOptions, hasOptions := strings.Cut(tag, ",")
+	fieldType := canotoType(name)
 	if !fieldType.IsValid() {
 		return "", 0, "", false, fmt.Errorf("%w %q at %s",
 			errUnexpectedCanotoType,
-			tag.Name,
+			name,
 			fs.Position(field.Pos()),
 		)
 	}
 
-	if len(tag.Options) > 2 || len(tag.Options) < 1 {
+	options := strings.Split(rawOptions, ",")
+	if !hasOptions || len(options) > 2 {
 		return "", 0, "", false, fmt.Errorf("%w %q at %s",
 			errMalformedTag,
-			tag.Value(),
+			tag,
 			fs.Position(field.Pos()),
 		)
 	}
 
-	fieldNumber, err := strconv.ParseUint(tag.Options[0], 10, 32)
+	fieldNumber, err := strconv.ParseUint(options[0], 10, 32)
 	if err != nil {
 		return "", 0, "", false, fmt.Errorf("%w at %s",
 			err,
@@ -446,7 +450,7 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (
 	}
 
 	var oneof string
-	if len(tag.Options) == 2 {
+	if len(options) == 2 {
 		if fieldType.IsRepeated() {
 			return "", 0, "", false, fmt.Errorf("%w at %s",
 				errRepeatedOneOf,
@@ -454,7 +458,7 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (
 			)
 		}
 
-		oneof = tag.Options[1]
+		oneof = options[1]
 		if !oneOfRegex.MatchString(oneof) {
 			return "", 0, "", false, fmt.Errorf("%w %q at %s",
 				errInvalidOneOfName,
