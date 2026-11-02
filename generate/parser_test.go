@@ -81,7 +81,6 @@ func TestParse(t *testing.T) {
 								"checkDuplicateOneOf":       "",
 								"checkDuplicateOneOfIndent": "",
 								"signedSpace":               " ",
-								"canonicalGoType":           "int64",
 								"wrapperName":               "int64__Pointer",
 							},
 						},

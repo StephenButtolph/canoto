@@ -378,7 +378,6 @@ func parseField(
 			"checkDuplicateOneOf":       checkDuplicateOneOf,
 			"checkDuplicateOneOfIndent": checkDuplicateOneOfIndent,
 			"signedSpace":               signedSpace,
-			"canonicalGoType":           canonicalizeName(goType),
 			"wrapperName":               canonicalizeName(goType) + "__Pointer",
 		},
 	}, true, nil

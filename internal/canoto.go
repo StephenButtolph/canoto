@@ -6,6 +6,7 @@ package examples
 import (
 	"github.com/StephenButtolph/canoto"
 	"github.com/StephenButtolph/canoto/internal/big"
+	"github.com/StephenButtolph/canoto/internal/imported"
 )
 
 const constRepeatedUint64Len = 3
@@ -15,6 +16,7 @@ var (
 	_ canoto.Message = (*OneOf)(nil)
 	_ canoto.Message = (*unexportedOneOf)(nil)
 	_ canoto.Message = (*GenericField[OneOf, *OneOf])(nil)
+	_ canoto.Message = (*ImportedName[OneOf, *OneOf])(nil)
 	_ canoto.Message = (*Scalars)(nil)
 	_ canoto.Message = (*message)(nil)
 )
@@ -134,6 +136,15 @@ type A__Pointer struct {
 	C int32 `canoto:"int,1"`
 
 	canotoData canotoData_A__Pointer
+}
+
+// Check that imported types are not confused with local messages or type
+// parameters with the same name.
+type ImportedName[V any, _ canoto.FieldPointer[V]] struct {
+	A imported.A `canoto:"value,1"`
+	V imported.V `canoto:"value,2"`
+
+	canotoData canotoData_ImportedName
 }
 
 // Check that messages named like proto scalar types and keywords are
