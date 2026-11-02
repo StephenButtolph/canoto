@@ -45,7 +45,7 @@ func (*Spec) DescribeCanoto(types ...reflect.Type) *Spec {
 				TypeString:  true,
 			},
 			FieldTypeFromField(
-				/*type inference:*/ (MakeEntryNilPointer(zero.Fields)),
+				/*type inference:*/ MakeEntryNilPointer(zero.Fields),
 				/*FieldNumber:   */ canotoNumber_Spec__Fields,
 				/*Name:          */ "Fields",
 				/*FixedLength:   */ 0,
@@ -404,7 +404,7 @@ func (*FieldType) DescribeCanoto(types ...reflect.Type) *Spec {
 				TypeUint:    SizeOf(zero.TypeFixedBytes),
 			},
 			FieldTypeFromField(
-				/*type inference:*/ (zero.TypeMessage),
+				/*type inference:*/ zero.TypeMessage,
 				/*FieldNumber:   */ canotoNumber_FieldType__TypeMessage,
 				/*Name:          */ "TypeMessage",
 				/*FixedLength:   */ 0,
@@ -650,7 +650,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := msgReader.MakePointer(&c.TypeMessage); err != nil {
 				return UnmarshalResult{}, err
 			}
-			result, err := (c.TypeMessage).UnmarshalCanotoFrom(msgReader)
+			result, err := c.TypeMessage.UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -734,8 +734,8 @@ func (c *FieldType) CacheCanoto() {
 		TypeOneOf = canotoNumber_FieldType__TypeFixedBytes
 	}
 	if c.TypeMessage != nil {
-		(c.TypeMessage).CacheCanoto()
-		fieldSize := (c.TypeMessage).SizeCanoto()
+		c.TypeMessage.CacheCanoto()
+		fieldSize := c.TypeMessage.SizeCanoto()
 		size += uint64(len(canotoTag_FieldType__TypeMessage)) + SizeUint(fieldSize) + fieldSize
 		TypeOneOf = canotoNumber_FieldType__TypeMessage
 	}
@@ -845,7 +845,7 @@ func (c *FieldType) CheckCanoto() bool {
 	if !ValidString(c.OneOf) {
 		return false
 	}
-	if c.TypeMessage != nil && !(c.TypeMessage).CheckCanoto() {
+	if c.TypeMessage != nil && !c.TypeMessage.CheckCanoto() {
 		return false
 	}
 	return true
@@ -922,10 +922,10 @@ func (c *FieldType) AppendCanoto(w Writer) Writer {
 		w.Append(canotoTag_FieldType__TypeFixedBytes)
 		w.AppendUint(c.TypeFixedBytes)
 	case canotoNumber_FieldType__TypeMessage:
-		fieldSize := (c.TypeMessage).SizeCanoto()
+		fieldSize := c.TypeMessage.SizeCanoto()
 		w.Append(canotoTag_FieldType__TypeMessage)
 		w.AppendUint(fieldSize)
-		w = (c.TypeMessage).AppendCanoto(w)
+		w = c.TypeMessage.AppendCanoto(w)
 	case canotoNumber_FieldType__TypeRecursive:
 		w.Append(canotoTag_FieldType__TypeRecursive)
 		w.AppendUint(c.TypeRecursive)

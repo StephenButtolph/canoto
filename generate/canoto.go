@@ -668,7 +668,7 @@ func makeSpecFields(m message) string {
 `,
 		values: typeTemplate{
 			single: `			${selector}FieldTypeFromField(
-				/*type inference:*/ ${genericTypeCast}(&zero.${fieldName}),
+				/*type inference:*/ ${castOpen}&zero.${fieldName}${castClose},
 				/*FieldNumber:   */ ${fieldNumberConst},
 				/*Name:          */ "${fieldName}",
 				/*FixedLength:   */ 0,
@@ -679,7 +679,7 @@ func makeSpecFields(m message) string {
 			),
 `,
 			repeated: `			${selector}FieldTypeFromField(
-				/*type inference:*/ ${genericTypeCast}(${selector}MakeEntryNilPointer(zero.${fieldName})),
+				/*type inference:*/ ${castOpen}${selector}MakeEntryNilPointer(zero.${fieldName})${castClose},
 				/*FieldNumber:   */ ${fieldNumberConst},
 				/*Name:          */ "${fieldName}",
 				/*FixedLength:   */ 0,
@@ -690,7 +690,7 @@ func makeSpecFields(m message) string {
 			),
 `,
 			fixedRepeated: `			${selector}FieldTypeFromField(
-				/*type inference:*/ ${genericTypeCast}(${selector}MakeEntryNilPointer((&zero.${fieldName})[:])),
+				/*type inference:*/ ${castOpen}${selector}MakeEntryNilPointer((&zero.${fieldName})[:])${castClose},
 				/*FieldNumber:   */ ${fieldNumberConst},
 				/*Name:          */ "${fieldName}",
 				/*FixedLength:   */ uint64(len(zero.${fieldName})),
@@ -703,7 +703,7 @@ func makeSpecFields(m message) string {
 		},
 		pointers: typeTemplate{
 			single: `			${selector}FieldTypeFromField(
-				/*type inference:*/ ${genericTypeCast}(zero.${fieldName}),
+				/*type inference:*/ ${castOpen}zero.${fieldName}${castClose},
 				/*FieldNumber:   */ ${fieldNumberConst},
 				/*Name:          */ "${fieldName}",
 				/*FixedLength:   */ 0,
@@ -714,7 +714,7 @@ func makeSpecFields(m message) string {
 			),
 `,
 			repeated: `			${selector}FieldTypeFromField(
-				/*type inference:*/ ${genericTypeCast}(${selector}MakeEntry(zero.${fieldName})),
+				/*type inference:*/ ${castOpen}${selector}MakeEntry(zero.${fieldName})${castClose},
 				/*FieldNumber:   */ ${fieldNumberConst},
 				/*Name:          */ "${fieldName}",
 				/*FixedLength:   */ 0,
@@ -725,7 +725,7 @@ func makeSpecFields(m message) string {
 			),
 `,
 			fixedRepeated: `			${selector}FieldTypeFromField(
-				/*type inference:*/ ${genericTypeCast}(${selector}MakeEntry((&zero.${fieldName})[:])),
+				/*type inference:*/ ${castOpen}${selector}MakeEntry((&zero.${fieldName})[:])${castClose},
 				/*FieldNumber:   */ ${fieldNumberConst},
 				/*Name:          */ "${fieldName}",
 				/*FixedLength:   */ uint64(len(zero.${fieldName})),
@@ -1215,7 +1215,7 @@ func makeUnmarshal(m message) string {
 			if err := msgReader.MakePointer(&c.${fieldName}); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
-			result, err := ${genericTypeCast}(c.${fieldName}).UnmarshalCanotoFrom(msgReader)
+			result, err := ${castOpen}c.${fieldName}${castClose}.UnmarshalCanotoFrom(msgReader)
 			if err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
@@ -1252,7 +1252,7 @@ func makeUnmarshal(m message) string {
 				if err := msgReader.MakePointer(&field[0]); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				result, err := ${genericTypeCast}(field[0]).UnmarshalCanotoFrom(msgReader)
+				result, err := ${castOpen}field[0]${castClose}.UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
@@ -1275,7 +1275,7 @@ func makeUnmarshal(m message) string {
 				if err := msgReader.MakePointer(&additionalField[i]); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				result, err := ${genericTypeCast}(additionalField[i]).UnmarshalCanotoFrom(msgReader)
+				result, err := ${castOpen}additionalField[i]${castClose}.UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
@@ -1305,7 +1305,7 @@ func makeUnmarshal(m message) string {
 				if err := msgReader.MakePointer(&(&c.${fieldName})[0]); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				result, err := ${genericTypeCast}((&c.${fieldName})[0]).UnmarshalCanotoFrom(msgReader)
+				result, err := ${castOpen}(&c.${fieldName})[0]${castClose}.UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
@@ -1332,7 +1332,7 @@ func makeUnmarshal(m message) string {
 				if err := msgReader.MakePointer(&field[i]); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
-				result, err := ${genericTypeCast}(field[i]).UnmarshalCanotoFrom(msgReader)
+				result, err := ${castOpen}field[i]${castClose}.UnmarshalCanotoFrom(msgReader)
 				if err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
@@ -1495,21 +1495,21 @@ func makeCheck(m message) string {
 `,
 		},
 		pointers: typeTemplate{
-			single: `	if c.${fieldName} != nil && !${genericTypeCast}(c.${fieldName}).CheckCanoto() {
+			single: `	if c.${fieldName} != nil && !${castOpen}c.${fieldName}${castClose}.CheckCanoto() {
 		return false
 	}
 `,
 			repeated: `	{
 		field := c.${fieldName}
 		for i := range field {
-			if field[i] != nil && !${genericTypeCast}(field[i]).CheckCanoto() {
+			if field[i] != nil && !${castOpen}field[i]${castClose}.CheckCanoto() {
 				return false
 			}
 		}
 	}
 `,
 			fixedRepeated: `	for i := range &c.${fieldName} {
-		if (&c.${fieldName})[i] != nil && !${genericTypeCast}((&c.${fieldName})[i]).CheckCanoto() {
+		if (&c.${fieldName})[i] != nil && !${castOpen}(&c.${fieldName})[i]${castClose}.CheckCanoto() {
 			return false
 		}
 	}
@@ -1669,8 +1669,8 @@ func makeSize(m message) string {
 		},
 		pointers: typeTemplate{
 			single: `	if c.${fieldName} != nil {
-		${genericTypeCast}(c.${fieldName}).CacheCanoto()
-		fieldSize := ${genericTypeCast}(c.${fieldName}).SizeCanoto()
+		${castOpen}c.${fieldName}${castClose}.CacheCanoto()
+		fieldSize := ${castOpen}c.${fieldName}${castClose}.SizeCanoto()
 		size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
 	}
 `,
@@ -1679,8 +1679,8 @@ func makeSize(m message) string {
 		for i := range field {
 			var fieldSize uint64
 			if field[i] != nil {
-				${genericTypeCast}(field[i]).CacheCanoto()
-				innerSize := ${genericTypeCast}(field[i]).SizeCanoto()
+				${castOpen}field[i]${castClose}.CacheCanoto()
+				innerSize := ${castOpen}field[i]${castClose}.SizeCanoto()
 				fieldSize = ${selector}SizePointerPresenceTag + ${selector}SizeUint(innerSize) + innerSize
 			}
 			size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
@@ -1695,8 +1695,8 @@ func makeSize(m message) string {
 		for i := range field {
 			var fieldSize uint64
 			if field[i] != nil {
-				${genericTypeCast}(field[i]).CacheCanoto()
-				innerSize := ${genericTypeCast}(field[i]).SizeCanoto()
+				${castOpen}field[i]${castClose}.CacheCanoto()
+				innerSize := ${castOpen}field[i]${castClose}.SizeCanoto()
 				fieldSize = ${selector}SizePointerPresenceTag + ${selector}SizeUint(innerSize) + innerSize
 			}
 			totalSize += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize
@@ -1729,7 +1729,7 @@ func makeWhichCanoto(m message) string {
 // If the value has not yet been cached, or the struct has been modified since
 // it was last cached, the returned field number may be incorrect.
 func (c *${structName}${generics}) WhichCanoto${oneOf}() ${oneOfType} {
-	return ${oneOfCast}(atomic.LoadUint32(&c.canotoData.${oneOf}OneOf))
+	return ${castOpen}atomic.LoadUint32(&c.canotoData.${oneOf}OneOf)${castClose}
 }`
 	var (
 		sb       strings.Builder
@@ -1737,17 +1737,18 @@ func (c *${structName}${generics}) WhichCanoto${oneOf}() ${oneOfType} {
 	)
 	for _, oneOf := range m.OneOfs() {
 		oneOfType := makeTemplate(m.template.OneOfType, oneOfEnv(m, oneOf))
-		oneOfCast := oneOfType
+		castOpen, castClose := oneOfType+"(", ")"
 		if token.IsExported(m.name) && !token.IsExported(oneOfType) {
 			oneOfType = "uint32"
-			oneOfCast = ""
+			castOpen, castClose = "", ""
 		}
 		_ = writeTemplate(&sb, template, map[string]string{
 			"oneOf":      oneOf,
 			"structName": m.name,
 			"generics":   generics,
 			"oneOfType":  oneOfType,
-			"oneOfCast":  oneOfCast,
+			"castOpen":   castOpen,
+			"castClose":  castClose,
 		})
 	}
 	return sb.String()
@@ -1772,10 +1773,10 @@ func getAppendTemplate(isOneOf bool) messageTemplate {
 		w.AppendUint(fieldSize)
 		w = ${genericTypeCast}(&c.${fieldName}).AppendCanoto(w)
 `
-		pointerTemplateBodyOneOf = `		fieldSize := ${genericTypeCast}(c.${fieldName}).SizeCanoto()
+		pointerTemplateBodyOneOf = `		fieldSize := ${castOpen}c.${fieldName}${castClose}.SizeCanoto()
 		w.Append(${fieldTagConst})
 		w.AppendUint(fieldSize)
-		w = ${genericTypeCast}(c.${fieldName}).AppendCanoto(w)
+		w = ${castOpen}c.${fieldName}${castClose}.AppendCanoto(w)
 `
 
 		valueTemplateRegular = `	if fieldSize := ${genericTypeCast}(&c.${fieldName}).SizeCanoto(); fieldSize != 0 {
@@ -1785,10 +1786,10 @@ func getAppendTemplate(isOneOf bool) messageTemplate {
 	}
 `
 		pointerTemplateRegular = `	if c.${fieldName} != nil {
-		fieldSize := ${genericTypeCast}(c.${fieldName}).SizeCanoto()
+		fieldSize := ${castOpen}c.${fieldName}${castClose}.SizeCanoto()
 		w.Append(${fieldTagConst})
 		w.AppendUint(fieldSize)
-		w = ${genericTypeCast}(c.${fieldName}).AppendCanoto(w)
+		w = ${castOpen}c.${fieldName}${castClose}.AppendCanoto(w)
 	}
 `
 	)
@@ -1938,12 +1939,12 @@ func getAppendTemplate(isOneOf bool) messageTemplate {
 			if field[i] == nil {
 				w.Append(${selector}EmptyBytes)
 			} else {
-				innerSize := ${genericTypeCast}(field[i]).SizeCanoto()
+				innerSize := ${castOpen}field[i]${castClose}.SizeCanoto()
 				fieldSize := ${selector}SizePointerPresenceTag + ${selector}SizeUint(innerSize) + innerSize
 				w.AppendUint(fieldSize)
 				w.Append(${selector}PointerPresenceTag)
 				w.AppendUint(innerSize)
-				w = ${genericTypeCast}(field[i]).AppendCanoto(w)
+				w = ${castOpen}field[i]${castClose}.AppendCanoto(w)
 			}
 		}
 	}
@@ -1954,12 +1955,12 @@ func getAppendTemplate(isOneOf bool) messageTemplate {
 			if (&c.${fieldName})[i] == nil {
 				w.Append(${selector}EmptyBytes)
 			} else {
-				innerSize := ${genericTypeCast}((&c.${fieldName})[i]).SizeCanoto()
+				innerSize := ${castOpen}(&c.${fieldName})[i]${castClose}.SizeCanoto()
 				fieldSize := ${selector}SizePointerPresenceTag + ${selector}SizeUint(innerSize) + innerSize
 				w.AppendUint(fieldSize)
 				w.Append(${selector}PointerPresenceTag)
 				w.AppendUint(innerSize)
-				w = ${genericTypeCast}((&c.${fieldName})[i]).AppendCanoto(w)
+				w = ${castOpen}(&c.${fieldName})[i]${castClose}.AppendCanoto(w)
 			}
 		}
 	}

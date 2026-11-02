@@ -328,9 +328,11 @@ func parseField(
 		checkDuplicateOneOfIndent = fmt.Sprintf("\n\t\t\tif %sOneOf != 0 {\n\t\t\t\treturn false\n\t\t\t}", oneOfName)
 	}
 
-	var genericTypeCast string
+	var genericTypeCast, castOpen, castClose string
 	if genericType, ok := genericTypes[goType]; ok {
 		genericTypeCast = fmt.Sprintf("T%d", genericType)
+		castOpen = genericTypeCast + "("
+		castClose = ")"
 	}
 
 	protoType := canotoType.ProtoType(goType)
@@ -353,6 +355,8 @@ func parseField(
 			"wireType":                  canotoType.WireType().String(),
 			"goType":                    goType,
 			"genericTypeCast":           genericTypeCast,
+			"castOpen":                  castOpen,
+			"castClose":                 castClose,
 			"protoType":                 protoType,
 			"protoTypePrefix":           canotoType.ProtoTypePrefix(),
 			"protoTypeSuffix":           canotoType.ProtoTypeSuffix(),
