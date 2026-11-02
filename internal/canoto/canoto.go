@@ -2,8 +2,6 @@
 // versions:
 // 	canoto v0.20.0
 
-//go:generate go run github.com/StephenButtolph/canoto/canoto --internal --format-oneof-type={struct}OneOf --format-oneof-unset={struct}Unset --format-oneof-field=Field{field} $GOFILE
-
 // Package canoto implements a canonical, compact, and fast serialization format
 // that is read-compatible with Protocol Buffers. It provides both low-level
 // primitives for reading and writing the wire format and high-level interfaces
