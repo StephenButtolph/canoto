@@ -33,10 +33,11 @@ const (
 //
 // Specifically, if "./internal" is provided, this will generate the package
 // "./internal/canoto" with the serialization primitives included in:
-// - "./internal/canoto/canoto.go"
-// - "./internal/canoto/canoto.canoto.go"
-// - "./internal/canoto/race.go"
-// - "./internal/canoto/norace.go"
+//
+//   - "./internal/canoto/canoto.go"
+//   - "./internal/canoto/canoto.canoto.go"
+//   - "./internal/canoto/race.go"
+//   - "./internal/canoto/norace.go"
 func Library(parentDir string) error {
 	library := filepath.Join(parentDir, defaultCanotoSelector)
 	if err := os.MkdirAll(library, readWriteExecute); err != nil {
