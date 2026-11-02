@@ -378,7 +378,7 @@ type (
 	// Any is a generic representation of a Canoto message.
 	Any struct {
 		Fields     []AnyField
-		cachedSize uint64 // populated by [Spec.calculateSize]
+		cachedSize uint64 // populated by [spec.calculateSize]
 	}
 
 	// AnyField is a generic representation of a field in a Canoto message.
@@ -411,7 +411,7 @@ type (
 
 		// cachedSize is only used to cache the size of Value when it is [Any].
 		// Normally, [Any.cachedSize] should be used instead.
-		cachedSize uint64 // populated by [FieldType.calculateSizeMessage]
+		cachedSize uint64 // populated by [field.calculateSizeMessage]
 	}
 )
 
@@ -1643,6 +1643,9 @@ func (c *Codec) Unmarshal(r Reader) (Any, UnmarshalResult, error) {
 }
 
 // Marshal marshals a into bytes based on the Codec's [Spec].
+//
+// [Any] values, including nested values, must be tied to a single [Spec] to
+// ensure consistently cached values during marshaling.
 //
 // This function is significantly slower than calling MarshalCanoto on the type
 // directly. This function should only be used when the concrete type can not be
