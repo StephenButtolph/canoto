@@ -89,8 +89,8 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalRes
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
 
 	var minField uint32
-	for canoto.HasNext(&r) {
-		field, wireType, err := canoto.ReadTag(&r)
+	for r.HasNext() {
+		field, wireType, err := r.Tag()
 		if err != nil {
 			return canoto.UnmarshalResult{}, err
 		}
@@ -105,7 +105,7 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalRes
 			}
 			atomic.StoreUint32(&c.canotoData.FieldsOneOf, CustomFormatANumber)
 
-			if err := canoto.ReadUint(&r, &c.A); err != nil {
+			if err := r.Uint(&c.A); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
 			if canoto.IsZero(&c.A) {
@@ -119,7 +119,7 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalRes
 				return canoto.UnmarshalResult{}, canoto.ErrDuplicateOneOf
 			}
 
-			if err := canoto.ReadUint(&r, &c.B); err != nil {
+			if err := r.Uint(&c.B); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
 			if canoto.IsZero(&c.B) {
@@ -217,11 +217,11 @@ func (c *CustomFormat) AppendCanoto(w canoto.Writer) canoto.Writer {
 	whichCanotoFields := atomic.LoadUint32(&c.canotoData.FieldsOneOf)
 	switch whichCanotoFields {
 	case CustomFormatANumber:
-		canoto.Append(&w, CustomFormatATag)
-		canoto.AppendUint(&w, c.A)
+		w.Append(CustomFormatATag)
+		w.AppendUint(c.A)
 	case CustomFormatBNumber:
-		canoto.Append(&w, CustomFormatBTag)
-		canoto.AppendUint(&w, c.B)
+		w.Append(CustomFormatBTag)
+		w.AppendUint(c.B)
 	}
 	return w
 }

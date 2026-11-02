@@ -209,7 +209,7 @@ The stack used to unmarshal nested messages is not charged against the memory li
 
 #### Custom Fields
 
-`UnmarshalCanotoFrom` on a custom `canoto.Field` may be given untrusted input. Implementations should charge any memory they allocate with `canoto.UseMemory` or `canoto.UseSliceMemory`, and must return the remaining memory, `r.MemoryRemaining`, in the `canoto.UnmarshalResult`.
+`UnmarshalCanotoFrom` on a custom `canoto.Field` may be given untrusted input. Implementations should charge any memory they allocate with `r.UseMemory` or `r.UseSliceMemory`, and must return the remaining memory, `r.MemoryRemaining`, in the `canoto.UnmarshalResult`.
 
 ### Standalone Implementations
 
