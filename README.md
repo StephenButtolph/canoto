@@ -13,6 +13,12 @@ Canoto is a serialization format designed to be:
 go install github.com/StephenButtolph/canoto/canoto@latest
 ```
 
+The installed version can be displayed with the `--version` flag.
+
+```sh
+canoto --version
+```
+
 32-bit architectures are not supported.
 
 ## Define Messages
@@ -142,12 +148,6 @@ canoto --canoto=false --proto example.go
 ```
 
 The above example will only generate `example.proto`.
-
-The version of the `canoto` command can be displayed with the `--version` flag.
-
-```sh
-canoto --version
-```
 
 ### go:generate
 
