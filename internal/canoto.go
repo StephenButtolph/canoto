@@ -116,22 +116,19 @@ type Embedded struct {
 
 // Check for name collisions. Because we use "__" as a separator, the unescaped
 // name would conflict in generated identifiers like canotoNumber_A__B__C.
-//
-//nolint:staticcheck // This is checking for name collisions.
 type A struct {
 	B__C int32 `canoto:"int,1"`
 
 	canotoData canotoData_A
 }
 
-//nolint:staticcheck // This is checking for name collisions.
 type A__B struct {
 	C int32 `canoto:"int,1"`
 
 	canotoData canotoData_A__B
 }
 
-//nolint:staticcheck // This is checking for name collisions with __Pointer wrappers.
+// Check for name collisions with __Pointer wrappers.
 type A__Pointer struct {
 	C int32 `canoto:"int,1"`
 
