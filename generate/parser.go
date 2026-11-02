@@ -87,13 +87,13 @@ func parse(
 		}
 
 		var (
-			typesToIndex    = make(map[string]int)
+			typeParams      = make(map[string]bool)
 			genericPointers = make(map[string]int)
 		)
 		if ts.TypeParams != nil {
 			for _, field := range ts.TypeParams.List {
 				for _, name := range field.Names {
-					typesToIndex[name.Name] = message.numTypes
+					typeParams[name.Name] = true
 					message.numTypes++
 				}
 			}
@@ -133,7 +133,7 @@ func parse(
 					continue
 				}
 				// Make sure the type is generic
-				if _, ok := typesToIndex[ident.Name]; !ok {
+				if !typeParams[ident.Name] {
 					continue
 				}
 
@@ -157,7 +157,7 @@ func parse(
 				message.canonicalizedName,
 				opts.Templates.Number,
 				opts.Internal,
-				typesToIndex,
+				typeParams,
 				genericPointers,
 				sf,
 			)
@@ -226,7 +226,7 @@ func parseField(
 	canonicalizedStructName string,
 	numberTemplate string,
 	internal bool,
-	typeParams map[string]int,
+	typeParams map[string]bool,
 	genericTypes map[string]int,
 	af *ast.Field,
 ) (field, bool, error) {
@@ -250,7 +250,7 @@ func parseField(
 		switch tt := t.(type) {
 		case *ast.Ident:
 			goType = tt.Name
-			_, isTypeParam = typeParams[goType]
+			isTypeParam = typeParams[goType]
 		case *ast.SelectorExpr:
 			goType = tt.Sel.Name
 			isImported = true
