@@ -20,7 +20,6 @@ import (
 	"math/bits"
 	"reflect"
 	"slices"
-	"strings"
 	"sync/atomic"
 	"unicode/utf8"
 	"unsafe"
@@ -1676,26 +1675,83 @@ var _ json.Marshaler = Any{}
 
 // MarshalJSON implements the [json.Marshaler] interface.
 func (a Any) MarshalJSON() ([]byte, error) {
-	var sb strings.Builder
-	sb.WriteString("{")
-	for i, f := range a.Fields {
+	return a.appendJSON(nil)
+}
+
+// appendJSON appends the JSON encoding of a to b.
+//
+// Nested messages are appended directly, rather than with json.Marshal, which
+// would copy and validate the encoding of a nested message once for every
+// message enclosing it. This keeps the time linear in the size of the output,
+// regardless of the depth of the messages.
+func (a *Any) appendJSON(b []byte) ([]byte, error) {
+	b = append(b, '{')
+	for i := range a.Fields {
+		f := &a.Fields[i]
 		if i > 0 {
-			sb.WriteString(",")
+			b = append(b, ',')
 		}
 		name, err := json.Marshal(f.Name)
 		if err != nil {
 			return nil, err
 		}
-		sb.Write(name)
-		sb.WriteString(":")
-		b, err := json.Marshal(f.Value)
+		b = append(b, name...)
+		b = append(b, ':')
+		b, err = appendJSONValue(b, f.Value)
 		if err != nil {
 			return nil, err
 		}
-		sb.Write(b)
 	}
-	sb.WriteString("}")
-	return []byte(sb.String()), nil
+	return append(b, '}'), nil
+}
+
+// appendJSONValue appends the JSON encoding of the value of an [AnyField] to b.
+func appendJSONValue(b []byte, value any) ([]byte, error) {
+	switch v := value.(type) {
+	case Any:
+		return v.appendJSON(b)
+	case []Any:
+		return appendJSONArray(b, v, func(b []byte, a *Any) ([]byte, error) {
+			return a.appendJSON(b)
+		})
+	case []*Any:
+		return appendJSONArray(b, v, func(b []byte, a **Any) ([]byte, error) {
+			if *a == nil {
+				return append(b, "null"...), nil
+			}
+			return (*a).appendJSON(b)
+		})
+	default:
+		encoded, err := json.Marshal(value)
+		if err != nil {
+			return nil, err
+		}
+		return append(b, encoded...), nil
+	}
+}
+
+// appendJSONArray appends the JSON encoding of vs to b, as json.Marshal would,
+// using appendValue to append each element.
+func appendJSONArray[T any](
+	b []byte,
+	vs []T,
+	appendValue func(b []byte, v *T) ([]byte, error),
+) ([]byte, error) {
+	if vs == nil {
+		return append(b, "null"...), nil
+	}
+	b = append(b, '[')
+	for i := range vs {
+		if i > 0 {
+			b = append(b, ',')
+		}
+		var err error
+		b, err = appendValue(b, &vs[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return append(b, ']'), nil
 }
 
 // FieldTypeFromFint creates a [FieldType] specification for a fixed-size
