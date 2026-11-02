@@ -34,10 +34,10 @@ func (i *Int) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, erro
 	const wordSize = bits.UintSize / 8
 	var words []big.Word
 	numWords := (uint64(len(r.B)) + wordSize - 1) / wordSize
-	if err := canoto.MakeSlice(&r, &words, numWords); err != nil {
+	if err := r.MakeSlice(&words, numWords); err != nil {
 		return canoto.UnmarshalResult{}, err
 	}
-	if err := canoto.MakePointer(&r, &i.Int); err != nil {
+	if err := r.MakePointer(&i.Int); err != nil {
 		return canoto.UnmarshalResult{}, err
 	}
 	i.Int.SetBits(words[:0]).SetBytes(r.B)

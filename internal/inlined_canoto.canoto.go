@@ -70,8 +70,8 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult
 	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
 
 	var minField uint32
-	for canoto.HasNext(&r) {
-		field, wireType, err := canoto.ReadTag(&r)
+	for r.HasNext() {
+		field, wireType, err := r.Tag()
 		if err != nil {
 			return canoto.UnmarshalResult{}, err
 		}
@@ -85,7 +85,7 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult
 				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
 			}
 
-			if err := canoto.ReadInt(&r, &c.Int8); err != nil {
+			if err := r.Int(&c.Int8); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
 			if canoto.IsZero(&c.Int8) {
@@ -152,8 +152,8 @@ func (c *justAnInt) MarshalCanoto() []byte {
 // It is assumed that this struct is ValidCanoto.
 func (c *justAnInt) AppendCanoto(w canoto.Writer) canoto.Writer {
 	if !canoto.IsZero(&c.Int8) {
-		canoto.Append(&w, canotoTag_justAnInt__Int8)
-		canoto.AppendInt(&w, c.Int8)
+		w.Append(canotoTag_justAnInt__Int8)
+		w.AppendInt(c.Int8)
 	}
 	return w
 }

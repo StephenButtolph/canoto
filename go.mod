@@ -1,6 +1,6 @@
 module github.com/StephenButtolph/canoto
 
-go 1.25.0
+go 1.27.0
 
 require (
 	github.com/fatih/structtag v1.2.0

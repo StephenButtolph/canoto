@@ -67,7 +67,7 @@ const (
 	VersionCompatibility = 2
 
 	// EmptyBytes is the length-prefixed encoding of empty bytes.
-	EmptyBytes = "\x00" // AppendBytes(&Writer{}, []byte{}).B
+	EmptyBytes = "\x00" // (&Writer{}).AppendBytes([]byte{}).B
 
 	// PointerPresenceTag is the tag used to encode the presence of a non-nil
 	// pointer element within repeated pointer fields. It encodes field number 1
@@ -268,9 +268,6 @@ type (
 	WireType byte
 
 	// Reader contains all the state needed to unmarshal a Canoto type.
-	//
-	// The functions in this package are not methods on the Reader type to
-	// enable the usage of generics.
 	Reader struct {
 		// B is the remaining bytes to be read.
 		B []byte
@@ -305,9 +302,6 @@ type (
 	}
 
 	// Writer contains all the state needed to marshal a Canoto type.
-	//
-	// The functions in this package are not methods on the Writer type to
-	// enable the usage of generics.
 	Writer struct {
 		// B is the accumulated output bytes.
 		B []byte
@@ -474,7 +468,7 @@ func (s SizeEnum) isValid() bool {
 
 // UseMemory charges n bytes against [Reader.MemoryRemaining]. If the remaining
 // memory is insufficient, [ErrMemoryLimitExceeded] is returned.
-func UseMemory(r *Reader, n uint64) error {
+func (r *Reader) UseMemory(n uint64) error {
 	if n > r.MemoryRemaining {
 		return ErrMemoryLimitExceeded
 	}
@@ -483,26 +477,26 @@ func UseMemory(r *Reader, n uint64) error {
 }
 
 // UseSliceMemory charges the memory of a slice of length elements of type E,
-// as [UseMemory] does.
-func UseSliceMemory[E any](r *Reader, length uint64) error {
+// as [Reader.UseMemory] does.
+func (r *Reader) UseSliceMemory[E any](length uint64) error {
 	var zero E
 	hi, total := bits.Mul64(length, uint64(unsafe.Sizeof(zero)))
 	if hi != 0 {
 		return ErrMemoryLimitExceeded
 	}
-	return UseMemory(r, total)
+	return r.UseMemory(total)
 }
 
 // UnwrapPointer strips the presence prefix from a non-nil repeated pointer
 // element, leaving r.B as the encoded value.
-func UnwrapPointer(r *Reader) error {
+func (r *Reader) UnwrapPointer() error {
 	if !HasPrefix(r.B, PointerPresenceTag) {
 		return ErrUnknownField
 	}
 	r.B = r.B[len(PointerPresenceTag):]
 
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
+	if err := r.Uint(&length); err != nil {
 		return err
 	}
 	switch remaining := uint64(len(r.B)); {
@@ -516,12 +510,12 @@ func UnwrapPointer(r *Reader) error {
 }
 
 // HasNext returns true if there are more bytes to read.
-func HasNext(r *Reader) bool {
+func (r *Reader) HasNext() bool {
 	return len(r.B) > 0
 }
 
 // Append writes raw bytes to the writer without a length prefix.
-func Append[T Bytes](w *Writer, v T) {
+func (w *Writer) Append[T Bytes](v T) {
 	w.B = append(w.B, v...)
 }
 
@@ -534,7 +528,7 @@ func Tag(fieldNumber uint32, wireType WireType) []byte {
 	w := Writer{
 		make([]byte, 0, SizeUint(tag)),
 	}
-	AppendUint(&w, tag)
+	w.AppendUint(tag)
 	return w.B
 }
 
@@ -542,10 +536,10 @@ func tagValue(fieldNumber uint32, wireType WireType) uint32 {
 	return fieldNumber<<wireTypeLength | uint32(wireType)
 }
 
-// ReadTag reads the next field number and wire type from the reader.
-func ReadTag(r *Reader) (uint32, WireType, error) {
+// Tag reads the next field number and wire type from the reader.
+func (r *Reader) Tag() (uint32, WireType, error) {
 	var val uint32
-	if err := ReadUint(r, &val); err != nil {
+	if err := r.Uint(&val); err != nil {
 		return 0, 0, err
 	}
 
@@ -583,8 +577,8 @@ func CountInts(bytes []byte) uint64 {
 	return count
 }
 
-// ReadUint reads a varint encoded unsigned integer from the reader.
-func ReadUint[T Uint](r *Reader, v *T) error {
+// Uint reads a varint encoded unsigned integer from the reader.
+func (r *Reader) Uint[T Uint](v *T) error {
 	// Iterating over a local slice with range avoids all bounds checks on the
 	// reads and proves that the final slicing is in bounds.
 	b := r.B
@@ -624,11 +618,11 @@ func ReadUint[T Uint](r *Reader, v *T) error {
 	return ErrUnexpectedEOF
 }
 
-// ReadUints reads a length-prefixed packed repeated varint field from the
+// Uints reads a length-prefixed packed repeated varint field from the
 // reader. It returns the size of the packed field in bytes.
-func ReadUints[S ~[]E, E Uint](r *Reader, v *S) (uint64, error) {
+func (r *Reader) Uints[S ~[]E, E Uint](v *S) (uint64, error) {
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
+	if err := r.Uint(&length); err != nil {
 		return 0, err
 	}
 	if length > uint64(len(r.B)) {
@@ -649,7 +643,7 @@ func ReadUints[S ~[]E, E Uint](r *Reader, v *S) (uint64, error) {
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
 	count := CountInts(b)
-	if err := UseSliceMemory[E](r, count); err != nil {
+	if err := r.UseSliceMemory[E](count); err != nil {
 		return 0, err
 	}
 	vs := make(S, count)
@@ -689,12 +683,12 @@ func ReadUints[S ~[]E, E Uint](r *Reader, v *S) (uint64, error) {
 	return length, nil
 }
 
-// ReadUintsInto reads a length-prefixed packed repeated varint field from the
+// UintsInto reads a length-prefixed packed repeated varint field from the
 // reader into vs. The field must contain exactly len(vs) values. It returns the
 // size of the packed field in bytes.
-func ReadUintsInto[S ~[]E, E Uint](r *Reader, vs S) (uint64, error) {
+func (r *Reader) UintsInto[S ~[]E, E Uint](vs S) (uint64, error) {
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
+	if err := r.Uint(&length); err != nil {
 		return 0, err
 	}
 	if length > uint64(len(r.B)) {
@@ -704,7 +698,7 @@ func ReadUintsInto[S ~[]E, E Uint](r *Reader, vs S) (uint64, error) {
 	b := r.B[:length]
 	r.B = r.B[length:]
 
-	// See [ReadUints] for why truncation is checked before decoding.
+	// See [Reader.Uints] for why truncation is checked before decoding.
 	if len(b) > 0 && b[len(b)-1] >= continuationMask {
 		return 0, ErrInvalidLength
 	}
@@ -754,16 +748,16 @@ func ReadUintsInto[S ~[]E, E Uint](r *Reader, vs S) (uint64, error) {
 }
 
 // AppendUint writes an unsigned integer to the writer as a varint.
-func AppendUint[T Uint](w *Writer, v T) {
+func (w *Writer) AppendUint[T Uint](v T) {
 	w.B = binary.AppendUvarint(w.B, uint64(v))
 }
 
 // AppendUints writes unsigned integers to the writer as packed varints.
 //
-// Unlike the fixed size variants, this function does NOT write a length prefix.
+// Unlike the fixed size variants, this method does NOT write a length prefix.
 // This allows the caller to more efficiently compute the total size of the
 // packed field in advance.
-func AppendUints[S ~[]E, E Uint](w *Writer, vs S) {
+func (w *Writer) AppendUints[S ~[]E, E Uint](vs S) {
 	// Accumulating into a local slice keeps the slice header in registers.
 	// Assigning w.B on every element would store and reload the header through
 	// memory each iteration and, when w isn't known to be on the stack, add a
@@ -784,10 +778,10 @@ func SizeInt[T Int](v T) uint64 {
 	return uint64(bits.Len64(uv|1)+6) * 37 >> 8
 }
 
-// ReadInt reads a zigzag encoded integer from the reader.
-func ReadInt[T Int](r *Reader, v *T) error {
+// Int reads a zigzag encoded integer from the reader.
+func (r *Reader) Int[T Int](v *T) error {
 	var largeVal uint64
-	if err := ReadUint(r, &largeVal); err != nil {
+	if err := r.Uint(&largeVal); err != nil {
 		return err
 	}
 
@@ -800,11 +794,11 @@ func ReadInt[T Int](r *Reader, v *T) error {
 	return nil
 }
 
-// ReadInts reads a length-prefixed packed repeated zigzag encoded varint
+// Ints reads a length-prefixed packed repeated zigzag encoded varint
 // field from the reader. It returns the size of the packed field in bytes.
-func ReadInts[S ~[]E, E Int](r *Reader, v *S) (uint64, error) {
+func (r *Reader) Ints[S ~[]E, E Int](v *S) (uint64, error) {
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
+	if err := r.Uint(&length); err != nil {
 		return 0, err
 	}
 	if length > uint64(len(r.B)) {
@@ -825,7 +819,7 @@ func ReadInts[S ~[]E, E Int](r *Reader, v *S) (uint64, error) {
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
 	count := CountInts(b)
-	if err := UseSliceMemory[E](r, count); err != nil {
+	if err := r.UseSliceMemory[E](count); err != nil {
 		return 0, err
 	}
 	vs := make(S, count)
@@ -871,12 +865,12 @@ func ReadInts[S ~[]E, E Int](r *Reader, v *S) (uint64, error) {
 	return length, nil
 }
 
-// ReadIntsInto reads a length-prefixed packed repeated zigzag encoded varint
+// IntsInto reads a length-prefixed packed repeated zigzag encoded varint
 // field from the reader into vs. The field must contain exactly len(vs) values.
 // It returns the size of the packed field in bytes.
-func ReadIntsInto[S ~[]E, E Int](r *Reader, vs S) (uint64, error) {
+func (r *Reader) IntsInto[S ~[]E, E Int](vs S) (uint64, error) {
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
+	if err := r.Uint(&length); err != nil {
 		return 0, err
 	}
 	if length > uint64(len(r.B)) {
@@ -886,7 +880,7 @@ func ReadIntsInto[S ~[]E, E Int](r *Reader, vs S) (uint64, error) {
 	b := r.B[:length]
 	r.B = r.B[length:]
 
-	// See [ReadInts] for why truncation is checked before decoding.
+	// See [Reader.Ints] for why truncation is checked before decoding.
 	if len(b) > 0 && b[len(b)-1] >= continuationMask {
 		return 0, ErrInvalidLength
 	}
@@ -942,17 +936,17 @@ func ReadIntsInto[S ~[]E, E Int](r *Reader, vs S) (uint64, error) {
 }
 
 // AppendInt writes an integer to the writer as a zigzag encoded varint.
-func AppendInt[T Int](w *Writer, v T) {
+func (w *Writer) AppendInt[T Int](v T) {
 	uv := uint64(v)<<1 ^ uint64(int64(v)>>63) //#nosec G115 // Zigzag encoding
 	w.B = binary.AppendUvarint(w.B, uv)
 }
 
 // AppendInts writes integers to the writer as packed zigzag encoded varints.
 //
-// Unlike the fixed size variants, this function does NOT write a length prefix.
+// Unlike the fixed size variants, this method does NOT write a length prefix.
 // This allows the caller to more efficiently compute the total size of the
 // packed field in advance.
-func AppendInts[S ~[]E, E Int](w *Writer, vs S) {
+func (w *Writer) AppendInts[S ~[]E, E Int](vs S) {
 	// Accumulating into a local slice keeps the slice header in registers.
 	// Assigning w.B on every element would store and reload the header through
 	// memory each iteration and, when w isn't known to be on the stack, add a
@@ -965,8 +959,8 @@ func AppendInts[S ~[]E, E Int](w *Writer, vs S) {
 	w.B = b
 }
 
-// ReadFint32 reads a 32-bit fixed size integer from the reader.
-func ReadFint32[T Int32](r *Reader, v *T) error {
+// Fint32 reads a 32-bit fixed size integer from the reader.
+func (r *Reader) Fint32[T Int32](v *T) error {
 	if len(r.B) < SizeFint32 {
 		return ErrUnexpectedEOF
 	}
@@ -977,11 +971,11 @@ func ReadFint32[T Int32](r *Reader, v *T) error {
 	return nil
 }
 
-// ReadFint32s reads a length-prefixed packed repeated 32-bit fixed size
+// Fint32s reads a length-prefixed packed repeated 32-bit fixed size
 // integer field from the reader.
-func ReadFint32s[S ~[]E, E Int32](r *Reader, v *S) error {
+func (r *Reader) Fint32s[S ~[]E, E Int32](v *S) error {
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
+	if err := r.Uint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1000,7 +994,7 @@ func ReadFint32s[S ~[]E, E Int32](r *Reader, v *S) error {
 	b := r.B[:length]
 	r.B = r.B[length:]
 
-	if err := UseMemory(r, length); err != nil {
+	if err := r.UseMemory(length); err != nil {
 		return err
 	}
 	vs := make(S, length/SizeFint32)
@@ -1012,12 +1006,12 @@ func ReadFint32s[S ~[]E, E Int32](r *Reader, v *S) error {
 	return nil
 }
 
-// ReadFint32sInto reads a length-prefixed packed repeated 32-bit fixed size
+// Fint32sInto reads a length-prefixed packed repeated 32-bit fixed size
 // integer field from the reader into vs. The field must contain exactly len(vs)
 // values.
-func ReadFint32sInto[S ~[]E, E Int32](r *Reader, vs S) error {
+func (r *Reader) Fint32sInto[S ~[]E, E Int32](vs S) error {
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
+	if err := r.Uint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1027,7 +1021,7 @@ func ReadFint32sInto[S ~[]E, E Int32](r *Reader, vs S) error {
 		return ErrInvalidLength
 	}
 
-	// See [ReadFint32s] for why this advances a local slice.
+	// See [Reader.Fint32s] for why this advances a local slice.
 	b := r.B[:length]
 	r.B = r.B[length:]
 	for i := range vs {
@@ -1038,13 +1032,13 @@ func ReadFint32sInto[S ~[]E, E Int32](r *Reader, vs S) error {
 }
 
 // AppendFint32 writes a 32-bit fixed size integer to the writer.
-func AppendFint32[T Int32](w *Writer, v T) {
+func (w *Writer) AppendFint32[T Int32](v T) {
 	w.B = binary.LittleEndian.AppendUint32(w.B, uint32(v))
 }
 
 // AppendFint32s writes a length-prefixed packed repeated 32-bit fixed size
 // integer field to the writer.
-func AppendFint32s[S ~[]E, E Int32](w *Writer, vs S) {
+func (w *Writer) AppendFint32s[S ~[]E, E Int32](vs S) {
 	b := w.B
 	b = binary.AppendUvarint(b, uint64(len(vs))*SizeFint32)
 	for _, v := range vs {
@@ -1053,8 +1047,8 @@ func AppendFint32s[S ~[]E, E Int32](w *Writer, vs S) {
 	w.B = b
 }
 
-// ReadFint64 reads a 64-bit fixed size integer from the reader.
-func ReadFint64[T Int64](r *Reader, v *T) error {
+// Fint64 reads a 64-bit fixed size integer from the reader.
+func (r *Reader) Fint64[T Int64](v *T) error {
 	if len(r.B) < SizeFint64 {
 		return ErrUnexpectedEOF
 	}
@@ -1065,11 +1059,11 @@ func ReadFint64[T Int64](r *Reader, v *T) error {
 	return nil
 }
 
-// ReadFint64s reads a length-prefixed packed repeated 64-bit fixed size
+// Fint64s reads a length-prefixed packed repeated 64-bit fixed size
 // integer field from the reader.
-func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
+func (r *Reader) Fint64s[S ~[]E, E Int64](v *S) error {
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
+	if err := r.Uint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1088,7 +1082,7 @@ func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
 	b := r.B[:length]
 	r.B = r.B[length:]
 
-	if err := UseMemory(r, length); err != nil {
+	if err := r.UseMemory(length); err != nil {
 		return err
 	}
 	vs := make(S, length/SizeFint64)
@@ -1100,12 +1094,12 @@ func ReadFint64s[S ~[]E, E Int64](r *Reader, v *S) error {
 	return nil
 }
 
-// ReadFint64sInto reads a length-prefixed packed repeated 64-bit fixed size
+// Fint64sInto reads a length-prefixed packed repeated 64-bit fixed size
 // integer field from the reader into vs. The field must contain exactly len(vs)
 // values.
-func ReadFint64sInto[S ~[]E, E Int64](r *Reader, vs S) error {
+func (r *Reader) Fint64sInto[S ~[]E, E Int64](vs S) error {
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
+	if err := r.Uint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1115,7 +1109,7 @@ func ReadFint64sInto[S ~[]E, E Int64](r *Reader, vs S) error {
 		return ErrInvalidLength
 	}
 
-	// See [ReadFint64s] for why this advances a local slice.
+	// See [Reader.Fint64s] for why this advances a local slice.
 	b := r.B[:length]
 	r.B = r.B[length:]
 	for i := range vs {
@@ -1126,13 +1120,13 @@ func ReadFint64sInto[S ~[]E, E Int64](r *Reader, vs S) error {
 }
 
 // AppendFint64 writes a 64-bit fixed size integer to the writer.
-func AppendFint64[T Int64](w *Writer, v T) {
+func (w *Writer) AppendFint64[T Int64](v T) {
 	w.B = binary.LittleEndian.AppendUint64(w.B, uint64(v))
 }
 
 // AppendFint64s writes a length-prefixed packed repeated 64-bit fixed size
 // integer field to the writer.
-func AppendFint64s[S ~[]E, E Int64](w *Writer, vs S) {
+func (w *Writer) AppendFint64s[S ~[]E, E Int64](vs S) {
 	b := w.B
 	b = binary.AppendUvarint(b, uint64(len(vs))*SizeFint64)
 	for _, v := range vs {
@@ -1141,8 +1135,8 @@ func AppendFint64s[S ~[]E, E Int64](w *Writer, vs S) {
 	w.B = b
 }
 
-// ReadBool reads a boolean from the reader.
-func ReadBool[T ~bool](r *Reader, v *T) error {
+// Bool reads a boolean from the reader.
+func (r *Reader) Bool[T ~bool](v *T) error {
 	switch {
 	case len(r.B) < SizeBool:
 		return ErrUnexpectedEOF
@@ -1156,11 +1150,11 @@ func ReadBool[T ~bool](r *Reader, v *T) error {
 	}
 }
 
-// ReadBools reads a length-prefixed packed repeated boolean field from the
+// Bools reads a length-prefixed packed repeated boolean field from the
 // reader.
-func ReadBools[S ~[]E, E ~bool](r *Reader, v *S) error {
+func (r *Reader) Bools[S ~[]E, E ~bool](v *S) error {
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
+	if err := r.Uint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1169,7 +1163,7 @@ func ReadBools[S ~[]E, E ~bool](r *Reader, v *S) error {
 
 	b := r.B[:length]
 	r.B = r.B[length:]
-	if err := UseMemory(r, length); err != nil {
+	if err := r.UseMemory(length); err != nil {
 		return err
 	}
 	// Making vs with len(b) proves to the compiler that b[i] can not exceed
@@ -1187,11 +1181,11 @@ func ReadBools[S ~[]E, E ~bool](r *Reader, v *S) error {
 	return nil
 }
 
-// ReadBoolsInto reads a length-prefixed packed repeated boolean field from the
+// BoolsInto reads a length-prefixed packed repeated boolean field from the
 // reader into vs. The field must contain exactly len(vs) values.
-func ReadBoolsInto[S ~[]E, E ~bool](r *Reader, vs S) error {
+func (r *Reader) BoolsInto[S ~[]E, E ~bool](vs S) error {
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
+	if err := r.Uint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1217,7 +1211,7 @@ func ReadBoolsInto[S ~[]E, E ~bool](r *Reader, vs S) error {
 }
 
 // AppendBool writes a boolean to the writer.
-func AppendBool[T ~bool](w *Writer, b T) {
+func (w *Writer) AppendBool[T ~bool](b T) {
 	v := falseByte
 	if b {
 		v = trueByte
@@ -1227,7 +1221,7 @@ func AppendBool[T ~bool](w *Writer, b T) {
 
 // AppendBools writes a length-prefixed packed repeated boolean field to the
 // writer.
-func AppendBools[S ~[]E, E ~bool](w *Writer, vs S) {
+func (w *Writer) AppendBools[S ~[]E, E ~bool](vs S) {
 	b := w.B
 	b = binary.AppendUvarint(b, uint64(len(vs))*SizeBool)
 	for _, v := range vs {
@@ -1258,7 +1252,7 @@ func CountBytes[T Bytes](bytes []byte, tag T) (uint64, error) {
 	for HasPrefix(r.B, tag) {
 		r.B = r.B[len(tag):]
 		var length uint64
-		if err := ReadUint(&r, &length); err != nil {
+		if err := r.Uint(&length); err != nil {
 			return count, err
 		}
 		if length > uint64(len(r.B)) {
@@ -1275,11 +1269,11 @@ func HasPrefix[T Bytes](bytes []byte, prefix T) bool {
 	return len(bytes) >= len(prefix) && string(bytes[:len(prefix)]) == string(prefix)
 }
 
-// ReadString reads a string from the reader. The string is verified to be valid
+// String reads a string from the reader. The string is verified to be valid
 // UTF-8.
-func ReadString[T ~string](r *Reader, v *T) error {
+func (r *Reader) String[T ~string](v *T) error {
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
+	if err := r.Uint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1297,7 +1291,7 @@ func ReadString[T ~string](r *Reader, v *T) error {
 		*v = T(unsafeString(bytes))
 		return nil
 	}
-	if err := UseMemory(r, length); err != nil {
+	if err := r.UseMemory(length); err != nil {
 		return err
 	}
 	*v = T(bytes)
@@ -1310,10 +1304,10 @@ func ValidString[T ~string](v T) bool {
 	return utf8.ValidString(string(v))
 }
 
-// ReadBytes reads a byte slice from the reader.
-func ReadBytes[T ~[]byte](r *Reader, v *T) error {
+// Bytes reads a byte slice from the reader.
+func (r *Reader) Bytes[T ~[]byte](v *T) error {
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
+	if err := r.Uint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1323,7 +1317,7 @@ func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 	bytes := r.B[:length]
 	r.B = r.B[length:]
 	if !r.Unsafe {
-		if err := UseMemory(r, length); err != nil {
+		if err := r.UseMemory(length); err != nil {
 			return err
 		}
 		bytes = slices.Clone(bytes)
@@ -1333,9 +1327,9 @@ func ReadBytes[T ~[]byte](r *Reader, v *T) error {
 }
 
 // SkipBytes advances the reader past a byte slice without reading it.
-func SkipBytes(r *Reader) error {
+func (r *Reader) SkipBytes() error {
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
+	if err := r.Uint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1346,18 +1340,18 @@ func SkipBytes(r *Reader) error {
 	return nil
 }
 
-// ReadSubReader reads a length-prefixed byte slice from r and sets sub to a
+// SubReader reads a length-prefixed byte slice from r and sets sub to a
 // Reader over those bytes. The bytes are never copied, regardless of r.Unsafe.
 //
 // All configuration of sub is inherited from r, except that sub.DepthLimit is
 // one less than r.DepthLimit. If r.DepthLimit is 0, [ErrDepthLimitExceeded] is
 // returned.
-func ReadSubReader(r *Reader, sub *Reader) error {
+func (r *Reader) SubReader(sub *Reader) error {
 	if r.DepthLimit == 0 {
 		return ErrDepthLimitExceeded
 	}
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
+	if err := r.Uint(&length); err != nil {
 		return err
 	}
 	// Copying length and r.B into locals keeps the bounds check below valid for
@@ -1379,7 +1373,7 @@ func ReadSubReader(r *Reader, sub *Reader) error {
 }
 
 // AppendBytes writes a length-prefixed byte slice to the writer.
-func AppendBytes[T Bytes](w *Writer, v T) {
+func (w *Writer) AppendBytes[T Bytes](v T) {
 	b := w.B
 	b = binary.AppendUvarint(b, uint64(len(v)))
 	b = append(b, v...)
@@ -1390,11 +1384,11 @@ func AppendBytes[T Bytes](w *Writer, v T) {
 // remaining memory of r. Other than charging memory, it is equivalent to
 // `*p = new(T)`.
 //
-// This function is useful to use in auto-generated code, when the type of a
+// This method is useful to use in auto-generated code, when the type of a
 // variable is unknown.
-func MakePointer[T any](r *Reader, p **T) error {
+func (r *Reader) MakePointer[T any](p **T) error {
 	var zero T
-	if err := UseMemory(r, uint64(unsafe.Sizeof(zero))); err != nil {
+	if err := r.UseMemory(uint64(unsafe.Sizeof(zero))); err != nil {
 		return err
 	}
 	*p = new(T)
@@ -1405,10 +1399,10 @@ func MakePointer[T any](r *Reader, p **T) error {
 // size against the remaining memory of r. Other than charging memory, it is
 // equivalent to `*s = make(S, length)`.
 //
-// This function is useful to use in auto-generated code, when the type of a
+// This method is useful to use in auto-generated code, when the type of a
 // variable is unknown.
-func MakeSlice[S ~[]E, E any](r *Reader, s *S, length uint64) error {
-	if err := UseSliceMemory[E](r, length); err != nil {
+func (r *Reader) MakeSlice[S ~[]E, E any](s *S, length uint64) error {
+	if err := r.UseSliceMemory[E](length); err != nil {
 		return err
 	}
 	*s = make(S, length)
@@ -1854,7 +1848,7 @@ func SizeOf[T integer](v T) SizeEnum {
 
 func (s *spec) unmarshal(r *Reader) (Any, error) {
 	numFields := countFields(r.B)
-	if err := UseSliceMemory[AnyField](r, numFields); err != nil {
+	if err := r.UseSliceMemory[AnyField](numFields); err != nil {
 		return Any{}, err
 	}
 
@@ -1865,8 +1859,8 @@ func (s *spec) unmarshal(r *Reader) (Any, error) {
 		}
 		oneOfs = make(map[uint32]struct{})
 	)
-	for HasNext(r) {
-		fieldNumber, wireType, err := ReadTag(r)
+	for r.HasNext() {
+		fieldNumber, wireType, err := r.Tag()
 		if err != nil {
 			return Any{}, err
 		}
@@ -1917,20 +1911,20 @@ func countFields(b []byte) uint64 {
 		v64 uint64
 		v32 uint32
 	)
-	for HasNext(&r) {
-		fieldNumber, wireType, err := ReadTag(&r)
+	for r.HasNext() {
+		fieldNumber, wireType, err := r.Tag()
 		if err != nil {
 			return count
 		}
 		switch wireType {
 		case Varint:
-			err = ReadUint(&r, &v64)
+			err = r.Uint(&v64)
 		case I64:
-			err = ReadFint64(&r, &v64)
+			err = r.Fint64(&v64)
 		case Len:
-			err = SkipBytes(&r)
+			err = r.SkipBytes()
 		case I32:
-			err = ReadFint32(&r, &v32)
+			err = r.Fint32(&v32)
 		}
 		if err != nil {
 			return count
@@ -2256,7 +2250,7 @@ func (s *spec) marshal(w Writer, a *Any) (Writer, error) {
 			return Writer{}, ErrInvalidFieldOrder
 		}
 
-		Append(&w, f.tag)
+		w.Append(f.tag)
 
 		var err error
 		w, err = f.marshal(w, af)
@@ -2426,7 +2420,7 @@ func (f *field) marshalFixedUint(w Writer, value any) (Writer, error) {
 func (f *field) unmarshalBool(r *Reader) (any, error) {
 	if !f.repeated {
 		var v bool
-		if err := ReadBool(r, &v); err != nil {
+		if err := r.Bool(&v); err != nil {
 			return nil, err
 		}
 		return nonZero(r, v)
@@ -2434,7 +2428,7 @@ func (f *field) unmarshalBool(r *Reader) (any, error) {
 
 	if f.fixedLength == 0 {
 		var vs []bool
-		if err := ReadBools(r, &vs); err != nil {
+		if err := r.Bools(&vs); err != nil {
 			return nil, err
 		}
 		return packedValue(f, r, vs)
@@ -2446,7 +2440,7 @@ func (f *field) unmarshalBool(r *Reader) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := ReadBoolsInto(r, vs); err != nil {
+	if err := r.BoolsInto(vs); err != nil {
 		return nil, err
 	}
 	return packedValue(f, r, vs)
@@ -2467,7 +2461,7 @@ func (f *field) unmarshalString(r *Reader) (any, error) {
 			if r.Unsafe {
 				return unsafeString(msgBytes), len(msgBytes) == 0, nil
 			}
-			if err := UseMemory(r, uint64(len(msgBytes))); err != nil {
+			if err := r.UseMemory(uint64(len(msgBytes))); err != nil {
 				return "", false, err
 			}
 			return string(msgBytes), len(msgBytes) == 0, nil
@@ -2481,7 +2475,7 @@ func (f *field) marshalString(w Writer, value any) (Writer, error) {
 		w,
 		value,
 		func(w Writer, value string) (Writer, error) {
-			AppendBytes(&w, value)
+			w.AppendBytes(value)
 			return w, nil
 		},
 	)
@@ -2494,11 +2488,11 @@ func (f *field) unmarshalBytes(r *Reader) (any, error) {
 				return nil, true, nil
 			}
 			msgReader := Reader{B: msgBytes}
-			if err := UnwrapPointer(&msgReader); err != nil {
+			if err := msgReader.UnwrapPointer(); err != nil {
 				return nil, false, err
 			}
 			var value *[]byte
-			if err := MakePointer(r, &value); err != nil {
+			if err := r.MakePointer(&value); err != nil {
 				return nil, false, err
 			}
 			var err error
@@ -2525,12 +2519,12 @@ func (f *field) marshalBytes(w Writer, value any) (Writer, error) {
 			value,
 			func(w Writer, value *[]byte) (Writer, error) {
 				if value == nil {
-					Append(&w, EmptyBytes)
+					w.Append(EmptyBytes)
 					return w, nil
 				}
-				AppendUint(&w, SizePointerPresenceTag+SizeBytes(*value))
-				Append(&w, PointerPresenceTag)
-				AppendBytes(&w, *value)
+				w.AppendUint(SizePointerPresenceTag + SizeBytes(*value))
+				w.Append(PointerPresenceTag)
+				w.AppendBytes(*value)
 				return w, nil
 			},
 		)
@@ -2540,7 +2534,7 @@ func (f *field) marshalBytes(w Writer, value any) (Writer, error) {
 		w,
 		value,
 		func(w Writer, value []byte) (Writer, error) {
-			AppendBytes(&w, value)
+			w.AppendBytes(value)
 			return w, nil
 		},
 	)
@@ -2558,7 +2552,7 @@ func (f *field) unmarshalFixedBytes(r *Reader) (any, error) {
 }
 
 func (f *field) unmarshalMessage(r *Reader) (any, error) {
-	// [ReadSubReader] checks the depth limit before reading each entry. The
+	// [Reader.SubReader] checks the depth limit before reading each entry. The
 	// depth limit is the same for every entry, so checking it once before the
 	// first entry is equivalent.
 	if r.DepthLimit == 0 {
@@ -2586,11 +2580,11 @@ func (f *field) unmarshalMessage(r *Reader) (any, error) {
 				return nil, true, nil
 			}
 			ptrReader := Reader{B: msgBytes}
-			if err := UnwrapPointer(&ptrReader); err != nil {
+			if err := ptrReader.UnwrapPointer(); err != nil {
 				return nil, false, err
 			}
 			var a *Any
-			if err := MakePointer(r, &a); err != nil {
+			if err := r.MakePointer(&a); err != nil {
 				return nil, false, err
 			}
 			var err error
@@ -2613,7 +2607,7 @@ func (f *field) marshalMessage(w Writer, af *AnyField) (Writer, error) {
 		if !ok {
 			return Writer{}, ErrInvalidFieldType
 		}
-		AppendUint(&w, atomic.LoadUint64(&af.cachedSize))
+		w.AppendUint(atomic.LoadUint64(&af.cachedSize))
 		return f.message.marshal(w, &v)
 	}
 
@@ -2628,13 +2622,13 @@ func (f *field) marshalMessage(w Writer, af *AnyField) (Writer, error) {
 
 		marshalElement := func(w Writer, v *Any) (Writer, error) {
 			if v == nil {
-				Append(&w, EmptyBytes)
+				w.Append(EmptyBytes)
 				return w, nil
 			}
 			innerSize := atomic.LoadUint64(&v.cachedSize)
-			AppendUint(&w, SizePointerPresenceTag+SizeUint(innerSize)+innerSize)
-			Append(&w, PointerPresenceTag)
-			AppendUint(&w, innerSize)
+			w.AppendUint(SizePointerPresenceTag + SizeUint(innerSize) + innerSize)
+			w.Append(PointerPresenceTag)
+			w.AppendUint(innerSize)
 			return f.message.marshal(w, v)
 		}
 
@@ -2645,7 +2639,7 @@ func (f *field) marshalMessage(w Writer, af *AnyField) (Writer, error) {
 		}
 
 		for _, v := range vl[1:] {
-			Append(&w, f.tag)
+			w.Append(f.tag)
 			w, err = marshalElement(w, v)
 			if err != nil {
 				return Writer{}, err
@@ -2664,7 +2658,7 @@ func (f *field) marshalMessage(w Writer, af *AnyField) (Writer, error) {
 
 	marshalElement := func(w Writer, v *Any) (Writer, error) {
 		innerSize := atomic.LoadUint64(&v.cachedSize)
-		AppendUint(&w, innerSize)
+		w.AppendUint(innerSize)
 		return f.message.marshal(w, v)
 	}
 
@@ -2676,7 +2670,7 @@ func (f *field) marshalMessage(w Writer, af *AnyField) (Writer, error) {
 
 	rvl := vl[1:]
 	for i := range rvl {
-		Append(&w, f.tag)
+		w.Append(f.tag)
 		w, err = marshalElement(w, &rvl[i])
 		if err != nil {
 			return Writer{}, err
@@ -2690,7 +2684,7 @@ func (f *field) marshalMessage(w Writer, af *AnyField) (Writer, error) {
 func unmarshalInt[T Int](f *field, r *Reader) (any, error) {
 	if !f.repeated {
 		var v T
-		if err := ReadInt(r, &v); err != nil {
+		if err := r.Int(&v); err != nil {
 			return nil, err
 		}
 		return nonZero(r, v)
@@ -2698,7 +2692,7 @@ func unmarshalInt[T Int](f *field, r *Reader) (any, error) {
 
 	if f.fixedLength == 0 {
 		var vs []T
-		if _, err := ReadInts(r, &vs); err != nil {
+		if _, err := r.Ints(&vs); err != nil {
 			return nil, err
 		}
 		return packedValue(f, r, vs)
@@ -2708,7 +2702,7 @@ func unmarshalInt[T Int](f *field, r *Reader) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, err := ReadIntsInto(r, vs); err != nil {
+	if _, err := r.IntsInto(vs); err != nil {
 		return nil, err
 	}
 	return packedValue(f, r, vs)
@@ -2719,7 +2713,7 @@ func unmarshalInt[T Int](f *field, r *Reader) (any, error) {
 func unmarshalUint[T Uint](f *field, r *Reader) (any, error) {
 	if !f.repeated {
 		var v T
-		if err := ReadUint(r, &v); err != nil {
+		if err := r.Uint(&v); err != nil {
 			return nil, err
 		}
 		return nonZero(r, v)
@@ -2727,7 +2721,7 @@ func unmarshalUint[T Uint](f *field, r *Reader) (any, error) {
 
 	if f.fixedLength == 0 {
 		var vs []T
-		if _, err := ReadUints(r, &vs); err != nil {
+		if _, err := r.Uints(&vs); err != nil {
 			return nil, err
 		}
 		return packedValue(f, r, vs)
@@ -2737,7 +2731,7 @@ func unmarshalUint[T Uint](f *field, r *Reader) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, err := ReadUintsInto(r, vs); err != nil {
+	if _, err := r.UintsInto(vs); err != nil {
 		return nil, err
 	}
 	return packedValue(f, r, vs)
@@ -2749,7 +2743,7 @@ func unmarshalUint[T Uint](f *field, r *Reader) (any, error) {
 func unmarshalFint32[T Int32](f *field, r *Reader) (any, error) {
 	if !f.repeated {
 		var v T
-		if err := ReadFint32(r, &v); err != nil {
+		if err := r.Fint32(&v); err != nil {
 			return nil, err
 		}
 		return nonZero(r, v)
@@ -2757,7 +2751,7 @@ func unmarshalFint32[T Int32](f *field, r *Reader) (any, error) {
 
 	if f.fixedLength == 0 {
 		var vs []T
-		if err := ReadFint32s(r, &vs); err != nil {
+		if err := r.Fint32s(&vs); err != nil {
 			return nil, err
 		}
 		return packedValue(f, r, vs)
@@ -2769,7 +2763,7 @@ func unmarshalFint32[T Int32](f *field, r *Reader) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := ReadFint32sInto(r, vs); err != nil {
+	if err := r.Fint32sInto(vs); err != nil {
 		return nil, err
 	}
 	return packedValue(f, r, vs)
@@ -2781,7 +2775,7 @@ func unmarshalFint32[T Int32](f *field, r *Reader) (any, error) {
 func unmarshalFint64[T Int64](f *field, r *Reader) (any, error) {
 	if !f.repeated {
 		var v T
-		if err := ReadFint64(r, &v); err != nil {
+		if err := r.Fint64(&v); err != nil {
 			return nil, err
 		}
 		return nonZero(r, v)
@@ -2789,7 +2783,7 @@ func unmarshalFint64[T Int64](f *field, r *Reader) (any, error) {
 
 	if f.fixedLength == 0 {
 		var vs []T
-		if err := ReadFint64s(r, &vs); err != nil {
+		if err := r.Fint64s(&vs); err != nil {
 			return nil, err
 		}
 		return packedValue(f, r, vs)
@@ -2801,7 +2795,7 @@ func unmarshalFint64[T Int64](f *field, r *Reader) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := ReadFint64sInto(r, vs); err != nil {
+	if err := r.Fint64sInto(vs); err != nil {
 		return nil, err
 	}
 	return packedValue(f, r, vs)
@@ -2819,7 +2813,7 @@ func makePacked[T any](
 		peek = Reader{B: r.B, Unsafe: true}
 		b    []byte
 	)
-	if err := ReadBytes(&peek, &b); err != nil {
+	if err := peek.Bytes(&b); err != nil {
 		return nil, err
 	}
 	// The spec may be malicious, so fixedLength is bounded by the actual number
@@ -2827,7 +2821,7 @@ func makePacked[T any](
 	// values, the slice still exceeds the number of values so that reading the
 	// field fails as if we allocated the full fixedLength.
 	var vs []T
-	err := MakeSlice(r, &vs, min(fixedLength, count(b)+1))
+	err := r.MakeSlice(&vs, min(fixedLength, count(b)+1))
 	return vs, err
 }
 
@@ -2854,7 +2848,7 @@ func packedValue[T comparable](f *field, r *Reader, values []T) (any, error) {
 // box returns v as an interface after charging the memory of the boxed copy
 // of v against r.
 func box[T any](r *Reader, v T) (any, error) {
-	if err := UseMemory(r, uint64(unsafe.Sizeof(v))); err != nil {
+	if err := r.UseMemory(uint64(unsafe.Sizeof(v))); err != nil {
 		return nil, err
 	}
 	return v, nil
@@ -2870,27 +2864,27 @@ func sizeBool(bool) uint64 { return SizeBool }
 // function value would move w to the heap.
 
 func appendInt[T Int](w Writer, v T) Writer {
-	AppendInt(&w, v)
+	w.AppendInt(v)
 	return w
 }
 
 func appendUint[T Uint](w Writer, v T) Writer {
-	AppendUint(&w, v)
+	w.AppendUint(v)
 	return w
 }
 
 func appendFint32[T Int32](w Writer, v T) Writer {
-	AppendFint32(&w, v)
+	w.AppendFint32(v)
 	return w
 }
 
 func appendFint64[T Int64](w Writer, v T) Writer {
-	AppendFint64(&w, v)
+	w.AppendFint64(v)
 	return w
 }
 
 func appendBool(w Writer, v bool) Writer {
-	AppendBool(&w, v)
+	w.AppendBool(v)
 	return w
 }
 
@@ -2919,7 +2913,7 @@ func marshalPacked[T comparable](
 	for _, v := range vl {
 		packedSize += size(v)
 	}
-	AppendUint(&w, packedSize)
+	w.AppendUint(packedSize)
 	for _, v := range vl {
 		w = appendValue(w, v)
 	}
@@ -2970,7 +2964,7 @@ func unmarshalUnpacked[T any](
 		count = f.fixedLength
 		capacity = min(count, countMinus1+1)
 	}
-	if err := UseSliceMemory[T](r, capacity); err != nil {
+	if err := r.UseSliceMemory[T](capacity); err != nil {
 		return nil, err
 	}
 
@@ -3010,7 +3004,7 @@ func unmarshalUnpacked[T any](
 // readEntry reads a length-prefixed entry of f from r without copying it.
 func (f *field) readEntry(r *Reader) ([]byte, error) {
 	var length uint64
-	if err := ReadUint(r, &length); err != nil {
+	if err := r.Uint(&length); err != nil {
 		return nil, err
 	}
 	if f.kind == FieldTypeFixedBytes && length != f.fixedBytes {
@@ -3029,7 +3023,7 @@ func copyBytes(r *Reader, b []byte) ([]byte, error) {
 	if r.Unsafe {
 		return b, nil
 	}
-	if err := UseMemory(r, uint64(len(b))); err != nil {
+	if err := r.UseMemory(uint64(len(b))); err != nil {
 		return nil, err
 	}
 	return slices.Clone(b), nil
@@ -3067,7 +3061,7 @@ func marshalUnpacked[T any](
 	}
 
 	for _, v := range vl[1:] {
-		Append(&w, f.tag)
+		w.Append(f.tag)
 		w, err = marshal(w, v)
 		if err != nil {
 			return Writer{}, err
