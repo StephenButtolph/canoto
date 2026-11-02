@@ -1433,10 +1433,14 @@ func MakeEntryNilPointer[S ~[]E, E any](S) (_ *E) {
 	return
 }
 
-// IsZero returns true if the value is the zero value for its type.
-func IsZero[T comparable](v T) bool {
+// IsZero returns true if the value pointed to by v is the zero value for its
+// type.
+//
+// A pointer is taken so that large values, such as fixed length arrays, are not
+// copied.
+func IsZero[T comparable](v *T) bool {
 	var zero T
-	return v == zero
+	return *v == zero
 }
 
 // unsafeString converts a []byte to an unsafe string.
@@ -2020,7 +2024,7 @@ func calculateSizePacked[T comparable](
 		if !ok {
 			return 0, ErrInvalidFieldType
 		}
-		if IsZero(v) {
+		if IsZero(&v) {
 			return 0, ErrZeroValue
 		}
 		return size(v), nil
@@ -2040,7 +2044,7 @@ func calculateSizePacked[T comparable](
 	)
 	for _, v := range vl {
 		packedSize += size(v)
-		isZero = isZero && IsZero(v)
+		isZero = isZero && IsZero(&v)
 	}
 	if len(vl) == 0 || (f.fixedLength > 0 && isZero) {
 		return 0, ErrZeroValue
@@ -2773,7 +2777,7 @@ func makePacked[T any](
 
 // nonZero returns v, as [box] does, if it is not the zero value.
 func nonZero[T comparable](r *Reader, v T) (any, error) {
-	if IsZero(v) {
+	if IsZero(&v) {
 		return nil, ErrZeroValue
 	}
 	return box(r, v)
@@ -2783,7 +2787,7 @@ func nonZero[T comparable](r *Reader, v T) (any, error) {
 func packedValue[T comparable](f *field, r *Reader, values []T) (any, error) {
 	isZero := true
 	for _, value := range values {
-		isZero = isZero && IsZero(value)
+		isZero = isZero && IsZero(&value)
 	}
 	if len(values) == 0 || (f.fixedLength > 0 && isZero) {
 		return nil, ErrZeroValue
