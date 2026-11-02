@@ -15,9 +15,9 @@ import (
 //
 // Canoto caches sizes and OneOf field numbers inside messages. These caches
 // are written during operations that appear to be read-only, such as
-// MarshalCanoto, ValidCanoto, and [Marshal]. It is valid to call these
-// operations on the same message from multiple goroutines, so the caches are
-// written with atomic stores.
+// [Message.MarshalCanoto], [Message.ValidCanoto], and [Codec.Marshal]. It is
+// valid to call these operations on the same message from multiple goroutines,
+// so the caches are written with atomic stores.
 //
 // Messages may also be copied by value. A copy reads the caches with plain,
 // non-atomic loads. If a copy runs concurrently with a cache write, the two
