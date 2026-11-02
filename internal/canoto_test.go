@@ -345,49 +345,49 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 
 		OneOf: oneOf,
 	}
-	if !canoto.IsZero(s.FixedRepeatedInt8) {
+	if !canoto.IsZero(&s.FixedRepeatedInt8) {
 		pbs.FixedRepeatedInt8 = castSlice[int8, int32](s.FixedRepeatedInt8[:])
 	}
-	if !canoto.IsZero(s.FixedRepeatedInt16) {
+	if !canoto.IsZero(&s.FixedRepeatedInt16) {
 		pbs.FixedRepeatedInt16 = castSlice[int16, int32](s.FixedRepeatedInt16[:])
 	}
-	if !canoto.IsZero(s.FixedRepeatedInt32) {
+	if !canoto.IsZero(&s.FixedRepeatedInt32) {
 		pbs.FixedRepeatedInt32 = slices.Clone(s.FixedRepeatedInt32[:])
 	}
-	if !canoto.IsZero(s.FixedRepeatedInt64) {
+	if !canoto.IsZero(&s.FixedRepeatedInt64) {
 		pbs.FixedRepeatedInt64 = slices.Clone(s.FixedRepeatedInt64[:])
 	}
-	if !canoto.IsZero(s.FixedRepeatedUint8) {
+	if !canoto.IsZero(&s.FixedRepeatedUint8) {
 		pbs.FixedRepeatedUint8 = castSlice[uint8, uint32](s.FixedRepeatedUint8[:])
 	}
-	if !canoto.IsZero(s.FixedRepeatedUint16) {
+	if !canoto.IsZero(&s.FixedRepeatedUint16) {
 		pbs.FixedRepeatedUint16 = castSlice[uint16, uint32](s.FixedRepeatedUint16[:])
 	}
-	if !canoto.IsZero(s.FixedRepeatedUint32) {
+	if !canoto.IsZero(&s.FixedRepeatedUint32) {
 		pbs.FixedRepeatedUint32 = slices.Clone(s.FixedRepeatedUint32[:])
 	}
-	if !canoto.IsZero(s.FixedRepeatedUint64) {
+	if !canoto.IsZero(&s.FixedRepeatedUint64) {
 		pbs.FixedRepeatedUint64 = slices.Clone(s.FixedRepeatedUint64[:])
 	}
-	if !canoto.IsZero(s.FixedRepeatedFixed32) {
+	if !canoto.IsZero(&s.FixedRepeatedFixed32) {
 		pbs.FixedRepeatedFixed32 = slices.Clone(s.FixedRepeatedFixed32[:])
 	}
-	if !canoto.IsZero(s.FixedRepeatedFixed64) {
+	if !canoto.IsZero(&s.FixedRepeatedFixed64) {
 		pbs.FixedRepeatedFixed64 = slices.Clone(s.FixedRepeatedFixed64[:])
 	}
-	if !canoto.IsZero(s.FixedRepeatedSfixed32) {
+	if !canoto.IsZero(&s.FixedRepeatedSfixed32) {
 		pbs.FixedRepeatedSfixed32 = slices.Clone(s.FixedRepeatedSfixed32[:])
 	}
-	if !canoto.IsZero(s.FixedRepeatedSfixed64) {
+	if !canoto.IsZero(&s.FixedRepeatedSfixed64) {
 		pbs.FixedRepeatedSfixed64 = slices.Clone(s.FixedRepeatedSfixed64[:])
 	}
-	if !canoto.IsZero(s.FixedRepeatedBool) {
+	if !canoto.IsZero(&s.FixedRepeatedBool) {
 		pbs.FixedRepeatedBool = slices.Clone(s.FixedRepeatedBool[:])
 	}
-	if !canoto.IsZero(s.FixedRepeatedString) {
+	if !canoto.IsZero(&s.FixedRepeatedString) {
 		pbs.FixedRepeatedString = slices.Clone(s.FixedRepeatedString[:])
 	}
-	if !canoto.IsZero(s.FixedBytes) {
+	if !canoto.IsZero(&s.FixedBytes) {
 		pbs.FixedBytes = slices.Clone(s.FixedBytes[:])
 	}
 	{
@@ -401,15 +401,15 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 			}
 		}
 	}
-	if !canoto.IsZero(s.FixedRepeatedFixedBytes) {
+	if !canoto.IsZero(&s.FixedRepeatedFixedBytes) {
 		for _, v := range s.FixedRepeatedFixedBytes {
 			pbs.FixedRepeatedFixedBytes = append(pbs.FixedRepeatedFixedBytes, slices.Clone(v[:]))
 		}
 	}
-	if !canoto.IsZero(s.ConstRepeatedUint64) {
+	if !canoto.IsZero(&s.ConstRepeatedUint64) {
 		pbs.ConstRepeatedUint64 = slices.Clone(s.ConstRepeatedUint64[:])
 	}
-	if !canoto.IsZero(s.CustomFixedBytes) {
+	if !canoto.IsZero(&s.CustomFixedBytes) {
 		pbs.CustomFixedBytes = slices.Clone(s.CustomFixedBytes[:])
 	}
 	{
@@ -423,7 +423,7 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 			}
 		}
 	}
-	if !canoto.IsZero(s.CustomFixedRepeatedFixedBytes) {
+	if !canoto.IsZero(&s.CustomFixedRepeatedFixedBytes) {
 		for _, v := range s.CustomFixedRepeatedFixedBytes {
 			pbs.CustomFixedRepeatedFixedBytes = append(pbs.CustomFixedRepeatedFixedBytes, slices.Clone(v[:]))
 		}
@@ -442,7 +442,7 @@ func canotoScalarsToProto(s *Scalars) *pb.Scalars {
 			pbs.RepeatedPointer = append(pbs.RepeatedPointer, ptr)
 		}
 	}
-	if !canoto.IsZero(s.FixedRepeatedPointer) {
+	if !canoto.IsZero(&s.FixedRepeatedPointer) {
 		for _, p := range s.FixedRepeatedPointer {
 			ptr := &pb.LargestFieldNumber__Pointer{}
 			if p != nil {

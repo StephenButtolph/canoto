@@ -785,7 +785,7 @@ func makeUnmarshal(m message) string {
 			if err := ${selector}Read${suffix}(&r, &c.${fieldName}); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
-			if ${selector}IsZero(c.${fieldName}) {
+			if ${selector}IsZero(&c.${fieldName}) {
 				return ${selector}UnmarshalResult{}, ${selector}ErrZeroValue
 			}
 `
@@ -809,7 +809,7 @@ func makeUnmarshal(m message) string {
 			if err := ${selector}Read${suffix}sInto(&r, (&c.${fieldName})[:]); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
-			if ${selector}IsZero(c.${fieldName}) {
+			if ${selector}IsZero(&c.${fieldName}) {
 				return ${selector}UnmarshalResult{}, ${selector}ErrZeroValue
 			}
 `
@@ -920,7 +920,7 @@ func makeUnmarshal(m message) string {
 			if err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
-			if ${selector}IsZero(c.${fieldName}) {
+			if ${selector}IsZero(&c.${fieldName}) {
 				return ${selector}UnmarshalResult{}, ${selector}ErrZeroValue
 			}
 			atomic.StoreUint64(&c.canotoData.${fieldName}Size, length)
@@ -964,7 +964,7 @@ func makeUnmarshal(m message) string {
 			}
 
 			copy((&c.${fieldName})[:], r.B)
-			if ${selector}IsZero(c.${fieldName}) {
+			if ${selector}IsZero(&c.${fieldName}) {
 				return ${selector}UnmarshalResult{}, ${selector}ErrZeroValue
 			}
 			r.B = r.B[expectedLength:]
@@ -1078,7 +1078,7 @@ func makeUnmarshal(m message) string {
 				copy((&field[i])[:], r.B)
 				r.B = newB
 			}
-			if ${selector}IsZero(c.${fieldName}) {
+			if ${selector}IsZero(&c.${fieldName}) {
 				return ${selector}UnmarshalResult{}, ${selector}ErrZeroValue
 			}
 `,
@@ -1368,7 +1368,7 @@ func makeCheckOneOf(m message) string {
 	}
 
 	const (
-		functionTemplate = `	if !${selector}IsZero(c.${fieldName}) {${checkDuplicateOneOf}
+		functionTemplate = `	if !${selector}IsZero(&c.${fieldName}) {${checkDuplicateOneOf}
 		${oneOf}OneOf = ${fieldNumberConst}
 	}
 `
@@ -1435,7 +1435,7 @@ func makeCheckOneOf(m message) string {
 	}
 `,
 				repeated: repeatedTemplate,
-				fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {${checkDuplicateOneOf}
+				fixedRepeated: `	if !${selector}IsZero(&c.${fieldName}) {${checkDuplicateOneOf}
 		${oneOf}OneOf = ${fieldNumberConst}
 	}
 `,
@@ -1534,7 +1534,7 @@ func makeSizeVars(m message) string {
 
 func makeSize(m message) string {
 	const (
-		fixedSizeTemplate = `	if !${selector}IsZero(c.${fieldName}) {
+		fixedSizeTemplate = `	if !${selector}IsZero(&c.${fieldName}) {
 		size += uint64(len(${fieldTagConst})) + ${selector}Size${suffix}${sizeOneOf}
 	}
 `
@@ -1543,7 +1543,7 @@ func makeSize(m message) string {
 		size += uint64(len(${fieldTagConst})) + ${selector}SizeUint(fieldSize) + fieldSize${sizeOneOf}
 	}
 `
-		fixedRepeatedFixedSizeTemplate = `	if !${selector}IsZero(c.${fieldName}) {
+		fixedRepeatedFixedSizeTemplate = `	if !${selector}IsZero(&c.${fieldName}) {
 		const fieldSize = uint64(len(c.${fieldName})) * ${selector}Size${suffix}
 		size += uint64(len(${fieldTagConst})) + fieldSize + ${selector}SizeUint(fieldSize)${sizeOneOf}
 	}
@@ -1559,7 +1559,7 @@ func makeSize(m message) string {
 	)
 	return writeMessage(m, messageTemplate{
 		ints: typeTemplate{
-			single: `	if !${selector}IsZero(c.${fieldName}) {
+			single: `	if !${selector}IsZero(&c.${fieldName}) {
 		size += uint64(len(${fieldTagConst})) + ${selector}Size${suffix}(c.${fieldName})${sizeOneOf}
 	}
 `,
@@ -1572,7 +1572,7 @@ func makeSize(m message) string {
 		${selector}CacheUint64(&c.canotoData.${fieldName}Size, fieldSize)${sizeOneOf}
 	}
 `,
-			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
+			fixedRepeated: `	if !${selector}IsZero(&c.${fieldName}) {
 		var fieldSize uint64
 		for _, v := range &c.${fieldName} {
 			fieldSize += ${selector}Size${suffix}(v)
@@ -1595,7 +1595,7 @@ func makeSize(m message) string {
 		strings: typeTemplate{
 			single:   bytesTemplate,
 			repeated: repeatedBytesTemplate,
-			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
+			fixedRepeated: `	if !${selector}IsZero(&c.${fieldName}) {
 		for _, v := range &c.${fieldName} {
 			size += uint64(len(${fieldTagConst})) + ${selector}SizeBytes(v)
 		}${sizeOneOf}
@@ -1604,7 +1604,7 @@ func makeSize(m message) string {
 		},
 		bytesTemplate:         bytesTemplate,
 		repeatedBytesTemplate: repeatedBytesTemplate,
-		fixedBytesTemplate: `	if !${selector}IsZero(c.${fieldName}) {
+		fixedBytesTemplate: `	if !${selector}IsZero(&c.${fieldName}) {
 		size += uint64(len(${fieldTagConst})) + ${selector}SizeBytes((&c.${fieldName})[:])${sizeOneOf}
 	}
 `,
@@ -1628,7 +1628,7 @@ func makeSize(m message) string {
 		}
 	}
 `,
-		fixedRepeatedFixedBytesTemplate: `	if !${selector}IsZero(c.${fieldName}) {
+		fixedRepeatedFixedBytesTemplate: `	if !${selector}IsZero(&c.${fieldName}) {
 		for i := range c.${fieldName} {
 			size += uint64(len(${fieldTagConst})) + ${selector}SizeBytes((&(&c.${fieldName})[i])[:])
 		}${sizeOneOf}
@@ -1687,7 +1687,7 @@ func makeSize(m message) string {
 		}
 	}
 `,
-			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
+			fixedRepeated: `	if !${selector}IsZero(&c.${fieldName}) {
 		var (
 			totalSize uint64
 			field     = &c.${fieldName}
@@ -1803,10 +1803,10 @@ func getAppendTemplate(isOneOf bool) messageTemplate {
 	)
 
 	if !isOneOf {
-		intTemplate = "\tif !${selector}IsZero(c.${fieldName}) {\n" + intTemplateBody + "\t}\n"
-		boolTemplate = "\tif !${selector}IsZero(c.${fieldName}) {\n" + boolTemplateBody + "\t}\n"
+		intTemplate = "\tif !${selector}IsZero(&c.${fieldName}) {\n" + intTemplateBody + "\t}\n"
+		boolTemplate = "\tif !${selector}IsZero(&c.${fieldName}) {\n" + boolTemplateBody + "\t}\n"
 		bytesTemplate = "\tif len(c.${fieldName}) != 0 {\n" + bytesTemplateBody + "\t}\n"
-		fixedBytesTemplate = "\tif !${selector}IsZero(c.${fieldName}) {\n" + fixedBytesTemplateBody + "\t}\n"
+		fixedBytesTemplate = "\tif !${selector}IsZero(&c.${fieldName}) {\n" + fixedBytesTemplateBody + "\t}\n"
 		valueTemplate = valueTemplateRegular
 		pointerTemplate = pointerTemplateRegular
 	}
@@ -1817,7 +1817,7 @@ func getAppendTemplate(isOneOf bool) messageTemplate {
 		${selector}Append${suffix}s(&w, c.${fieldName})
 	}
 `
-		fixedRepeatedFintTemplate = `	if !${selector}IsZero(c.${fieldName}) {
+		fixedRepeatedFintTemplate = `	if !${selector}IsZero(&c.${fieldName}) {
 		${selector}Append(&w, ${fieldTagConst})
 		${selector}Append${suffix}s(&w, (&c.${fieldName})[:])
 	}
@@ -1837,7 +1837,7 @@ func getAppendTemplate(isOneOf bool) messageTemplate {
 		${selector}Append${suffix}s(&w, c.${fieldName})
 	}
 `,
-			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
+			fixedRepeated: `	if !${selector}IsZero(&c.${fieldName}) {
 		${selector}Append(&w, ${fieldTagConst})
 		${selector}AppendUint(&w, atomic.LoadUint64(&c.canotoData.${fieldName}Size))
 		${selector}Append${suffix}s(&w, (&c.${fieldName})[:])
@@ -1857,7 +1857,7 @@ func getAppendTemplate(isOneOf bool) messageTemplate {
 		strings: typeTemplate{
 			single:   bytesTemplate,
 			repeated: repeatedBytesTemplate,
-			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
+			fixedRepeated: `	if !${selector}IsZero(&c.${fieldName}) {
 		for _, v := range &c.${fieldName} {
 			${selector}Append(&w, ${fieldTagConst})
 			${selector}AppendBytes(&w, v)
@@ -1892,7 +1892,7 @@ func getAppendTemplate(isOneOf bool) messageTemplate {
 		}
 	}
 `,
-		fixedRepeatedFixedBytesTemplate: `	if !${selector}IsZero(c.${fieldName}) {
+		fixedRepeatedFixedBytesTemplate: `	if !${selector}IsZero(&c.${fieldName}) {
 		for i := range c.${fieldName} {
 			${selector}Append(&w, ${fieldTagConst})
 			${selector}AppendBytes(&w, (&(&c.${fieldName})[i])[:])
@@ -1948,7 +1948,7 @@ func getAppendTemplate(isOneOf bool) messageTemplate {
 		}
 	}
 `,
-			fixedRepeated: `	if !${selector}IsZero(c.${fieldName}) {
+			fixedRepeated: `	if !${selector}IsZero(&c.${fieldName}) {
 		for i := range &c.${fieldName} {
 			${selector}Append(&w, ${fieldTagConst})
 			if (&c.${fieldName})[i] == nil {
