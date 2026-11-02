@@ -1816,6 +1816,71 @@ func TestAnyMarshalJSON_EscapesNames(t *testing.T) {
 	)
 }
 
+func TestAnyMarshalJSON(t *testing.T) {
+	a := Any{Fields: []AnyField{
+		{Name: "<html>", Value: "<&>"},
+		{Name: "empty", Value: Any{}},
+		{Name: "nilValues", Value: []Any(nil)},
+		{Name: "emptyValues", Value: []Any{}},
+		{Name: "values", Value: []Any{{}, {Fields: []AnyField{{Name: "a", Value: int8(-1)}}}}},
+		{Name: "nilPointers", Value: []*Any(nil)},
+		{Name: "pointers", Value: []*Any{nil, {}, {Fields: []AnyField{{Name: "b", Value: []byte{1}}}}}},
+		{Name: "bytes", Value: []*[]byte{nil, {2}}},
+	}}
+	got, err := a.MarshalJSON()
+	require.NoError(t, err)
+	require.JSONEq(
+		t,
+		`{
+			"<html>":"<&>",
+			"empty":{},
+			"nilValues":null,
+			"emptyValues":[],
+			"values":[{},{"a":-1}],
+			"nilPointers":null,
+			"pointers":[null,{},{"b":"AQ=="}],
+			"bytes":[null,"Ag=="]
+		}`,
+		string(got),
+	)
+}
+
+// BenchmarkAnyMarshalJSON marshals Anys to JSON, both with every kind of value
+// and with deeply nested messages.
+func BenchmarkAnyMarshalJSON(b *testing.B) {
+	v := fullSpecFuzzer(b)
+	codec, err := NewCodec(v.DescribeCanoto())
+	require.NoError(b, err)
+
+	full, _, err := codec.Unmarshal(Reader{
+		B:               v.MarshalCanoto(),
+		MemoryRemaining: DefaultMemoryLimit,
+		DepthLimit:      DefaultDepthLimit,
+	})
+	require.NoError(b, err)
+	b.Run("full", func(b *testing.B) {
+		for b.Loop() {
+			_, _ = full.MarshalJSON()
+		}
+	})
+
+	for _, depth := range []int{1, 16, 128} {
+		nested := Any{Fields: []AnyField{
+			{Name: "value", Value: strings.Repeat("a", 1024)},
+		}}
+		for range depth {
+			nested = Any{Fields: []AnyField{
+				{Name: "next", Value: nested},
+			}}
+		}
+		b.Run("nested/depth="+strconv.Itoa(depth), func(b *testing.B) {
+			for b.Loop() {
+				_, _ = nested.MarshalJSON()
+			}
+		})
+	}
+}
+
 type SpecFuzzer struct {
 	Int8           int8                        `canoto:"int,1"`
 	Int16          int16                       `canoto:"int,2"`
@@ -2122,6 +2187,10 @@ func FuzzUnmarshalUntrustedSpec(f *testing.F) {
 		actualBytes, err := codec.Marshal(a)
 		require.NoError(t, err)
 		require.Equal(t, anyBytes, actualBytes)
+
+		actualJSON, err := a.MarshalJSON()
+		require.NoError(t, err)
+		require.True(t, json.Valid(actualJSON))
 
 		// Unmarshaling must succeed with exactly the memory that it reported
 		// using, and fail with any less.
