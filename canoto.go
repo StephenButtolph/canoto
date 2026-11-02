@@ -35,9 +35,9 @@ const (
 	// I32 represents the 32-bit fixed-length wire type.
 	I32
 
-	// SizeEnum8 indicates either a bool or an 8-bit int type.
+	// SizeEnum8 indicates an [int8] or [uint8] type.
 	SizeEnum8 SizeEnum = 1
-	// SizeEnum16 indicates a 16-bit int type.
+	// SizeEnum16 indicates an [int16] or [uint16] type.
 	SizeEnum16 SizeEnum = 2
 	// SizeEnum32 indicates an [Int32].
 	SizeEnum32 SizeEnum = 3
