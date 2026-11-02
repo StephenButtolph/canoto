@@ -16,6 +16,7 @@ var (
 	_ canoto.Message = (*unexportedOneOf)(nil)
 	_ canoto.Message = (*GenericField[OneOf, *OneOf])(nil)
 	_ canoto.Message = (*Scalars)(nil)
+	_ canoto.Message = (*message)(nil)
 )
 
 type (
@@ -133,6 +134,20 @@ type A__Pointer struct {
 	C int32 `canoto:"int,1"`
 
 	canotoData canotoData_A__Pointer
+}
+
+// Check that messages named like proto scalar types and keywords are
+// referenced correctly in the generated proto file.
+type double struct {
+	A int64 `canoto:"int,1"`
+
+	canotoData canotoData_double
+}
+
+type message struct {
+	D double `canoto:"value,1"`
+
+	canotoData canotoData_message
 }
 
 type Scalars struct {

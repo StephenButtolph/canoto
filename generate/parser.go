@@ -86,9 +86,11 @@ func parse(
 			template:          opts.Templates,
 		}
 
-		genericPointers := make(map[string]int)
+		var (
+			typesToIndex    = make(map[string]int)
+			genericPointers = make(map[string]int)
+		)
 		if ts.TypeParams != nil {
-			typesToIndex := make(map[string]int)
 			for _, field := range ts.TypeParams.List {
 				for _, name := range field.Names {
 					typesToIndex[name.Name] = message.numTypes
@@ -155,6 +157,7 @@ func parse(
 				message.canonicalizedName,
 				opts.Templates.Number,
 				opts.Internal,
+				typesToIndex,
 				genericPointers,
 				sf,
 			)
@@ -223,6 +226,7 @@ func parseField(
 	canonicalizedStructName string,
 	numberTemplate string,
 	internal bool,
+	typeParams map[string]int,
 	genericTypes map[string]int,
 	af *ast.Field,
 ) (field, bool, error) {
@@ -237,15 +241,19 @@ func parseField(
 	}
 
 	var (
-		t      = af.Type
-		goType string
+		t           = af.Type
+		goType      string
+		isImported  bool
+		isTypeParam bool
 	)
 	for {
 		switch tt := t.(type) {
 		case *ast.Ident:
 			goType = tt.Name
+			_, isTypeParam = typeParams[goType]
 		case *ast.SelectorExpr:
 			goType = tt.Sel.Name
+			isImported = true
 		case *ast.StarExpr:
 			t = tt.X
 			continue
@@ -328,7 +336,7 @@ func parseField(
 	}
 
 	var genericTypeCast, castOpen, castClose string
-	if genericType, ok := genericTypes[goType]; ok {
+	if genericType, ok := genericTypes[goType]; ok && isTypeParam {
 		genericTypeCast = fmt.Sprintf("T%d", genericType)
 		castOpen = genericTypeCast + "("
 		castClose = ")"
@@ -344,6 +352,7 @@ func parseField(
 		name:              name,
 		canonicalizedName: canonicalizedName,
 		goType:            goType,
+		isLocal:           !isImported && !isTypeParam,
 		protoType:         protoType,
 		canotoType:        canotoType,
 		fieldNumber:       fieldNumber,

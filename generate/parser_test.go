@@ -56,6 +56,7 @@ func TestParse(t *testing.T) {
 							name:              "Int",
 							canonicalizedName: "Int",
 							goType:            "int64",
+							isLocal:           true,
 							protoType:         "sint64",
 							canotoType:        canotoInt,
 							fieldNumber:       1,
