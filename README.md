@@ -54,44 +54,52 @@ For a given `Struct`, Canoto automatically implements the `Message` interface:
 // Message defines a type that can be a stand-alone Canoto message.
 type Message interface {
 	Field
-	// ValidCanoto validates that the message can be correctly marshaled into
-	// the Canoto format.
+	// ValidCanoto validates that the message can be correctly marshaled
+	// into the Canoto format.
 	ValidCanoto() bool
 	// MarshalCanoto returns the Canoto representation of this message.
 	//
 	// It is assumed that this message is ValidCanoto.
 	MarshalCanoto() []byte
-	// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the message.
+	// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the
+	// message.
+	//
+	// The memory allocated and the depth of nested messages are not
+	// limited. bytes should only be untrusted if the message is not
+	// recursive and has no variable-length repeated fields. Otherwise,
+	// UnmarshalCanotoFrom should be used.
 	UnmarshalCanoto(bytes []byte) error
 }
 
-// Field defines a type that can be included inside of a Canoto message.
+// Field defines a type that can be included in a Canoto message.
 type Field interface {
-	// DescribeCanoto returns a [Spec] describing the Canoto encoding of this
-	// type.
+	// DescribeCanoto returns a [Spec] describing the Canoto encoding of
+	// this type.
 	//
-	// types is used as a stack of ancestor messages to detect recursive specs.
+	// types is used as a stack of ancestor messages to detect recursive
+	// specs.
 	//
-	// If this type does not have a valid specification, it returns nil and the
-	// type is treated as opaque bytes.
+	// If this type does not have a valid specification, it returns nil and
+	// the type is treated as opaque bytes.
 	DescribeCanoto(types ...reflect.Type) *Spec
-	// CacheCanoto populates internal caches based on the current values in the
-	// struct.
+	// CacheCanoto populates internal caches based on the current values in
+	// the struct.
 	CacheCanoto()
 	// SizeCanoto returns the previously calculated size of the Canoto
 	// representation from CacheCanoto.
 	//
-	// If CacheCanoto has not yet been called, or the field has been modified
-	// since the last call to CacheCanoto, the returned size may be incorrect.
+	// If CacheCanoto has not yet been called, or the field has been
+	// modified since the last call to CacheCanoto, the returned size may be
+	// incorrect.
 	SizeCanoto() uint64
-	// CheckCanoto validates that the field can be correctly marshaled into the
-	// Canoto format.
+	// CheckCanoto validates that the field can be correctly marshaled into
+	// the Canoto format.
 	//
 	// It is assumed that CacheCanoto has been called since the last
 	// modification to this field.
 	CheckCanoto() bool
-	// AppendCanoto appends the field to a [Writer] and returns the resulting
-	// [Writer].
+	// AppendCanoto appends the field to a [Writer] and returns the
+	// resulting [Writer].
 	//
 	// It is assumed that CacheCanoto has been called since the last
 	// modification to this field.
@@ -99,6 +107,9 @@ type Field interface {
 	// It is assumed that this field passes CheckCanoto.
 	AppendCanoto(w Writer) Writer
 	// UnmarshalCanotoFrom populates the field from a [Reader].
+	//
+	// [Reader.B] may be untrusted, as long as [Reader.MemoryRemaining] and
+	// [Reader.DepthLimit] are bounded.
 	//
 	// The returned [UnmarshalResult] must contain the memory remaining in r
 	// after charging for memory allocated by this call.
@@ -123,6 +134,20 @@ canoto --proto example.go
 ```
 
 The above example will generate `example.canoto.go` and `example.proto`.
+
+Generating the `.canoto.go` file can be disabled with `--canoto=false`.
+
+```sh
+canoto --canoto=false --proto example.go
+```
+
+The above example will only generate `example.proto`.
+
+The version of the `canoto` command can be displayed with the `--version` flag.
+
+```sh
+canoto --version
+```
 
 ### go:generate
 
