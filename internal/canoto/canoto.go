@@ -1439,12 +1439,8 @@ func MakeEntryNilPointer[S ~[]E, E any](S) (_ *E) {
 
 // IsZero returns true if the value pointed to by v is the zero value for its
 // type.
-//
-// A pointer is taken so that large values, such as fixed length arrays, are not
-// copied.
 func IsZero[T comparable](v *T) bool {
-	var zero T
-	return *v == zero
+	return *v == *new(T)
 }
 
 // unsafeString converts a []byte to an unsafe string.
