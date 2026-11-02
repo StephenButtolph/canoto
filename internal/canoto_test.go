@@ -1694,6 +1694,7 @@ func TestNewCodec_DescribeCanoto(t *testing.T) {
 		{"NestedGenericField[Scalars]", (*NestedGenericField[Scalars, *Scalars])(nil)},
 		{"NestedGenericField[big.Int]", (*NestedGenericField[big.Int, *big.Int])(nil)},
 		{"Embedded", (*Embedded)(nil)},
+		{"ImportedName", (*ImportedName[OneOf, *OneOf])(nil)},
 		{"A", (*A)(nil)},
 		{"A__B", (*A__B)(nil)},
 		{"A__Pointer", (*A__Pointer)(nil)},

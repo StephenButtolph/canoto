@@ -3425,6 +3425,514 @@ func (c *A__Pointer) AppendCanoto(w canoto.Writer) canoto.Writer {
 }
 
 const (
+	canotoNumber_ImportedName__A = 1
+	canotoNumber_ImportedName__V = 2
+
+	canotoTag_ImportedName__A = "\x0a" // canoto.Tag(canotoNumber_ImportedName__A, canoto.Len)
+	canotoTag_ImportedName__V = "\x12" // canoto.Tag(canotoNumber_ImportedName__V, canoto.Len)
+)
+
+type canotoData_ImportedName struct {
+	size uint64
+}
+
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive specs.
+func (*ImportedName[T1, T2]) DescribeCanoto(types ...reflect.Type) *canoto.Spec {
+	types = append(types, reflect.TypeFor[ImportedName[T1, T2]]())
+	var zero ImportedName[T1, T2]
+	return &canoto.Spec{
+		Name: "ImportedName",
+		Fields: []canoto.FieldType{
+			canoto.FieldTypeFromField(
+				/*type inference:*/ &zero.A,
+				/*FieldNumber:   */ canotoNumber_ImportedName__A,
+				/*Name:          */ "A",
+				/*FixedLength:   */ 0,
+				/*Repeated:      */ false,
+				/*OneOf:         */ "",
+				/*Pointer:       */ false,
+				/*types:         */ types,
+			),
+			canoto.FieldTypeFromField(
+				/*type inference:*/ &zero.V,
+				/*FieldNumber:   */ canotoNumber_ImportedName__V,
+				/*Name:          */ "V",
+				/*FixedLength:   */ 0,
+				/*Repeated:      */ false,
+				/*OneOf:         */ "",
+				/*Pointer:       */ false,
+				/*types:         */ types,
+			),
+		},
+	}
+}
+
+// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
+func (c *ImportedName[T1, T2]) UnmarshalCanoto(bytes []byte) error {
+	r := canoto.Reader{
+		B:               bytes,
+		MemoryRemaining: canoto.DefaultMemoryLimit,
+		DepthLimit:      canoto.DefaultDepthLimit,
+	}
+	_, err := c.UnmarshalCanotoFrom(r)
+	return err
+}
+
+// UnmarshalCanotoFrom populates the struct from a [canoto.Reader]. Most users
+// should just use UnmarshalCanoto.
+//
+// During parsing, the canoto cache is saved.
+//
+// This function enables configuration of reader options.
+func (c *ImportedName[T1, T2]) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error) {
+	// Zero the struct before unmarshaling.
+	*c = ImportedName[T1, T2]{}
+	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
+
+	var minField uint32
+	for r.HasNext() {
+		field, wireType, err := r.Tag()
+		if err != nil {
+			return canoto.UnmarshalResult{}, err
+		}
+		if field < minField {
+			return canoto.UnmarshalResult{}, canoto.ErrInvalidFieldOrder
+		}
+
+		switch field {
+		case canotoNumber_ImportedName__A:
+			if wireType != canoto.Len {
+				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
+			}
+
+			var msgReader canoto.Reader
+			if err := r.SubReader(&msgReader); err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
+			if !msgReader.HasNext() {
+				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
+			}
+
+			result, err := (&c.A).UnmarshalCanotoFrom(msgReader)
+			if err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
+			r.MemoryRemaining = result.MemoryRemaining
+		case canotoNumber_ImportedName__V:
+			if wireType != canoto.Len {
+				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
+			}
+
+			var msgReader canoto.Reader
+			if err := r.SubReader(&msgReader); err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
+			if !msgReader.HasNext() {
+				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
+			}
+
+			result, err := (&c.V).UnmarshalCanotoFrom(msgReader)
+			if err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
+			r.MemoryRemaining = result.MemoryRemaining
+		default:
+			return canoto.UnmarshalResult{}, canoto.ErrUnknownField
+		}
+
+		minField = field + 1
+	}
+	return canoto.UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
+}
+
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
+func (c *ImportedName[T1, T2]) CacheCanoto() {
+	var size uint64
+	(&c.A).CacheCanoto()
+	if fieldSize := (&c.A).SizeCanoto(); fieldSize != 0 {
+		size += uint64(len(canotoTag_ImportedName__A)) + canoto.SizeUint(fieldSize) + fieldSize
+	}
+	(&c.V).CacheCanoto()
+	if fieldSize := (&c.V).SizeCanoto(); fieldSize != 0 {
+		size += uint64(len(canotoTag_ImportedName__V)) + canoto.SizeUint(fieldSize) + fieldSize
+	}
+	canoto.CacheUint64(&c.canotoData.size, size)
+}
+
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
+//
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *ImportedName[T1, T2]) SizeCanoto() uint64 {
+	return atomic.LoadUint64(&c.canotoData.size)
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+func (c *ImportedName[T1, T2]) ValidCanoto() bool {
+	c.CacheCanoto()
+	return c.CheckCanoto()
+}
+
+// CheckCanoto validates that the struct can be correctly marshaled into the
+// Canoto format. Most users should just use ValidCanoto.
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
+func (c *ImportedName[T1, T2]) CheckCanoto() bool {
+	if !(&c.A).CheckCanoto() {
+		return false
+	}
+	if !(&c.V).CheckCanoto() {
+		return false
+	}
+	return true
+}
+
+// MarshalCanoto returns the Canoto representation of this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+func (c *ImportedName[T1, T2]) MarshalCanoto() []byte {
+	c.CacheCanoto()
+	w := canoto.Writer{
+		B: make([]byte, 0, c.SizeCanoto()),
+	}
+	w = c.AppendCanoto(w)
+	return w.B
+}
+
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
+// resulting [canoto.Writer]. Most users should just use MarshalCanoto.
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+func (c *ImportedName[T1, T2]) AppendCanoto(w canoto.Writer) canoto.Writer {
+	if fieldSize := (&c.A).SizeCanoto(); fieldSize != 0 {
+		w.Append(canotoTag_ImportedName__A)
+		w.AppendUint(fieldSize)
+		w = (&c.A).AppendCanoto(w)
+	}
+	if fieldSize := (&c.V).SizeCanoto(); fieldSize != 0 {
+		w.Append(canotoTag_ImportedName__V)
+		w.AppendUint(fieldSize)
+		w = (&c.V).AppendCanoto(w)
+	}
+	return w
+}
+
+const (
+	canotoNumber_double__A = 1
+
+	canotoTag_double__A = "\x08" // canoto.Tag(canotoNumber_double__A, canoto.Varint)
+)
+
+type canotoData_double struct {
+	size uint64
+}
+
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
+func (*double) DescribeCanoto(...reflect.Type) *canoto.Spec {
+	var zero double
+	return &canoto.Spec{
+		Name: "double",
+		Fields: []canoto.FieldType{
+			{
+				FieldNumber: canotoNumber_double__A,
+				Name:        "A",
+				OneOf:       "",
+				TypeInt:     canoto.SizeOf(zero.A),
+			},
+		},
+	}
+}
+
+// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
+func (c *double) UnmarshalCanoto(bytes []byte) error {
+	r := canoto.Reader{
+		B:               bytes,
+		MemoryRemaining: canoto.DefaultMemoryLimit,
+		DepthLimit:      canoto.DefaultDepthLimit,
+	}
+	_, err := c.UnmarshalCanotoFrom(r)
+	return err
+}
+
+// UnmarshalCanotoFrom populates the struct from a [canoto.Reader]. Most users
+// should just use UnmarshalCanoto.
+//
+// During parsing, the canoto cache is saved.
+//
+// This function enables configuration of reader options.
+func (c *double) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error) {
+	// Zero the struct before unmarshaling.
+	*c = double{}
+	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
+
+	var minField uint32
+	for r.HasNext() {
+		field, wireType, err := r.Tag()
+		if err != nil {
+			return canoto.UnmarshalResult{}, err
+		}
+		if field < minField {
+			return canoto.UnmarshalResult{}, canoto.ErrInvalidFieldOrder
+		}
+
+		switch field {
+		case canotoNumber_double__A:
+			if wireType != canoto.Varint {
+				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
+			}
+
+			if err := r.Int(&c.A); err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
+			if canoto.IsZero(&c.A) {
+				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
+			}
+		default:
+			return canoto.UnmarshalResult{}, canoto.ErrUnknownField
+		}
+
+		minField = field + 1
+	}
+	return canoto.UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
+}
+
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
+func (c *double) CacheCanoto() {
+	var size uint64
+	if !canoto.IsZero(&c.A) {
+		size += uint64(len(canotoTag_double__A)) + canoto.SizeInt(c.A)
+	}
+	canoto.CacheUint64(&c.canotoData.size, size)
+}
+
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
+//
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *double) SizeCanoto() uint64 {
+	return atomic.LoadUint64(&c.canotoData.size)
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+func (c *double) ValidCanoto() bool {
+	return c.CheckCanoto()
+}
+
+// CheckCanoto validates that the struct can be correctly marshaled into the
+// Canoto format. Most users should just use ValidCanoto.
+func (c *double) CheckCanoto() bool {
+	return true
+}
+
+// MarshalCanoto returns the Canoto representation of this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+func (c *double) MarshalCanoto() []byte {
+	c.CacheCanoto()
+	w := canoto.Writer{
+		B: make([]byte, 0, c.SizeCanoto()),
+	}
+	w = c.AppendCanoto(w)
+	return w.B
+}
+
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
+// resulting [canoto.Writer]. Most users should just use MarshalCanoto.
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+func (c *double) AppendCanoto(w canoto.Writer) canoto.Writer {
+	if !canoto.IsZero(&c.A) {
+		w.Append(canotoTag_double__A)
+		w.AppendInt(c.A)
+	}
+	return w
+}
+
+const (
+	canotoNumber_message__D = 1
+
+	canotoTag_message__D = "\x0a" // canoto.Tag(canotoNumber_message__D, canoto.Len)
+)
+
+type canotoData_message struct {
+	size uint64
+}
+
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
+//
+// types is used as a stack of ancestor messages to detect recursive specs.
+func (*message) DescribeCanoto(types ...reflect.Type) *canoto.Spec {
+	types = append(types, reflect.TypeFor[message]())
+	var zero message
+	return &canoto.Spec{
+		Name: "message",
+		Fields: []canoto.FieldType{
+			canoto.FieldTypeFromField(
+				/*type inference:*/ &zero.D,
+				/*FieldNumber:   */ canotoNumber_message__D,
+				/*Name:          */ "D",
+				/*FixedLength:   */ 0,
+				/*Repeated:      */ false,
+				/*OneOf:         */ "",
+				/*Pointer:       */ false,
+				/*types:         */ types,
+			),
+		},
+	}
+}
+
+// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
+func (c *message) UnmarshalCanoto(bytes []byte) error {
+	r := canoto.Reader{
+		B:               bytes,
+		MemoryRemaining: canoto.DefaultMemoryLimit,
+		DepthLimit:      canoto.DefaultDepthLimit,
+	}
+	_, err := c.UnmarshalCanotoFrom(r)
+	return err
+}
+
+// UnmarshalCanotoFrom populates the struct from a [canoto.Reader]. Most users
+// should just use UnmarshalCanoto.
+//
+// During parsing, the canoto cache is saved.
+//
+// This function enables configuration of reader options.
+func (c *message) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error) {
+	// Zero the struct before unmarshaling.
+	*c = message{}
+	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
+
+	var minField uint32
+	for r.HasNext() {
+		field, wireType, err := r.Tag()
+		if err != nil {
+			return canoto.UnmarshalResult{}, err
+		}
+		if field < minField {
+			return canoto.UnmarshalResult{}, canoto.ErrInvalidFieldOrder
+		}
+
+		switch field {
+		case canotoNumber_message__D:
+			if wireType != canoto.Len {
+				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
+			}
+
+			var msgReader canoto.Reader
+			if err := r.SubReader(&msgReader); err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
+			if !msgReader.HasNext() {
+				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
+			}
+
+			result, err := (&c.D).UnmarshalCanotoFrom(msgReader)
+			if err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
+			r.MemoryRemaining = result.MemoryRemaining
+		default:
+			return canoto.UnmarshalResult{}, canoto.ErrUnknownField
+		}
+
+		minField = field + 1
+	}
+	return canoto.UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
+}
+
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
+func (c *message) CacheCanoto() {
+	var size uint64
+	(&c.D).CacheCanoto()
+	if fieldSize := (&c.D).SizeCanoto(); fieldSize != 0 {
+		size += uint64(len(canotoTag_message__D)) + canoto.SizeUint(fieldSize) + fieldSize
+	}
+	canoto.CacheUint64(&c.canotoData.size, size)
+}
+
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
+//
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *message) SizeCanoto() uint64 {
+	return atomic.LoadUint64(&c.canotoData.size)
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+func (c *message) ValidCanoto() bool {
+	c.CacheCanoto()
+	return c.CheckCanoto()
+}
+
+// CheckCanoto validates that the struct can be correctly marshaled into the
+// Canoto format. Most users should just use ValidCanoto.
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
+func (c *message) CheckCanoto() bool {
+	if !(&c.D).CheckCanoto() {
+		return false
+	}
+	return true
+}
+
+// MarshalCanoto returns the Canoto representation of this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+func (c *message) MarshalCanoto() []byte {
+	c.CacheCanoto()
+	w := canoto.Writer{
+		B: make([]byte, 0, c.SizeCanoto()),
+	}
+	w = c.AppendCanoto(w)
+	return w.B
+}
+
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
+// resulting [canoto.Writer]. Most users should just use MarshalCanoto.
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+func (c *message) AppendCanoto(w canoto.Writer) canoto.Writer {
+	if fieldSize := (&c.D).SizeCanoto(); fieldSize != 0 {
+		w.Append(canotoTag_message__D)
+		w.AppendUint(fieldSize)
+		w = (&c.D).AppendCanoto(w)
+	}
+	return w
+}
+
+const (
 	canotoNumber_Scalars__Int8                            = 1
 	canotoNumber_Scalars__Int16                           = 2
 	canotoNumber_Scalars__Int32                           = 3

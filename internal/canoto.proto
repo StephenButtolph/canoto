@@ -142,6 +142,31 @@ message A_1_1Pointer__Pointer {
   A_1_1Pointer value = 1;
 }
 
+message ImportedName {
+  bytes A = 1;
+  bytes V = 2;
+}
+
+message ImportedName__Pointer {
+  ImportedName value = 1;
+}
+
+message double {
+  sint64 A = 1;
+}
+
+message double__Pointer {
+  .examples.double value = 1;
+}
+
+message message {
+  .examples.double D = 1;
+}
+
+message message__Pointer {
+  .examples.message value = 1;
+}
+
 message Scalars {
   sint32 Int8 = 1;
   sint32 Int16 = 2;

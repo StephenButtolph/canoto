@@ -14,6 +14,37 @@ import (
 
 const protoExtension = ".proto"
 
+// ambiguousProtoNames are the names that can not reference a message unless
+// they are qualified by the package.
+var ambiguousProtoNames = map[string]bool{
+	"double":     true,
+	"float":      true,
+	"int32":      true,
+	"int64":      true,
+	"uint32":     true,
+	"uint64":     true,
+	"sint32":     true,
+	"sint64":     true,
+	"fixed32":    true,
+	"fixed64":    true,
+	"sfixed32":   true,
+	"sfixed64":   true,
+	"bool":       true,
+	"string":     true,
+	"bytes":      true,
+	"enum":       true,
+	"extend":     true,
+	"extensions": true,
+	"group":      true,
+	"message":    true,
+	"oneof":      true,
+	"option":     true,
+	"optional":   true,
+	"repeated":   true,
+	"required":   true,
+	"reserved":   true,
+}
+
 // Proto generates a corresponding proto file for the provided file.
 func Proto(inputFilePath string, opts Options) error {
 	opts.init()
@@ -72,29 +103,39 @@ package ${package};
 		customTypes[m.name] = true
 	}
 	for _, m := range messages {
-		if err := writeProtoMessage(w, m, customTypes); err != nil {
+		if err := writeProtoMessage(w, packageName, m, customTypes); err != nil {
 			return err
 		}
-		if err := writeProtoWrapperMessage(w, m.name); err != nil {
+		if err := writeProtoWrapperMessage(w, packageName, m.name); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func writeProtoWrapperMessage(w io.Writer, goType string) error {
+// protoMessageReference returns the name that references the message goType
+// in the proto package packageName.
+func protoMessageReference(packageName string, goType string) string {
+	name := canonicalizeName(goType)
+	if ambiguousProtoNames[name] {
+		return "." + packageName + "." + name
+	}
+	return name
+}
+
+func writeProtoWrapperMessage(w io.Writer, packageName string, goType string) error {
 	const wrapperTemplate = `
 message ${wrapperName} {
-  ${canonicalGoType} value = 1;
+  ${messageReference} value = 1;
 }
 `
 	return writeTemplate(w, wrapperTemplate, map[string]string{
-		"canonicalGoType": canonicalizeName(goType),
-		"wrapperName":     canonicalizeName(goType) + "__Pointer",
+		"messageReference": protoMessageReference(packageName, goType),
+		"wrapperName":      canonicalizeName(goType) + "__Pointer",
 	})
 }
 
-func writeProtoMessage(w io.Writer, m message, customTypes map[string]bool) error {
+func writeProtoMessage(w io.Writer, packageName string, m message, customTypes map[string]bool) error {
 	const structTemplate = `
 message ${messageName} {
 ${fields}}
@@ -102,11 +143,11 @@ ${fields}}
 
 	return writeTemplate(w, structTemplate, map[string]string{
 		"messageName": canonicalizeName(m.name),
-		"fields":      makeFields(m, customTypes),
+		"fields":      makeFields(packageName, m, customTypes),
 	})
 }
 
-func makeFields(m message, customTypes map[string]bool) string {
+func makeFields(packageName string, m message, customTypes map[string]bool) string {
 	const (
 		defaultTemplate      = "  ${protoTypePrefix}${protoTypeSuffix} ${fieldName} = ${fieldNumber};\n"
 		oneOfDefaultTemplate = "  " + defaultTemplate
@@ -114,7 +155,7 @@ func makeFields(m message, customTypes map[string]bool) string {
 		specialTemplate      = "  ${protoTypePrefix}${protoType} ${fieldName} = ${fieldNumber};\n"
 		oneOfSpecialTemplate = "  " + specialTemplate
 
-		customTemplate      = "  ${protoTypePrefix}${canonicalGoType} ${fieldName} = ${fieldNumber};\n"
+		customTemplate      = "  ${protoTypePrefix}${messageReference} ${fieldName} = ${fieldNumber};\n"
 		oneOfCustomTemplate = "  " + customTemplate
 
 		wrapperTemplate = "  repeated ${wrapperName} ${fieldName} = ${fieldNumber};\n"
@@ -131,12 +172,14 @@ func makeFields(m message, customTypes map[string]bool) string {
 			switch {
 			case f.protoType != "":
 				template = oneOfSpecialTemplate
-			case customTypes[f.goType]:
+			case f.isLocal && customTypes[f.goType]:
 				template = oneOfCustomTemplate
 			default:
 				template = oneOfDefaultTemplate
 			}
-			_ = writeTemplate(&sb, template, f.templateArgs)
+			_ = writeTemplate(&sb, template, f.templateArgs, map[string]string{
+				"messageReference": protoMessageReference(packageName, f.goType),
+			})
 		}
 		sb.WriteString("  }\n")
 	}
@@ -146,7 +189,7 @@ func makeFields(m message, customTypes map[string]bool) string {
 		}
 
 		var (
-			isCustom = customTypes[f.goType]
+			isCustom = f.isLocal && customTypes[f.goType]
 			template string
 		)
 		switch {
@@ -159,7 +202,9 @@ func makeFields(m message, customTypes map[string]bool) string {
 		default:
 			template = defaultTemplate
 		}
-		_ = writeTemplate(&sb, template, f.templateArgs)
+		_ = writeTemplate(&sb, template, f.templateArgs, map[string]string{
+			"messageReference": protoMessageReference(packageName, f.goType),
+		})
 	}
 	return sb.String()
 }
