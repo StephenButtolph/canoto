@@ -105,7 +105,7 @@ const (
 	SizePointerPresenceTag = uint64(len(PointerPresenceTag))
 )
 
-// Default limits applied when unmarshaling with UnmarshalCanoto.
+// Default limits applied when unmarshaling with [Message.UnmarshalCanoto].
 const (
 	// DefaultMemoryLimit is the [Reader.MemoryRemaining] used by
 	// UnmarshalCanoto.
@@ -394,10 +394,10 @@ type (
 		Repeated       bool     `canoto:"bool,4"          json:"repeated,omitempty"`
 		OneOf          string   `canoto:"string,5"        json:"oneOf,omitempty"`
 		Pointer        bool     `canoto:"bool,6"          json:"pointer,omitempty"`
-		TypeInt        SizeEnum `canoto:"uint,7,Type"     json:"typeInt,omitempty"`        // can be any of 8, 16, 32, or 64.
-		TypeUint       SizeEnum `canoto:"uint,8,Type"     json:"typeUint,omitempty"`       // can be any of 8, 16, 32, or 64.
-		TypeFixedInt   SizeEnum `canoto:"uint,9,Type"     json:"typeFixedInt,omitempty"`   // can be either 32 or 64.
-		TypeFixedUint  SizeEnum `canoto:"uint,10,Type"    json:"typeFixedUint,omitempty"`  // can be either 32 or 64.
+		TypeInt        SizeEnum `canoto:"uint,7,Type"     json:"typeInt,omitempty"`        // can be any of [SizeEnum8], [SizeEnum16], [SizeEnum32], or [SizeEnum64].
+		TypeUint       SizeEnum `canoto:"uint,8,Type"     json:"typeUint,omitempty"`       // can be any of [SizeEnum8], [SizeEnum16], [SizeEnum32], or [SizeEnum64].
+		TypeFixedInt   SizeEnum `canoto:"uint,9,Type"     json:"typeFixedInt,omitempty"`   // can be either [SizeEnum32] or [SizeEnum64].
+		TypeFixedUint  SizeEnum `canoto:"uint,10,Type"    json:"typeFixedUint,omitempty"`  // can be either [SizeEnum32] or [SizeEnum64].
 		TypeBool       bool     `canoto:"bool,11,Type"    json:"typeBool,omitempty"`       // can only be true.
 		TypeString     bool     `canoto:"bool,12,Type"    json:"typeString,omitempty"`     // can only be true.
 		TypeBytes      bool     `canoto:"bool,13,Type"    json:"typeBytes,omitempty"`      // can only be true.
