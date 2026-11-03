@@ -5424,7 +5424,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 			const (
 				expectedLength       = len((&c.FixedRepeatedFixedBytes)[0])
 				expectedLengthUint64 = uint64(expectedLength)
-				// Ensure the entries have constant lengths of at least one.
+				// Ensure the entries have a constant length of at least one.
 				_ = expectedLengthUint64 - 1
 			)
 
@@ -5741,7 +5741,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 			const (
 				expectedLength       = len((&c.CustomFixedRepeatedFixedBytes)[0])
 				expectedLengthUint64 = uint64(expectedLength)
-				// Ensure the entries have constant lengths of at least one.
+				// Ensure the entries have a constant length of at least one.
 				_ = expectedLengthUint64 - 1
 			)
 

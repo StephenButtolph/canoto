@@ -1825,7 +1825,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			const (
 				expectedLength       = len((&c.FixedRepeatedFixedBytes)[0])
 				expectedLengthUint64 = uint64(expectedLength)
-				// Ensure the entries have constant lengths of at least one.
+				// Ensure the entries have a constant length of at least one.
 				_ = expectedLengthUint64 - 1
 			)
 
