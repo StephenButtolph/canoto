@@ -14,14 +14,7 @@ import (
 	"github.com/StephenButtolph/canoto"
 )
 
-const (
-	canotoTag = "canoto"
-
-	// Field numbers in [firstReservedFieldNumber, lastReservedFieldNumber] are
-	// reserved by protobuf, so they can't be used in proto files.
-	firstReservedFieldNumber = 19000
-	lastReservedFieldNumber  = 19999
-)
+const canotoTag = "canoto"
 
 var (
 	// oneOfRegex is used to match a string that consists only of letters (both
@@ -468,12 +461,12 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (
 			fs.Position(field.Pos()),
 		)
 	}
-	if firstReservedFieldNumber <= fieldNumber && fieldNumber <= lastReservedFieldNumber {
+	if canoto.FirstReservedFieldNumber <= fieldNumber && fieldNumber <= canoto.LastReservedFieldNumber {
 		return "", 0, "", false, fmt.Errorf("%w %d is reserved by protobuf [%d, %d] at %s",
 			errInvalidFieldNumber,
 			fieldNumber,
-			firstReservedFieldNumber,
-			lastReservedFieldNumber,
+			canoto.FirstReservedFieldNumber,
+			canoto.LastReservedFieldNumber,
 			fs.Position(field.Pos()),
 		)
 	}

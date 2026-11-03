@@ -53,14 +53,26 @@ const (
 
 	// MaxFieldNumber is the maximum field number allowed to be used in a Tag.
 	MaxFieldNumber = 1<<29 - 1
+	// FirstReservedFieldNumber is the first field number reserved by protobuf.
+	// Field numbers in [FirstReservedFieldNumber, LastReservedFieldNumber] may
+	// not be used.
+	FirstReservedFieldNumber = 19000
+	// LastReservedFieldNumber is the last field number reserved by protobuf.
+	LastReservedFieldNumber = 19999
 
 	// Version is the current version of the canoto library.
 	Version = "v0.20.0"
 
-	// VersionCompatibility is used to ensure generated code is compatible with
-	// the library it is using. It is incremented whenever the library includes
-	// a breaking change.
-	VersionCompatibility = 2
+	// MaxVersion is the maximum supported version for generated code. It is
+	// always the minor version of [Version].
+	MaxVersion = 20
+	// GenVersion is the library version required by generated code. It is
+	// incremented when generated code relies on new functionality in the
+	// library.
+	GenVersion = 20
+	// MinVersion is the minimum supported version for generated code. It is
+	// incremented when the library drops support for old generated code.
+	MinVersion = 20
 
 	// EmptyBytes is the length-prefixed encoding of empty bytes.
 	EmptyBytes = "\x00" // (&Writer{}).AppendBytes([]byte{}).B
@@ -87,6 +99,12 @@ const (
 
 	continuationMask     = 0x80
 	continuationWordMask = 0x8080808080808080
+)
+
+// Ensure that this library supports the code it generates.
+const (
+	_ uint = GenVersion - MinVersion
+	_ uint = MaxVersion - GenVersion
 )
 
 // The source files of this library, embedded as strings. They can be used
@@ -1574,6 +1592,7 @@ func (f *FieldType) validate(depth uint64) error {
 	case false,
 		f.FieldNumber == 0,
 		f.FieldNumber > MaxFieldNumber,
+		FirstReservedFieldNumber <= f.FieldNumber && f.FieldNumber <= LastReservedFieldNumber,
 		len(f.Name) == 0,
 		f.FixedLength != 0 && !f.Repeated,
 		len(f.OneOf) != 0 && f.Repeated:

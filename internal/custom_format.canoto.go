@@ -14,8 +14,10 @@ import (
 
 // Ensure that the generated code is compatible with the library version.
 const (
-	_ uint = canoto.VersionCompatibility - 2
-	_ uint = 2 - canoto.VersionCompatibility
+	// Verify that this generated code is sufficiently up-to-date.
+	_ uint = 20 - canoto.MinVersion
+	// Verify that the canoto library is sufficiently up-to-date.
+	_ uint = canoto.MaxVersion - 20
 )
 
 const (

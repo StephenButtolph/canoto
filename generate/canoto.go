@@ -105,8 +105,10 @@ ${canotoImport})
 
 // Ensure that the generated code is compatible with the library version.
 const (
-	_ uint = ${selector}VersionCompatibility - ${genVersion}
-	_ uint = ${genVersion} - ${selector}VersionCompatibility
+	// Verify that this generated code is sufficiently up-to-date.
+	_ uint = ${genVersion} - ${selector}MinVersion
+	// Verify that the canoto library is sufficiently up-to-date.
+	_ uint = ${selector}MaxVersion - ${genVersion}
 )
 `
 	// Only include the import for canoto if this is not an internal file.
@@ -120,7 +122,7 @@ const (
 	}
 	err := writeTemplate(w, fileTemplate, map[string]string{
 		"version":      canoto.Version,
-		"genVersion":   strconv.FormatUint(uint64(canoto.VersionCompatibility), 10),
+		"genVersion":   strconv.FormatUint(canoto.GenVersion, 10),
 		"source":       source,
 		"package":      packageName,
 		"canotoImport": canotoImport,

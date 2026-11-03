@@ -40,6 +40,13 @@ func (v invalidTest) Bytes(t *testing.T) []byte {
 	return bytes
 }
 
+func TestMaxVersion(t *testing.T) {
+	_, version, ok := strings.Cut(Version, ".")
+	require.True(t, ok, "Version %q has no minor version", Version)
+	minor, _, _ := strings.Cut(version, ".")
+	require.Equal(t, strconv.Itoa(MaxVersion), minor)
+}
+
 func TestIsValid(t *testing.T) {
 	valid := map[WireType]bool{
 		Varint: true,
@@ -2261,6 +2268,34 @@ func TestNewCodec_Invalid(t *testing.T) {
 				Fields: []FieldType{
 					{
 						FieldNumber: MaxFieldNumber + 1,
+						Name:        "a",
+						TypeBool:    true,
+					},
+				},
+			},
+			want: ErrInvalidSpec,
+		},
+		{
+			name: "first reserved field number",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: FirstReservedFieldNumber,
+						Name:        "a",
+						TypeBool:    true,
+					},
+				},
+			},
+			want: ErrInvalidSpec,
+		},
+		{
+			name: "last reserved field number",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: LastReservedFieldNumber,
 						Name:        "a",
 						TypeBool:    true,
 					},
