@@ -50,18 +50,18 @@ const (
 // Versions of this library and of the generated code it supports.
 const (
 	// Version is the current version of the canoto library.
-	Version = "v0.20.0"
+	Version = "v1.0.0"
 
 	// MaxVersion is the maximum supported version for generated code. It is
 	// always the minor version of [Version].
-	MaxVersion = 20
+	MaxVersion = 0
 	// GenVersion is the library version required by generated code. It is
 	// incremented when generated code relies on new functionality in the
 	// library.
-	GenVersion = 20
+	GenVersion = 0
 	// MinVersion is the minimum supported version for generated code. It is
 	// incremented when the library drops support for old generated code.
-	MinVersion = 20
+	MinVersion = 0
 )
 
 // Ensure that this library supports the code it generates.
