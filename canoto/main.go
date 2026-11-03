@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/StephenButtolph/canoto"
-	"github.com/StephenButtolph/canoto/generate"
+	"github.com/StephenButtolph/canoto/internal/generate"
 )
 
 const (
