@@ -589,8 +589,8 @@ func SizeUint[T Uint](v T) uint64 {
 	return uint64(bits.Len64(uint64(v)|1)+6) * 37 >> 8 //#nosec G115 // False positive
 }
 
-// CountInts counts the number of varints that are encoded in bytes.
-func CountInts(bytes []byte) uint64 {
+// countInts counts the number of varints that are encoded in bytes.
+func countInts(bytes []byte) uint64 {
 	var count uint64
 	// Reading 8 bytes at a time allows using a full register on 64-bit
 	// architectures, which is faster than reading one byte at a time.
@@ -674,7 +674,7 @@ func (r *Reader) ReadUints[S ~[]E, E Uint](v *S) (uint64, error) {
 	// After the check above, b contains exactly CountInts(b) complete
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
-	count := CountInts(b)
+	count := countInts(b)
 	if err := r.UseSliceMemory[E](count); err != nil {
 		return 0, err
 	}
@@ -848,7 +848,7 @@ func (r *Reader) ReadInts[S ~[]E, E Int](v *S) (uint64, error) {
 	// After the check above, b contains exactly CountInts(b) complete
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
-	count := CountInts(b)
+	count := countInts(b)
 	if err := r.UseSliceMemory[E](count); err != nil {
 		return 0, err
 	}
@@ -2732,7 +2732,7 @@ func unmarshalInt[T Int](f *field, r *Reader) (any, error) {
 		return packedValue(f, r, vs)
 	}
 
-	vs, err := makePacked[T](r, f.fixedLength, CountInts)
+	vs, err := makePacked[T](r, f.fixedLength, countInts)
 	if err != nil {
 		return nil, err
 	}
@@ -2761,7 +2761,7 @@ func unmarshalUint[T Uint](f *field, r *Reader) (any, error) {
 		return packedValue(f, r, vs)
 	}
 
-	vs, err := makePacked[T](r, f.fixedLength, CountInts)
+	vs, err := makePacked[T](r, f.fixedLength, countInts)
 	if err != nil {
 		return nil, err
 	}

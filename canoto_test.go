@@ -150,7 +150,7 @@ func testCountInts[T Uint](t *testing.T, data []byte) {
 		w.AppendUint(num)
 	}
 
-	count := CountInts(w.B)
+	count := countInts(w.B)
 	require.Len(nums, int(count)) //#nosec G115 // False positive
 }
 
@@ -168,7 +168,7 @@ func BenchmarkCountInts(b *testing.B) {
 		bytes := w.B[:size]
 		b.Run(strconv.Itoa(size), func(b *testing.B) {
 			for range b.N {
-				CountInts(bytes)
+				countInts(bytes)
 			}
 		})
 	}
