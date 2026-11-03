@@ -90,7 +90,7 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalRes
 
 	var minField uint32
 	for r.HasNext() {
-		field, wireType, err := r.Tag()
+		field, wireType, err := r.ReadTag()
 		if err != nil {
 			return canoto.UnmarshalResult{}, err
 		}
@@ -105,7 +105,7 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalRes
 			}
 			atomic.StoreUint32(&c.canotoData.FieldsOneOf, CustomFormatANumber)
 
-			if err := r.Uint(&c.A); err != nil {
+			if err := r.ReadUint(&c.A); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
 			if canoto.IsZero(&c.A) {
@@ -119,7 +119,7 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalRes
 				return canoto.UnmarshalResult{}, canoto.ErrDuplicateOneOf
 			}
 
-			if err := r.Uint(&c.B); err != nil {
+			if err := r.ReadUint(&c.B); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
 			if canoto.IsZero(&c.B) {

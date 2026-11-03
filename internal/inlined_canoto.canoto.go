@@ -71,7 +71,7 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult
 
 	var minField uint32
 	for r.HasNext() {
-		field, wireType, err := r.Tag()
+		field, wireType, err := r.ReadTag()
 		if err != nil {
 			return canoto.UnmarshalResult{}, err
 		}
@@ -85,7 +85,7 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult
 				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
 			}
 
-			if err := r.Int(&c.Int8); err != nil {
+			if err := r.ReadInt(&c.Int8); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
 			if canoto.IsZero(&c.Int8) {

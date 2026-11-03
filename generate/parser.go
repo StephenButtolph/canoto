@@ -14,7 +14,14 @@ import (
 	"github.com/StephenButtolph/canoto"
 )
 
-const canotoTag = "canoto"
+const (
+	canotoTag = "canoto"
+
+	// Field numbers in [firstReservedFieldNumber, lastReservedFieldNumber] are
+	// reserved by protobuf, so they can't be used in proto files.
+	firstReservedFieldNumber = 19000
+	lastReservedFieldNumber  = 19999
+)
 
 var (
 	// oneOfRegex is used to match a string that consists only of letters (both
@@ -52,9 +59,14 @@ func parse(
 			return false
 		}
 
-		if f, ok := n.(*ast.File); ok {
-			packageName = f.Name.Name
+		switch n := n.(type) {
+		case *ast.File:
+			packageName = n.Name.Name
 			return true
+		// Methods can't be declared on types defined inside of functions, so
+		// they can't be messages.
+		case *ast.FuncDecl, *ast.FuncLit:
+			return false
 		}
 
 		if f, ok := n.(*ast.ImportSpec); ok {
@@ -453,6 +465,15 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (
 			errInvalidFieldNumber,
 			fieldNumber,
 			canoto.MaxFieldNumber,
+			fs.Position(field.Pos()),
+		)
+	}
+	if firstReservedFieldNumber <= fieldNumber && fieldNumber <= lastReservedFieldNumber {
+		return "", 0, "", false, fmt.Errorf("%w %d is reserved by protobuf [%d, %d] at %s",
+			errInvalidFieldNumber,
+			fieldNumber,
+			firstReservedFieldNumber,
+			lastReservedFieldNumber,
 			fs.Position(field.Pos()),
 		)
 	}

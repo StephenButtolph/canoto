@@ -44,6 +44,23 @@ func TestParse(t *testing.T) {
 			wantErr:         errInvalidFieldNumber,
 		},
 		{
+			name:            "field number reserved first",
+			filePath:        "testdata/field_number_reserved_first.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidFieldNumber,
+		},
+		{
+			name:            "field number reserved last",
+			filePath:        "testdata/field_number_reserved_last.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidFieldNumber,
+		},
+		{
+			name:            "function scoped struct",
+			filePath:        "testdata/function_scoped_struct.go",
+			wantPackageName: "testdata",
+		},
+		{
 			name:            "malformed after canoto",
 			filePath:        "testdata/malformed_after_canoto.go",
 			wantPackageName: "testdata",
