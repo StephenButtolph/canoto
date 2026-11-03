@@ -280,8 +280,8 @@ type (
 		// [Reader.B] may be untrusted, as long as [Reader.MemoryRemaining] and
 		// [Reader.DepthLimit] are bounded.
 		//
-		// The returned [UnmarshalResult] must contain the memory remaining in r
-		// after charging for memory allocated by this call.
+		// On success, the returned [UnmarshalResult] must be r.Result(), called
+		// after charging r for memory allocated by this call.
 		UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error)
 	}
 
@@ -328,6 +328,9 @@ type (
 
 	// UnmarshalResult is the state returned after successfully unmarshaling a
 	// [Field].
+	//
+	// UnmarshalResult should be created with [Reader.Result] and consumed with
+	// [Reader.ApplyResult].
 	UnmarshalResult struct {
 		// MemoryRemaining is the remaining [Reader.MemoryRemaining].
 		MemoryRemaining uint64
@@ -496,6 +499,19 @@ func (s SizeEnum) isValid() bool {
 	default:
 		return false
 	}
+}
+
+// Result returns the [UnmarshalResult] describing the current state of r.
+func (r *Reader) Result() UnmarshalResult {
+	return UnmarshalResult{
+		MemoryRemaining: r.MemoryRemaining,
+	}
+}
+
+// ApplyResult updates r with the state from an [UnmarshalResult] returned by
+// unmarshaling a nested [Field].
+func (r *Reader) ApplyResult(result UnmarshalResult) {
+	r.MemoryRemaining = result.MemoryRemaining
 }
 
 // UseMemory charges n bytes against [Reader.MemoryRemaining]. If the remaining
@@ -1674,7 +1690,7 @@ func (c *Codec) Unmarshal(r Reader) (Any, UnmarshalResult, error) {
 	if err != nil {
 		return Any{}, UnmarshalResult{}, err
 	}
-	return a, UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
+	return a, r.Result(), nil
 }
 
 // Marshal marshals a into bytes based on the Codec's [Spec].
@@ -2605,7 +2621,7 @@ func (f *field) unmarshalMessage(r *Reader) (any, error) {
 			Context:         r.Context,
 		}
 		a, err := f.message.unmarshal(&msgReader)
-		r.MemoryRemaining = msgReader.MemoryRemaining
+		r.ApplyResult(msgReader.Result())
 		return a, err
 	}
 	if f.pointer && f.repeated {

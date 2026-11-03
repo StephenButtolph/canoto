@@ -99,7 +99,7 @@ func (c *A) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error)
 
 		minField = field + 1
 	}
-	return canoto.UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
+	return r.Result(), nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in
@@ -239,7 +239,7 @@ func (c *V) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error)
 
 		minField = field + 1
 	}
-	return canoto.UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
+	return r.Result(), nil
 }
 
 // CacheCanoto populates size and OneOf caches based on the current values in
