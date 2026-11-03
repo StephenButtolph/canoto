@@ -36,7 +36,9 @@ const (
 	_ // EGROUP is deprecated and not supported
 	// I32 represents the 32-bit fixed-length wire type.
 	I32
+)
 
+const (
 	// SizeEnum8 indicates an [int8] or [uint8] type.
 	SizeEnum8 SizeEnum = 1
 	// SizeEnum16 indicates an [int16] or [uint16] type.
@@ -45,24 +47,51 @@ const (
 	SizeEnum32 SizeEnum = 3
 	// SizeEnum64 indicates an [Int64].
 	SizeEnum64 SizeEnum = 4
+)
 
+// Versions of this library and of the generated code it supports.
+const (
+	// Version is the current version of the canoto library.
+	Version = "v0.20.0"
+
+	// MaxVersion is the maximum supported version for generated code. It is
+	// always the minor version of [Version].
+	MaxVersion = 20
+	// GenVersion is the library version required by generated code. It is
+	// incremented when generated code relies on new functionality in the
+	// library.
+	GenVersion = 20
+	// MinVersion is the minimum supported version for generated code. It is
+	// incremented when the library drops support for old generated code.
+	MinVersion = 20
+)
+
+// Ensure that this library supports the code it generates.
+const (
+	_ uint = GenVersion - MinVersion
+	_ uint = MaxVersion - GenVersion
+)
+
+// Limits on the field numbers that may be used in a [Tag].
+const (
+	// MaxFieldNumber is the maximum field number allowed to be used in a Tag.
+	MaxFieldNumber = 1<<29 - 1
+	// FirstReservedFieldNumber is the first field number reserved by protobuf.
+	// Field numbers in [FirstReservedFieldNumber, LastReservedFieldNumber] may
+	// not be used.
+	FirstReservedFieldNumber = 19000
+	// LastReservedFieldNumber is the last field number reserved by protobuf.
+	LastReservedFieldNumber = 19999
+)
+
+// Encodings and sizes of fixed-size values.
+const (
 	// SizeFint32 is the size of a 32-bit fixed size integer in bytes.
 	SizeFint32 = 4
 	// SizeFint64 is the size of a 64-bit fixed size integer in bytes.
 	SizeFint64 = 8
 	// SizeBool is the size of a boolean in bytes.
 	SizeBool = 1
-
-	// MaxFieldNumber is the maximum field number allowed to be used in a Tag.
-	MaxFieldNumber = 1<<29 - 1
-
-	// Version is the current version of the canoto library.
-	Version = "v0.20.0"
-
-	// VersionCompatibility is used to ensure generated code is compatible with
-	// the library it is using. It is incremented whenever the library includes
-	// a breaking change.
-	VersionCompatibility = 2
 
 	// EmptyBytes is the length-prefixed encoding of empty bytes.
 	EmptyBytes = "\x00" // (&Writer{}).AppendBytes([]byte{}).B
@@ -74,13 +103,18 @@ const (
 
 	// SizePointerPresenceTag is the size of [PointerPresenceTag] in bytes.
 	SizePointerPresenceTag = uint64(len(PointerPresenceTag))
+)
 
+// Default limits applied when unmarshaling with [Message.UnmarshalCanoto].
+const (
 	// DefaultMemoryLimit is the [Reader.MemoryRemaining] used by
 	// UnmarshalCanoto.
 	DefaultMemoryLimit uint64 = math.MaxUint64
 	// DefaultDepthLimit is the [Reader.DepthLimit] used by UnmarshalCanoto.
 	DefaultDepthLimit uint64 = math.MaxUint64
+)
 
+const (
 	wireTypeLength = 3
 	wireTypeMask   = 0x07
 
@@ -143,12 +177,12 @@ var (
 	ErrInvalidSpec = fmt.Errorf("%w: invalid spec", Err)
 	// ErrInvalidRecursiveDepth is returned when a recursive type references a
 	// depth that exceeds the available specification stack.
-	ErrInvalidRecursiveDepth = fmt.Errorf("%w: invalid recursive depth", Err)
+	ErrInvalidRecursiveDepth = fmt.Errorf("%w: invalid recursive depth", ErrInvalidSpec)
 	// ErrUnknownFieldType is returned when a field type is not recognized.
-	ErrUnknownFieldType = fmt.Errorf("%w: unknown field type", Err)
+	ErrUnknownFieldType = fmt.Errorf("%w: unknown field type", ErrInvalidSpec)
 	// ErrUnexpectedFieldSize is returned when a field's size does not match the
 	// expected size for its type.
-	ErrUnexpectedFieldSize = fmt.Errorf("%w: unexpected field size", Err)
+	ErrUnexpectedFieldSize = fmt.Errorf("%w: unexpected field size", ErrInvalidSpec)
 	// ErrInvalidFieldType is returned when the value provided for a field does
 	// not match the expected Go type.
 	ErrInvalidFieldType = fmt.Errorf("%w: invalid field type", Err)
@@ -360,10 +394,10 @@ type (
 		Repeated       bool     `canoto:"bool,4"          json:"repeated,omitempty"`
 		OneOf          string   `canoto:"string,5"        json:"oneOf,omitempty"`
 		Pointer        bool     `canoto:"bool,6"          json:"pointer,omitempty"`
-		TypeInt        SizeEnum `canoto:"uint,7,Type"     json:"typeInt,omitempty"`        // can be any of 8, 16, 32, or 64.
-		TypeUint       SizeEnum `canoto:"uint,8,Type"     json:"typeUint,omitempty"`       // can be any of 8, 16, 32, or 64.
-		TypeFixedInt   SizeEnum `canoto:"uint,9,Type"     json:"typeFixedInt,omitempty"`   // can be either 32 or 64.
-		TypeFixedUint  SizeEnum `canoto:"uint,10,Type"    json:"typeFixedUint,omitempty"`  // can be either 32 or 64.
+		TypeInt        SizeEnum `canoto:"uint,7,Type"     json:"typeInt,omitempty"`        // can be any of [SizeEnum8], [SizeEnum16], [SizeEnum32], or [SizeEnum64].
+		TypeUint       SizeEnum `canoto:"uint,8,Type"     json:"typeUint,omitempty"`       // can be any of [SizeEnum8], [SizeEnum16], [SizeEnum32], or [SizeEnum64].
+		TypeFixedInt   SizeEnum `canoto:"uint,9,Type"     json:"typeFixedInt,omitempty"`   // can be either [SizeEnum32] or [SizeEnum64].
+		TypeFixedUint  SizeEnum `canoto:"uint,10,Type"    json:"typeFixedUint,omitempty"`  // can be either [SizeEnum32] or [SizeEnum64].
 		TypeBool       bool     `canoto:"bool,11,Type"    json:"typeBool,omitempty"`       // can only be true.
 		TypeString     bool     `canoto:"bool,12,Type"    json:"typeString,omitempty"`     // can only be true.
 		TypeBytes      bool     `canoto:"bool,13,Type"    json:"typeBytes,omitempty"`      // can only be true.
@@ -494,7 +528,7 @@ func (r *Reader) UnwrapPointer() error {
 	r.B = r.B[len(PointerPresenceTag):]
 
 	var length uint64
-	if err := r.Uint(&length); err != nil {
+	if err := r.ReadUint(&length); err != nil {
 		return err
 	}
 	switch remaining := uint64(len(r.B)); {
@@ -534,10 +568,10 @@ func tagValue(fieldNumber uint32, wireType WireType) uint32 {
 	return fieldNumber<<wireTypeLength | uint32(wireType)
 }
 
-// Tag reads the next field number and wire type from the reader.
-func (r *Reader) Tag() (uint32, WireType, error) {
+// ReadTag reads the next field number and wire type from the reader.
+func (r *Reader) ReadTag() (uint32, WireType, error) {
 	var val uint32
-	if err := r.Uint(&val); err != nil {
+	if err := r.ReadUint(&val); err != nil {
 		return 0, 0, err
 	}
 
@@ -575,8 +609,8 @@ func CountInts(bytes []byte) uint64 {
 	return count
 }
 
-// Uint reads a varint encoded unsigned integer from the reader.
-func (r *Reader) Uint[T Uint](v *T) error {
+// ReadUint reads a varint encoded unsigned integer from the reader.
+func (r *Reader) ReadUint[T Uint](v *T) error {
 	// Iterating over a local slice with range avoids all bounds checks on the
 	// reads and proves that the final slicing is in bounds.
 	b := r.B
@@ -616,11 +650,11 @@ func (r *Reader) Uint[T Uint](v *T) error {
 	return ErrUnexpectedEOF
 }
 
-// Uints reads a length-prefixed packed repeated varint field from the
+// ReadUints reads a length-prefixed packed repeated varint field from the
 // reader. It returns the size of the packed field in bytes.
-func (r *Reader) Uints[S ~[]E, E Uint](v *S) (uint64, error) {
+func (r *Reader) ReadUints[S ~[]E, E Uint](v *S) (uint64, error) {
 	var length uint64
-	if err := r.Uint(&length); err != nil {
+	if err := r.ReadUint(&length); err != nil {
 		return 0, err
 	}
 	if length > uint64(len(r.B)) {
@@ -681,12 +715,12 @@ func (r *Reader) Uints[S ~[]E, E Uint](v *S) (uint64, error) {
 	return length, nil
 }
 
-// UintsInto reads a length-prefixed packed repeated varint field from the
+// ReadUintsInto reads a length-prefixed packed repeated varint field from the
 // reader into vs. The field must contain exactly len(vs) values. It returns the
 // size of the packed field in bytes.
-func (r *Reader) UintsInto[S ~[]E, E Uint](vs S) (uint64, error) {
+func (r *Reader) ReadUintsInto[S ~[]E, E Uint](vs S) (uint64, error) {
 	var length uint64
-	if err := r.Uint(&length); err != nil {
+	if err := r.ReadUint(&length); err != nil {
 		return 0, err
 	}
 	if length > uint64(len(r.B)) {
@@ -696,7 +730,7 @@ func (r *Reader) UintsInto[S ~[]E, E Uint](vs S) (uint64, error) {
 	b := r.B[:length]
 	r.B = r.B[length:]
 
-	// See [Reader.Uints] for why truncation is checked before decoding.
+	// See [Reader.ReadUints] for why truncation is checked before decoding.
 	if len(b) > 0 && b[len(b)-1] >= continuationMask {
 		return 0, ErrInvalidLength
 	}
@@ -768,18 +802,16 @@ func (w *Writer) AppendUints[S ~[]E, E Uint](vs S) {
 }
 
 // SizeInt calculates the size of an integer when zigzag encoded as a varint.
-//
-// #nosec G115 // Overflows are expected in the bitwise logic.
 func SizeInt[T Int](v T) uint64 {
-	uv := uint64(v)<<1 ^ uint64(int64(v)>>63)
+	uv := uint64(v)<<1 ^ uint64(int64(v)>>63) //#nosec G115 // Zigzag encoding
 	// bits.Len64(uv|1)+6 is always in [7,70], where dividing by 7 is exactly x*37>>8.
-	return uint64(bits.Len64(uv|1)+6) * 37 >> 8
+	return uint64(bits.Len64(uv|1)+6) * 37 >> 8 //#nosec G115 // False positive
 }
 
-// Int reads a zigzag encoded integer from the reader.
-func (r *Reader) Int[T Int](v *T) error {
+// ReadInt reads a zigzag encoded integer from the reader.
+func (r *Reader) ReadInt[T Int](v *T) error {
 	var largeVal uint64
-	if err := r.Uint(&largeVal); err != nil {
+	if err := r.ReadUint(&largeVal); err != nil {
 		return err
 	}
 
@@ -792,11 +824,11 @@ func (r *Reader) Int[T Int](v *T) error {
 	return nil
 }
 
-// Ints reads a length-prefixed packed repeated zigzag encoded varint
+// ReadInts reads a length-prefixed packed repeated zigzag encoded varint
 // field from the reader. It returns the size of the packed field in bytes.
-func (r *Reader) Ints[S ~[]E, E Int](v *S) (uint64, error) {
+func (r *Reader) ReadInts[S ~[]E, E Int](v *S) (uint64, error) {
 	var length uint64
-	if err := r.Uint(&length); err != nil {
+	if err := r.ReadUint(&length); err != nil {
 		return 0, err
 	}
 	if length > uint64(len(r.B)) {
@@ -863,12 +895,12 @@ func (r *Reader) Ints[S ~[]E, E Int](v *S) (uint64, error) {
 	return length, nil
 }
 
-// IntsInto reads a length-prefixed packed repeated zigzag encoded varint
+// ReadIntsInto reads a length-prefixed packed repeated zigzag encoded varint
 // field from the reader into vs. The field must contain exactly len(vs) values.
 // It returns the size of the packed field in bytes.
-func (r *Reader) IntsInto[S ~[]E, E Int](vs S) (uint64, error) {
+func (r *Reader) ReadIntsInto[S ~[]E, E Int](vs S) (uint64, error) {
 	var length uint64
-	if err := r.Uint(&length); err != nil {
+	if err := r.ReadUint(&length); err != nil {
 		return 0, err
 	}
 	if length > uint64(len(r.B)) {
@@ -878,7 +910,7 @@ func (r *Reader) IntsInto[S ~[]E, E Int](vs S) (uint64, error) {
 	b := r.B[:length]
 	r.B = r.B[length:]
 
-	// See [Reader.Ints] for why truncation is checked before decoding.
+	// See [Reader.ReadInts] for why truncation is checked before decoding.
 	if len(b) > 0 && b[len(b)-1] >= continuationMask {
 		return 0, ErrInvalidLength
 	}
@@ -957,8 +989,8 @@ func (w *Writer) AppendInts[S ~[]E, E Int](vs S) {
 	w.B = b
 }
 
-// Fint32 reads a 32-bit fixed size integer from the reader.
-func (r *Reader) Fint32[T Int32](v *T) error {
+// ReadFint32 reads a 32-bit fixed size integer from the reader.
+func (r *Reader) ReadFint32[T Int32](v *T) error {
 	if len(r.B) < SizeFint32 {
 		return ErrUnexpectedEOF
 	}
@@ -969,11 +1001,11 @@ func (r *Reader) Fint32[T Int32](v *T) error {
 	return nil
 }
 
-// Fint32s reads a length-prefixed packed repeated 32-bit fixed size
+// ReadFint32s reads a length-prefixed packed repeated 32-bit fixed size
 // integer field from the reader.
-func (r *Reader) Fint32s[S ~[]E, E Int32](v *S) error {
+func (r *Reader) ReadFint32s[S ~[]E, E Int32](v *S) error {
 	var length uint64
-	if err := r.Uint(&length); err != nil {
+	if err := r.ReadUint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1004,12 +1036,12 @@ func (r *Reader) Fint32s[S ~[]E, E Int32](v *S) error {
 	return nil
 }
 
-// Fint32sInto reads a length-prefixed packed repeated 32-bit fixed size
+// ReadFint32sInto reads a length-prefixed packed repeated 32-bit fixed size
 // integer field from the reader into vs. The field must contain exactly len(vs)
 // values.
-func (r *Reader) Fint32sInto[S ~[]E, E Int32](vs S) error {
+func (r *Reader) ReadFint32sInto[S ~[]E, E Int32](vs S) error {
 	var length uint64
-	if err := r.Uint(&length); err != nil {
+	if err := r.ReadUint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1019,7 +1051,7 @@ func (r *Reader) Fint32sInto[S ~[]E, E Int32](vs S) error {
 		return ErrInvalidLength
 	}
 
-	// See [Reader.Fint32s] for why this advances a local slice.
+	// See [Reader.ReadFint32s] for why this advances a local slice.
 	b := r.B[:length]
 	r.B = r.B[length:]
 	for i := range vs {
@@ -1045,8 +1077,8 @@ func (w *Writer) AppendFint32s[S ~[]E, E Int32](vs S) {
 	w.B = b
 }
 
-// Fint64 reads a 64-bit fixed size integer from the reader.
-func (r *Reader) Fint64[T Int64](v *T) error {
+// ReadFint64 reads a 64-bit fixed size integer from the reader.
+func (r *Reader) ReadFint64[T Int64](v *T) error {
 	if len(r.B) < SizeFint64 {
 		return ErrUnexpectedEOF
 	}
@@ -1057,11 +1089,11 @@ func (r *Reader) Fint64[T Int64](v *T) error {
 	return nil
 }
 
-// Fint64s reads a length-prefixed packed repeated 64-bit fixed size
+// ReadFint64s reads a length-prefixed packed repeated 64-bit fixed size
 // integer field from the reader.
-func (r *Reader) Fint64s[S ~[]E, E Int64](v *S) error {
+func (r *Reader) ReadFint64s[S ~[]E, E Int64](v *S) error {
 	var length uint64
-	if err := r.Uint(&length); err != nil {
+	if err := r.ReadUint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1092,12 +1124,12 @@ func (r *Reader) Fint64s[S ~[]E, E Int64](v *S) error {
 	return nil
 }
 
-// Fint64sInto reads a length-prefixed packed repeated 64-bit fixed size
+// ReadFint64sInto reads a length-prefixed packed repeated 64-bit fixed size
 // integer field from the reader into vs. The field must contain exactly len(vs)
 // values.
-func (r *Reader) Fint64sInto[S ~[]E, E Int64](vs S) error {
+func (r *Reader) ReadFint64sInto[S ~[]E, E Int64](vs S) error {
 	var length uint64
-	if err := r.Uint(&length); err != nil {
+	if err := r.ReadUint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1107,7 +1139,7 @@ func (r *Reader) Fint64sInto[S ~[]E, E Int64](vs S) error {
 		return ErrInvalidLength
 	}
 
-	// See [Reader.Fint64s] for why this advances a local slice.
+	// See [Reader.ReadFint64s] for why this advances a local slice.
 	b := r.B[:length]
 	r.B = r.B[length:]
 	for i := range vs {
@@ -1133,8 +1165,8 @@ func (w *Writer) AppendFint64s[S ~[]E, E Int64](vs S) {
 	w.B = b
 }
 
-// Bool reads a boolean from the reader.
-func (r *Reader) Bool[T ~bool](v *T) error {
+// ReadBool reads a boolean from the reader.
+func (r *Reader) ReadBool[T ~bool](v *T) error {
 	switch {
 	case len(r.B) < SizeBool:
 		return ErrUnexpectedEOF
@@ -1148,11 +1180,11 @@ func (r *Reader) Bool[T ~bool](v *T) error {
 	}
 }
 
-// Bools reads a length-prefixed packed repeated boolean field from the
+// ReadBools reads a length-prefixed packed repeated boolean field from the
 // reader.
-func (r *Reader) Bools[S ~[]E, E ~bool](v *S) error {
+func (r *Reader) ReadBools[S ~[]E, E ~bool](v *S) error {
 	var length uint64
-	if err := r.Uint(&length); err != nil {
+	if err := r.ReadUint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1179,11 +1211,11 @@ func (r *Reader) Bools[S ~[]E, E ~bool](v *S) error {
 	return nil
 }
 
-// BoolsInto reads a length-prefixed packed repeated boolean field from the
+// ReadBoolsInto reads a length-prefixed packed repeated boolean field from the
 // reader into vs. The field must contain exactly len(vs) values.
-func (r *Reader) BoolsInto[S ~[]E, E ~bool](vs S) error {
+func (r *Reader) ReadBoolsInto[S ~[]E, E ~bool](vs S) error {
 	var length uint64
-	if err := r.Uint(&length); err != nil {
+	if err := r.ReadUint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1250,7 +1282,7 @@ func CountBytes[T Bytes](bytes []byte, tag T) (uint64, error) {
 	for HasPrefix(r.B, tag) {
 		r.B = r.B[len(tag):]
 		var length uint64
-		if err := r.Uint(&length); err != nil {
+		if err := r.ReadUint(&length); err != nil {
 			return count, err
 		}
 		if length > uint64(len(r.B)) {
@@ -1267,11 +1299,11 @@ func HasPrefix[T Bytes](bytes []byte, prefix T) bool {
 	return len(bytes) >= len(prefix) && string(bytes[:len(prefix)]) == string(prefix)
 }
 
-// String reads a string from the reader. The string is verified to be valid
+// ReadString reads a string from the reader. The string is verified to be valid
 // UTF-8.
-func (r *Reader) String[T ~string](v *T) error {
+func (r *Reader) ReadString[T ~string](v *T) error {
 	var length uint64
-	if err := r.Uint(&length); err != nil {
+	if err := r.ReadUint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1302,10 +1334,10 @@ func ValidString[T ~string](v T) bool {
 	return utf8.ValidString(string(v))
 }
 
-// Bytes reads a byte slice from the reader.
-func (r *Reader) Bytes[T ~[]byte](v *T) error {
+// ReadBytes reads a byte slice from the reader.
+func (r *Reader) ReadBytes[T ~[]byte](v *T) error {
 	var length uint64
-	if err := r.Uint(&length); err != nil {
+	if err := r.ReadUint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1327,7 +1359,7 @@ func (r *Reader) Bytes[T ~[]byte](v *T) error {
 // SkipBytes advances the reader past a byte slice without reading it.
 func (r *Reader) SkipBytes() error {
 	var length uint64
-	if err := r.Uint(&length); err != nil {
+	if err := r.ReadUint(&length); err != nil {
 		return err
 	}
 	if length > uint64(len(r.B)) {
@@ -1349,7 +1381,7 @@ func (r *Reader) SubReader(sub *Reader) error {
 		return ErrDepthLimitExceeded
 	}
 	var length uint64
-	if err := r.Uint(&length); err != nil {
+	if err := r.ReadUint(&length); err != nil {
 		return err
 	}
 	// Copying length and r.B into locals keeps the bounds check below valid for
@@ -1577,6 +1609,7 @@ func (f *FieldType) validate(depth uint64) error {
 	case false,
 		f.FieldNumber == 0,
 		f.FieldNumber > MaxFieldNumber,
+		FirstReservedFieldNumber <= f.FieldNumber && f.FieldNumber <= LastReservedFieldNumber,
 		len(f.Name) == 0,
 		f.FixedLength != 0 && !f.Repeated,
 		len(f.OneOf) != 0 && f.Repeated:
@@ -1861,7 +1894,7 @@ func (s *spec) unmarshal(r *Reader) (Any, error) {
 		oneOfs = make(map[uint32]struct{})
 	)
 	for r.HasNext() {
-		fieldNumber, wireType, err := r.Tag()
+		fieldNumber, wireType, err := r.ReadTag()
 		if err != nil {
 			return Any{}, err
 		}
@@ -1913,19 +1946,19 @@ func countFields(b []byte) uint64 {
 		v32 uint32
 	)
 	for r.HasNext() {
-		fieldNumber, wireType, err := r.Tag()
+		fieldNumber, wireType, err := r.ReadTag()
 		if err != nil {
 			return count
 		}
 		switch wireType {
 		case Varint:
-			err = r.Uint(&v64)
+			err = r.ReadUint(&v64)
 		case I64:
-			err = r.Fint64(&v64)
+			err = r.ReadFint64(&v64)
 		case Len:
 			err = r.SkipBytes()
 		case I32:
-			err = r.Fint32(&v32)
+			err = r.ReadFint32(&v32)
 		}
 		if err != nil {
 			return count
@@ -2421,7 +2454,7 @@ func (f *field) marshalFixedUint(w Writer, value any) (Writer, error) {
 func (f *field) unmarshalBool(r *Reader) (any, error) {
 	if !f.repeated {
 		var v bool
-		if err := r.Bool(&v); err != nil {
+		if err := r.ReadBool(&v); err != nil {
 			return nil, err
 		}
 		return nonZero(r, v)
@@ -2429,7 +2462,7 @@ func (f *field) unmarshalBool(r *Reader) (any, error) {
 
 	if f.fixedLength == 0 {
 		var vs []bool
-		if err := r.Bools(&vs); err != nil {
+		if err := r.ReadBools(&vs); err != nil {
 			return nil, err
 		}
 		return packedValue(f, r, vs)
@@ -2441,7 +2474,7 @@ func (f *field) unmarshalBool(r *Reader) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := r.BoolsInto(vs); err != nil {
+	if err := r.ReadBoolsInto(vs); err != nil {
 		return nil, err
 	}
 	return packedValue(f, r, vs)
@@ -2685,7 +2718,7 @@ func (f *field) marshalMessage(w Writer, af *AnyField) (Writer, error) {
 func unmarshalInt[T Int](f *field, r *Reader) (any, error) {
 	if !f.repeated {
 		var v T
-		if err := r.Int(&v); err != nil {
+		if err := r.ReadInt(&v); err != nil {
 			return nil, err
 		}
 		return nonZero(r, v)
@@ -2693,7 +2726,7 @@ func unmarshalInt[T Int](f *field, r *Reader) (any, error) {
 
 	if f.fixedLength == 0 {
 		var vs []T
-		if _, err := r.Ints(&vs); err != nil {
+		if _, err := r.ReadInts(&vs); err != nil {
 			return nil, err
 		}
 		return packedValue(f, r, vs)
@@ -2703,7 +2736,7 @@ func unmarshalInt[T Int](f *field, r *Reader) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, err := r.IntsInto(vs); err != nil {
+	if _, err := r.ReadIntsInto(vs); err != nil {
 		return nil, err
 	}
 	return packedValue(f, r, vs)
@@ -2714,7 +2747,7 @@ func unmarshalInt[T Int](f *field, r *Reader) (any, error) {
 func unmarshalUint[T Uint](f *field, r *Reader) (any, error) {
 	if !f.repeated {
 		var v T
-		if err := r.Uint(&v); err != nil {
+		if err := r.ReadUint(&v); err != nil {
 			return nil, err
 		}
 		return nonZero(r, v)
@@ -2722,7 +2755,7 @@ func unmarshalUint[T Uint](f *field, r *Reader) (any, error) {
 
 	if f.fixedLength == 0 {
 		var vs []T
-		if _, err := r.Uints(&vs); err != nil {
+		if _, err := r.ReadUints(&vs); err != nil {
 			return nil, err
 		}
 		return packedValue(f, r, vs)
@@ -2732,7 +2765,7 @@ func unmarshalUint[T Uint](f *field, r *Reader) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, err := r.UintsInto(vs); err != nil {
+	if _, err := r.ReadUintsInto(vs); err != nil {
 		return nil, err
 	}
 	return packedValue(f, r, vs)
@@ -2744,7 +2777,7 @@ func unmarshalUint[T Uint](f *field, r *Reader) (any, error) {
 func unmarshalFint32[T Int32](f *field, r *Reader) (any, error) {
 	if !f.repeated {
 		var v T
-		if err := r.Fint32(&v); err != nil {
+		if err := r.ReadFint32(&v); err != nil {
 			return nil, err
 		}
 		return nonZero(r, v)
@@ -2752,7 +2785,7 @@ func unmarshalFint32[T Int32](f *field, r *Reader) (any, error) {
 
 	if f.fixedLength == 0 {
 		var vs []T
-		if err := r.Fint32s(&vs); err != nil {
+		if err := r.ReadFint32s(&vs); err != nil {
 			return nil, err
 		}
 		return packedValue(f, r, vs)
@@ -2764,7 +2797,7 @@ func unmarshalFint32[T Int32](f *field, r *Reader) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := r.Fint32sInto(vs); err != nil {
+	if err := r.ReadFint32sInto(vs); err != nil {
 		return nil, err
 	}
 	return packedValue(f, r, vs)
@@ -2776,7 +2809,7 @@ func unmarshalFint32[T Int32](f *field, r *Reader) (any, error) {
 func unmarshalFint64[T Int64](f *field, r *Reader) (any, error) {
 	if !f.repeated {
 		var v T
-		if err := r.Fint64(&v); err != nil {
+		if err := r.ReadFint64(&v); err != nil {
 			return nil, err
 		}
 		return nonZero(r, v)
@@ -2784,7 +2817,7 @@ func unmarshalFint64[T Int64](f *field, r *Reader) (any, error) {
 
 	if f.fixedLength == 0 {
 		var vs []T
-		if err := r.Fint64s(&vs); err != nil {
+		if err := r.ReadFint64s(&vs); err != nil {
 			return nil, err
 		}
 		return packedValue(f, r, vs)
@@ -2796,7 +2829,7 @@ func unmarshalFint64[T Int64](f *field, r *Reader) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := r.Fint64sInto(vs); err != nil {
+	if err := r.ReadFint64sInto(vs); err != nil {
 		return nil, err
 	}
 	return packedValue(f, r, vs)
@@ -2814,7 +2847,7 @@ func makePacked[T any](
 		peek = Reader{B: r.B, Unsafe: true}
 		b    []byte
 	)
-	if err := peek.Bytes(&b); err != nil {
+	if err := peek.ReadBytes(&b); err != nil {
 		return nil, err
 	}
 	// The spec may be malicious, so fixedLength is bounded by the actual number
@@ -3005,7 +3038,7 @@ func unmarshalUnpacked[T any](
 // readEntry reads a length-prefixed entry of f from r without copying it.
 func (f *field) readEntry(r *Reader) ([]byte, error) {
 	var length uint64
-	if err := r.Uint(&length); err != nil {
+	if err := r.ReadUint(&length); err != nil {
 		return nil, err
 	}
 	if f.kind == FieldTypeFixedBytes && length != f.fixedBytes {

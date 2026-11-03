@@ -12,8 +12,10 @@ import (
 
 // Ensure that the generated code is compatible with the library version.
 const (
-	_ uint = VersionCompatibility - 2
-	_ uint = 2 - VersionCompatibility
+	// Verify that this generated code is sufficiently up-to-date.
+	_ uint = 20 - MinVersion
+	// Verify that the canoto library is sufficiently up-to-date.
+	_ uint = MaxVersion - 20
 )
 
 const (
@@ -84,7 +86,7 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 
 	var minField uint32
 	for r.HasNext() {
-		field, wireType, err := r.Tag()
+		field, wireType, err := r.ReadTag()
 		if err != nil {
 			return UnmarshalResult{}, err
 		}
@@ -98,7 +100,7 @@ func (c *Spec) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.String(&c.Name); err != nil {
+			if err := r.ReadString(&c.Name); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if len(c.Name) == 0 {
@@ -449,7 +451,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 
 	var minField uint32
 	for r.HasNext() {
-		field, wireType, err := r.Tag()
+		field, wireType, err := r.ReadTag()
 		if err != nil {
 			return UnmarshalResult{}, err
 		}
@@ -463,7 +465,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Uint(&c.FieldNumber); err != nil {
+			if err := r.ReadUint(&c.FieldNumber); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.FieldNumber) {
@@ -474,7 +476,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.String(&c.Name); err != nil {
+			if err := r.ReadString(&c.Name); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if len(c.Name) == 0 {
@@ -485,7 +487,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Uint(&c.FixedLength); err != nil {
+			if err := r.ReadUint(&c.FixedLength); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.FixedLength) {
@@ -496,7 +498,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Bool(&c.Repeated); err != nil {
+			if err := r.ReadBool(&c.Repeated); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.Repeated) {
@@ -507,7 +509,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.String(&c.OneOf); err != nil {
+			if err := r.ReadString(&c.OneOf); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if len(c.OneOf) == 0 {
@@ -518,7 +520,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Bool(&c.Pointer); err != nil {
+			if err := r.ReadBool(&c.Pointer); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.Pointer) {
@@ -530,7 +532,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			}
 			atomic.StoreUint32(&c.canotoData.TypeOneOf, canotoNumber_FieldType__TypeInt)
 
-			if err := r.Uint(&c.TypeInt); err != nil {
+			if err := r.ReadUint(&c.TypeInt); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.TypeInt) {
@@ -544,7 +546,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
-			if err := r.Uint(&c.TypeUint); err != nil {
+			if err := r.ReadUint(&c.TypeUint); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.TypeUint) {
@@ -558,7 +560,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
-			if err := r.Uint(&c.TypeFixedInt); err != nil {
+			if err := r.ReadUint(&c.TypeFixedInt); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.TypeFixedInt) {
@@ -572,7 +574,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
-			if err := r.Uint(&c.TypeFixedUint); err != nil {
+			if err := r.ReadUint(&c.TypeFixedUint); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.TypeFixedUint) {
@@ -586,7 +588,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
-			if err := r.Bool(&c.TypeBool); err != nil {
+			if err := r.ReadBool(&c.TypeBool); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.TypeBool) {
@@ -600,7 +602,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
-			if err := r.Bool(&c.TypeString); err != nil {
+			if err := r.ReadBool(&c.TypeString); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.TypeString) {
@@ -614,7 +616,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
-			if err := r.Bool(&c.TypeBytes); err != nil {
+			if err := r.ReadBool(&c.TypeBytes); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.TypeBytes) {
@@ -628,7 +630,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
-			if err := r.Uint(&c.TypeFixedBytes); err != nil {
+			if err := r.ReadUint(&c.TypeFixedBytes); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.TypeFixedBytes) {
@@ -663,7 +665,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
-			if err := r.Uint(&c.TypeRecursive); err != nil {
+			if err := r.ReadUint(&c.TypeRecursive); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.TypeRecursive) {

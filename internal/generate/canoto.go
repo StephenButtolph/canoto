@@ -105,8 +105,10 @@ ${canotoImport})
 
 // Ensure that the generated code is compatible with the library version.
 const (
-	_ uint = ${selector}VersionCompatibility - ${genVersion}
-	_ uint = ${genVersion} - ${selector}VersionCompatibility
+	// Verify that this generated code is sufficiently up-to-date.
+	_ uint = ${genVersion} - ${selector}MinVersion
+	// Verify that the canoto library is sufficiently up-to-date.
+	_ uint = ${selector}MaxVersion - ${genVersion}
 )
 `
 	// Only include the import for canoto if this is not an internal file.
@@ -120,7 +122,7 @@ const (
 	}
 	err := writeTemplate(w, fileTemplate, map[string]string{
 		"version":      canoto.Version,
-		"genVersion":   strconv.FormatUint(uint64(canoto.VersionCompatibility), 10),
+		"genVersion":   strconv.FormatUint(canoto.GenVersion, 10),
 		"source":       source,
 		"package":      packageName,
 		"canotoImport": canotoImport,
@@ -750,7 +752,7 @@ func makeUnmarshalBody(m message, canotoSelector string) string {
 	} else {
 		template = `	var minField uint32
 	for r.HasNext() {
-		field, wireType, err := r.Tag()
+		field, wireType, err := r.ReadTag()
 		if err != nil {
 			return ${canotoSelector}UnmarshalResult{}, err
 		}
@@ -782,7 +784,7 @@ func makeUnmarshal(m message) string {
 				return ${selector}UnmarshalResult{}, ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			if err := r.${suffix}(&c.${fieldName}); err != nil {
+			if err := r.Read${suffix}(&c.${fieldName}); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
 			if ${selector}IsZero(&c.${fieldName}) {
@@ -794,7 +796,7 @@ func makeUnmarshal(m message) string {
 				return ${selector}UnmarshalResult{}, ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			if err := r.${suffix}s(&c.${fieldName}); err != nil {
+			if err := r.Read${suffix}s(&c.${fieldName}); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
 			if len(c.${fieldName}) == 0 {
@@ -806,7 +808,9 @@ func makeUnmarshal(m message) string {
 				return ${selector}UnmarshalResult{}, ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			if err := r.${suffix}sInto((&c.${fieldName})[:]); err != nil {
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.${fieldName}) - 1)
+			if err := r.Read${suffix}sInto((&c.${fieldName})[:]); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
 			if ${selector}IsZero(&c.${fieldName}) {
@@ -818,7 +822,7 @@ func makeUnmarshal(m message) string {
 				return ${selector}UnmarshalResult{}, ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			if err := r.${suffix}(&c.${fieldName}); err != nil {
+			if err := r.Read${suffix}(&c.${fieldName}); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
 			if len(c.${fieldName}) == 0 {
@@ -849,7 +853,7 @@ func makeUnmarshal(m message) string {
 			// Read the first entry manually because the tag is already
 			// stripped.
 			r.B = remainingBytes
-			if err := r.${suffix}(&field[0]); err != nil {
+			if err := r.Read${suffix}(&field[0]); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
 
@@ -857,7 +861,7 @@ func makeUnmarshal(m message) string {
 			field = field[1:]
 			for i := range field {
 				r.B = r.B[len(${fieldTagConst}):]
-				if err := r.${suffix}(&field[i]); err != nil {
+				if err := r.Read${suffix}(&field[i]); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
 			}
@@ -869,10 +873,9 @@ func makeUnmarshal(m message) string {
 
 			// Ensure this field has a constant length of at least one.
 			const _ = uint(len(c.${fieldName}) - 1)
-
 			// Read the first entry manually because the tag is already
 			// stripped.
-			if err := r.${suffix}(&(&c.${fieldName})[0]); err != nil {
+			if err := r.Read${suffix}(&(&c.${fieldName})[0]); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
 
@@ -884,7 +887,7 @@ func makeUnmarshal(m message) string {
 					return ${selector}UnmarshalResult{}, ${selector}ErrUnknownField
 				}
 				r.B = r.B[len(${fieldTagConst}):]
-				if err := r.${suffix}(&field[i]); err != nil {
+				if err := r.Read${suffix}(&field[i]); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
 				isZero = isZero && len(field[i]) == 0
@@ -902,7 +905,7 @@ func makeUnmarshal(m message) string {
 				return ${selector}UnmarshalResult{}, ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			length, err := r.${suffix}s(&c.${fieldName})
+			length, err := r.Read${suffix}s(&c.${fieldName})
 			if err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
@@ -916,7 +919,9 @@ func makeUnmarshal(m message) string {
 				return ${selector}UnmarshalResult{}, ${selector}ErrUnexpectedWireType
 			}${unmarshalOneOf}
 
-			length, err := r.${suffix}sInto((&c.${fieldName})[:])
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.${fieldName}) - 1)
+			length, err := r.Read${suffix}sInto((&c.${fieldName})[:])
 			if err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
@@ -951,9 +956,11 @@ func makeUnmarshal(m message) string {
 			const (
 				expectedLength       = len(c.${fieldName})
 				expectedLengthUint64 = uint64(expectedLength)
+				// Ensure this field has a constant length of at least one.
+				_ = expectedLengthUint64 - 1
 			)
 			var length uint64
-			if err := r.Uint(&length); err != nil {
+			if err := r.ReadUint(&length); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
 			if length != expectedLengthUint64 {
@@ -977,12 +984,14 @@ func makeUnmarshal(m message) string {
 			const (
 				expectedLength       = len(c.${fieldName}[0])
 				expectedLengthUint64 = uint64(expectedLength)
+				// Ensure the entries have a constant length of at least one.
+				_ = expectedLengthUint64 - 1
 			)
 
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var length uint64
-			if err := r.Uint(&length); err != nil {
+			if err := r.ReadUint(&length); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
 			if length != expectedLengthUint64 {
@@ -1011,7 +1020,7 @@ func makeUnmarshal(m message) string {
 			field = field[1:]
 			for i := range field {
 				r.B = r.B[len(${fieldTagConst}):]
-				if err := r.Uint(&length); err != nil {
+				if err := r.ReadUint(&length); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
 				if length != expectedLengthUint64 {
@@ -1033,16 +1042,16 @@ func makeUnmarshal(m message) string {
 			}${unmarshalOneOf}
 
 			const (
-				// Ensure this field has a constant length of at least one.
-				_                    = uint(len(c.${fieldName}) - 1)
 				expectedLength       = len((&c.${fieldName})[0])
 				expectedLengthUint64 = uint64(expectedLength)
+				// Ensure the entries have a constant length of at least one.
+				_ = expectedLengthUint64 - 1
 			)
 
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var length uint64
-			if err := r.Uint(&length); err != nil {
+			if err := r.ReadUint(&length); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
 			if length != expectedLengthUint64 {
@@ -1064,7 +1073,7 @@ func makeUnmarshal(m message) string {
 				}
 				r.B = r.B[len(${fieldTagConst}):]
 
-				if err := r.Uint(&length); err != nil {
+				if err := r.ReadUint(&length); err != nil {
 					return ${selector}UnmarshalResult{}, err
 				}
 				if length != expectedLengthUint64 {
@@ -1158,7 +1167,6 @@ func makeUnmarshal(m message) string {
 
 			// Ensure this field has a constant length of at least one.
 			const _ = uint(len(c.${fieldName}) - 1)
-
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var msgReader ${selector}Reader
@@ -1289,7 +1297,6 @@ func makeUnmarshal(m message) string {
 
 			// Ensure this field has a constant length of at least one.
 			const _ = uint(len(c.${fieldName}) - 1)
-
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var msgReader ${selector}Reader

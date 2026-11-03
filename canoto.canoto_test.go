@@ -12,8 +12,10 @@ import (
 
 // Ensure that the generated code is compatible with the library version.
 const (
-	_ uint = VersionCompatibility - 2
-	_ uint = 2 - VersionCompatibility
+	// Verify that this generated code is sufficiently up-to-date.
+	_ uint = 20 - MinVersion
+	// Verify that the canoto library is sufficiently up-to-date.
+	_ uint = MaxVersion - 20
 )
 
 const (
@@ -704,7 +706,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 
 	var minField uint32
 	for r.HasNext() {
-		field, wireType, err := r.Tag()
+		field, wireType, err := r.ReadTag()
 		if err != nil {
 			return UnmarshalResult{}, err
 		}
@@ -718,7 +720,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Int(&c.Int8); err != nil {
+			if err := r.ReadInt(&c.Int8); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.Int8) {
@@ -729,7 +731,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Int(&c.Int16); err != nil {
+			if err := r.ReadInt(&c.Int16); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.Int16) {
@@ -740,7 +742,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Int(&c.Int32); err != nil {
+			if err := r.ReadInt(&c.Int32); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.Int32) {
@@ -751,7 +753,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Int(&c.Int64); err != nil {
+			if err := r.ReadInt(&c.Int64); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.Int64) {
@@ -762,7 +764,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Uint(&c.Uint8); err != nil {
+			if err := r.ReadUint(&c.Uint8); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.Uint8) {
@@ -773,7 +775,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Uint(&c.Uint16); err != nil {
+			if err := r.ReadUint(&c.Uint16); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.Uint16) {
@@ -784,7 +786,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Uint(&c.Uint32); err != nil {
+			if err := r.ReadUint(&c.Uint32); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.Uint32) {
@@ -795,7 +797,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Uint(&c.Uint64); err != nil {
+			if err := r.ReadUint(&c.Uint64); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.Uint64) {
@@ -806,7 +808,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Fint32(&c.Sfixed32); err != nil {
+			if err := r.ReadFint32(&c.Sfixed32); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.Sfixed32) {
@@ -817,7 +819,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Fint32(&c.Fixed32); err != nil {
+			if err := r.ReadFint32(&c.Fixed32); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.Fixed32) {
@@ -828,7 +830,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Fint64(&c.Sfixed64); err != nil {
+			if err := r.ReadFint64(&c.Sfixed64); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.Sfixed64) {
@@ -839,7 +841,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Fint64(&c.Fixed64); err != nil {
+			if err := r.ReadFint64(&c.Fixed64); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.Fixed64) {
@@ -850,7 +852,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Bool(&c.Bool); err != nil {
+			if err := r.ReadBool(&c.Bool); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.Bool) {
@@ -861,7 +863,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.String(&c.String); err != nil {
+			if err := r.ReadString(&c.String); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if len(c.String) == 0 {
@@ -872,7 +874,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Bytes(&c.Bytes); err != nil {
+			if err := r.ReadBytes(&c.Bytes); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if len(c.Bytes) == 0 {
@@ -886,9 +888,11 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			const (
 				expectedLength       = len(c.FixedBytes)
 				expectedLengthUint64 = uint64(expectedLength)
+				// Ensure this field has a constant length of at least one.
+				_ = expectedLengthUint64 - 1
 			)
 			var length uint64
-			if err := r.Uint(&length); err != nil {
+			if err := r.ReadUint(&length); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if length != expectedLengthUint64 {
@@ -998,7 +1002,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			length, err := r.Ints(&c.RepeatedInt8)
+			length, err := r.ReadInts(&c.RepeatedInt8)
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -1011,7 +1015,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			length, err := r.Ints(&c.RepeatedInt16)
+			length, err := r.ReadInts(&c.RepeatedInt16)
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -1024,7 +1028,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			length, err := r.Ints(&c.RepeatedInt32)
+			length, err := r.ReadInts(&c.RepeatedInt32)
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -1037,7 +1041,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			length, err := r.Ints(&c.RepeatedInt64)
+			length, err := r.ReadInts(&c.RepeatedInt64)
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -1050,7 +1054,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			length, err := r.Uints(&c.RepeatedUint8)
+			length, err := r.ReadUints(&c.RepeatedUint8)
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -1063,7 +1067,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			length, err := r.Uints(&c.RepeatedUint16)
+			length, err := r.ReadUints(&c.RepeatedUint16)
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -1076,7 +1080,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			length, err := r.Uints(&c.RepeatedUint32)
+			length, err := r.ReadUints(&c.RepeatedUint32)
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -1089,7 +1093,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			length, err := r.Uints(&c.RepeatedUint64)
+			length, err := r.ReadUints(&c.RepeatedUint64)
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -1102,7 +1106,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Fint32s(&c.RepeatedSfixed32); err != nil {
+			if err := r.ReadFint32s(&c.RepeatedSfixed32); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedSfixed32) == 0 {
@@ -1113,7 +1117,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Fint32s(&c.RepeatedFixed32); err != nil {
+			if err := r.ReadFint32s(&c.RepeatedFixed32); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedFixed32) == 0 {
@@ -1124,7 +1128,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Fint64s(&c.RepeatedSfixed64); err != nil {
+			if err := r.ReadFint64s(&c.RepeatedSfixed64); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedSfixed64) == 0 {
@@ -1135,7 +1139,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Fint64s(&c.RepeatedFixed64); err != nil {
+			if err := r.ReadFint64s(&c.RepeatedFixed64); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedFixed64) == 0 {
@@ -1146,7 +1150,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Bools(&c.RepeatedBool); err != nil {
+			if err := r.ReadBools(&c.RepeatedBool); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if len(c.RepeatedBool) == 0 {
@@ -1176,7 +1180,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			// Read the first entry manually because the tag is already
 			// stripped.
 			r.B = remainingBytes
-			if err := r.String(&field[0]); err != nil {
+			if err := r.ReadString(&field[0]); err != nil {
 				return UnmarshalResult{}, err
 			}
 
@@ -1184,7 +1188,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			field = field[1:]
 			for i := range field {
 				r.B = r.B[len(canotoTag_SpecFuzzer__RepeatedString):]
-				if err := r.String(&field[i]); err != nil {
+				if err := r.ReadString(&field[i]); err != nil {
 					return UnmarshalResult{}, err
 				}
 			}
@@ -1212,7 +1216,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			// Read the first entry manually because the tag is already
 			// stripped.
 			r.B = remainingBytes
-			if err := r.Bytes(&field[0]); err != nil {
+			if err := r.ReadBytes(&field[0]); err != nil {
 				return UnmarshalResult{}, err
 			}
 
@@ -1220,7 +1224,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			field = field[1:]
 			for i := range field {
 				r.B = r.B[len(canotoTag_SpecFuzzer__RepeatedBytes):]
-				if err := r.Bytes(&field[i]); err != nil {
+				if err := r.ReadBytes(&field[i]); err != nil {
 					return UnmarshalResult{}, err
 				}
 			}
@@ -1232,12 +1236,14 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			const (
 				expectedLength       = len(c.RepeatedFixedBytes[0])
 				expectedLengthUint64 = uint64(expectedLength)
+				// Ensure the entries have a constant length of at least one.
+				_ = expectedLengthUint64 - 1
 			)
 
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var length uint64
-			if err := r.Uint(&length); err != nil {
+			if err := r.ReadUint(&length); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if length != expectedLengthUint64 {
@@ -1266,7 +1272,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			field = field[1:]
 			for i := range field {
 				r.B = r.B[len(canotoTag_SpecFuzzer__RepeatedFixedBytes):]
-				if err := r.Uint(&length); err != nil {
+				if err := r.ReadUint(&length); err != nil {
 					return UnmarshalResult{}, err
 				}
 				if length != expectedLengthUint64 {
@@ -1573,7 +1579,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			length, err := r.IntsInto((&c.FixedRepeatedInt8)[:])
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.FixedRepeatedInt8) - 1)
+			length, err := r.ReadIntsInto((&c.FixedRepeatedInt8)[:])
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -1586,7 +1594,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			length, err := r.IntsInto((&c.FixedRepeatedInt16)[:])
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.FixedRepeatedInt16) - 1)
+			length, err := r.ReadIntsInto((&c.FixedRepeatedInt16)[:])
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -1599,7 +1609,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			length, err := r.IntsInto((&c.FixedRepeatedInt32)[:])
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.FixedRepeatedInt32) - 1)
+			length, err := r.ReadIntsInto((&c.FixedRepeatedInt32)[:])
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -1612,7 +1624,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			length, err := r.IntsInto((&c.FixedRepeatedInt64)[:])
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.FixedRepeatedInt64) - 1)
+			length, err := r.ReadIntsInto((&c.FixedRepeatedInt64)[:])
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -1625,7 +1639,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			length, err := r.UintsInto((&c.FixedRepeatedUint8)[:])
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.FixedRepeatedUint8) - 1)
+			length, err := r.ReadUintsInto((&c.FixedRepeatedUint8)[:])
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -1638,7 +1654,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			length, err := r.UintsInto((&c.FixedRepeatedUint16)[:])
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.FixedRepeatedUint16) - 1)
+			length, err := r.ReadUintsInto((&c.FixedRepeatedUint16)[:])
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -1651,7 +1669,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			length, err := r.UintsInto((&c.FixedRepeatedUint32)[:])
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.FixedRepeatedUint32) - 1)
+			length, err := r.ReadUintsInto((&c.FixedRepeatedUint32)[:])
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -1664,7 +1684,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			length, err := r.UintsInto((&c.FixedRepeatedUint64)[:])
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.FixedRepeatedUint64) - 1)
+			length, err := r.ReadUintsInto((&c.FixedRepeatedUint64)[:])
 			if err != nil {
 				return UnmarshalResult{}, err
 			}
@@ -1677,7 +1699,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Fint32sInto((&c.FixedRepeatedSfixed32)[:]); err != nil {
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.FixedRepeatedSfixed32) - 1)
+			if err := r.ReadFint32sInto((&c.FixedRepeatedSfixed32)[:]); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.FixedRepeatedSfixed32) {
@@ -1688,7 +1712,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Fint32sInto((&c.FixedRepeatedFixed32)[:]); err != nil {
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.FixedRepeatedFixed32) - 1)
+			if err := r.ReadFint32sInto((&c.FixedRepeatedFixed32)[:]); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.FixedRepeatedFixed32) {
@@ -1699,7 +1725,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Fint64sInto((&c.FixedRepeatedSfixed64)[:]); err != nil {
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.FixedRepeatedSfixed64) - 1)
+			if err := r.ReadFint64sInto((&c.FixedRepeatedSfixed64)[:]); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.FixedRepeatedSfixed64) {
@@ -1710,7 +1738,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Fint64sInto((&c.FixedRepeatedFixed64)[:]); err != nil {
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.FixedRepeatedFixed64) - 1)
+			if err := r.ReadFint64sInto((&c.FixedRepeatedFixed64)[:]); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.FixedRepeatedFixed64) {
@@ -1721,7 +1751,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.BoolsInto((&c.FixedRepeatedBool)[:]); err != nil {
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.FixedRepeatedBool) - 1)
+			if err := r.ReadBoolsInto((&c.FixedRepeatedBool)[:]); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.FixedRepeatedBool) {
@@ -1734,10 +1766,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 
 			// Ensure this field has a constant length of at least one.
 			const _ = uint(len(c.FixedRepeatedString) - 1)
-
 			// Read the first entry manually because the tag is already
 			// stripped.
-			if err := r.String(&(&c.FixedRepeatedString)[0]); err != nil {
+			if err := r.ReadString(&(&c.FixedRepeatedString)[0]); err != nil {
 				return UnmarshalResult{}, err
 			}
 
@@ -1749,7 +1780,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 					return UnmarshalResult{}, ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_SpecFuzzer__FixedRepeatedString):]
-				if err := r.String(&field[i]); err != nil {
+				if err := r.ReadString(&field[i]); err != nil {
 					return UnmarshalResult{}, err
 				}
 				isZero = isZero && len(field[i]) == 0
@@ -1764,10 +1795,9 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 
 			// Ensure this field has a constant length of at least one.
 			const _ = uint(len(c.FixedRepeatedBytes) - 1)
-
 			// Read the first entry manually because the tag is already
 			// stripped.
-			if err := r.Bytes(&(&c.FixedRepeatedBytes)[0]); err != nil {
+			if err := r.ReadBytes(&(&c.FixedRepeatedBytes)[0]); err != nil {
 				return UnmarshalResult{}, err
 			}
 
@@ -1779,7 +1809,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 					return UnmarshalResult{}, ErrUnknownField
 				}
 				r.B = r.B[len(canotoTag_SpecFuzzer__FixedRepeatedBytes):]
-				if err := r.Bytes(&field[i]); err != nil {
+				if err := r.ReadBytes(&field[i]); err != nil {
 					return UnmarshalResult{}, err
 				}
 				isZero = isZero && len(field[i]) == 0
@@ -1793,16 +1823,16 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			}
 
 			const (
-				// Ensure this field has a constant length of at least one.
-				_                    = uint(len(c.FixedRepeatedFixedBytes) - 1)
 				expectedLength       = len((&c.FixedRepeatedFixedBytes)[0])
 				expectedLengthUint64 = uint64(expectedLength)
+				// Ensure the entries have a constant length of at least one.
+				_ = expectedLengthUint64 - 1
 			)
 
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var length uint64
-			if err := r.Uint(&length); err != nil {
+			if err := r.ReadUint(&length); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if length != expectedLengthUint64 {
@@ -1824,7 +1854,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				}
 				r.B = r.B[len(canotoTag_SpecFuzzer__FixedRepeatedFixedBytes):]
 
-				if err := r.Uint(&length); err != nil {
+				if err := r.ReadUint(&length); err != nil {
 					return UnmarshalResult{}, err
 				}
 				if length != expectedLengthUint64 {
@@ -1848,7 +1878,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 
 			// Ensure this field has a constant length of at least one.
 			const _ = uint(len(c.FixedRepeatedValue) - 1)
-
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var msgReader Reader
@@ -1896,7 +1925,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 
 			// Ensure this field has a constant length of at least one.
 			const _ = uint(len(c.FixedRepeatedPointer) - 1)
-
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var msgReader Reader
@@ -1956,7 +1984,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 
 			// Ensure this field has a constant length of at least one.
 			const _ = uint(len(c.FixedRepeatedOneOf) - 1)
-
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var msgReader Reader
@@ -2016,7 +2043,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 
 			// Ensure this field has a constant length of at least one.
 			const _ = uint(len(c.FixedRepeatedRecursive) - 1)
-
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var msgReader Reader
@@ -2076,7 +2102,6 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 
 			// Ensure this field has a constant length of at least one.
 			const _ = uint(len(c.FixedRepeatedValueRecursive) - 1)
-
 			// Read the first entry manually because the tag is already
 			// stripped.
 			var msgReader Reader
@@ -3153,7 +3178,7 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) (UnmarshalResult,
 
 	var minField uint32
 	for r.HasNext() {
-		field, wireType, err := r.Tag()
+		field, wireType, err := r.ReadTag()
 		if err != nil {
 			return UnmarshalResult{}, err
 		}
@@ -3167,7 +3192,7 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) (UnmarshalResult,
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Uint(&c.Uint); err != nil {
+			if err := r.ReadUint(&c.Uint); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.Uint) {
@@ -3300,7 +3325,7 @@ func (c *SpecFuzzerPointer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, erro
 
 	var minField uint32
 	for r.HasNext() {
-		field, wireType, err := r.Tag()
+		field, wireType, err := r.ReadTag()
 		if err != nil {
 			return UnmarshalResult{}, err
 		}
@@ -3517,7 +3542,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 
 	var minField uint32
 	for r.HasNext() {
-		field, wireType, err := r.Tag()
+		field, wireType, err := r.ReadTag()
 		if err != nil {
 			return UnmarshalResult{}, err
 		}
@@ -3532,7 +3557,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			}
 			atomic.StoreUint32(&c.canotoData.AOneOf, canotoNumber_OneOf__A1)
 
-			if err := r.Int(&c.A1); err != nil {
+			if err := r.ReadInt(&c.A1); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.A1) {
@@ -3544,7 +3569,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			}
 			atomic.StoreUint32(&c.canotoData.BOneOf, canotoNumber_OneOf__B1)
 
-			if err := r.Int(&c.B1); err != nil {
+			if err := r.ReadInt(&c.B1); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.B1) {
@@ -3558,7 +3583,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
-			if err := r.Int(&c.B2); err != nil {
+			if err := r.ReadInt(&c.B2); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.B2) {
@@ -3569,7 +3594,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Int(&c.C); err != nil {
+			if err := r.ReadInt(&c.C); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.C) {
@@ -3580,7 +3605,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrUnexpectedWireType
 			}
 
-			if err := r.Int(&c.D); err != nil {
+			if err := r.ReadInt(&c.D); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.D) {
@@ -3594,7 +3619,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 				return UnmarshalResult{}, ErrDuplicateOneOf
 			}
 
-			if err := r.Int(&c.A2); err != nil {
+			if err := r.ReadInt(&c.A2); err != nil {
 				return UnmarshalResult{}, err
 			}
 			if IsZero(&c.A2) {

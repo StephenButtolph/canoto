@@ -14,8 +14,10 @@ import (
 
 // Ensure that the generated code is compatible with the library version.
 const (
-	_ uint = canoto.VersionCompatibility - 2
-	_ uint = 2 - canoto.VersionCompatibility
+	// Verify that this generated code is sufficiently up-to-date.
+	_ uint = 20 - canoto.MinVersion
+	// Verify that the canoto library is sufficiently up-to-date.
+	_ uint = canoto.MaxVersion - 20
 )
 
 const (
@@ -71,7 +73,7 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult
 
 	var minField uint32
 	for r.HasNext() {
-		field, wireType, err := r.Tag()
+		field, wireType, err := r.ReadTag()
 		if err != nil {
 			return canoto.UnmarshalResult{}, err
 		}
@@ -85,7 +87,7 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult
 				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
 			}
 
-			if err := r.Int(&c.Int8); err != nil {
+			if err := r.ReadInt(&c.Int8); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
 			if canoto.IsZero(&c.Int8) {

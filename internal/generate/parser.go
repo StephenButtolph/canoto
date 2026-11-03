@@ -52,9 +52,14 @@ func parse(
 			return false
 		}
 
-		if f, ok := n.(*ast.File); ok {
-			packageName = f.Name.Name
+		switch n := n.(type) {
+		case *ast.File:
+			packageName = n.Name.Name
 			return true
+		// Methods can't be declared on types defined inside of functions, so
+		// they can't be messages.
+		case *ast.FuncDecl, *ast.FuncLit:
+			return false
 		}
 
 		if f, ok := n.(*ast.ImportSpec); ok {
@@ -453,6 +458,15 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (
 			errInvalidFieldNumber,
 			fieldNumber,
 			canoto.MaxFieldNumber,
+			fs.Position(field.Pos()),
+		)
+	}
+	if canoto.FirstReservedFieldNumber <= fieldNumber && fieldNumber <= canoto.LastReservedFieldNumber {
+		return "", 0, "", false, fmt.Errorf("%w %d is reserved by protobuf [%d, %d] at %s",
+			errInvalidFieldNumber,
+			fieldNumber,
+			canoto.FirstReservedFieldNumber,
+			canoto.LastReservedFieldNumber,
 			fs.Position(field.Pos()),
 		)
 	}
