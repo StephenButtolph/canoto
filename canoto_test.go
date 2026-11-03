@@ -2222,7 +2222,7 @@ func FuzzUnmarshalUntrustedSpec(f *testing.F) {
 	})
 }
 
-func TestNewCodec_Invalid(t *testing.T) {
+func TestNewCodec(t *testing.T) {
 	tests := []struct {
 		name string
 		spec *Spec
@@ -2276,6 +2276,19 @@ func TestNewCodec_Invalid(t *testing.T) {
 			want: ErrInvalidSpec,
 		},
 		{
+			name: "field number before reserved range",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: FirstReservedFieldNumber - 1,
+						Name:        "a",
+						TypeBool:    true,
+					},
+				},
+			},
+		},
+		{
 			name: "first reserved field number",
 			spec: &Spec{
 				Name: "a",
@@ -2302,6 +2315,19 @@ func TestNewCodec_Invalid(t *testing.T) {
 				},
 			},
 			want: ErrInvalidSpec,
+		},
+		{
+			name: "field number after reserved range",
+			spec: &Spec{
+				Name: "a",
+				Fields: []FieldType{
+					{
+						FieldNumber: LastReservedFieldNumber + 1,
+						Name:        "a",
+						TypeBool:    true,
+					},
+				},
+			},
 		},
 		{
 			name: "duplicate field number",

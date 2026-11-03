@@ -1458,8 +1458,7 @@ func unsafeString(b []byte) string {
 
 // NewCodec returns a [Codec] for messages described by s.
 //
-// s may be read from untrusted input. If s is invalid, [ErrInvalidSpec] is
-// returned.
+// s may be read from untrusted input. If s is invalid, an error is returned.
 func NewCodec(s *Spec) (*Codec, error) {
 	if !s.ValidCanoto() {
 		return nil, ErrInvalidSpec
