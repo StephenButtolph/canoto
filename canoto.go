@@ -50,18 +50,18 @@ const (
 // Versions of this library and of the generated code it supports.
 const (
 	// Version is the current version of the canoto library.
-	Version = "v0.20.0"
+	Version = "v1.0.0"
 
 	// MaxVersion is the maximum supported version for generated code. It is
 	// always the minor version of [Version].
-	MaxVersion = 20
+	MaxVersion = 0
 	// GenVersion is the library version required by generated code. It is
 	// incremented when generated code relies on new functionality in the
 	// library.
-	GenVersion = 20
+	GenVersion = 0
 	// MinVersion is the minimum supported version for generated code. It is
 	// incremented when the library drops support for old generated code.
-	MinVersion = 20
+	MinVersion = 0
 )
 
 // Ensure that this library supports the code it generates.
@@ -278,8 +278,8 @@ type (
 		// [Reader.B] may be untrusted, as long as [Reader.MemoryRemaining] and
 		// [Reader.DepthLimit] are bounded.
 		//
-		// The returned [UnmarshalResult] must contain the memory remaining in r
-		// after charging for memory allocated by this call.
+		// On success, the returned [UnmarshalResult] must be r.Result(), called
+		// after charging r for memory allocated by this call.
 		UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error)
 	}
 
@@ -326,6 +326,9 @@ type (
 
 	// UnmarshalResult is the state returned after successfully unmarshaling a
 	// [Field].
+	//
+	// UnmarshalResult should be created with [Reader.Result] and consumed with
+	// [Reader.ApplyResult].
 	UnmarshalResult struct {
 		// MemoryRemaining is the remaining [Reader.MemoryRemaining].
 		MemoryRemaining uint64
@@ -496,6 +499,19 @@ func (s SizeEnum) isValid() bool {
 	}
 }
 
+// Result returns the [UnmarshalResult] describing the current state of r.
+func (r *Reader) Result() UnmarshalResult {
+	return UnmarshalResult{
+		MemoryRemaining: r.MemoryRemaining,
+	}
+}
+
+// ApplyResult updates r with the state from an [UnmarshalResult] returned by
+// unmarshaling a nested [Field].
+func (r *Reader) ApplyResult(result UnmarshalResult) {
+	r.MemoryRemaining = result.MemoryRemaining
+}
+
 // UseMemory charges n bytes against [Reader.MemoryRemaining]. If the remaining
 // memory is insufficient, [ErrMemoryLimitExceeded] is returned.
 func (r *Reader) UseMemory(n uint64) error {
@@ -587,8 +603,8 @@ func SizeUint[T Uint](v T) uint64 {
 	return uint64(bits.Len64(uint64(v)|1)+6) * 37 >> 8 //#nosec G115 // False positive
 }
 
-// CountInts counts the number of varints that are encoded in bytes.
-func CountInts(bytes []byte) uint64 {
+// countInts counts the number of varints that are encoded in bytes.
+func countInts(bytes []byte) uint64 {
 	var count uint64
 	// Reading 8 bytes at a time allows using a full register on 64-bit
 	// architectures, which is faster than reading one byte at a time.
@@ -672,7 +688,7 @@ func (r *Reader) ReadUints[S ~[]E, E Uint](v *S) (uint64, error) {
 	// After the check above, b contains exactly CountInts(b) complete
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
-	count := CountInts(b)
+	count := countInts(b)
 	if err := r.UseSliceMemory[E](count); err != nil {
 		return 0, err
 	}
@@ -846,7 +862,7 @@ func (r *Reader) ReadInts[S ~[]E, E Int](v *S) (uint64, error) {
 	// After the check above, b contains exactly CountInts(b) complete
 	// varints. Iterating over the local slice with range avoids all bounds
 	// checks on the reads.
-	count := CountInts(b)
+	count := countInts(b)
 	if err := r.UseSliceMemory[E](count); err != nil {
 		return 0, err
 	}
@@ -1672,7 +1688,7 @@ func (c *Codec) Unmarshal(r Reader) (Any, UnmarshalResult, error) {
 	if err != nil {
 		return Any{}, UnmarshalResult{}, err
 	}
-	return a, UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
+	return a, r.Result(), nil
 }
 
 // Marshal marshals a into bytes based on the Codec's [Spec].
@@ -2603,7 +2619,7 @@ func (f *field) unmarshalMessage(r *Reader) (any, error) {
 			Context:         r.Context,
 		}
 		a, err := f.message.unmarshal(&msgReader)
-		r.MemoryRemaining = msgReader.MemoryRemaining
+		r.ApplyResult(msgReader.Result())
 		return a, err
 	}
 	if f.pointer && f.repeated {
@@ -2730,7 +2746,7 @@ func unmarshalInt[T Int](f *field, r *Reader) (any, error) {
 		return packedValue(f, r, vs)
 	}
 
-	vs, err := makePacked[T](r, f.fixedLength, CountInts)
+	vs, err := makePacked[T](r, f.fixedLength, countInts)
 	if err != nil {
 		return nil, err
 	}
@@ -2759,7 +2775,7 @@ func unmarshalUint[T Uint](f *field, r *Reader) (any, error) {
 		return packedValue(f, r, vs)
 	}
 
-	vs, err := makePacked[T](r, f.fixedLength, CountInts)
+	vs, err := makePacked[T](r, f.fixedLength, countInts)
 	if err != nil {
 		return nil, err
 	}

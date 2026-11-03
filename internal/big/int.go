@@ -25,7 +25,7 @@ func (*Int) DescribeCanoto(...reflect.Type) *canoto.Spec {
 func (i *Int) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error) {
 	*i = Int{}
 	if len(r.B) == 0 {
-		return canoto.UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
+		return r.Result(), nil
 	}
 	if r.B[0] == 0 {
 		return canoto.UnmarshalResult{}, canoto.ErrPaddedZeroes
@@ -41,7 +41,7 @@ func (i *Int) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, erro
 		return canoto.UnmarshalResult{}, err
 	}
 	i.Int.SetBits(words[:0]).SetBytes(r.B)
-	return canoto.UnmarshalResult{MemoryRemaining: r.MemoryRemaining}, nil
+	return r.Result(), nil
 }
 
 func (i *Int) CheckCanoto() bool {

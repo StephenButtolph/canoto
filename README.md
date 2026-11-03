@@ -117,8 +117,8 @@ type Field interface {
 	// [Reader.B] may be untrusted, as long as [Reader.MemoryRemaining] and
 	// [Reader.DepthLimit] are bounded.
 	//
-	// The returned [UnmarshalResult] must contain the memory remaining in r
-	// after charging for memory allocated by this call.
+	// On success, the returned [UnmarshalResult] must be r.Result(), called
+	// after charging r for memory allocated by this call.
 	UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error)
 }
 ```
@@ -234,7 +234,7 @@ The stack used to unmarshal nested messages is not charged against the memory li
 
 #### Custom Fields
 
-`UnmarshalCanotoFrom` on a custom `canoto.Field` may be given untrusted input. Implementations should charge any memory they allocate with `r.UseMemory` or `r.UseSliceMemory`, and must return the remaining memory, `r.MemoryRemaining`, in the `canoto.UnmarshalResult`.
+`UnmarshalCanotoFrom` on a custom `canoto.Field` may be given untrusted input. Implementations should charge any memory they allocate with `r.UseMemory` or `r.UseSliceMemory`, and must return `r.Result()` on success. When unmarshaling a nested field, its result should be applied to the parent reader with `r.ApplyResult(result)`.
 
 ### Standalone Implementations
 
