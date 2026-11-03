@@ -34,7 +34,9 @@ const (
 	_ // EGROUP is deprecated and not supported
 	// I32 represents the 32-bit fixed-length wire type.
 	I32
+)
 
+const (
 	// SizeEnum8 indicates an [int8] or [uint8] type.
 	SizeEnum8 SizeEnum = 1
 	// SizeEnum16 indicates an [int16] or [uint16] type.
@@ -43,23 +45,10 @@ const (
 	SizeEnum32 SizeEnum = 3
 	// SizeEnum64 indicates an [Int64].
 	SizeEnum64 SizeEnum = 4
+)
 
-	// SizeFint32 is the size of a 32-bit fixed size integer in bytes.
-	SizeFint32 = 4
-	// SizeFint64 is the size of a 64-bit fixed size integer in bytes.
-	SizeFint64 = 8
-	// SizeBool is the size of a boolean in bytes.
-	SizeBool = 1
-
-	// MaxFieldNumber is the maximum field number allowed to be used in a Tag.
-	MaxFieldNumber = 1<<29 - 1
-	// FirstReservedFieldNumber is the first field number reserved by protobuf.
-	// Field numbers in [FirstReservedFieldNumber, LastReservedFieldNumber] may
-	// not be used.
-	FirstReservedFieldNumber = 19000
-	// LastReservedFieldNumber is the last field number reserved by protobuf.
-	LastReservedFieldNumber = 19999
-
+// Versions of this library and of the generated code it supports.
+const (
 	// Version is the current version of the canoto library.
 	Version = "v0.20.0"
 
@@ -73,6 +62,34 @@ const (
 	// MinVersion is the minimum supported version for generated code. It is
 	// incremented when the library drops support for old generated code.
 	MinVersion = 20
+)
+
+// Ensure that this library supports the code it generates.
+const (
+	_ uint = GenVersion - MinVersion
+	_ uint = MaxVersion - GenVersion
+)
+
+// Limits on the field numbers that may be used in a [Tag].
+const (
+	// MaxFieldNumber is the maximum field number allowed to be used in a Tag.
+	MaxFieldNumber = 1<<29 - 1
+	// FirstReservedFieldNumber is the first field number reserved by protobuf.
+	// Field numbers in [FirstReservedFieldNumber, LastReservedFieldNumber] may
+	// not be used.
+	FirstReservedFieldNumber = 19000
+	// LastReservedFieldNumber is the last field number reserved by protobuf.
+	LastReservedFieldNumber = 19999
+)
+
+// Encodings and sizes of fixed-size values.
+const (
+	// SizeFint32 is the size of a 32-bit fixed size integer in bytes.
+	SizeFint32 = 4
+	// SizeFint64 is the size of a 64-bit fixed size integer in bytes.
+	SizeFint64 = 8
+	// SizeBool is the size of a boolean in bytes.
+	SizeBool = 1
 
 	// EmptyBytes is the length-prefixed encoding of empty bytes.
 	EmptyBytes = "\x00" // (&Writer{}).AppendBytes([]byte{}).B
@@ -84,13 +101,18 @@ const (
 
 	// SizePointerPresenceTag is the size of [PointerPresenceTag] in bytes.
 	SizePointerPresenceTag = uint64(len(PointerPresenceTag))
+)
 
+// Default limits applied when unmarshaling with [Message.UnmarshalCanoto].
+const (
 	// DefaultMemoryLimit is the [Reader.MemoryRemaining] used by
 	// UnmarshalCanoto.
 	DefaultMemoryLimit uint64 = math.MaxUint64
 	// DefaultDepthLimit is the [Reader.DepthLimit] used by UnmarshalCanoto.
 	DefaultDepthLimit uint64 = math.MaxUint64
+)
 
+const (
 	wireTypeLength = 3
 	wireTypeMask   = 0x07
 
@@ -99,12 +121,6 @@ const (
 
 	continuationMask     = 0x80
 	continuationWordMask = 0x8080808080808080
-)
-
-// Ensure that this library supports the code it generates.
-const (
-	_ uint = GenVersion - MinVersion
-	_ uint = MaxVersion - GenVersion
 )
 
 // The source files of this library, embedded as strings. They can be used
