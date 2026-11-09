@@ -349,6 +349,15 @@ func parseField(
 
 	protoType := canotoType.ProtoType(goType)
 
+	// Comparing against a constant is cheaper than calling the generic IsZero.
+	isZero := selector + "IsZero(&c." + name + ")"
+	notZero := "!" + isZero
+	switch canotoType {
+	case canotoInt, canotoUint, canotoFint32, canotoFint64:
+		isZero = "c." + name + " == 0"
+		notZero = "c." + name + " != 0"
+	}
+
 	var signedSpace string
 	if canotoType.IsInt() {
 		signedSpace = " "
@@ -383,6 +392,8 @@ func parseField(
 			"checkDuplicateOneOf":       checkDuplicateOneOf,
 			"checkDuplicateOneOfIndent": checkDuplicateOneOfIndent,
 			"signedSpace":               signedSpace,
+			"isZero":                    isZero,
+			"notZero":                   notZero,
 			"wrapperName":               canonicalizeName(goType) + "__Pointer",
 		},
 	}, true, nil

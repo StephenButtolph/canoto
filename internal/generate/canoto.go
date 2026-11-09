@@ -787,7 +787,7 @@ func makeUnmarshal(m message) string {
 			if err := r.Read${suffix}(&c.${fieldName}); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
-			if ${selector}IsZero(&c.${fieldName}) {
+			if ${isZero} {
 				return ${selector}UnmarshalResult{}, ${selector}ErrZeroValue
 			}
 `
@@ -1375,7 +1375,7 @@ func makeCheckOneOf(m message) string {
 	}
 
 	const (
-		functionTemplate = `	if !${selector}IsZero(&c.${fieldName}) {${checkDuplicateOneOf}
+		functionTemplate = `	if ${notZero} {${checkDuplicateOneOf}
 		${oneOf}OneOf = ${fieldNumberConst}
 	}
 `
@@ -1541,7 +1541,7 @@ func makeSizeVars(m message) string {
 
 func makeSize(m message) string {
 	const (
-		fixedSizeTemplate = `	if !${selector}IsZero(&c.${fieldName}) {
+		fixedSizeTemplate = `	if ${notZero} {
 		size += uint64(len(${fieldTagConst})) + ${selector}Size${suffix}${sizeOneOf}
 	}
 `
@@ -1566,7 +1566,7 @@ func makeSize(m message) string {
 	)
 	return writeMessage(m, messageTemplate{
 		ints: typeTemplate{
-			single: `	if !${selector}IsZero(&c.${fieldName}) {
+			single: `	if ${notZero} {
 		size += uint64(len(${fieldTagConst})) + ${selector}Size${suffix}(c.${fieldName})${sizeOneOf}
 	}
 `,
@@ -1811,7 +1811,7 @@ func getAppendTemplate(isOneOf bool) messageTemplate {
 	)
 
 	if !isOneOf {
-		intTemplate = "\tif !${selector}IsZero(&c.${fieldName}) {\n" + intTemplateBody + "\t}\n"
+		intTemplate = "\tif ${notZero} {\n" + intTemplateBody + "\t}\n"
 		boolTemplate = "\tif !${selector}IsZero(&c.${fieldName}) {\n" + boolTemplateBody + "\t}\n"
 		bytesTemplate = "\tif len(c.${fieldName}) != 0 {\n" + bytesTemplateBody + "\t}\n"
 		fixedBytesTemplate = "\tif !${selector}IsZero(&c.${fieldName}) {\n" + fixedBytesTemplateBody + "\t}\n"

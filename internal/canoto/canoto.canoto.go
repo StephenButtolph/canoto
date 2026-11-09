@@ -468,7 +468,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadUint(&c.FieldNumber); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.FieldNumber) {
+			if c.FieldNumber == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__Name:
@@ -490,7 +490,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadUint(&c.FixedLength); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.FixedLength) {
+			if c.FixedLength == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__Repeated:
@@ -535,7 +535,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadUint(&c.TypeInt); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.TypeInt) {
+			if c.TypeInt == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeUint:
@@ -549,7 +549,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadUint(&c.TypeUint); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.TypeUint) {
+			if c.TypeUint == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeFixedInt:
@@ -563,7 +563,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadUint(&c.TypeFixedInt); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.TypeFixedInt) {
+			if c.TypeFixedInt == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeFixedUint:
@@ -577,7 +577,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadUint(&c.TypeFixedUint); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.TypeFixedUint) {
+			if c.TypeFixedUint == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeBool:
@@ -633,7 +633,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadUint(&c.TypeFixedBytes); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.TypeFixedBytes) {
+			if c.TypeFixedBytes == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeMessage:
@@ -668,7 +668,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadUint(&c.TypeRecursive); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.TypeRecursive) {
+			if c.TypeRecursive == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		default:
@@ -685,13 +685,13 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 func (c *FieldType) CacheCanoto() {
 	var size uint64
 	var TypeOneOf uint32
-	if !IsZero(&c.FieldNumber) {
+	if c.FieldNumber != 0 {
 		size += uint64(len(canotoTag_FieldType__FieldNumber)) + SizeUint(c.FieldNumber)
 	}
 	if len(c.Name) != 0 {
 		size += uint64(len(canotoTag_FieldType__Name)) + SizeBytes(c.Name)
 	}
-	if !IsZero(&c.FixedLength) {
+	if c.FixedLength != 0 {
 		size += uint64(len(canotoTag_FieldType__FixedLength)) + SizeUint(c.FixedLength)
 	}
 	if !IsZero(&c.Repeated) {
@@ -703,19 +703,19 @@ func (c *FieldType) CacheCanoto() {
 	if !IsZero(&c.Pointer) {
 		size += uint64(len(canotoTag_FieldType__Pointer)) + SizeBool
 	}
-	if !IsZero(&c.TypeInt) {
+	if c.TypeInt != 0 {
 		size += uint64(len(canotoTag_FieldType__TypeInt)) + SizeUint(c.TypeInt)
 		TypeOneOf = canotoNumber_FieldType__TypeInt
 	}
-	if !IsZero(&c.TypeUint) {
+	if c.TypeUint != 0 {
 		size += uint64(len(canotoTag_FieldType__TypeUint)) + SizeUint(c.TypeUint)
 		TypeOneOf = canotoNumber_FieldType__TypeUint
 	}
-	if !IsZero(&c.TypeFixedInt) {
+	if c.TypeFixedInt != 0 {
 		size += uint64(len(canotoTag_FieldType__TypeFixedInt)) + SizeUint(c.TypeFixedInt)
 		TypeOneOf = canotoNumber_FieldType__TypeFixedInt
 	}
-	if !IsZero(&c.TypeFixedUint) {
+	if c.TypeFixedUint != 0 {
 		size += uint64(len(canotoTag_FieldType__TypeFixedUint)) + SizeUint(c.TypeFixedUint)
 		TypeOneOf = canotoNumber_FieldType__TypeFixedUint
 	}
@@ -731,7 +731,7 @@ func (c *FieldType) CacheCanoto() {
 		size += uint64(len(canotoTag_FieldType__TypeBytes)) + SizeBool
 		TypeOneOf = canotoNumber_FieldType__TypeBytes
 	}
-	if !IsZero(&c.TypeFixedBytes) {
+	if c.TypeFixedBytes != 0 {
 		size += uint64(len(canotoTag_FieldType__TypeFixedBytes)) + SizeUint(c.TypeFixedBytes)
 		TypeOneOf = canotoNumber_FieldType__TypeFixedBytes
 	}
@@ -741,7 +741,7 @@ func (c *FieldType) CacheCanoto() {
 		size += uint64(len(canotoTag_FieldType__TypeMessage)) + SizeUint(fieldSize) + fieldSize
 		TypeOneOf = canotoNumber_FieldType__TypeMessage
 	}
-	if !IsZero(&c.TypeRecursive) {
+	if c.TypeRecursive != 0 {
 		size += uint64(len(canotoTag_FieldType__TypeRecursive)) + SizeUint(c.TypeRecursive)
 		TypeOneOf = canotoNumber_FieldType__TypeRecursive
 	}
@@ -784,22 +784,22 @@ func (c *FieldType) ValidCanoto() bool {
 // to this struct.
 func (c *FieldType) CheckCanoto() bool {
 	var TypeOneOf uint32
-	if !IsZero(&c.TypeInt) {
+	if c.TypeInt != 0 {
 		TypeOneOf = canotoNumber_FieldType__TypeInt
 	}
-	if !IsZero(&c.TypeUint) {
+	if c.TypeUint != 0 {
 		if TypeOneOf != 0 {
 			return false
 		}
 		TypeOneOf = canotoNumber_FieldType__TypeUint
 	}
-	if !IsZero(&c.TypeFixedInt) {
+	if c.TypeFixedInt != 0 {
 		if TypeOneOf != 0 {
 			return false
 		}
 		TypeOneOf = canotoNumber_FieldType__TypeFixedInt
 	}
-	if !IsZero(&c.TypeFixedUint) {
+	if c.TypeFixedUint != 0 {
 		if TypeOneOf != 0 {
 			return false
 		}
@@ -823,7 +823,7 @@ func (c *FieldType) CheckCanoto() bool {
 		}
 		TypeOneOf = canotoNumber_FieldType__TypeBytes
 	}
-	if !IsZero(&c.TypeFixedBytes) {
+	if c.TypeFixedBytes != 0 {
 		if TypeOneOf != 0 {
 			return false
 		}
@@ -835,7 +835,7 @@ func (c *FieldType) CheckCanoto() bool {
 		}
 		TypeOneOf = canotoNumber_FieldType__TypeMessage
 	}
-	if !IsZero(&c.TypeRecursive) {
+	if c.TypeRecursive != 0 {
 		if TypeOneOf != 0 {
 			return false
 		}
@@ -873,7 +873,7 @@ func (c *FieldType) MarshalCanoto() []byte {
 //
 // It is assumed that this struct is ValidCanoto.
 func (c *FieldType) AppendCanoto(w Writer) Writer {
-	if !IsZero(&c.FieldNumber) {
+	if c.FieldNumber != 0 {
 		w.Append(canotoTag_FieldType__FieldNumber)
 		w.AppendUint(c.FieldNumber)
 	}
@@ -881,7 +881,7 @@ func (c *FieldType) AppendCanoto(w Writer) Writer {
 		w.Append(canotoTag_FieldType__Name)
 		w.AppendBytes(c.Name)
 	}
-	if !IsZero(&c.FixedLength) {
+	if c.FixedLength != 0 {
 		w.Append(canotoTag_FieldType__FixedLength)
 		w.AppendUint(c.FixedLength)
 	}

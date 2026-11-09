@@ -90,7 +90,7 @@ func (c *A) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error)
 			if err := r.ReadInt(&c.Int); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
-			if canoto.IsZero(&c.Int) {
+			if c.Int == 0 {
 				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
 			}
 		default:
@@ -106,7 +106,7 @@ func (c *A) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error)
 // the struct.
 func (c *A) CacheCanoto() {
 	var size uint64
-	if !canoto.IsZero(&c.Int) {
+	if c.Int != 0 {
 		size += uint64(len(canotoTag_A__Int)) + canoto.SizeInt(c.Int)
 	}
 	canoto.CacheUint64(&c.canotoData.size, size)
@@ -153,7 +153,7 @@ func (c *A) MarshalCanoto() []byte {
 //
 // It is assumed that this struct is ValidCanoto.
 func (c *A) AppendCanoto(w canoto.Writer) canoto.Writer {
-	if !canoto.IsZero(&c.Int) {
+	if c.Int != 0 {
 		w.Append(canotoTag_A__Int)
 		w.AppendInt(c.Int)
 	}
@@ -230,7 +230,7 @@ func (c *V) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error)
 			if err := r.ReadInt(&c.Int); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
-			if canoto.IsZero(&c.Int) {
+			if c.Int == 0 {
 				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
 			}
 		default:
@@ -246,7 +246,7 @@ func (c *V) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error)
 // the struct.
 func (c *V) CacheCanoto() {
 	var size uint64
-	if !canoto.IsZero(&c.Int) {
+	if c.Int != 0 {
 		size += uint64(len(canotoTag_V__Int)) + canoto.SizeInt(c.Int)
 	}
 	canoto.CacheUint64(&c.canotoData.size, size)
@@ -293,7 +293,7 @@ func (c *V) MarshalCanoto() []byte {
 //
 // It is assumed that this struct is ValidCanoto.
 func (c *V) AppendCanoto(w canoto.Writer) canoto.Writer {
-	if !canoto.IsZero(&c.Int) {
+	if c.Int != 0 {
 		w.Append(canotoTag_V__Int)
 		w.AppendInt(c.Int)
 	}

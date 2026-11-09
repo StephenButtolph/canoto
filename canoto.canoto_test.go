@@ -723,7 +723,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadInt(&c.Int8); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.Int8) {
+			if c.Int8 == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Int16:
@@ -734,7 +734,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadInt(&c.Int16); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.Int16) {
+			if c.Int16 == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Int32:
@@ -745,7 +745,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadInt(&c.Int32); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.Int32) {
+			if c.Int32 == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Int64:
@@ -756,7 +756,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadInt(&c.Int64); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.Int64) {
+			if c.Int64 == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Uint8:
@@ -767,7 +767,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadUint(&c.Uint8); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.Uint8) {
+			if c.Uint8 == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Uint16:
@@ -778,7 +778,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadUint(&c.Uint16); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.Uint16) {
+			if c.Uint16 == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Uint32:
@@ -789,7 +789,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadUint(&c.Uint32); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.Uint32) {
+			if c.Uint32 == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Uint64:
@@ -800,7 +800,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadUint(&c.Uint64); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.Uint64) {
+			if c.Uint64 == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Sfixed32:
@@ -811,7 +811,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadFint32(&c.Sfixed32); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.Sfixed32) {
+			if c.Sfixed32 == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Fixed32:
@@ -822,7 +822,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadFint32(&c.Fixed32); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.Fixed32) {
+			if c.Fixed32 == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Sfixed64:
@@ -833,7 +833,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadFint64(&c.Sfixed64); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.Sfixed64) {
+			if c.Sfixed64 == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Fixed64:
@@ -844,7 +844,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadFint64(&c.Fixed64); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.Fixed64) {
+			if c.Fixed64 == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__Bool:
@@ -2167,40 +2167,40 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 // the struct.
 func (c *SpecFuzzer) CacheCanoto() {
 	var size uint64
-	if !IsZero(&c.Int8) {
+	if c.Int8 != 0 {
 		size += uint64(len(canotoTag_SpecFuzzer__Int8)) + SizeInt(c.Int8)
 	}
-	if !IsZero(&c.Int16) {
+	if c.Int16 != 0 {
 		size += uint64(len(canotoTag_SpecFuzzer__Int16)) + SizeInt(c.Int16)
 	}
-	if !IsZero(&c.Int32) {
+	if c.Int32 != 0 {
 		size += uint64(len(canotoTag_SpecFuzzer__Int32)) + SizeInt(c.Int32)
 	}
-	if !IsZero(&c.Int64) {
+	if c.Int64 != 0 {
 		size += uint64(len(canotoTag_SpecFuzzer__Int64)) + SizeInt(c.Int64)
 	}
-	if !IsZero(&c.Uint8) {
+	if c.Uint8 != 0 {
 		size += uint64(len(canotoTag_SpecFuzzer__Uint8)) + SizeUint(c.Uint8)
 	}
-	if !IsZero(&c.Uint16) {
+	if c.Uint16 != 0 {
 		size += uint64(len(canotoTag_SpecFuzzer__Uint16)) + SizeUint(c.Uint16)
 	}
-	if !IsZero(&c.Uint32) {
+	if c.Uint32 != 0 {
 		size += uint64(len(canotoTag_SpecFuzzer__Uint32)) + SizeUint(c.Uint32)
 	}
-	if !IsZero(&c.Uint64) {
+	if c.Uint64 != 0 {
 		size += uint64(len(canotoTag_SpecFuzzer__Uint64)) + SizeUint(c.Uint64)
 	}
-	if !IsZero(&c.Sfixed32) {
+	if c.Sfixed32 != 0 {
 		size += uint64(len(canotoTag_SpecFuzzer__Sfixed32)) + SizeFint32
 	}
-	if !IsZero(&c.Fixed32) {
+	if c.Fixed32 != 0 {
 		size += uint64(len(canotoTag_SpecFuzzer__Fixed32)) + SizeFint32
 	}
-	if !IsZero(&c.Sfixed64) {
+	if c.Sfixed64 != 0 {
 		size += uint64(len(canotoTag_SpecFuzzer__Sfixed64)) + SizeFint64
 	}
-	if !IsZero(&c.Fixed64) {
+	if c.Fixed64 != 0 {
 		size += uint64(len(canotoTag_SpecFuzzer__Fixed64)) + SizeFint64
 	}
 	if !IsZero(&c.Bool) {
@@ -2718,51 +2718,51 @@ func (c *SpecFuzzer) MarshalCanoto() []byte {
 //
 // It is assumed that this struct is ValidCanoto.
 func (c *SpecFuzzer) AppendCanoto(w Writer) Writer {
-	if !IsZero(&c.Int8) {
+	if c.Int8 != 0 {
 		w.Append(canotoTag_SpecFuzzer__Int8)
 		w.AppendInt(c.Int8)
 	}
-	if !IsZero(&c.Int16) {
+	if c.Int16 != 0 {
 		w.Append(canotoTag_SpecFuzzer__Int16)
 		w.AppendInt(c.Int16)
 	}
-	if !IsZero(&c.Int32) {
+	if c.Int32 != 0 {
 		w.Append(canotoTag_SpecFuzzer__Int32)
 		w.AppendInt(c.Int32)
 	}
-	if !IsZero(&c.Int64) {
+	if c.Int64 != 0 {
 		w.Append(canotoTag_SpecFuzzer__Int64)
 		w.AppendInt(c.Int64)
 	}
-	if !IsZero(&c.Uint8) {
+	if c.Uint8 != 0 {
 		w.Append(canotoTag_SpecFuzzer__Uint8)
 		w.AppendUint(c.Uint8)
 	}
-	if !IsZero(&c.Uint16) {
+	if c.Uint16 != 0 {
 		w.Append(canotoTag_SpecFuzzer__Uint16)
 		w.AppendUint(c.Uint16)
 	}
-	if !IsZero(&c.Uint32) {
+	if c.Uint32 != 0 {
 		w.Append(canotoTag_SpecFuzzer__Uint32)
 		w.AppendUint(c.Uint32)
 	}
-	if !IsZero(&c.Uint64) {
+	if c.Uint64 != 0 {
 		w.Append(canotoTag_SpecFuzzer__Uint64)
 		w.AppendUint(c.Uint64)
 	}
-	if !IsZero(&c.Sfixed32) {
+	if c.Sfixed32 != 0 {
 		w.Append(canotoTag_SpecFuzzer__Sfixed32)
 		w.AppendFint32(c.Sfixed32)
 	}
-	if !IsZero(&c.Fixed32) {
+	if c.Fixed32 != 0 {
 		w.Append(canotoTag_SpecFuzzer__Fixed32)
 		w.AppendFint32(c.Fixed32)
 	}
-	if !IsZero(&c.Sfixed64) {
+	if c.Sfixed64 != 0 {
 		w.Append(canotoTag_SpecFuzzer__Sfixed64)
 		w.AppendFint64(c.Sfixed64)
 	}
-	if !IsZero(&c.Fixed64) {
+	if c.Fixed64 != 0 {
 		w.Append(canotoTag_SpecFuzzer__Fixed64)
 		w.AppendFint64(c.Fixed64)
 	}
@@ -3195,7 +3195,7 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) (UnmarshalResult,
 			if err := r.ReadUint(&c.Uint); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.Uint) {
+			if c.Uint == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		default:
@@ -3211,7 +3211,7 @@ func (c *LargestFieldNumber[T1]) UnmarshalCanotoFrom(r Reader) (UnmarshalResult,
 // the struct.
 func (c *LargestFieldNumber[T1]) CacheCanoto() {
 	var size uint64
-	if !IsZero(&c.Uint) {
+	if c.Uint != 0 {
 		size += uint64(len(canotoTag_LargestFieldNumber__Uint)) + SizeUint(c.Uint)
 	}
 	CacheUint64(&c.canotoData.size, size)
@@ -3258,7 +3258,7 @@ func (c *LargestFieldNumber[T1]) MarshalCanoto() []byte {
 //
 // It is assumed that this struct is ValidCanoto.
 func (c *LargestFieldNumber[T1]) AppendCanoto(w Writer) Writer {
-	if !IsZero(&c.Uint) {
+	if c.Uint != 0 {
 		w.Append(canotoTag_LargestFieldNumber__Uint)
 		w.AppendUint(c.Uint)
 	}
@@ -3560,7 +3560,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadInt(&c.A1); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.A1) {
+			if c.A1 == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_OneOf__B1:
@@ -3572,7 +3572,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadInt(&c.B1); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.B1) {
+			if c.B1 == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_OneOf__B2:
@@ -3586,7 +3586,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadInt(&c.B2); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.B2) {
+			if c.B2 == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_OneOf__C:
@@ -3597,7 +3597,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadInt(&c.C); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.C) {
+			if c.C == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_OneOf__D:
@@ -3608,7 +3608,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadInt(&c.D); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.D) {
+			if c.D == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_OneOf__A2:
@@ -3622,7 +3622,7 @@ func (c *OneOf) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadInt(&c.A2); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.A2) {
+			if c.A2 == 0 {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		default:
@@ -3640,25 +3640,25 @@ func (c *OneOf) CacheCanoto() {
 	var size uint64
 	var AOneOf uint32
 	var BOneOf uint32
-	if !IsZero(&c.A1) {
+	if c.A1 != 0 {
 		size += uint64(len(canotoTag_OneOf__A1)) + SizeInt(c.A1)
 		AOneOf = canotoNumber_OneOf__A1
 	}
-	if !IsZero(&c.B1) {
+	if c.B1 != 0 {
 		size += uint64(len(canotoTag_OneOf__B1)) + SizeInt(c.B1)
 		BOneOf = canotoNumber_OneOf__B1
 	}
-	if !IsZero(&c.B2) {
+	if c.B2 != 0 {
 		size += uint64(len(canotoTag_OneOf__B2)) + SizeInt(c.B2)
 		BOneOf = canotoNumber_OneOf__B2
 	}
-	if !IsZero(&c.C) {
+	if c.C != 0 {
 		size += uint64(len(canotoTag_OneOf__C)) + SizeInt(c.C)
 	}
-	if !IsZero(&c.D) {
+	if c.D != 0 {
 		size += uint64(len(canotoTag_OneOf__D)) + SizeInt(c.D)
 	}
-	if !IsZero(&c.A2) {
+	if c.A2 != 0 {
 		size += uint64(len(canotoTag_OneOf__A2)) + SizeInt(c.A2)
 		AOneOf = canotoNumber_OneOf__A2
 	}
@@ -3711,19 +3711,19 @@ func (c *OneOf) ValidCanoto() bool {
 func (c *OneOf) CheckCanoto() bool {
 	var AOneOf uint32
 	var BOneOf uint32
-	if !IsZero(&c.A1) {
+	if c.A1 != 0 {
 		AOneOf = canotoNumber_OneOf__A1
 	}
-	if !IsZero(&c.B1) {
+	if c.B1 != 0 {
 		BOneOf = canotoNumber_OneOf__B1
 	}
-	if !IsZero(&c.B2) {
+	if c.B2 != 0 {
 		if BOneOf != 0 {
 			return false
 		}
 		BOneOf = canotoNumber_OneOf__B2
 	}
-	if !IsZero(&c.A2) {
+	if c.A2 != 0 {
 		if AOneOf != 0 {
 			return false
 		}
@@ -3766,11 +3766,11 @@ func (c *OneOf) AppendCanoto(w Writer) Writer {
 		w.Append(canotoTag_OneOf__B2)
 		w.AppendInt(c.B2)
 	}
-	if !IsZero(&c.C) {
+	if c.C != 0 {
 		w.Append(canotoTag_OneOf__C)
 		w.AppendInt(c.C)
 	}
-	if !IsZero(&c.D) {
+	if c.D != 0 {
 		w.Append(canotoTag_OneOf__D)
 		w.AppendInt(c.D)
 	}
