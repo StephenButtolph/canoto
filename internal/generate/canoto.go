@@ -787,7 +787,19 @@ func makeUnmarshal(m message) string {
 			if err := r.Read${suffix}(&c.${fieldName}); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
-			if ${isZero} {
+			if c.${fieldName} == 0 {
+				return ${selector}UnmarshalResult{}, ${selector}ErrZeroValue
+			}
+`
+		boolTemplate = `		case ${fieldNumberConst}:
+			if wireType != ${selector}${wireType} {
+				return ${selector}UnmarshalResult{}, ${selector}ErrUnexpectedWireType
+			}${unmarshalOneOf}
+
+			if err := r.Read${suffix}(&c.${fieldName}); err != nil {
+				return ${selector}UnmarshalResult{}, err
+			}
+			if ${selector}IsZero(&c.${fieldName}) {
 				return ${selector}UnmarshalResult{}, ${selector}ErrZeroValue
 			}
 `
@@ -937,7 +949,7 @@ func makeUnmarshal(m message) string {
 			fixedRepeated: fixedRepeatedFixedSizeTemplate,
 		},
 		bools: typeTemplate{
-			single:        intTemplate,
+			single:        boolTemplate,
 			repeated:      repeatedFixedSizeTemplate,
 			fixedRepeated: fixedRepeatedFixedSizeTemplate,
 		},
@@ -1375,7 +1387,11 @@ func makeCheckOneOf(m message) string {
 	}
 
 	const (
-		functionTemplate = `	if ${notZero} {${checkDuplicateOneOf}
+		functionTemplate = `	if !${selector}IsZero(&c.${fieldName}) {${checkDuplicateOneOf}
+		${oneOf}OneOf = ${fieldNumberConst}
+	}
+`
+		intTemplate = `	if c.${fieldName} != 0 {${checkDuplicateOneOf}
 		${oneOf}OneOf = ${fieldNumberConst}
 	}
 `
@@ -1385,14 +1401,19 @@ func makeCheckOneOf(m message) string {
 `
 	)
 	var (
+		intPrimitiveTemplate = typeTemplate{
+			single:        intTemplate,
+			repeated:      repeatedTemplate,
+			fixedRepeated: functionTemplate,
+		}
 		primitiveTemplate = typeTemplate{
 			single:        functionTemplate,
 			repeated:      repeatedTemplate,
 			fixedRepeated: functionTemplate,
 		}
 		t = messageTemplate{
-			ints:    primitiveTemplate,
-			fints:   primitiveTemplate,
+			ints:    intPrimitiveTemplate,
+			fints:   intPrimitiveTemplate,
 			bools:   primitiveTemplate,
 			strings: primitiveTemplate,
 
@@ -1541,7 +1562,11 @@ func makeSizeVars(m message) string {
 
 func makeSize(m message) string {
 	const (
-		fixedSizeTemplate = `	if ${notZero} {
+		fixedIntSizeTemplate = `	if c.${fieldName} != 0 {
+		size += uint64(len(${fieldTagConst})) + ${selector}Size${suffix}${sizeOneOf}
+	}
+`
+		boolSizeTemplate = `	if !${selector}IsZero(&c.${fieldName}) {
 		size += uint64(len(${fieldTagConst})) + ${selector}Size${suffix}${sizeOneOf}
 	}
 `
@@ -1566,7 +1591,7 @@ func makeSize(m message) string {
 	)
 	return writeMessage(m, messageTemplate{
 		ints: typeTemplate{
-			single: `	if ${notZero} {
+			single: `	if c.${fieldName} != 0 {
 		size += uint64(len(${fieldTagConst})) + ${selector}Size${suffix}(c.${fieldName})${sizeOneOf}
 	}
 `,
@@ -1590,12 +1615,12 @@ func makeSize(m message) string {
 `,
 		},
 		fints: typeTemplate{
-			single:        fixedSizeTemplate,
+			single:        fixedIntSizeTemplate,
 			repeated:      repeatedFixedSizeTemplate,
 			fixedRepeated: fixedRepeatedFixedSizeTemplate,
 		},
 		bools: typeTemplate{
-			single:        fixedSizeTemplate,
+			single:        boolSizeTemplate,
 			repeated:      repeatedFixedSizeTemplate,
 			fixedRepeated: fixedRepeatedFixedSizeTemplate,
 		},
@@ -1811,7 +1836,7 @@ func getAppendTemplate(isOneOf bool) messageTemplate {
 	)
 
 	if !isOneOf {
-		intTemplate = "\tif ${notZero} {\n" + intTemplateBody + "\t}\n"
+		intTemplate = "\tif c.${fieldName} != 0 {\n" + intTemplateBody + "\t}\n"
 		boolTemplate = "\tif !${selector}IsZero(&c.${fieldName}) {\n" + boolTemplateBody + "\t}\n"
 		bytesTemplate = "\tif len(c.${fieldName}) != 0 {\n" + bytesTemplateBody + "\t}\n"
 		fixedBytesTemplate = "\tif !${selector}IsZero(&c.${fieldName}) {\n" + fixedBytesTemplateBody + "\t}\n"
