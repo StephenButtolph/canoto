@@ -3480,3 +3480,37 @@ func BenchmarkUnmarshal_LongOneOf(b *testing.B) {
 		_, _, _ = codec.Unmarshal(r)
 	}
 }
+
+// A field with a long name, repeated in thousands of nested messages. If the
+// name were not charged for every field, this would unmarshal and
+// [Any.MarshalJSON] would produce gigabytes of output.
+func TestCodecUnmarshal_LongFieldName(t *testing.T) {
+	name := strings.Repeat("a", 1<<19)
+	codec, err := NewCodec(&Spec{
+		Name: "a",
+		Fields: []FieldType{{
+			FieldNumber:   1,
+			Name:          name,
+			Repeated:      true,
+			TypeRecursive: 1,
+		}},
+	})
+	require.NoError(t, err)
+
+	entry := Any{Fields: []AnyField{{
+		Name:  name,
+		Value: []Any{{}},
+	}}}
+	msgBytes, err := codec.Marshal(Any{Fields: []AnyField{{
+		Name:  name,
+		Value: slices.Repeat([]Any{entry}, 8000),
+	}}})
+	require.NoError(t, err)
+
+	_, _, err = codec.Unmarshal(Reader{
+		B:               msgBytes,
+		MemoryRemaining: 1 << 20,
+		DepthLimit:      DefaultDepthLimit,
+	})
+	require.ErrorIs(t, err, ErrMemoryLimitExceeded)
+}

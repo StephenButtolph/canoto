@@ -1931,6 +1931,12 @@ func (s *spec) unmarshal(r *Reader) (Any, error) {
 			oneOfs[f.oneOf] = struct{}{}
 		}
 
+		// Although the name is not actually allocated here, it is charged per
+		// field so that work over every name (e.g. [Any.MarshalJSON]) is
+		// bounded by the memory charged, even if a Spec has long names.
+		if err := r.UseMemory(uint64(len(f.name))); err != nil {
+			return Any{}, err
+		}
 		value, err := f.unmarshal(r)
 		if err != nil {
 			return Any{}, err
