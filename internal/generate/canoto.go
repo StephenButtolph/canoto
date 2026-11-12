@@ -1422,8 +1422,8 @@ func makeCheckOneOf(m message) string {
 			repeated:      repeatedTemplate,
 			fixedRepeated: functionTemplate,
 		}
-		primitiveTemplate = typeTemplate{
-			single:        functionTemplate,
+		stringPrimitiveTemplate = typeTemplate{
+			single:        repeatedTemplate,
 			repeated:      repeatedTemplate,
 			fixedRepeated: functionTemplate,
 		}
@@ -1431,7 +1431,7 @@ func makeCheckOneOf(m message) string {
 			ints:    intPrimitiveTemplate,
 			fints:   intPrimitiveTemplate,
 			bools:   boolPrimitiveTemplate,
-			strings: primitiveTemplate,
+			strings: stringPrimitiveTemplate,
 
 			bytesTemplate:              repeatedTemplate,
 			repeatedBytesTemplate:      repeatedTemplate,
