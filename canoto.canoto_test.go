@@ -855,7 +855,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadBool(&c.Bool); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.Bool) {
+			if c.Bool == false {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_SpecFuzzer__String:
@@ -2203,7 +2203,7 @@ func (c *SpecFuzzer) CacheCanoto() {
 	if c.Fixed64 != 0 {
 		size += uint64(len(canotoTag_SpecFuzzer__Fixed64)) + SizeFint64
 	}
-	if !IsZero(&c.Bool) {
+	if c.Bool == true {
 		size += uint64(len(canotoTag_SpecFuzzer__Bool)) + SizeBool
 	}
 	if len(c.String) != 0 {
@@ -2766,7 +2766,7 @@ func (c *SpecFuzzer) AppendCanoto(w Writer) Writer {
 		w.Append(canotoTag_SpecFuzzer__Fixed64)
 		w.AppendFint64(c.Fixed64)
 	}
-	if !IsZero(&c.Bool) {
+	if c.Bool == true {
 		w.Append(canotoTag_SpecFuzzer__Bool)
 		w.AppendBool(true)
 	}

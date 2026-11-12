@@ -501,7 +501,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadBool(&c.Repeated); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.Repeated) {
+			if c.Repeated == false {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__OneOf:
@@ -523,7 +523,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadBool(&c.Pointer); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.Pointer) {
+			if c.Pointer == false {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeInt:
@@ -591,7 +591,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadBool(&c.TypeBool); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.TypeBool) {
+			if c.TypeBool == false {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeString:
@@ -605,7 +605,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadBool(&c.TypeString); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.TypeString) {
+			if c.TypeString == false {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeBytes:
@@ -619,7 +619,7 @@ func (c *FieldType) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			if err := r.ReadBool(&c.TypeBytes); err != nil {
 				return UnmarshalResult{}, err
 			}
-			if IsZero(&c.TypeBytes) {
+			if c.TypeBytes == false {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 		case canotoNumber_FieldType__TypeFixedBytes:
@@ -694,13 +694,13 @@ func (c *FieldType) CacheCanoto() {
 	if c.FixedLength != 0 {
 		size += uint64(len(canotoTag_FieldType__FixedLength)) + SizeUint(c.FixedLength)
 	}
-	if !IsZero(&c.Repeated) {
+	if c.Repeated == true {
 		size += uint64(len(canotoTag_FieldType__Repeated)) + SizeBool
 	}
 	if len(c.OneOf) != 0 {
 		size += uint64(len(canotoTag_FieldType__OneOf)) + SizeBytes(c.OneOf)
 	}
-	if !IsZero(&c.Pointer) {
+	if c.Pointer == true {
 		size += uint64(len(canotoTag_FieldType__Pointer)) + SizeBool
 	}
 	if c.TypeInt != 0 {
@@ -719,15 +719,15 @@ func (c *FieldType) CacheCanoto() {
 		size += uint64(len(canotoTag_FieldType__TypeFixedUint)) + SizeUint(c.TypeFixedUint)
 		TypeOneOf = canotoNumber_FieldType__TypeFixedUint
 	}
-	if !IsZero(&c.TypeBool) {
+	if c.TypeBool == true {
 		size += uint64(len(canotoTag_FieldType__TypeBool)) + SizeBool
 		TypeOneOf = canotoNumber_FieldType__TypeBool
 	}
-	if !IsZero(&c.TypeString) {
+	if c.TypeString == true {
 		size += uint64(len(canotoTag_FieldType__TypeString)) + SizeBool
 		TypeOneOf = canotoNumber_FieldType__TypeString
 	}
-	if !IsZero(&c.TypeBytes) {
+	if c.TypeBytes == true {
 		size += uint64(len(canotoTag_FieldType__TypeBytes)) + SizeBool
 		TypeOneOf = canotoNumber_FieldType__TypeBytes
 	}
@@ -805,19 +805,19 @@ func (c *FieldType) CheckCanoto() bool {
 		}
 		TypeOneOf = canotoNumber_FieldType__TypeFixedUint
 	}
-	if !IsZero(&c.TypeBool) {
+	if c.TypeBool == true {
 		if TypeOneOf != 0 {
 			return false
 		}
 		TypeOneOf = canotoNumber_FieldType__TypeBool
 	}
-	if !IsZero(&c.TypeString) {
+	if c.TypeString == true {
 		if TypeOneOf != 0 {
 			return false
 		}
 		TypeOneOf = canotoNumber_FieldType__TypeString
 	}
-	if !IsZero(&c.TypeBytes) {
+	if c.TypeBytes == true {
 		if TypeOneOf != 0 {
 			return false
 		}
@@ -885,7 +885,7 @@ func (c *FieldType) AppendCanoto(w Writer) Writer {
 		w.Append(canotoTag_FieldType__FixedLength)
 		w.AppendUint(c.FixedLength)
 	}
-	if !IsZero(&c.Repeated) {
+	if c.Repeated == true {
 		w.Append(canotoTag_FieldType__Repeated)
 		w.AppendBool(true)
 	}
@@ -893,7 +893,7 @@ func (c *FieldType) AppendCanoto(w Writer) Writer {
 		w.Append(canotoTag_FieldType__OneOf)
 		w.AppendBytes(c.OneOf)
 	}
-	if !IsZero(&c.Pointer) {
+	if c.Pointer == true {
 		w.Append(canotoTag_FieldType__Pointer)
 		w.AppendBool(true)
 	}

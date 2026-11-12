@@ -799,7 +799,7 @@ func makeUnmarshal(m message) string {
 			if err := r.Read${suffix}(&c.${fieldName}); err != nil {
 				return ${selector}UnmarshalResult{}, err
 			}
-			if ${selector}IsZero(&c.${fieldName}) {
+			if c.${fieldName} == false {
 				return ${selector}UnmarshalResult{}, ${selector}ErrZeroValue
 			}
 `
@@ -1395,6 +1395,10 @@ func makeCheckOneOf(m message) string {
 		${oneOf}OneOf = ${fieldNumberConst}
 	}
 `
+		boolTemplate = `	if c.${fieldName} == true {${checkDuplicateOneOf}
+		${oneOf}OneOf = ${fieldNumberConst}
+	}
+`
 		repeatedTemplate = `	if len(c.${fieldName}) != 0 {${checkDuplicateOneOf}
 		${oneOf}OneOf = ${fieldNumberConst}
 	}
@@ -1406,6 +1410,11 @@ func makeCheckOneOf(m message) string {
 			repeated:      repeatedTemplate,
 			fixedRepeated: functionTemplate,
 		}
+		boolPrimitiveTemplate = typeTemplate{
+			single:        boolTemplate,
+			repeated:      repeatedTemplate,
+			fixedRepeated: functionTemplate,
+		}
 		primitiveTemplate = typeTemplate{
 			single:        functionTemplate,
 			repeated:      repeatedTemplate,
@@ -1414,7 +1423,7 @@ func makeCheckOneOf(m message) string {
 		t = messageTemplate{
 			ints:    intPrimitiveTemplate,
 			fints:   intPrimitiveTemplate,
-			bools:   primitiveTemplate,
+			bools:   boolPrimitiveTemplate,
 			strings: primitiveTemplate,
 
 			bytesTemplate:              repeatedTemplate,
@@ -1566,7 +1575,7 @@ func makeSize(m message) string {
 		size += uint64(len(${fieldTagConst})) + ${selector}Size${suffix}${sizeOneOf}
 	}
 `
-		boolSizeTemplate = `	if !${selector}IsZero(&c.${fieldName}) {
+		boolSizeTemplate = `	if c.${fieldName} == true {
 		size += uint64(len(${fieldTagConst})) + ${selector}Size${suffix}${sizeOneOf}
 	}
 `
@@ -1837,7 +1846,7 @@ func getAppendTemplate(isOneOf bool) messageTemplate {
 
 	if !isOneOf {
 		intTemplate = "\tif c.${fieldName} != 0 {\n" + intTemplateBody + "\t}\n"
-		boolTemplate = "\tif !${selector}IsZero(&c.${fieldName}) {\n" + boolTemplateBody + "\t}\n"
+		boolTemplate = "\tif c.${fieldName} == true {\n" + boolTemplateBody + "\t}\n"
 		bytesTemplate = "\tif len(c.${fieldName}) != 0 {\n" + bytesTemplateBody + "\t}\n"
 		fixedBytesTemplate = "\tif !${selector}IsZero(&c.${fieldName}) {\n" + fixedBytesTemplateBody + "\t}\n"
 		valueTemplate = valueTemplateRegular

@@ -4766,7 +4766,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 			if err := r.ReadBool(&c.Bool); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
-			if canoto.IsZero(&c.Bool) {
+			if c.Bool == false {
 				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
 			}
 		case canotoNumber_Scalars__String:
@@ -5991,7 +5991,7 @@ func (c *Scalars) CacheCanoto() {
 	if c.Fixed64 != 0 {
 		size += uint64(len(canotoTag_Scalars__Fixed64)) + canoto.SizeFint64
 	}
-	if !canoto.IsZero(&c.Bool) {
+	if c.Bool == true {
 		size += uint64(len(canotoTag_Scalars__Bool)) + canoto.SizeBool
 	}
 	if len(c.String) != 0 {
@@ -6470,7 +6470,7 @@ func (c *Scalars) AppendCanoto(w canoto.Writer) canoto.Writer {
 		w.Append(canotoTag_Scalars__Fixed64)
 		w.AppendFint64(c.Fixed64)
 	}
-	if !canoto.IsZero(&c.Bool) {
+	if c.Bool == true {
 		w.Append(canotoTag_Scalars__Bool)
 		w.AppendBool(true)
 	}
@@ -6893,7 +6893,7 @@ func (c *SpecUnusedZero) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalR
 			if err := r.ReadBool(&c.Bool); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
-			if canoto.IsZero(&c.Bool) {
+			if c.Bool == false {
 				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
 			}
 		case canotoNumber_SpecUnusedZero__RepeatedBool:
@@ -7014,7 +7014,7 @@ func (c *SpecUnusedZero) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalR
 // the struct.
 func (c *SpecUnusedZero) CacheCanoto() {
 	var size uint64
-	if !canoto.IsZero(&c.Bool) {
+	if c.Bool == true {
 		size += uint64(len(canotoTag_SpecUnusedZero__Bool)) + canoto.SizeBool
 	}
 	if num := uint64(len(c.RepeatedBool)); num != 0 {
@@ -7085,7 +7085,7 @@ func (c *SpecUnusedZero) MarshalCanoto() []byte {
 //
 // It is assumed that this struct is ValidCanoto.
 func (c *SpecUnusedZero) AppendCanoto(w canoto.Writer) canoto.Writer {
-	if !canoto.IsZero(&c.Bool) {
+	if c.Bool == true {
 		w.Append(canotoTag_SpecUnusedZero__Bool)
 		w.AppendBool(true)
 	}
