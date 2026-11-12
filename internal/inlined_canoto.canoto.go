@@ -90,7 +90,7 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult
 			if err := r.ReadInt(&c.Int8); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
-			if canoto.IsZero(&c.Int8) {
+			if c.Int8 == 0 {
 				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
 			}
 		default:
@@ -106,7 +106,7 @@ func (c *justAnInt) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult
 // the struct.
 func (c *justAnInt) CacheCanoto() {
 	var size uint64
-	if !canoto.IsZero(&c.Int8) {
+	if c.Int8 != 0 {
 		size += uint64(len(canotoTag_justAnInt__Int8)) + canoto.SizeInt(c.Int8)
 	}
 	canoto.CacheUint64(&c.canotoData.size, size)
@@ -153,7 +153,7 @@ func (c *justAnInt) MarshalCanoto() []byte {
 //
 // It is assumed that this struct is ValidCanoto.
 func (c *justAnInt) AppendCanoto(w canoto.Writer) canoto.Writer {
-	if !canoto.IsZero(&c.Int8) {
+	if c.Int8 != 0 {
 		w.Append(canotoTag_justAnInt__Int8)
 		w.AppendInt(c.Int8)
 	}

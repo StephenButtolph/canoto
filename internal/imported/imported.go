@@ -25,3 +25,6 @@ type V struct {
 
 	canotoData canotoData_V
 }
+
+// FixedBytes is a fixed bytes type declared in another package.
+type FixedBytes [4]byte

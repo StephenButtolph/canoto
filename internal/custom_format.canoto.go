@@ -110,7 +110,7 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalRes
 			if err := r.ReadUint(&c.A); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
-			if canoto.IsZero(&c.A) {
+			if c.A == 0 {
 				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
 			}
 		case CustomFormatBNumber:
@@ -124,7 +124,7 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalRes
 			if err := r.ReadUint(&c.B); err != nil {
 				return canoto.UnmarshalResult{}, err
 			}
-			if canoto.IsZero(&c.B) {
+			if c.B == 0 {
 				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
 			}
 		default:
@@ -141,11 +141,11 @@ func (c *CustomFormat) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalRes
 func (c *CustomFormat) CacheCanoto() {
 	var size uint64
 	var FieldsOneOf uint32
-	if !canoto.IsZero(&c.A) {
+	if c.A != 0 {
 		size += uint64(len(CustomFormatATag)) + canoto.SizeUint(c.A)
 		FieldsOneOf = CustomFormatANumber
 	}
-	if !canoto.IsZero(&c.B) {
+	if c.B != 0 {
 		size += uint64(len(CustomFormatBTag)) + canoto.SizeUint(c.B)
 		FieldsOneOf = CustomFormatBNumber
 	}
@@ -184,10 +184,10 @@ func (c *CustomFormat) ValidCanoto() bool {
 // Canoto format. Most users should just use ValidCanoto.
 func (c *CustomFormat) CheckCanoto() bool {
 	var FieldsOneOf uint32
-	if !canoto.IsZero(&c.A) {
+	if c.A != 0 {
 		FieldsOneOf = CustomFormatANumber
 	}
-	if !canoto.IsZero(&c.B) {
+	if c.B != 0 {
 		if FieldsOneOf != 0 {
 			return false
 		}
