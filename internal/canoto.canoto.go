@@ -5325,7 +5325,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 			}
 
 			copy((&c.FixedBytes)[:], r.B)
-			if canoto.IsZero(&c.FixedBytes) {
+			if c.FixedBytes == [expectedLength]byte{} {
 				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
 			}
 			r.B = r.B[expectedLength:]
@@ -5606,7 +5606,7 @@ func (c *Scalars) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, 
 			}
 
 			copy((&c.CustomFixedBytes)[:], r.B)
-			if canoto.IsZero(&c.CustomFixedBytes) {
+			if c.CustomFixedBytes == [expectedLength]byte{} {
 				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
 			}
 			r.B = r.B[expectedLength:]
@@ -6191,8 +6191,11 @@ func (c *Scalars) CacheCanoto() {
 			size += uint64(len(canotoTag_Scalars__FixedRepeatedString)) + canoto.SizeBytes(v)
 		}
 	}
-	if !canoto.IsZero(&c.FixedBytes) {
-		size += uint64(len(canotoTag_Scalars__FixedBytes)) + canoto.SizeBytes((&c.FixedBytes)[:])
+	{
+		const length = len(c.FixedBytes)
+		if c.FixedBytes != [length]byte{} {
+			size += uint64(len(canotoTag_Scalars__FixedBytes)) + canoto.SizeBytes((&c.FixedBytes)[:])
+		}
 	}
 	if num := uint64(len(c.RepeatedFixedBytes)); num != 0 {
 		fieldSize := uint64(len(canotoTag_Scalars__RepeatedFixedBytes)) + canoto.SizeBytes((&c.RepeatedFixedBytes[0])[:])
@@ -6254,8 +6257,11 @@ func (c *Scalars) CacheCanoto() {
 	if len(c.CustomBytes) != 0 {
 		size += uint64(len(canotoTag_Scalars__CustomBytes)) + canoto.SizeBytes(c.CustomBytes)
 	}
-	if !canoto.IsZero(&c.CustomFixedBytes) {
-		size += uint64(len(canotoTag_Scalars__CustomFixedBytes)) + canoto.SizeBytes((&c.CustomFixedBytes)[:])
+	{
+		const length = len(c.CustomFixedBytes)
+		if c.CustomFixedBytes != [length]byte{} {
+			size += uint64(len(canotoTag_Scalars__CustomFixedBytes)) + canoto.SizeBytes((&c.CustomFixedBytes)[:])
+		}
 	}
 	for _, v := range c.CustomRepeatedBytes {
 		size += uint64(len(canotoTag_Scalars__CustomRepeatedBytes)) + canoto.SizeBytes(v)
@@ -6629,9 +6635,12 @@ func (c *Scalars) AppendCanoto(w canoto.Writer) canoto.Writer {
 			w.AppendBytes(v)
 		}
 	}
-	if !canoto.IsZero(&c.FixedBytes) {
-		w.Append(canotoTag_Scalars__FixedBytes)
-		w.AppendBytes((&c.FixedBytes)[:])
+	{
+		const length = len(c.FixedBytes)
+		if c.FixedBytes != [length]byte{} {
+			w.Append(canotoTag_Scalars__FixedBytes)
+			w.AppendBytes((&c.FixedBytes)[:])
+		}
 	}
 	{
 		field := c.RepeatedFixedBytes
@@ -6700,9 +6709,12 @@ func (c *Scalars) AppendCanoto(w canoto.Writer) canoto.Writer {
 		w.Append(canotoTag_Scalars__CustomBytes)
 		w.AppendBytes(c.CustomBytes)
 	}
-	if !canoto.IsZero(&c.CustomFixedBytes) {
-		w.Append(canotoTag_Scalars__CustomFixedBytes)
-		w.AppendBytes((&c.CustomFixedBytes)[:])
+	{
+		const length = len(c.CustomFixedBytes)
+		if c.CustomFixedBytes != [length]byte{} {
+			w.Append(canotoTag_Scalars__CustomFixedBytes)
+			w.AppendBytes((&c.CustomFixedBytes)[:])
+		}
 	}
 	for _, v := range c.CustomRepeatedBytes {
 		w.Append(canotoTag_Scalars__CustomRepeatedBytes)

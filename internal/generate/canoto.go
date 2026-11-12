@@ -983,7 +983,7 @@ func makeUnmarshal(m message) string {
 			}
 
 			copy((&c.${fieldName})[:], r.B)
-			if ${selector}IsZero(&c.${fieldName}) {
+			if c.${fieldName} == [expectedLength]byte{} {
 				return ${selector}UnmarshalResult{}, ${selector}ErrZeroValue
 			}
 			r.B = r.B[expectedLength:]
@@ -1399,6 +1399,13 @@ func makeCheckOneOf(m message) string {
 		${oneOf}OneOf = ${fieldNumberConst}
 	}
 `
+		fixedBytesTemplate = `	{
+		const length = len(c.${fieldName})
+		if c.${fieldName} != [length]byte{} {${checkDuplicateOneOfIndent}
+			${oneOf}OneOf = ${fieldNumberConst}
+		}
+	}
+`
 		repeatedTemplate = `	if len(c.${fieldName}) != 0 {${checkDuplicateOneOf}
 		${oneOf}OneOf = ${fieldNumberConst}
 	}
@@ -1428,7 +1435,7 @@ func makeCheckOneOf(m message) string {
 
 			bytesTemplate:              repeatedTemplate,
 			repeatedBytesTemplate:      repeatedTemplate,
-			fixedBytesTemplate:         functionTemplate,
+			fixedBytesTemplate:         fixedBytesTemplate,
 			repeatedFixedBytesTemplate: repeatedTemplate,
 			fixedRepeatedBytesTemplate: `	{
 		isZero := true
@@ -1645,8 +1652,11 @@ func makeSize(m message) string {
 		},
 		bytesTemplate:         bytesTemplate,
 		repeatedBytesTemplate: repeatedBytesTemplate,
-		fixedBytesTemplate: `	if !${selector}IsZero(&c.${fieldName}) {
-		size += uint64(len(${fieldTagConst})) + ${selector}SizeBytes((&c.${fieldName})[:])${sizeOneOf}
+		fixedBytesTemplate: `	{
+		const length = len(c.${fieldName})
+		if c.${fieldName} != [length]byte{} {
+			size += uint64(len(${fieldTagConst})) + ${selector}SizeBytes((&c.${fieldName})[:])${sizeOneOfIndent}
+		}
 	}
 `,
 		repeatedFixedBytesTemplate: `	if num := uint64(len(c.${fieldName})); num != 0 {
@@ -1848,7 +1858,14 @@ func getAppendTemplate(isOneOf bool) messageTemplate {
 		intTemplate = "\tif c.${fieldName} != 0 {\n" + intTemplateBody + "\t}\n"
 		boolTemplate = "\tif c.${fieldName} == true {\n" + boolTemplateBody + "\t}\n"
 		bytesTemplate = "\tif len(c.${fieldName}) != 0 {\n" + bytesTemplateBody + "\t}\n"
-		fixedBytesTemplate = "\tif !${selector}IsZero(&c.${fieldName}) {\n" + fixedBytesTemplateBody + "\t}\n"
+		fixedBytesTemplate = `	{
+		const length = len(c.${fieldName})
+		if c.${fieldName} != [length]byte{} {
+			w.Append(${fieldTagConst})
+			w.AppendBytes((&c.${fieldName})[:])
+		}
+	}
+`
 		valueTemplate = valueTemplateRegular
 		pointerTemplate = pointerTemplateRegular
 	}

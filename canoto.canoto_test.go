@@ -903,7 +903,7 @@ func (c *SpecFuzzer) UnmarshalCanotoFrom(r Reader) (UnmarshalResult, error) {
 			}
 
 			copy((&c.FixedBytes)[:], r.B)
-			if IsZero(&c.FixedBytes) {
+			if c.FixedBytes == [expectedLength]byte{} {
 				return UnmarshalResult{}, ErrZeroValue
 			}
 			r.B = r.B[expectedLength:]
@@ -2212,8 +2212,11 @@ func (c *SpecFuzzer) CacheCanoto() {
 	if len(c.Bytes) != 0 {
 		size += uint64(len(canotoTag_SpecFuzzer__Bytes)) + SizeBytes(c.Bytes)
 	}
-	if !IsZero(&c.FixedBytes) {
-		size += uint64(len(canotoTag_SpecFuzzer__FixedBytes)) + SizeBytes((&c.FixedBytes)[:])
+	{
+		const length = len(c.FixedBytes)
+		if c.FixedBytes != [length]byte{} {
+			size += uint64(len(canotoTag_SpecFuzzer__FixedBytes)) + SizeBytes((&c.FixedBytes)[:])
+		}
 	}
 	(&c.Value).CacheCanoto()
 	if fieldSize := (&c.Value).SizeCanoto(); fieldSize != 0 {
@@ -2778,9 +2781,12 @@ func (c *SpecFuzzer) AppendCanoto(w Writer) Writer {
 		w.Append(canotoTag_SpecFuzzer__Bytes)
 		w.AppendBytes(c.Bytes)
 	}
-	if !IsZero(&c.FixedBytes) {
-		w.Append(canotoTag_SpecFuzzer__FixedBytes)
-		w.AppendBytes((&c.FixedBytes)[:])
+	{
+		const length = len(c.FixedBytes)
+		if c.FixedBytes != [length]byte{} {
+			w.Append(canotoTag_SpecFuzzer__FixedBytes)
+			w.AppendBytes((&c.FixedBytes)[:])
+		}
 	}
 	if fieldSize := (&c.Value).SizeCanoto(); fieldSize != 0 {
 		w.Append(canotoTag_SpecFuzzer__Value)
