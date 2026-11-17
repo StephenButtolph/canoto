@@ -5,7 +5,8 @@ package canoto
 import (
 	"bytes"
 	"encoding/hex"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"io"
 	"math"
 	"math/rand/v2"
@@ -1832,24 +1833,56 @@ func TestAnyMarshalJSON(t *testing.T) {
 		{Name: "values", Value: []Any{{}, {Fields: []AnyField{{Name: "a", Value: int8(-1)}}}}},
 		{Name: "nilPointers", Value: []*Any(nil)},
 		{Name: "pointers", Value: []*Any{nil, {}, {Fields: []AnyField{{Name: "b", Value: []byte{1}}}}}},
+		{Name: "nilBytes", Value: []byte(nil)},
+		{Name: "nilStrings", Value: []string(nil)},
 		{Name: "bytes", Value: []*[]byte{nil, {2}}},
 	}}
-	got, err := a.MarshalJSON()
-	require.NoError(t, err)
-	require.JSONEq(
-		t,
-		`{
-			"<html>":"<&>",
-			"empty":{},
-			"nilValues":null,
-			"emptyValues":[],
-			"values":[{},{"a":-1}],
-			"nilPointers":null,
-			"pointers":[null,{},{"b":"AQ=="}],
-			"bytes":[null,"Ag=="]
-		}`,
-		string(got),
-	)
+	tests := []struct {
+		name string
+		opts []json.Options
+		want string
+	}{
+		{
+			name: "default",
+			want: `{
+				"<html>":"<&>",
+				"empty":{},
+				"nilValues":[],
+				"emptyValues":[],
+				"values":[{},{"a":-1}],
+				"nilPointers":[],
+				"pointers":[null,{},{"b":"AQ=="}],
+				"nilBytes":"",
+				"nilStrings":[],
+				"bytes":[null,"Ag=="]
+			}`,
+		},
+		{
+			name: "nil_as_null",
+			opts: []json.Options{
+				json.FormatNilSliceAsNull(true),
+			},
+			want: `{
+				"<html>":"<&>",
+				"empty":{},
+				"nilValues":null,
+				"emptyValues":[],
+				"values":[{},{"a":-1}],
+				"nilPointers":null,
+				"pointers":[null,{},{"b":"AQ=="}],
+				"nilBytes":null,
+				"nilStrings":null,
+				"bytes":[null,"Ag=="]
+			}`,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := json.Marshal(a, test.opts...)
+			require.NoError(t, err)
+			require.JSONEq(t, test.want, string(got))
+		})
+	}
 }
 
 // BenchmarkAnyMarshalJSON marshals Anys to JSON, both with every kind of value
@@ -2197,7 +2230,7 @@ func FuzzUnmarshalUntrustedSpec(f *testing.F) {
 
 		actualJSON, err := a.MarshalJSON()
 		require.NoError(t, err)
-		require.True(t, json.Valid(actualJSON))
+		require.True(t, jsontext.Value(actualJSON).IsValid())
 
 		// Unmarshaling must succeed with exactly the memory that it reported
 		// using, and fail with any less.

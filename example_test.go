@@ -1,7 +1,8 @@
 package canoto_test
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"log"
 
@@ -53,7 +54,7 @@ func ExampleNewCodec() {
 		log.Fatal(err)
 	}
 
-	jsonBytes, err := json.MarshalIndent(decoded, "", "  ")
+	jsonBytes, err := json.Marshal(decoded, jsontext.WithIndent("  "))
 	if err != nil {
 		log.Fatal(err)
 	}
