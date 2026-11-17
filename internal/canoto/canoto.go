@@ -10,7 +10,8 @@ package canoto
 
 import (
 	"encoding/binary"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"io"
@@ -1715,87 +1716,35 @@ func (c *Codec) Marshal(a Any) ([]byte, error) {
 	return w.B, nil
 }
 
-var _ json.Marshaler = Any{}
+var (
+	_ json.Marshaler   = Any{}
+	_ json.MarshalerTo = Any{}
+)
 
 // MarshalJSON implements the [json.Marshaler] interface.
+//
+// It is equivalent to calling [json.Marshal] on a with the default options.
 func (a Any) MarshalJSON() ([]byte, error) {
-	return a.appendJSON(nil)
+	return json.Marshal(a)
 }
 
-// appendJSON appends the JSON encoding of a to b.
+// MarshalJSONTo implements the [json.MarshalerTo] interface.
 //
-// Nested messages are appended directly, rather than with json.Marshal, which
-// would copy and validate the encoding of a nested message once for every
-// message enclosing it. This keeps the time linear in the size of the output,
-// regardless of the depth of the messages.
-func (a *Any) appendJSON(b []byte) ([]byte, error) {
-	b = append(b, '{')
+// Field values are marshaled with the options of enc.
+func (a Any) MarshalJSONTo(enc *jsontext.Encoder) error {
+	if err := enc.WriteToken(jsontext.BeginObject); err != nil {
+		return err
+	}
 	for i := range a.Fields {
 		f := &a.Fields[i]
-		if i > 0 {
-			b = append(b, ',')
+		if err := enc.WriteToken(jsontext.String(f.Name)); err != nil {
+			return err
 		}
-		name, err := json.Marshal(f.Name)
-		if err != nil {
-			return nil, err
-		}
-		b = append(b, name...)
-		b = append(b, ':')
-		b, err = appendJSONValue(b, f.Value)
-		if err != nil {
-			return nil, err
+		if err := json.MarshalEncode(enc, f.Value); err != nil {
+			return err
 		}
 	}
-	return append(b, '}'), nil
-}
-
-// appendJSONValue appends the JSON encoding of the value of an [AnyField] to b.
-func appendJSONValue(b []byte, value any) ([]byte, error) {
-	switch v := value.(type) {
-	case Any:
-		return v.appendJSON(b)
-	case []Any:
-		return appendJSONArray(b, v, func(b []byte, a *Any) ([]byte, error) {
-			return a.appendJSON(b)
-		})
-	case []*Any:
-		return appendJSONArray(b, v, func(b []byte, a **Any) ([]byte, error) {
-			if *a == nil {
-				return append(b, "null"...), nil
-			}
-			return (*a).appendJSON(b)
-		})
-	default:
-		encoded, err := json.Marshal(value)
-		if err != nil {
-			return nil, err
-		}
-		return append(b, encoded...), nil
-	}
-}
-
-// appendJSONArray appends the JSON encoding of vs to b, as json.Marshal would,
-// using appendValue to append each element.
-func appendJSONArray[T any](
-	b []byte,
-	vs []T,
-	appendValue func(b []byte, v *T) ([]byte, error),
-) ([]byte, error) {
-	if vs == nil {
-		return append(b, "null"...), nil
-	}
-	b = append(b, '[')
-	for i := range vs {
-		if i > 0 {
-			b = append(b, ',')
-		}
-		var err error
-		b, err = appendValue(b, &vs[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return append(b, ']'), nil
+	return enc.WriteToken(jsontext.EndObject)
 }
 
 // FieldTypeFromFint creates a [FieldType] specification for a fixed-size
