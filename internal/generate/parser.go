@@ -27,6 +27,7 @@ var (
 	// \z asserts the position at the end of the string.
 	oneOfRegex = regexp.MustCompile(`\A[a-zA-Z0-9_]+\z`)
 
+	errInvalidCanotoData                   = errors.New("invalid canotoData field")
 	errUnexpectedNumberOfIdentifiers       = errors.New("unexpected number of identifiers")
 	errInvalidGoType                       = errors.New("invalid Go type")
 	errMalformedTag                        = errors.New(`expected "type,fieldNumber[,oneof]" got`)
