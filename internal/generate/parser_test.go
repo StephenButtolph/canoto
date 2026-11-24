@@ -159,6 +159,36 @@ func TestParse(t *testing.T) {
 			wantPackageName: "testdata",
 		},
 		{
+			name:            "leading_digit_oneof_name",
+			filePath:        "testdata/leading_digit_oneof_name.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidOneOfName,
+		},
+		{
+			name:            "leading_underscore_field_name",
+			filePath:        "testdata/leading_underscore_field_name.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidIdentifier,
+		},
+		{
+			name:            "leading_underscore_oneof_name",
+			filePath:        "testdata/leading_underscore_oneof_name.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidOneOfName,
+		},
+		{
+			name:            "leading_underscore_package_name",
+			filePath:        "testdata/leading_underscore_package_name.go",
+			wantPackageName: "_testdata",
+			wantErr:         errInvalidIdentifier,
+		},
+		{
+			name:            "leading_underscore_struct_name",
+			filePath:        "testdata/leading_underscore_struct_name.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidIdentifier,
+		},
+		{
 			name:            "malformed_after_canoto",
 			filePath:        "testdata/malformed_after_canoto.go",
 			wantPackageName: "testdata",
@@ -220,6 +250,30 @@ func TestParse(t *testing.T) {
 			filePath:        "testdata/multiple_fields_per_type.go",
 			wantPackageName: "testdata",
 			wantErr:         errUnexpectedNumberOfIdentifiers,
+		},
+		{
+			name:            "non_ascii_field_name",
+			filePath:        "testdata/non_ascii_field_name.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidIdentifier,
+		},
+		{
+			name:            "non_ascii_oneof_name",
+			filePath:        "testdata/non_ascii_oneof_name.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidOneOfName,
+		},
+		{
+			name:            "non_ascii_package_name",
+			filePath:        "testdata/non_ascii_package_name.go",
+			wantPackageName: "größe",
+			wantErr:         errInvalidIdentifier,
+		},
+		{
+			name:            "non_ascii_struct_name",
+			filePath:        "testdata/non_ascii_struct_name.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidIdentifier,
 		},
 		{
 			name:            "pointer_canoto_data",

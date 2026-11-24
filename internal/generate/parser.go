@@ -29,6 +29,7 @@ var (
 
 	errInvalidCanotoData                   = errors.New("invalid canotoData field")
 	errMissingCanotoData                   = errors.New("missing canotoData field")
+	errInvalidIdentifier                   = errors.New("invalid identifier")
 	errUnexpectedNumberOfIdentifiers       = errors.New("unexpected number of identifiers")
 	errInvalidGoType                       = errors.New("invalid Go type")
 	errMalformedTag                        = errors.New(`expected "type,fieldNumber[,oneof]" got`)
