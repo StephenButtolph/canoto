@@ -28,7 +28,6 @@ var (
 	oneOfRegex = regexp.MustCompile(`\A[a-zA-Z0-9_]+\z`)
 
 	errInvalidCanotoData                   = errors.New("invalid canotoData field")
-	errMissingCanotoData                   = errors.New("missing canotoData field")
 	errInvalidIdentifier                   = errors.New("invalid identifier")
 	errUnexpectedNumberOfIdentifiers       = errors.New("unexpected number of identifiers")
 	errInvalidGoType                       = errors.New("invalid Go type")
@@ -148,10 +147,10 @@ func parse(
 				genericPointers[ident.Name] = currentTypeNumber
 			}
 		}
-		var hasCanotoData bool
+		var cacheField *ast.Field
 		for _, sf := range st.Fields.List {
-			if len(sf.Names) >= 1 && sf.Names[0].Name == "canotoData" {
-				hasCanotoData = true
+			if len(sf.Names) == 1 && sf.Names[0].Name == "canotoData" {
+				cacheField = sf
 				continue
 			}
 
@@ -180,7 +179,20 @@ func parse(
 
 		// If the struct doesn't contain a field named "canotoData", or fields
 		// with canoto tags, then it isn't considered a canoto message.
-		if !hasCanotoData && len(message.fields) == 0 {
+		if cacheField == nil && len(message.fields) == 0 {
+			return false
+		}
+		// Every message must declare its own canotoData field with exactly the
+		// generated cache type. Otherwise, the generated code could compile
+		// against a pointer, or against a cache promoted from an embedded
+		// struct.
+		cacheType := makeTemplate(opts.Templates.Cache, messageEnv(message))
+		if !isCacheType(cacheField, cacheType) {
+			err = fmt.Errorf("%w wanted canotoData of type %s at %s",
+				errInvalidCanotoData,
+				cacheType,
+				fs.Position(st.Pos()),
+			)
 			return false
 		}
 
@@ -389,6 +401,15 @@ func parseField(
 			"wrapperName":               canonicalizeName(goType) + "__Pointer",
 		},
 	}, true, nil
+}
+
+// isCacheType returns true if f is non-nil and has the type cacheType.
+func isCacheType(f *ast.Field, cacheType string) bool {
+	if f == nil {
+		return false
+	}
+	ident, ok := f.Type.(*ast.Ident)
+	return ok && ident.Name == cacheType
 }
 
 // canonicalizeName replaces "_" with "_1" to avoid collisions with "__" which
