@@ -8,6 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func defaultTemplates() Templates {
+	var t Templates
+	t.init()
+	return t
+}
+
 func TestParse(t *testing.T) {
 	tests := []struct {
 		name string
@@ -20,37 +26,38 @@ func TestParse(t *testing.T) {
 		wantErr         error
 	}{
 		{
-			name:            "duplicate field name",
+			name:            "duplicate_field_name",
 			filePath:        "testdata/duplicate_field_name.go",
 			wantPackageName: "testdata",
 			wantErr:         errInvalidOneOfName,
 		},
 		{
-			name:            "duplicate field number",
+			name:            "duplicate_field_number",
 			filePath:        "testdata/duplicate_field_number.go",
 			wantPackageName: "testdata",
 			wantErr:         errStructContainsDuplicateFieldNumbers,
 		},
 		{
-			name:            "field number 0",
+			name:            "field_number_0",
 			filePath:        "testdata/field_number_0.go",
 			wantPackageName: "testdata",
 			wantErr:         errInvalidFieldNumber,
 		},
 		{
-			name:            "field number too large",
+			name:            "field_number_too_large",
 			filePath:        "testdata/field_number_too_large.go",
 			wantPackageName: "testdata",
 			wantErr:         errInvalidFieldNumber,
 		},
 		{
-			name:            "field number before reserved",
+			name:            "field_number_before_reserved",
 			filePath:        "testdata/field_number_before_reserved.go",
 			wantPackageName: "testdata",
 			wantMessages: []message{
 				{
 					name:              "fieldNumberBeforeReserved",
 					canonicalizedName: "fieldNumberBeforeReserved",
+					template:          defaultTemplates(),
 					fields: []field{
 						{
 							name:              "Int",
@@ -89,25 +96,26 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
-			name:            "field number reserved first",
+			name:            "field_number_reserved_first",
 			filePath:        "testdata/field_number_reserved_first.go",
 			wantPackageName: "testdata",
 			wantErr:         errInvalidFieldNumber,
 		},
 		{
-			name:            "field number reserved last",
+			name:            "field_number_reserved_last",
 			filePath:        "testdata/field_number_reserved_last.go",
 			wantPackageName: "testdata",
 			wantErr:         errInvalidFieldNumber,
 		},
 		{
-			name:            "field number after reserved",
+			name:            "field_number_after_reserved",
 			filePath:        "testdata/field_number_after_reserved.go",
 			wantPackageName: "testdata",
 			wantMessages: []message{
 				{
 					name:              "fieldNumberAfterReserved",
 					canonicalizedName: "fieldNumberAfterReserved",
+					template:          defaultTemplates(),
 					fields: []field{
 						{
 							name:              "Int",
@@ -146,18 +154,49 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
-			name:            "function scoped struct",
+			name:            "function_scoped_struct",
 			filePath:        "testdata/function_scoped_struct.go",
 			wantPackageName: "testdata",
 		},
 		{
-			name:            "malformed after canoto",
+			name:            "leading_digit_oneof_name",
+			filePath:        "testdata/leading_digit_oneof_name.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidOneOfName,
+		},
+		{
+			name:            "leading_underscore_field_name",
+			filePath:        "testdata/leading_underscore_field_name.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidIdentifier,
+		},
+		{
+			name:            "leading_underscore_oneof_name",
+			filePath:        "testdata/leading_underscore_oneof_name.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidOneOfName,
+		},
+		{
+			name:            "leading_underscore_package_name",
+			filePath:        "testdata/leading_underscore_package_name.go",
+			wantPackageName: "_testdata",
+			wantErr:         errInvalidIdentifier,
+		},
+		{
+			name:            "leading_underscore_struct_name",
+			filePath:        "testdata/leading_underscore_struct_name.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidIdentifier,
+		},
+		{
+			name:            "malformed_after_canoto",
 			filePath:        "testdata/malformed_after_canoto.go",
 			wantPackageName: "testdata",
 			wantMessages: []message{
 				{
 					name:              "malformedAfterCanoto",
 					canonicalizedName: "malformedAfterCanoto",
+					template:          defaultTemplates(),
 					fields: []field{
 						{
 							name:              "Int",
@@ -196,30 +235,72 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
-			name:            "malformed struct tag",
+			name:            "malformed_struct_tag",
 			filePath:        "testdata/malformed_struct_tag.go",
 			wantPackageName: "testdata",
 		},
 		{
-			name:            "missing field number",
+			name:            "missing_field_number",
 			filePath:        "testdata/missing_field_number.go",
 			wantPackageName: "testdata",
 			wantErr:         errMalformedTag,
 		},
 		{
-			name:            "multiple fields per type",
+			name:            "multiple_fields_per_type",
 			filePath:        "testdata/multiple_fields_per_type.go",
 			wantPackageName: "testdata",
 			wantErr:         errUnexpectedNumberOfIdentifiers,
 		},
 		{
-			name:            "quoted struct tag",
+			name:            "non_ascii_field_name",
+			filePath:        "testdata/non_ascii_field_name.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidIdentifier,
+		},
+		{
+			name:            "non_ascii_oneof_name",
+			filePath:        "testdata/non_ascii_oneof_name.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidOneOfName,
+		},
+		{
+			name:            "non_ascii_package_name",
+			filePath:        "testdata/non_ascii_package_name.go",
+			wantPackageName: "größe",
+			wantErr:         errInvalidIdentifier,
+		},
+		{
+			name:            "non_ascii_struct_name",
+			filePath:        "testdata/non_ascii_struct_name.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidIdentifier,
+		},
+		{
+			name:            "pointer_canoto_data",
+			filePath:        "testdata/pointer_canoto_data.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidCanotoData,
+		},
+		{
+			name:            "promoted_pointer_canoto_data",
+			filePath:        "testdata/promoted_pointer_canoto_data.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidCanotoData,
+		},
+		{
+			name:            "promoted_value_canoto_data",
+			filePath:        "testdata/promoted_value_canoto_data.go",
+			wantPackageName: "testdata",
+			wantErr:         errInvalidCanotoData,
+		},
+		{
+			name:            "quoted_struct_tag",
 			filePath:        "testdata/quoted_struct_tag.go",
 			wantPackageName: "testdata",
 			wantErr:         errInvalidFieldNumber,
 		},
 		{
-			name:            "repeated oneof",
+			name:            "repeated_oneof",
 			filePath:        "testdata/repeated_oneof.go",
 			wantPackageName: "testdata",
 			wantErr:         errRepeatedOneOf,
@@ -230,11 +311,11 @@ func TestParse(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			require := require.New(t)
 
-			// Create a new parser
 			fs := token.NewFileSet()
 			f, err := parser.ParseFile(fs, test.filePath, nil, parser.ParseComments)
 			require.NoError(err)
 
+			test.opts.init()
 			packageName, messages, err := parse(fs, f, test.opts)
 			require.ErrorIs(err, test.wantErr)
 			require.Equal(test.wantPackageName, packageName)

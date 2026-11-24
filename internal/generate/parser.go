@@ -17,16 +17,21 @@ import (
 const canotoTag = "canoto"
 
 var (
-	// oneOfRegex is used to match a string that consists only of letters (both
-	// uppercase and lowercase), digits, and underscores from start to end.
+	// identifierRegex matches identifiers that are valid in both Go and proto.
+	// The proto spec defines:
+	//
+	//	letter = "A" … "Z" | "a" … "z"
+	//	ident = letter { letter | decimalDigit | "_" }
 	//
 	// \A asserts the position at the start of the string.
-	// [a-zA-Z0-9_] matches any letter (both uppercase and lowercase), digit, or
-	// underscore.
-	// + matches one or more of the preceding token.
+	// [a-zA-Z] matches a single ASCII letter.
+	// [a-zA-Z0-9_]* matches any number of ASCII letters, digits, or
+	// underscores.
 	// \z asserts the position at the end of the string.
-	oneOfRegex = regexp.MustCompile(`\A[a-zA-Z0-9_]+\z`)
+	identifierRegex = regexp.MustCompile(`\A[a-zA-Z][a-zA-Z0-9_]*\z`)
 
+	errInvalidCanotoData                   = errors.New("invalid canotoData field")
+	errInvalidIdentifier                   = errors.New("invalid identifier")
 	errUnexpectedNumberOfIdentifiers       = errors.New("unexpected number of identifiers")
 	errInvalidGoType                       = errors.New("invalid Go type")
 	errMalformedTag                        = errors.New(`expected "type,fieldNumber[,oneof]" got`)
@@ -55,6 +60,14 @@ func parse(
 		switch n := n.(type) {
 		case *ast.File:
 			packageName = n.Name.Name
+			if !identifierRegex.MatchString(packageName) {
+				err = fmt.Errorf("%w %q at %s",
+					errInvalidIdentifier,
+					packageName,
+					fs.Position(n.Name.Pos()),
+				)
+				return false
+			}
 			return true
 		// Methods can't be declared on types defined inside of functions, so
 		// they can't be messages.
@@ -145,10 +158,10 @@ func parse(
 				genericPointers[ident.Name] = currentTypeNumber
 			}
 		}
-		var hasCanotoData bool
+		var cacheField *ast.Field
 		for _, sf := range st.Fields.List {
-			if len(sf.Names) >= 1 && sf.Names[0].Name == "canotoData" {
-				hasCanotoData = true
+			if len(sf.Names) == 1 && sf.Names[0].Name == "canotoData" {
+				cacheField = sf
 				continue
 			}
 
@@ -177,7 +190,28 @@ func parse(
 
 		// If the struct doesn't contain a field named "canotoData", or fields
 		// with canoto tags, then it isn't considered a canoto message.
-		if !hasCanotoData && len(message.fields) == 0 {
+		if cacheField == nil && len(message.fields) == 0 {
+			return false
+		}
+		if !identifierRegex.MatchString(name) {
+			err = fmt.Errorf("%w %q at %s",
+				errInvalidIdentifier,
+				name,
+				fs.Position(ts.Name.Pos()),
+			)
+			return false
+		}
+		// Every message must declare its own canotoData field with exactly the
+		// generated cache type. Otherwise, the generated code could compile
+		// against a pointer, or against a cache promoted from an embedded
+		// struct.
+		cacheType := makeTemplate(opts.Templates.Cache, messageEnv(message))
+		if !isCacheType(cacheField, cacheType) {
+			err = fmt.Errorf("%w wanted canotoData of type %s at %s",
+				errInvalidCanotoData,
+				cacheType,
+				fs.Position(st.Pos()),
+			)
 			return false
 		}
 
@@ -294,6 +328,13 @@ func parseField(
 			fs.Position(af.Pos()),
 		)
 	}
+	if !identifierRegex.MatchString(name) {
+		return field{}, false, fmt.Errorf("%w %q at %s",
+			errInvalidIdentifier,
+			name,
+			fs.Position(af.Pos()),
+		)
+	}
 	canonicalizedName := canonicalizeName(name)
 
 	var (
@@ -386,6 +427,15 @@ func parseField(
 			"wrapperName":               canonicalizeName(goType) + "__Pointer",
 		},
 	}, true, nil
+}
+
+// isCacheType returns true if f is non-nil and has the type cacheType.
+func isCacheType(f *ast.Field, cacheType string) bool {
+	if f == nil {
+		return false
+	}
+	ident, ok := f.Type.(*ast.Ident)
+	return ok && ident.Name == cacheType
 }
 
 // canonicalizeName replaces "_" with "_1" to avoid collisions with "__" which
@@ -481,7 +531,7 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (
 		}
 
 		oneof = options[1]
-		if !oneOfRegex.MatchString(oneof) {
+		if !identifierRegex.MatchString(oneof) {
 			return "", 0, "", false, fmt.Errorf("%w %q at %s",
 				errInvalidOneOfName,
 				oneof,

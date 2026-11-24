@@ -142,6 +142,16 @@ message A_1_1Pointer__Pointer {
   A_1_1Pointer value = 1;
 }
 
+message Rune {
+  sfixed32 Rune = 1;
+  repeated sfixed32 RepeatedRune = 2;
+  repeated sfixed32 FixedRepeatedRune = 3;
+}
+
+message Rune__Pointer {
+  Rune value = 1;
+}
+
 message ImportedName {
   bytes A = 1;
   bytes V = 2;
