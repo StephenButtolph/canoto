@@ -124,6 +124,7 @@ var (
 	goFint32ToProto = map[string]string{
 		"int32":  "sfixed32",
 		"uint32": "fixed32",
+		"rune":   "sfixed32",
 	}
 	goFint64ToProto = map[string]string{
 		"int64":  "sfixed64",
