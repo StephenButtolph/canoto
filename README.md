@@ -165,9 +165,9 @@ at the top of a file to update the `.canoto.go` version of the file every time `
 
 `canoto` only inspects a single golang file at a time, so it is recommended to define nested messages in the same file to be able to generate the most useful `proto` file.
 
-Additionally, while fully supported in the `canoto` output, type aliases and generic types will result in `proto` files with default types. It is still guaranteed for the generated `proto` file to be able to parse `canoto` data, but the types may not be as specific as they could be.
+Additionally, while fully supported in the `canoto` output, named types and generic types will result in `proto` files with default types. It is still guaranteed for the generated `proto` file to be able to parse `canoto` data, but it is not guaranteed that the parsed values will be interpreted correctly.
 
-If type aliases are needed, it may make sense to modify the generated proto file to specify the most specific proto type possible.
+If named types are needed, it may make sense to modify the generated proto file to specify the most specific proto type possible.
 
 ### Generics
 
