@@ -17,15 +17,18 @@ import (
 const canotoTag = "canoto"
 
 var (
-	// oneOfRegex is used to match a string that consists only of letters (both
-	// uppercase and lowercase), digits, and underscores from start to end.
+	// identifierRegex matches identifiers that are valid in both Go and proto.
+	// The proto spec defines:
+	//
+	//	letter = "A" … "Z" | "a" … "z"
+	//	ident = letter { letter | decimalDigit | "_" }
 	//
 	// \A asserts the position at the start of the string.
-	// [a-zA-Z0-9_] matches any letter (both uppercase and lowercase), digit, or
-	// underscore.
-	// + matches one or more of the preceding token.
+	// [a-zA-Z] matches a single ASCII letter.
+	// [a-zA-Z0-9_]* matches any number of ASCII letters, digits, or
+	// underscores.
 	// \z asserts the position at the end of the string.
-	oneOfRegex = regexp.MustCompile(`\A[a-zA-Z0-9_]+\z`)
+	identifierRegex = regexp.MustCompile(`\A[a-zA-Z][a-zA-Z0-9_]*\z`)
 
 	errInvalidCanotoData                   = errors.New("invalid canotoData field")
 	errInvalidIdentifier                   = errors.New("invalid identifier")
@@ -57,6 +60,14 @@ func parse(
 		switch n := n.(type) {
 		case *ast.File:
 			packageName = n.Name.Name
+			if !identifierRegex.MatchString(packageName) {
+				err = fmt.Errorf("%w %q at %s",
+					errInvalidIdentifier,
+					packageName,
+					fs.Position(n.Name.Pos()),
+				)
+				return false
+			}
 			return true
 		// Methods can't be declared on types defined inside of functions, so
 		// they can't be messages.
@@ -180,6 +191,14 @@ func parse(
 		// If the struct doesn't contain a field named "canotoData", or fields
 		// with canoto tags, then it isn't considered a canoto message.
 		if cacheField == nil && len(message.fields) == 0 {
+			return false
+		}
+		if !identifierRegex.MatchString(name) {
+			err = fmt.Errorf("%w %q at %s",
+				errInvalidIdentifier,
+				name,
+				fs.Position(ts.Name.Pos()),
+			)
 			return false
 		}
 		// Every message must declare its own canotoData field with exactly the
@@ -306,6 +325,13 @@ func parseField(
 		return field{}, false, fmt.Errorf("%w wanted <= 1 but got %d at %s",
 			errUnexpectedNumberOfIdentifiers,
 			len(af.Names),
+			fs.Position(af.Pos()),
+		)
+	}
+	if !identifierRegex.MatchString(name) {
+		return field{}, false, fmt.Errorf("%w %q at %s",
+			errInvalidIdentifier,
+			name,
 			fs.Position(af.Pos()),
 		)
 	}
@@ -505,7 +531,7 @@ func parseFieldTag(fs *token.FileSet, field *ast.Field) (
 		}
 
 		oneof = options[1]
-		if !oneOfRegex.MatchString(oneof) {
+		if !identifierRegex.MatchString(oneof) {
 			return "", 0, "", false, fmt.Errorf("%w %q at %s",
 				errInvalidOneOfName,
 				oneof,
