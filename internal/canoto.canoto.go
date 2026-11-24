@@ -3423,6 +3423,208 @@ func (c *A__Pointer) AppendCanoto(w canoto.Writer) canoto.Writer {
 }
 
 const (
+	canotoNumber_Rune__Rune              = 1
+	canotoNumber_Rune__RepeatedRune      = 2
+	canotoNumber_Rune__FixedRepeatedRune = 3
+
+	canotoTag_Rune__Rune              = "\x0d" // canoto.Tag(canotoNumber_Rune__Rune, canoto.I32)
+	canotoTag_Rune__RepeatedRune      = "\x12" // canoto.Tag(canotoNumber_Rune__RepeatedRune, canoto.Len)
+	canotoTag_Rune__FixedRepeatedRune = "\x1a" // canoto.Tag(canotoNumber_Rune__FixedRepeatedRune, canoto.Len)
+)
+
+type canotoData_Rune struct {
+	size uint64
+}
+
+// DescribeCanoto returns a [canoto.Spec] describing the fields of this
+// message and their wire types.
+func (*Rune) DescribeCanoto(...reflect.Type) *canoto.Spec {
+	var zero Rune
+	return &canoto.Spec{
+		Name: "Rune",
+		Fields: []canoto.FieldType{
+			canoto.FieldTypeFromFint(
+				/*type inference:*/ zero.Rune,
+				/*FieldNumber:   */ canotoNumber_Rune__Rune,
+				/*Name:          */ "Rune",
+				/*FixedLength:   */ 0,
+				/*Repeated:      */ false,
+				/*OneOf:         */ "",
+			),
+			canoto.FieldTypeFromFint(
+				/*type inference:*/ canoto.MakeEntry(zero.RepeatedRune),
+				/*FieldNumber:   */ canotoNumber_Rune__RepeatedRune,
+				/*Name:          */ "RepeatedRune",
+				/*FixedLength:   */ 0,
+				/*Repeated:      */ true,
+				/*OneOf:         */ "",
+			),
+			canoto.FieldTypeFromFint(
+				/*type inference:*/ canoto.MakeEntry((&zero.FixedRepeatedRune)[:]),
+				/*FieldNumber:   */ canotoNumber_Rune__FixedRepeatedRune,
+				/*Name:          */ "FixedRepeatedRune",
+				/*FixedLength:   */ uint64(len(zero.FixedRepeatedRune)),
+				/*Repeated:      */ true,
+				/*OneOf:         */ "",
+			),
+		},
+	}
+}
+
+// UnmarshalCanoto unmarshals a Canoto-encoded byte slice into the struct.
+//
+// During parsing, the canoto cache is saved.
+func (c *Rune) UnmarshalCanoto(bytes []byte) error {
+	r := canoto.Reader{
+		B:               bytes,
+		MemoryRemaining: canoto.DefaultMemoryLimit,
+		DepthLimit:      canoto.DefaultDepthLimit,
+	}
+	_, err := c.UnmarshalCanotoFrom(r)
+	return err
+}
+
+// UnmarshalCanotoFrom populates the struct from a [canoto.Reader]. Most users
+// should just use UnmarshalCanoto.
+//
+// During parsing, the canoto cache is saved.
+//
+// This function enables configuration of reader options.
+func (c *Rune) UnmarshalCanotoFrom(r canoto.Reader) (canoto.UnmarshalResult, error) {
+	// Zero the struct before unmarshaling.
+	*c = Rune{}
+	atomic.StoreUint64(&c.canotoData.size, uint64(len(r.B)))
+
+	var minField uint32
+	for r.HasNext() {
+		field, wireType, err := r.ReadTag()
+		if err != nil {
+			return canoto.UnmarshalResult{}, err
+		}
+		if field < minField {
+			return canoto.UnmarshalResult{}, canoto.ErrInvalidFieldOrder
+		}
+
+		switch field {
+		case canotoNumber_Rune__Rune:
+			if wireType != canoto.I32 {
+				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
+			}
+
+			if err := r.ReadFint32(&c.Rune); err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
+			if c.Rune == 0 {
+				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
+			}
+		case canotoNumber_Rune__RepeatedRune:
+			if wireType != canoto.Len {
+				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
+			}
+
+			if err := r.ReadFint32s(&c.RepeatedRune); err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
+			if len(c.RepeatedRune) == 0 {
+				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
+			}
+		case canotoNumber_Rune__FixedRepeatedRune:
+			if wireType != canoto.Len {
+				return canoto.UnmarshalResult{}, canoto.ErrUnexpectedWireType
+			}
+
+			// Ensure this field has a constant length of at least one.
+			const _ = uint(len(c.FixedRepeatedRune) - 1)
+			if err := r.ReadFint32sInto((&c.FixedRepeatedRune)[:]); err != nil {
+				return canoto.UnmarshalResult{}, err
+			}
+			if canoto.IsZero(&c.FixedRepeatedRune) {
+				return canoto.UnmarshalResult{}, canoto.ErrZeroValue
+			}
+		default:
+			return canoto.UnmarshalResult{}, canoto.ErrUnknownField
+		}
+
+		minField = field + 1
+	}
+	return r.Result(), nil
+}
+
+// CacheCanoto populates size and OneOf caches based on the current values in
+// the struct.
+func (c *Rune) CacheCanoto() {
+	var size uint64
+	if c.Rune != 0 {
+		size += uint64(len(canotoTag_Rune__Rune)) + canoto.SizeFint32
+	}
+	if num := uint64(len(c.RepeatedRune)); num != 0 {
+		fieldSize := num * canoto.SizeFint32
+		size += uint64(len(canotoTag_Rune__RepeatedRune)) + canoto.SizeUint(fieldSize) + fieldSize
+	}
+	if !canoto.IsZero(&c.FixedRepeatedRune) {
+		const fieldSize = uint64(len(c.FixedRepeatedRune)) * canoto.SizeFint32
+		size += uint64(len(canotoTag_Rune__FixedRepeatedRune)) + fieldSize + canoto.SizeUint(fieldSize)
+	}
+	canoto.CacheUint64(&c.canotoData.size, size)
+}
+
+// SizeCanoto returns the previously calculated size of the Canoto
+// representation from CacheCanoto.
+//
+// If CacheCanoto has not yet been called, or the struct has been modified
+// since the last call to CacheCanoto, the returned size may be incorrect.
+func (c *Rune) SizeCanoto() uint64 {
+	return atomic.LoadUint64(&c.canotoData.size)
+}
+
+// ValidCanoto validates that the struct can be correctly marshaled into the
+// Canoto format.
+func (c *Rune) ValidCanoto() bool {
+	return c.CheckCanoto()
+}
+
+// CheckCanoto validates that the struct can be correctly marshaled into the
+// Canoto format. Most users should just use ValidCanoto.
+func (c *Rune) CheckCanoto() bool {
+	return true
+}
+
+// MarshalCanoto returns the Canoto representation of this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+func (c *Rune) MarshalCanoto() []byte {
+	c.CacheCanoto()
+	w := canoto.Writer{
+		B: make([]byte, 0, c.SizeCanoto()),
+	}
+	w = c.AppendCanoto(w)
+	return w.B
+}
+
+// AppendCanoto appends the struct to a [canoto.Writer] and returns the
+// resulting [canoto.Writer]. Most users should just use MarshalCanoto.
+//
+// It is assumed that CacheCanoto has been called since the last modification
+// to this struct.
+//
+// It is assumed that this struct is ValidCanoto.
+func (c *Rune) AppendCanoto(w canoto.Writer) canoto.Writer {
+	if c.Rune != 0 {
+		w.Append(canotoTag_Rune__Rune)
+		w.AppendFint32(c.Rune)
+	}
+	if len(c.RepeatedRune) != 0 {
+		w.Append(canotoTag_Rune__RepeatedRune)
+		w.AppendFint32s(c.RepeatedRune)
+	}
+	if !canoto.IsZero(&c.FixedRepeatedRune) {
+		w.Append(canotoTag_Rune__FixedRepeatedRune)
+		w.AppendFint32s((&c.FixedRepeatedRune)[:])
+	}
+	return w
+}
+
+const (
 	canotoNumber_ImportedName__A = 1
 	canotoNumber_ImportedName__V = 2
 

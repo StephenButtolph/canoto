@@ -138,6 +138,15 @@ type A__Pointer struct {
 	canotoData canotoData_A__Pointer
 }
 
+// Rune verifies that rune fields are reported as signed in the proto file.
+type Rune struct {
+	Rune              rune    `canoto:"fint32,1"`
+	RepeatedRune      []rune  `canoto:"repeated fint32,2"`
+	FixedRepeatedRune [3]rune `canoto:"fixed repeated fint32,3"`
+
+	canotoData canotoData_Rune
+}
+
 // Check that imported types are not confused with local messages or type
 // parameters with the same name.
 type ImportedName[V any, _ canoto.FieldPointer[V]] struct {
