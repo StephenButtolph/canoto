@@ -228,6 +228,18 @@ func TestParse(t *testing.T) {
 			wantErr:         errInvalidCanotoData,
 		},
 		{
+			name:            "promoted_pointer_canoto_data",
+			filePath:        "testdata/promoted_pointer_canoto_data.go",
+			wantPackageName: "testdata",
+			wantErr:         errMissingCanotoData,
+		},
+		{
+			name:            "promoted_value_canoto_data",
+			filePath:        "testdata/promoted_value_canoto_data.go",
+			wantPackageName: "testdata",
+			wantErr:         errMissingCanotoData,
+		},
+		{
 			name:            "quoted_struct_tag",
 			filePath:        "testdata/quoted_struct_tag.go",
 			wantPackageName: "testdata",
