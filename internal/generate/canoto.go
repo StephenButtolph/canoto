@@ -25,7 +25,10 @@ const (
 	defaultCanotoImporter = "canoto."
 )
 
-var errNonGoExtension = errors.New("file must be a go file")
+var (
+	errNonGoExtension     = errors.New("file must be a go file")
+	errShadowedIdentifier = errors.New("generated identifier is shadowed")
+)
 
 // Options configures optional behavior for code generation.
 type Options struct {
