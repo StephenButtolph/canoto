@@ -30,6 +30,20 @@ var (
 	errShadowedIdentifier = errors.New("generated identifier is shadowed")
 )
 
+// set is a set of strings.
+type set map[string]struct{}
+
+func (s set) add(values ...string) {
+	for _, v := range values {
+		s[v] = struct{}{}
+	}
+}
+
+func (s set) contains(v string) bool {
+	_, ok := s[v]
+	return ok
+}
+
 // Options configures optional behavior for code generation.
 type Options struct {
 	// CanotoImport is the import path for the canoto package.
@@ -137,7 +151,41 @@ const (
 
 	for _, m := range messages {
 		if err := writeStruct(w, m, selector); err != nil {
-			return err
+			return fmt.Errorf("%w in %s", err, m.name)
+		}
+	}
+	return nil
+}
+
+// generatedGlobals returns the package-level identifiers generated for m.
+func generatedGlobals(m message) set {
+	globals := make(set)
+	globals.add(makeTemplate(m.template.Cache, messageEnv(m)))
+	for _, oneOf := range m.OneOfs() {
+		env := oneOfEnv(m, oneOf)
+		globals.add(
+			makeTemplate(m.template.OneOfType, env),
+			makeTemplate(m.template.OneOfUnset, env),
+		)
+	}
+	for _, f := range m.fields {
+		env := fieldEnv(m, f)
+		globals.add(
+			makeTemplate(m.template.Number, env),
+			makeTemplate(m.template.Tag, env),
+		)
+		if f.oneOfName != "" {
+			globals.add(makeTemplate(m.template.OneOfField, env))
+		}
+	}
+	return globals
+}
+
+// checkShadowing returns an error if any of the names are in globals.
+func checkShadowing(globals set, names ...string) error {
+	for _, name := range names {
+		if globals.contains(name) {
+			return fmt.Errorf("%w: %s", errShadowedIdentifier, name)
 		}
 	}
 	return nil
@@ -231,7 +279,15 @@ ${append}	return w
 }
 `
 
-	generics := makeGenerics(m)
+	globals := generatedGlobals(m)
+	// Receivers, parameters, and variables declared by structTemplate.
+	if err := checkShadowing(globals, "c", "r", "w", "bytes", "err"); err != nil {
+		return err
+	}
+	generics, err := makeGenerics(m, globals)
+	if err != nil {
+		return err
+	}
 
 	var (
 		typesDoc         string
@@ -251,6 +307,9 @@ ${append}	return w
 //
 // types is used as a stack of ancestor messages to detect recursive specs.`
 		typesDecl = "types "
+		if err := checkShadowing(globals, "types"); err != nil {
+			return err
+		}
 		appendTypes = fmt.Sprintf(
 			`	types = append(types, reflect.TypeFor[%s%s]())
 `,
@@ -264,6 +323,35 @@ ${append}	return w
 //
 // It is assumed that CacheCanoto has been called since the last modification
 // to this struct.`
+	}
+
+	unmarshalBody, err := makeUnmarshalBody(m, canotoSelector, globals)
+	if err != nil {
+		return err
+	}
+	checkOneOf, err := makeCheckOneOf(m, globals)
+	if err != nil {
+		return err
+	}
+	check, err := makeCheck(m, globals)
+	if err != nil {
+		return err
+	}
+	sizeVars, err := makeSizeVars(m, globals)
+	if err != nil {
+		return err
+	}
+	size, err := makeSize(m, globals)
+	if err != nil {
+		return err
+	}
+	appendBody, err := makeAppend(m, globals)
+	if err != nil {
+		return err
+	}
+	zero, err := makeZeroVarName(m, generics, globals)
+	if err != nil {
+		return err
 	}
 
 	return writeTemplate(w, structTemplate, map[string]string{
@@ -280,19 +368,19 @@ ${append}	return w
 		"sizeCache":        makeSizeCache(m),
 		"oneOfCache":       makeOneOfCache(m),
 		"spec":             makeSpec(m, canotoSelector),
-		"unmarshalBody":    makeUnmarshalBody(m, canotoSelector),
-		"checkOneOf":       makeCheckOneOf(m),
-		"check":            makeCheck(m),
-		"sizeVars":         makeSizeVars(m),
-		"size":             makeSize(m),
+		"unmarshalBody":    unmarshalBody,
+		"checkOneOf":       checkOneOf,
+		"check":            check,
+		"sizeVars":         sizeVars,
+		"size":             size,
 		"assignSizeVars":   makeAssignSizeVars(m, canotoSelector),
-		"whichCanoto":      makeWhichCanoto(m),
-		"append":           makeAppend(m),
-		"zero":             makeZeroVarName(m, generics),
+		"whichCanoto":      makeWhichCanoto(m, generics),
+		"append":           appendBody,
+		"zero":             zero,
 	})
 }
 
-func makeZeroVarName(m message, generics string) string {
+func makeZeroVarName(m message, generics string, globals set) (string, error) {
 	zeroIsUnusedTypes := []canotoType{
 		canotoBool,
 		canotoRepeatedBool,
@@ -304,20 +392,23 @@ func makeZeroVarName(m message, generics string) string {
 
 	for _, f := range m.fields {
 		if !slices.Contains(zeroIsUnusedTypes, f.canotoType) {
+			if err := checkShadowing(globals, "zero"); err != nil {
+				return "", err
+			}
 			return makeTemplate(`	var zero ${structName}${generics}
 `, map[string]string{
 				"structName": m.name,
 				"generics":   generics,
-			})
+			}), nil
 		}
 	}
 
-	return ""
+	return "", nil
 }
 
-func makeGenerics(m message) string {
+func makeGenerics(m message, globals set) (string, error) {
 	if m.numTypes == 0 {
-		return ""
+		return "", nil
 	}
 
 	var sb strings.Builder
@@ -326,10 +417,14 @@ func makeGenerics(m message) string {
 		if i != 0 {
 			sb.WriteString(", ")
 		}
-		fmt.Fprintf(&sb, "T%d", i+1)
+		typeParam := fmt.Sprintf("T%d", i+1)
+		if err := checkShadowing(globals, typeParam); err != nil {
+			return "", err
+		}
+		sb.WriteString(typeParam)
 	}
 	sb.WriteString("]")
-	return sb.String()
+	return sb.String(), nil
 }
 
 func makeConstants(m message) string {
@@ -744,7 +839,7 @@ func makeSpecFields(m message) string {
 	})
 }
 
-func makeUnmarshalBody(m message, canotoSelector string) string {
+func makeUnmarshalBody(m message, canotoSelector string, globals set) (string, error) {
 	var template string
 	if len(m.fields) == 0 {
 		template = `	if r.HasNext() {
@@ -772,15 +867,42 @@ ${unmarshal}		default:
 	}
 	return r.Result(), nil
 `
+		if err := checkShadowing(globals, "minField", "field", "wireType", "err"); err != nil {
+			return "", err
+		}
 	}
 
+	unmarshal, err := makeUnmarshal(m, globals)
+	if err != nil {
+		return "", err
+	}
 	return makeTemplate(template, map[string]string{
 		"canotoSelector": canotoSelector,
-		"unmarshal":      makeUnmarshal(m),
-	})
+		"unmarshal":      unmarshal,
+	}), nil
 }
 
-func makeUnmarshal(m message) string {
+func makeUnmarshal(m message, globals set) (string, error) {
+	err := checkShadowing(globals,
+		"length",
+		"err",
+		"remainingBytes",
+		"countMinus1",
+		"field",
+		"i",
+		"isZero",
+		"expectedLength",
+		"expectedLengthUint64",
+		"firstEntry",
+		"newB",
+		"msgReader",
+		"result",
+		"additionalField",
+	)
+	if err != nil {
+		return "", err
+	}
+
 	const (
 		intTemplate = `		case ${fieldNumberConst}:
 			if wireType != ${selector}${wireType} {
@@ -1366,10 +1488,14 @@ func makeUnmarshal(m message) string {
 			}
 `,
 		},
-	})
+	}), nil
 }
 
-func makeCheckOneOf(m message) string {
+func makeCheckOneOf(m message, globals set) (string, error) {
+	if err := checkShadowing(globals, "length", "isZero", "v", "field", "i"); err != nil {
+		return "", err
+	}
+
 	oneOfCounts := make(map[string]int)
 	for _, f := range m.fields {
 		if f.oneOfName != "" {
@@ -1386,7 +1512,11 @@ func makeCheckOneOf(m message) string {
 		if oneOfCounts[oneOf] <= 1 {
 			continue
 		}
-		fmt.Fprintf(&sb, template, oneOf+oneOfSuffix)
+		varName := oneOf + oneOfSuffix
+		if err := checkShadowing(globals, varName); err != nil {
+			return "", err
+		}
+		fmt.Fprintf(&sb, template, varName)
 	}
 
 	const (
@@ -1497,10 +1627,14 @@ func makeCheckOneOf(m message) string {
 
 		_ = writeField(&sb, m, f, t)
 	}
-	return sb.String()
+	return sb.String(), nil
 }
 
-func makeCheck(m message) string {
+func makeCheck(m message, globals set) (string, error) {
+	if err := checkShadowing(globals, "v", "field", "i"); err != nil {
+		return "", err
+	}
+
 	return writeMessage(m, messageTemplate{
 		strings: typeTemplate{
 			single: `	if !${selector}ValidString(c.${fieldName}) {
@@ -1562,10 +1696,14 @@ func makeCheck(m message) string {
 	}
 `,
 		},
-	})
+	}), nil
 }
 
-func makeSizeVars(m message) string {
+func makeSizeVars(m message, globals set) (string, error) {
+	if err := checkShadowing(globals, "size"); err != nil {
+		return "", err
+	}
+
 	var sb strings.Builder
 	sb.WriteString("\tvar size uint64\n")
 
@@ -1574,12 +1712,32 @@ func makeSizeVars(m message) string {
 		oneOfTemplate = "\tvar %s uint32\n"
 	)
 	for _, oneOf := range m.OneOfs() {
-		fmt.Fprintf(&sb, oneOfTemplate, oneOf+oneOfSuffix)
+		varName := oneOf + oneOfSuffix
+		if err := checkShadowing(globals, varName); err != nil {
+			return "", err
+		}
+		fmt.Fprintf(&sb, oneOfTemplate, varName)
 	}
-	return sb.String()
+	return sb.String(), nil
 }
 
-func makeSize(m message) string {
+func makeSize(m message, globals set) (string, error) {
+	err := checkShadowing(globals,
+		"num",
+		"fieldSize",
+		"v",
+		"length",
+		"isZero",
+		"i",
+		"field",
+		"fieldSizeSum",
+		"totalSize",
+		"innerSize",
+	)
+	if err != nil {
+		return "", err
+	}
+
 	const (
 		fixedIntSizeTemplate = `	if c.${fieldName} != 0 {
 		size += uint64(len(${fieldTagConst})) + ${selector}Size${suffix}${sizeOneOf}
@@ -1759,7 +1917,7 @@ func makeSize(m message) string {
 	}
 `,
 		},
-	})
+	}), nil
 }
 
 func makeAssignSizeVars(m message, canotoSelector string) string {
@@ -1771,7 +1929,7 @@ func makeAssignSizeVars(m message, canotoSelector string) string {
 	return sb.String()
 }
 
-func makeWhichCanoto(m message) string {
+func makeWhichCanoto(m message, generics string) string {
 	const template = `
 
 // WhichCanoto${oneOf} returns the previously calculated field number used to
@@ -1785,10 +1943,7 @@ func makeWhichCanoto(m message) string {
 func (c *${structName}${generics}) WhichCanoto${oneOf}() ${oneOfType} {
 	return ${castOpen}atomic.LoadUint32(&c.canotoData.${oneOf}OneOf)${castClose}
 }`
-	var (
-		sb       strings.Builder
-		generics = makeGenerics(m)
-	)
+	var sb strings.Builder
 	for _, oneOf := range m.OneOfs() {
 		oneOfType := makeTemplate(m.template.OneOfType, oneOfEnv(m, oneOf))
 		castOpen, castClose := oneOfType+"(", ")"
@@ -2030,7 +2185,12 @@ func getAppendTemplate(isOneOf bool) messageTemplate {
 	}
 }
 
-func makeAppend(m message) string {
+func makeAppend(m message, globals set) (string, error) {
+	err := checkShadowing(globals, "fieldSize", "length", "v", "field", "i", "isZero", "innerSize")
+	if err != nil {
+		return "", err
+	}
+
 	var (
 		regularTmpl = getAppendTemplate(false)
 		oneOfTmpl   = getAppendTemplate(true)
@@ -2042,13 +2202,16 @@ func makeAppend(m message) string {
 		declaredOneOfNames = make(map[string]bool)
 	)
 
-	flushOneOf := func() {
+	flushOneOf := func() error {
 		if len(currentOneOfFields) == 0 {
-			return
+			return nil
 		}
 
 		varName := "whichCanoto" + currentOneOfName
 		if !declaredOneOfNames[currentOneOfName] {
+			if err := checkShadowing(globals, varName); err != nil {
+				return err
+			}
 			fmt.Fprintf(&sb, "\t%s := atomic.LoadUint32(&c.canotoData.%sOneOf)\n", varName, currentOneOfName)
 			declaredOneOfNames[currentOneOfName] = true
 		}
@@ -2072,6 +2235,7 @@ func makeAppend(m message) string {
 		sb.WriteString("\t}\n")
 		currentOneOfName = ""
 		currentOneOfFields = currentOneOfFields[:0]
+		return nil
 	}
 
 	for _, f := range m.fields {
@@ -2080,7 +2244,9 @@ func makeAppend(m message) string {
 			continue
 		}
 
-		flushOneOf()
+		if err := flushOneOf(); err != nil {
+			return "", err
+		}
 
 		if f.oneOfName == "" {
 			_ = writeField(&sb, m, f, regularTmpl)
@@ -2091,9 +2257,10 @@ func makeAppend(m message) string {
 		currentOneOfFields = append(currentOneOfFields, f)
 	}
 
-	flushOneOf()
-
-	return sb.String()
+	if err := flushOneOf(); err != nil {
+		return "", err
+	}
+	return sb.String(), nil
 }
 
 type messageTemplate struct {
